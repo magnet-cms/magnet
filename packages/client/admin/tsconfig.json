@@ -2,6 +2,7 @@
   "extends": "@repo/typescript-config/react-library.json",
   "compilerOptions": {
     "paths": {
+      "~/*": ["./src/*"],
       "@magnet/ui": ["../ui/src"]
     }
   },

@@ -11,12 +11,21 @@ export default defineConfig({
 	resolve: {
 		alias: [
 			{
+				find: '~',
+				replacement: fileURLToPath(new URL('./src', import.meta.url)),
+			},
+			{
 				find: '@magnet/ui',
 				replacement: fileURLToPath(new URL('../ui/src', import.meta.url)),
 			},
 			{
 				find: '@',
 				replacement: fileURLToPath(new URL('../ui/src', import.meta.url)),
+			},
+			// Add this alias specifically for the pages directory
+			{
+				find: '@pages',
+				replacement: fileURLToPath(new URL('./src/pages', import.meta.url)),
 			},
 		],
 	},

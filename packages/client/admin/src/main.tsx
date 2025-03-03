@@ -1,8 +1,8 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { BrowserRouter } from 'react-router-dom'
-import App from './App'
-import './index.css'
+import { RouterProvider } from 'react-router-dom'
+import './styles/global.css'
+import router from './router'
 
 // Find the root element
 const rootElement = document.getElementById('root')
@@ -12,8 +12,6 @@ if (!rootElement) {
 
 ReactDOM.createRoot(rootElement).render(
 	<React.StrictMode>
-		<BrowserRouter basename="/admin">
-			<App />
-		</BrowserRouter>
+		<RouterProvider router={router} />
 	</React.StrictMode>,
 )

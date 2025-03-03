@@ -12,7 +12,6 @@ import { initOptions } from './utils'
 export class MagnetModule {
 	static forRoot(options?: MagnetModuleOptions): DynamicModule {
 		const defaultOptions: MagnetModuleOptions = initOptions(options)
-
 		const DBModule = DatabaseModule.register(defaultOptions)
 
 		return {

@@ -1,4 +1,4 @@
-import { All, Controller, Next, Req, Res } from '@nestjs/common'
+import { All, Controller, Get, Next, Req, Res } from '@nestjs/common'
 import type { NextFunction, Request, Response } from 'express'
 import { AdminService } from './admin.service'
 
@@ -6,7 +6,6 @@ import { AdminService } from './admin.service'
 export class AdminController {
 	constructor(private readonly adminService: AdminService) {}
 
-	// Handle all admin routes with a single handler
 	@All('*')
 	async handleAllRequests(
 		@Req() req: Request,
@@ -23,5 +22,10 @@ export class AdminController {
 					'Admin panel is not available. Make sure the admin client is running on port 3001.',
 				)
 		}
+	}
+
+	@Get('')
+	async getAdmin(@Req() req: Request, @Res() res: Response) {
+		return res.redirect('/admin/')
 	}
 }
