@@ -2,6 +2,7 @@ import { Model, getModelToken } from '@magnet/common'
 import { DynamicModule, Module, Type, forwardRef } from '@nestjs/common'
 import { ModuleRef } from '@nestjs/core'
 import { DatabaseModule } from '~/modules/database'
+import { AdminModule } from '../admin/admin.module'
 import { Setting } from './schemas/setting.schema'
 import { SettingsController } from './settings.controller'
 import { SettingsService } from './settings.service'
@@ -10,6 +11,7 @@ import { SettingsService } from './settings.service'
 	imports: [
 		forwardRef(() => DatabaseModule),
 		forwardRef(() => DatabaseModule.forFeature(Setting)),
+		AdminModule,
 	],
 	controllers: [SettingsController],
 	providers: [

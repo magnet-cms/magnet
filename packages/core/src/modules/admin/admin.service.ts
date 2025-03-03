@@ -18,15 +18,14 @@ export class AdminService {
 		const proxy = createProxyMiddleware({
 			target: 'http://localhost:3001',
 			changeOrigin: true,
-			ws: true, // Enable WebSocket support
+			ws: true,
 			secure: false,
 			followRedirects: true,
 			pathRewrite: {
-				// This handles the HMR path
 				'^/admin/hmr': '/hmr',
 			},
 			on: {
-				proxyReq: (proxyReq, req) => {
+				proxyReq: (_, req) => {
 					this.logger.log(`Proxying request: ${req.method} ${req.url}`)
 				},
 				error: (err) => {

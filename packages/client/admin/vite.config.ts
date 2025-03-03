@@ -7,7 +7,6 @@ import { defineConfig } from 'vite'
 // https://vitejs.dev/config/
 export default defineConfig({
 	plugins: [react(), tailwindcss()],
-	base: '/admin/',
 	resolve: {
 		alias: [
 			{
@@ -21,11 +20,6 @@ export default defineConfig({
 			{
 				find: '@',
 				replacement: fileURLToPath(new URL('../ui/src', import.meta.url)),
-			},
-			// Add this alias specifically for the pages directory
-			{
-				find: '@pages',
-				replacement: fileURLToPath(new URL('./src/pages', import.meta.url)),
 			},
 		],
 	},
@@ -44,14 +38,7 @@ export default defineConfig({
 		},
 	},
 	server: {
-		hmr: {
-			protocol: 'ws',
-			host: 'localhost',
-			port: 3001,
-			clientPort: 3000,
-			path: 'hmr',
-		},
-		open: false,
+		hmr: true,
 		port: 3001,
 	},
 })

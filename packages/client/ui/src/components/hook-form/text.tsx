@@ -18,6 +18,7 @@ type Props = {
 	description?: ReactElement | string
 	type?: string
 	disabled?: boolean
+	required?: boolean
 }
 
 export const RHFText = ({
@@ -27,6 +28,7 @@ export const RHFText = ({
 	description,
 	type,
 	disabled,
+	required,
 }: Props) => {
 	const { control } = useFormContext()
 
@@ -42,6 +44,7 @@ export const RHFText = ({
 							type={type}
 							placeholder={placeholder}
 							disabled={disabled}
+							required={required}
 							{...field}
 						/>
 					</FormControl>

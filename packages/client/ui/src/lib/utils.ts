@@ -26,5 +26,7 @@ export const names = (str: string) => {
 		.map((word) => capitalize(word))
 		.join(' ')
 
-	return { name, className, propertyName, constantName, fileName, title }
+	const key = name.replace(/-/g, '_').toLowerCase()
+
+	return { name, className, propertyName, constantName, fileName, title, key }
 }
