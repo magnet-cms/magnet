@@ -10,8 +10,13 @@ import { DashboardLayout } from '../layouts/DashboardLayout'
 
 import Auth from '~/pages/Auth'
 import ContentManager from '~/pages/ContentManager'
-import ContentManagerEdit from '~/pages/ContentManager/Edit'
-import ContentManagerList from '~/pages/ContentManager/List'
+import ContentManagerItem from '~/pages/ContentManager/Item'
+import ContentManagerList from '~/pages/ContentManager/Item/List'
+import ContentManagerViewer from '~/pages/ContentManager/Item/Viewer'
+import ContentManagerViewerAPI from '~/pages/ContentManager/Item/Viewer/API'
+import ContentManagerViewerEdit from '~/pages/ContentManager/Item/Viewer/Edit'
+import ContentManagerViewerLivePreview from '~/pages/ContentManager/Item/Viewer/LivePreview'
+import ContentManagerViewerVersions from '~/pages/ContentManager/Item/Viewer/Versions'
 import HomePage from '~/pages/Home'
 import NotFound from '~/pages/NotFound'
 import Settings from '~/pages/Settings'
@@ -43,11 +48,35 @@ export const routes = [
 							},
 							{
 								path: ':schema',
-								element: withSuspense(ContentManagerList),
-							},
-							{
-								path: ':schema/:slug',
-								element: <ContentManagerEdit />,
+								element: <ContentManagerItem />,
+								children: [
+									{
+										path: '',
+										element: <ContentManagerList />,
+									},
+									{
+										path: ':id',
+										element: <ContentManagerViewer />,
+										children: [
+											{
+												path: '',
+												element: <ContentManagerViewerEdit />,
+											},
+											{
+												path: 'live-preview',
+												element: <ContentManagerViewerLivePreview />,
+											},
+											{
+												path: 'versions',
+												element: <ContentManagerViewerVersions />,
+											},
+											{
+												path: 'api',
+												element: <ContentManagerViewerAPI />,
+											},
+										],
+									},
+								],
 							},
 						],
 					},

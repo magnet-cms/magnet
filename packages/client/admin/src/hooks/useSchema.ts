@@ -1,12 +1,8 @@
+import { SchemaMetadata } from '@magnet/common'
 import { useQuery } from '@tanstack/react-query'
 import { fetcher } from '~/lib/api'
 
-export type SchemaRecord = {
-	id: string | number
-	[key: string]: any
-}
-
-export const useSchema = <T extends SchemaRecord = SchemaRecord>(
+export const useSchema = <T extends SchemaMetadata = SchemaMetadata>(
 	schemaName: string,
 ) => {
 	const endpoint = `/${schemaName}`
@@ -17,14 +13,10 @@ export const useSchema = <T extends SchemaRecord = SchemaRecord>(
 		queryFn: () => fetcher<T[]>(endpoint),
 	})
 
-	const fetchById = async (id: string | number) => {
-		return fetcher<T>(`${endpoint}/${id}`)
-	}
-
-	const getById = (id: string | number) => {
+	const getByName = (name: string) => {
 		return useQuery<T, Error>({
-			queryKey: [...queryKey, id],
-			queryFn: () => fetchById(id),
+			queryKey: [...queryKey, name],
+			queryFn: () => fetcher<T>(`${endpoint}/${name}`),
 		})
 	}
 
@@ -33,6 +25,6 @@ export const useSchema = <T extends SchemaRecord = SchemaRecord>(
 		isLoading,
 		error,
 		refetch,
-		getById,
+		getByName,
 	}
 }

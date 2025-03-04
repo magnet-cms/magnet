@@ -8,6 +8,8 @@ import { ControllerDiscoveryService } from './services/controller-discovery.serv
 import { MethodDiscoveryService } from './services/method-discovery.service'
 import { SchemaDiscoveryService } from './services/schema-discovery.service'
 
+const EXCLUDED_SCHEMAS = ['setting', 'history']
+
 @Injectable()
 export class DiscoveryService implements OnModuleInit {
 	private controllers: ControllerMetadata[] = []
@@ -32,7 +34,9 @@ export class DiscoveryService implements OnModuleInit {
 	}
 
 	getDiscoveredSchemas(): SchemaMetadata[] {
-		return this.schemas
+		return this.schemas.filter(
+			(schema) => !EXCLUDED_SCHEMAS.includes(schema.name.toLowerCase()),
+		)
 	}
 
 	getDiscoveredSettingsSchemas(): SchemaMetadata[] {
