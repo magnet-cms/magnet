@@ -1,10 +1,4 @@
-import {
-	BaseSchema,
-	Model,
-	VERSION_METADATA_KEY,
-	ValidationException,
-	VersionConfig,
-} from '@magnet/common'
+import { BaseSchema, Model, ValidationException } from '@magnet/common'
 import { Document, Model as MongooseModel } from 'mongoose'
 import { isMongoServerError, mapDocumentId, mapQueryId } from '~/utils'
 
@@ -52,24 +46,10 @@ export function createModel<T>(
 		}
 
 		/**
-		 * Get versioning configuration for this model
-		 */
-		getVersionConfig(): VersionConfig | undefined {
-			const modelClass = this.model.modelName
-			// Get the original class constructor
-			const originalClass = (global as any)[modelClass]
-			if (!originalClass) return undefined
-
-			// Get version metadata
-			return Reflect.getMetadata(VERSION_METADATA_KEY, originalClass)
-		}
-
-		/**
 		 * Check if versioning is enabled for this model
 		 */
 		isVersioningEnabled(): boolean {
-			const config = this.getVersionConfig()
-			return !!config
+			return true
 		}
 
 		/**
@@ -80,7 +60,7 @@ export function createModel<T>(
 
 			try {
 				// Try to get the Version model from mongoose
-				this.versionModel = this.model.db.model<Document>('Version')
+				this.versionModel = this.model.db.model<Document>('History')
 				return this.versionModel
 			} catch (error) {
 				console.error('Error getting Version model:', error)

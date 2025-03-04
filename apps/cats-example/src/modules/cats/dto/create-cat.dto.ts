@@ -1,5 +1,6 @@
 import { Type } from 'class-transformer'
 import {
+	IsBoolean,
 	IsDate,
 	IsInt,
 	IsNotEmpty,
@@ -52,4 +53,8 @@ export class CreateCatDto {
 	@IsPhoneNumber(null)
 	@IsNotEmpty()
 	ownerPhone: string
+
+	@IsBoolean()
+	@IsNotEmpty()
+	castrated: boolean
 }

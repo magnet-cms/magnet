@@ -1,7 +1,7 @@
+import { ControllerMetadata, MethodMetadata } from '@magnet/common'
 import { Injectable } from '@nestjs/common'
 import { PATH_METADATA } from '@nestjs/common/constants'
 import { ModulesContainer } from '@nestjs/core'
-import { ControllerMetadata, MethodMetadata } from '../types'
 import { MetadataExtractorService } from './metadata-extractor.service'
 
 @Injectable()

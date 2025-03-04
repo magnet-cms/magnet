@@ -4,6 +4,7 @@ import { APP_FILTER, APP_PIPE, DiscoveryModule } from '@nestjs/core'
 import { GlobalExceptionFilter } from './handlers'
 import { AuthModule } from './modules/auth/auth.module'
 import { DatabaseModule } from './modules/database/database.module'
+import { HistoryModule } from './modules/history/history.module'
 import { SettingsModule } from './modules/settings/settings.module'
 import { initOptions } from './utils'
 
@@ -17,13 +18,25 @@ export class MagnetModule {
 		return {
 			module: MagnetModule,
 			global: true,
-			imports: [AuthModule, DBModule, DiscoveryModule, SettingsModule],
+			imports: [
+				AuthModule,
+				DBModule,
+				DiscoveryModule,
+				SettingsModule,
+				HistoryModule,
+			],
 			providers: [
 				{ provide: APP_PIPE, useClass: ValidationPipe },
 				{ provide: APP_FILTER, useClass: GlobalExceptionFilter },
 				{ provide: MagnetModuleOptions, useValue: defaultOptions },
 			],
-			exports: [MagnetModuleOptions, DiscoveryModule, DBModule, SettingsModule],
+			exports: [
+				MagnetModuleOptions,
+				DiscoveryModule,
+				DBModule,
+				SettingsModule,
+				HistoryModule,
+			],
 		}
 	}
 

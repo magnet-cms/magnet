@@ -1,7 +1,10 @@
 import {
+	ControllerMetadata,
 	DESIGN_TYPE,
+	MethodMetadata,
 	PROP_METADATA_KEY,
 	RESOLVE_METADATA_KEY,
+	SchemaMetadata,
 	UIFieldMetadata,
 	UI_METADATA_KEY,
 } from '@magnet/common'
@@ -15,7 +18,6 @@ import { RouteParamtypes } from '@nestjs/common/enums/route-paramtypes.enum'
 import { InstanceWrapper } from '@nestjs/core/injector/instance-wrapper'
 import { getMetadataStorage } from 'class-validator'
 import { requestMethodMap } from '../constants'
-import { ControllerMetadata, MethodMetadata, SchemaMetadata } from '../types'
 import { getDefaultUIForType } from '../utils'
 
 @Injectable()

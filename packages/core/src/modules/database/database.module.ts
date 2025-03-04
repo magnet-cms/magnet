@@ -7,10 +7,9 @@ import {
 import { DynamicModule, Module, Scope, Type } from '@nestjs/common'
 import { ModuleRef } from '@nestjs/core'
 import { DatabaseAdapterFactory } from './database-adapter.factory'
-import { HistoryModule } from './modules/history/history.module'
 import { InternationalizationModule } from './modules/internationalization/internationalization.module'
 
-const modules = [InternationalizationModule, HistoryModule]
+const modules = [InternationalizationModule]
 
 @Module({
 	imports: modules,

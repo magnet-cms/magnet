@@ -1,7 +1,10 @@
-import { SCHEMA_METADATA_KEY, SETTING_METADATA_KEY } from '@magnet/common'
+import {
+	SCHEMA_METADATA_KEY,
+	SETTING_METADATA_KEY,
+	SchemaMetadata,
+} from '@magnet/common'
 import { Injectable } from '@nestjs/common'
 import { ModulesContainer } from '@nestjs/core'
-import { SchemaMetadata } from '../types'
 import { MetadataExtractorService } from './metadata-extractor.service'
 
 @Injectable()

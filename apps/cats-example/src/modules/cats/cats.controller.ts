@@ -1,5 +1,14 @@
 import { Resolve } from '@magnet/common'
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common'
+import {
+	Body,
+	Controller,
+	Delete,
+	Get,
+	Param,
+	Post,
+	Put,
+	Query,
+} from '@nestjs/common'
 import { CatsService } from './cats.service'
 import { CreateCatDto } from './dto/create-cat.dto'
 import { Cat } from './schemas/cat.schema'
@@ -27,13 +36,13 @@ export class CatsController {
 		return this.catsService.findOne(id)
 	}
 
-	@Post(':id')
+	@Put(':id')
 	@Resolve(() => Boolean)
 	update(@Param('id') id: string, @Body() updateCatDto: CreateCatDto) {
 		return this.catsService.update(id, updateCatDto)
 	}
 
-	@Post(':id/delete')
+	@Delete(':id')
 	@Resolve(() => Boolean)
 	remove(@Param('id') id: string) {
 		return this.catsService.remove(id)
