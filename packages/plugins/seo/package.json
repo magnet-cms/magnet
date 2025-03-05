@@ -1,0 +1,38 @@
+{
+  "name": "@magnet/plugin-seo",
+  "version": "0.0.1",
+  "description": "",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "exports": {
+    "import": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "require": {
+      "types": "./dist/index.d.cts",
+      "default": "./dist/index.cjs"
+    }
+  },
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build:dev": "tsup --watch",
+    "build": "tsup"
+  },
+  "devDependencies": {
+    "@nestjs/common": "^11.0.8",
+    "@repo/biome": "workspace:*",
+    "@repo/tsup": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "reflect-metadata": "0.2.2"
+  },
+  "peerDependencies": {
+    "@nestjs/common": "^11.0.0",
+    "reflect-metadata": "0.2.2"
+  }
+}
