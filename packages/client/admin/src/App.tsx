@@ -1,3 +1,4 @@
+import { Toaster } from '@magnet/ui/components'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { BrowserRouter, useRoutes } from 'react-router-dom'
 import { AdminProvider } from './contexts/useAdmin'
@@ -25,6 +26,8 @@ const App = () => {
 			<QueryClientProvider client={queryClient}>
 				<AdminProvider>
 					<AppRoutes />
+
+					<Toaster />
 				</AdminProvider>
 			</QueryClientProvider>
 		</BrowserRouter>
