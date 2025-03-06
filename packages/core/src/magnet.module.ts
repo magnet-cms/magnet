@@ -5,6 +5,7 @@ import { RestrictedGuard } from './guards/restricted.guard'
 import { GlobalExceptionFilter } from './handlers'
 import { AuthModule } from './modules/auth/auth.module'
 import { DatabaseModule } from './modules/database/database.module'
+import { HealthModule } from './modules/health/health.module'
 import { HistoryModule } from './modules/history/history.module'
 import { SettingsModule } from './modules/settings/settings.module'
 import { initOptions } from './utils'
@@ -25,6 +26,7 @@ export class MagnetModule {
 				DiscoveryModule,
 				SettingsModule,
 				HistoryModule,
+				HealthModule,
 			],
 			providers: [
 				{ provide: APP_PIPE, useClass: ValidationPipe },
@@ -38,6 +40,7 @@ export class MagnetModule {
 				DBModule,
 				SettingsModule,
 				HistoryModule,
+				HealthModule,
 			],
 		}
 	}
