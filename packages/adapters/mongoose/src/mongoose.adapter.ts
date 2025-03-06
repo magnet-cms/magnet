@@ -4,15 +4,22 @@ import {
 	MagnetModuleOptions,
 	MongooseConfig,
 } from '@magnet/common'
-import { DynamicModule, Type } from '@nestjs/common'
+import { DynamicModule, Injectable, Type } from '@nestjs/common'
 import { MongooseModule, SchemaFactory, getModelToken } from '@nestjs/mongoose'
 import mongoose, { Document, Model as MongooseModel, Schema } from 'mongoose'
 
-import { applyIntl } from './mongoose.intl'
+import { InternationalizationService } from './internationalization/intl.service'
 import { createModel } from './mongoose.model'
 
+@Injectable()
 class MongooseAdapter extends DatabaseAdapter {
 	private options: MagnetModuleOptions | null = null
+	private readonly intlService: InternationalizationService
+
+	constructor() {
+		super()
+		this.intlService = new InternationalizationService()
+	}
 
 	connect(options: MagnetModuleOptions): DynamicModule {
 		this.options = options
@@ -81,7 +88,7 @@ class MongooseAdapter extends DatabaseAdapter {
 			if (intlSettings) {
 				const locales = intlSettings.locales
 				const defaultLocale = intlSettings.defaultLocale
-				applyIntl(schema, { locales, defaultLocale })
+				this.intlService.applyIntl(schema, { locales, defaultLocale })
 			} else {
 				throw new Error('Missing internationalization configurations')
 			}

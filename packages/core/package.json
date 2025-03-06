@@ -24,6 +24,9 @@
     "build:dev": "tsup --watch",
     "build": "tsup"
   },
+  "dependencies": {
+    "@nestjs/terminus": "^11.0.0"
+  },
   "devDependencies": {
     "@magnet/admin": "workspace:*",
     "@magnet/common": "workspace:*",
@@ -33,7 +36,6 @@
     "@nestjs/core": "^11.0.8",
     "@nestjs/jwt": "^11.0.0",
     "@nestjs/passport": "^11.0.5",
-    "@nestjs/terminus": "^11.0.0",
     "@repo/biome": "workspace:*",
     "@repo/tsup": "workspace:*",
     "@repo/typescript-config": "workspace:*",
