@@ -91,6 +91,7 @@ export const fieldRenderer: Record<
 			name={prop.name}
 			label={capitalize(prop.ui?.label || prop.name)}
 			description={prop.ui?.description}
+			multiple={(prop.ui as UISelect).multi}
 			options={(prop.ui as UISelect).options.map((option) => ({
 				value: option.value,
 				label: option.key,

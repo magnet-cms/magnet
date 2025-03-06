@@ -22,6 +22,7 @@ type RHFSelectProps = {
 	options: { value: string; label: string }[]
 	description?: ReactElement | string
 	disabled?: boolean
+	multiple?: boolean
 }
 
 export const RHFSelect = ({
