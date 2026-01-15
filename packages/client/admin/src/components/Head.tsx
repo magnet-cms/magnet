@@ -1,9 +1,4 @@
-import {
-	Button,
-	Separator,
-	ToggleGroup,
-	ToggleGroupItem,
-} from '@magnet/ui/components'
+import { Button, ToggleGroup, ToggleGroupItem } from '@magnet/ui/components'
 import { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 
@@ -90,12 +85,11 @@ export const Head = ({ title, actions }: HeadProps) => {
 	}
 
 	return (
-		<>
-			<div className="flex justify-between items-center">
+		<header className="border-b border-border bg-background">
+			<div className="flex justify-between items-center px-6 py-4">
 				<h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
 				<div className="flex items-center gap-2">{renderActions()}</div>
 			</div>
-			<Separator />
-		</>
+		</header>
 	)
 }

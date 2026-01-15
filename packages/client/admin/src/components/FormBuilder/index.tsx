@@ -9,7 +9,7 @@ import {
 	TabsTrigger,
 } from '@magnet/ui/components'
 import { format } from 'date-fns'
-import { ReactElement, useEffect, useState } from 'react'
+import { ReactElement, useEffect, useRef, useState } from 'react'
 import { SubmitHandler, useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { fieldRenderer } from './Fields'
@@ -17,7 +17,8 @@ import { buildFormSchema } from './validations'
 
 type FormBuilderProps<T> = {
 	schema: SchemaMetadata
-	onSubmit: (data: T) => void
+	onSubmit?: (data: T) => void
+	onChange?: (data: T) => void
 	initialValues?: Partial<T>
 	metadata?: {
 		createdAt?: Date | string
@@ -29,6 +30,7 @@ type FormBuilderProps<T> = {
 export const FormBuilder = <T extends Record<string, unknown>>({
 	schema,
 	onSubmit,
+	onChange,
 	initialValues,
 	metadata,
 }: FormBuilderProps<T>) => {
@@ -40,9 +42,30 @@ export const FormBuilder = <T extends Record<string, unknown>>({
 		defaultValues: initialValues as FormValues | undefined,
 	})
 
+	// Track if initial values have been set to avoid triggering onChange on mount
+	const isInitializedRef = useRef(false)
+
 	useEffect(() => {
 		methods.reset(initialValues as FormValues | undefined)
-	}, [initialValues])
+		// Mark as initialized after first reset (with small delay to skip initial render)
+		const timer = setTimeout(() => {
+			isInitializedRef.current = true
+		}, 100)
+		return () => clearTimeout(timer)
+	}, [initialValues, methods])
+
+	// Subscribe to form changes using watch callback (subscription pattern)
+	useEffect(() => {
+		if (!onChange) return
+
+		const subscription = methods.watch((data) => {
+			if (isInitializedRef.current) {
+				onChange(data as T)
+			}
+		})
+
+		return () => subscription.unsubscribe()
+	}, [methods, onChange])
 
 	const fieldsWithoutTabs: SchemaProperty[] = []
 	const groupedProperties: Record<string, SchemaProperty[]> = {}
@@ -117,7 +140,7 @@ export const FormBuilder = <T extends Record<string, unknown>>({
 	}
 
 	const submitHandler: SubmitHandler<FormValues> = (data) => {
-		onSubmit(data as T)
+		onSubmit?.(data as T)
 	}
 
 	const formatDate = (date: Date | string | undefined) => {

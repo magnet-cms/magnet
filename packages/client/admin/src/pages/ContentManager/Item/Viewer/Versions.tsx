@@ -1,6 +1,15 @@
-import { Button, Spinner } from '@magnet/ui/components'
+import {
+	Avatar,
+	AvatarFallback,
+	Button,
+	Collapsible,
+	CollapsibleContent,
+	CollapsibleTrigger,
+	Spinner,
+} from '@magnet/ui/components'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useState } from 'react'
+import { formatDistanceToNow } from 'date-fns'
+import { ChevronDown } from 'lucide-react'
 import { useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { ContentHeader } from '~/components/ContentHeader'
@@ -24,46 +33,67 @@ interface HistoryAdapter {
 	deleteVersion: (versionId: string) => Promise<void>
 }
 
+const getInitials = (name?: string): string => {
+	if (!name) return '?'
+	const parts = name.trim().split(/\s+/)
+	if (parts.length === 1) {
+		return (parts[0] ?? '').substring(0, 2).toUpperCase()
+	}
+	const first = parts[0]?.[0] ?? ''
+	const last = parts[parts.length - 1]?.[0] ?? ''
+	return (first + last).toUpperCase()
+}
+
+const getChangedFields = (
+	currentData: Record<string, unknown>,
+	previousData?: Record<string, unknown>,
+): string[] => {
+	if (!previousData) return []
+	const changes: string[] = []
+	for (const key of Object.keys(currentData)) {
+		const currentVal = currentData[key]
+		const prevVal = previousData[key]
+		if (JSON.stringify(currentVal) !== JSON.stringify(prevVal)) {
+			const formatValue = (val: unknown): string => {
+				if (val === null || val === undefined) return 'null'
+				if (typeof val === 'object') return JSON.stringify(val)
+				return String(val)
+			}
+			changes.push(
+				`${key}: ${formatValue(prevVal)} → ${formatValue(currentVal)}`,
+			)
+		}
+	}
+	return changes
+}
+
 const ContentManagerViewerVersions = () => {
 	const { id, schema: schemaName } = useParams()
 	const queryClient = useQueryClient()
 	const adapter = useAdapter()
-	const [selectedVersion, setSelectedVersion] = useState<string | null>(null)
 
 	const contentManager = useContentManager()
 	if (!contentManager) return <Spinner />
 
 	const { name } = contentManager
 
-	// Base path for tab navigation
 	const basePath = `/content-manager/${name.key}/${id}`
 
-	// Tabs for navigation
 	const tabs = [
 		{ label: 'Edit', to: '' },
 		{ label: 'Versions', to: 'versions' },
 		{ label: 'API', to: 'api' },
 	]
 
-	// Get history adapter
 	const historyAdapter = (adapter as unknown as { history: HistoryAdapter })
 		.history
 
-	// Fetch all versions for the current document
 	const { data: versions, isLoading: isLoadingVersions } = useQuery({
 		queryKey: ['versions', schemaName, id],
 		queryFn: () => historyAdapter.getVersions(id as string, name.key),
 		enabled: !!id,
 	})
 
-	// Fetch details of the selected version
-	const { data: versionDetails, isLoading: isLoadingDetails } = useQuery({
-		queryKey: ['version', selectedVersion],
-		queryFn: () => historyAdapter.getVersion(selectedVersion as string),
-		enabled: !!selectedVersion,
-	})
-
-	// Restore version mutation (publish)
 	const restoreMutation = useMutation({
 		mutationFn: (versionId: string) => {
 			return historyAdapter.publishVersion(versionId)
@@ -79,7 +109,6 @@ const ContentManagerViewerVersions = () => {
 		},
 	})
 
-	// Publish draft mutation
 	const publishMutation = useMutation({
 		mutationFn: (versionId: string) => {
 			return historyAdapter.publishVersion(versionId)
@@ -95,7 +124,6 @@ const ContentManagerViewerVersions = () => {
 		},
 	})
 
-	// Archive version mutation
 	const archiveMutation = useMutation({
 		mutationFn: (versionId: string) => {
 			return historyAdapter.archiveVersion(versionId)
@@ -111,7 +139,6 @@ const ContentManagerViewerVersions = () => {
 		},
 	})
 
-	// Delete version mutation
 	const deleteMutation = useMutation({
 		mutationFn: (versionId: string) => {
 			return historyAdapter.deleteVersion(versionId)
@@ -121,7 +148,6 @@ const ContentManagerViewerVersions = () => {
 				description: 'The version has been deleted successfully',
 			})
 			queryClient.invalidateQueries({ queryKey: ['versions', schemaName, id] })
-			setSelectedVersion(null)
 		},
 		onError: (error) => {
 			toast.error(`Failed to delete version: ${error.message}`)
@@ -133,217 +159,206 @@ const ContentManagerViewerVersions = () => {
 	if (!versions)
 		return <div>No versions found for this {name.title.toLowerCase()}</div>
 
-	// Sort versions by date (newest first)
 	const sortedVersions = [...versions].sort(
 		(a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
 	)
 
-	// Group versions by status
-	const publishedVersions = sortedVersions.filter(
-		(v) => v.status === 'published',
-	)
-	const draftVersions = sortedVersions.filter((v) => v.status === 'draft')
-	const archivedVersions = sortedVersions.filter((v) => v.status === 'archived')
+	const formatRelativeDate = (dateString: string) => {
+		return formatDistanceToNow(new Date(dateString), { addSuffix: true })
+	}
 
-	const formatDate = (dateString: string) => {
-		const date = new Date(dateString)
-		return date.toLocaleString()
+	const getVersionTitle = (version: Version, index: number) => {
+		if (version.status === 'draft') return 'Current Draft'
+		if (index === sortedVersions.length - 1) return 'Initial Creation'
+		if (version.notes) return version.notes
+		return `${version.status.charAt(0).toUpperCase() + version.status.slice(1)} Version`
 	}
 
 	return (
 		<div className="flex flex-col w-full min-h-0">
 			<ContentHeader basePath={basePath} title={name.title} tabs={tabs} />
 
-			<div className="flex-1 overflow-y-auto p-6">
-				<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-					{/* Version list section */}
-					<div className="md:col-span-1 border rounded-md overflow-hidden">
-						<div className="bg-muted p-3 font-medium">Version History</div>
-						<div className="p-2 flex flex-col divide-y">
-							{draftVersions.length > 0 && (
-								<div className="pb-2">
-									<h3 className="font-semibold text-sm mb-2 text-muted-foreground">
-										Drafts
-									</h3>
-									{draftVersions.map((version) => (
-										<button
-											key={version.versionId}
-											type="button"
-											className={`p-2 cursor-pointer rounded-md w-full text-left ${selectedVersion === version.versionId ? 'bg-accent' : 'hover:bg-muted'}`}
-											onClick={() => setSelectedVersion(version.versionId)}
-										>
-											<div className="text-sm font-medium">
-												Draft - {formatDate(version.createdAt)}
-											</div>
-											{version.createdBy && (
-												<div className="text-xs text-muted-foreground">
-													By: {version.createdBy}
-												</div>
-											)}
-										</button>
-									))}
-								</div>
-							)}
-
-							{publishedVersions.length > 0 && (
-								<div className="py-2">
-									<h3 className="font-semibold text-sm mb-2 text-muted-foreground">
-										Published
-									</h3>
-									{publishedVersions.map((version) => (
-										<button
-											key={version.versionId}
-											type="button"
-											className={`p-2 cursor-pointer rounded-md w-full text-left ${selectedVersion === version.versionId ? 'bg-accent' : 'hover:bg-muted'}`}
-											onClick={() => setSelectedVersion(version.versionId)}
-										>
-											<div className="text-sm font-medium">
-												Published - {formatDate(version.createdAt)}
-											</div>
-											{version.createdBy && (
-												<div className="text-xs text-muted-foreground">
-													By: {version.createdBy}
-												</div>
-											)}
-										</button>
-									))}
-								</div>
-							)}
-
-							{archivedVersions.length > 0 && (
-								<div className="pt-2">
-									<h3 className="font-semibold text-sm mb-2 text-muted-foreground">
-										Archived
-									</h3>
-									{archivedVersions.map((version) => (
-										<button
-											key={version.versionId}
-											type="button"
-											className={`p-2 cursor-pointer rounded-md w-full text-left ${selectedVersion === version.versionId ? 'bg-accent' : 'hover:bg-muted'}`}
-											onClick={() => setSelectedVersion(version.versionId)}
-										>
-											<div className="text-sm font-medium">
-												Archived - {formatDate(version.createdAt)}
-											</div>
-											{version.createdBy && (
-												<div className="text-xs text-muted-foreground">
-													By: {version.createdBy}
-												</div>
-											)}
-										</button>
-									))}
-								</div>
-							)}
-						</div>
+			<div className="flex-1 overflow-y-auto p-8">
+				<div className="max-w-5xl mx-auto space-y-6">
+					{/* Header */}
+					<div>
+						<h2 className="text-lg font-semibold text-foreground">
+							Version History
+						</h2>
+						<p className="text-sm text-muted-foreground mt-1">
+							View and restore previous versions of this entry.
+						</p>
 					</div>
 
-					{/* Version details section */}
-					<div className="md:col-span-2 border rounded-md">
-						{selectedVersion ? (
-							isLoadingDetails ? (
-								<div className="flex justify-center items-center h-64">
-									<Spinner />
-								</div>
-							) : versionDetails ? (
-								<div className="p-4">
-									<div className="flex justify-between items-start mb-4">
-										<div>
-											<h2 className="text-lg font-semibold">
-												{versionDetails.status.charAt(0).toUpperCase() +
-													versionDetails.status.slice(1)}{' '}
-												Version
-											</h2>
-											<p className="text-sm text-muted-foreground">
-												Created: {formatDate(versionDetails.createdAt)}
-												{versionDetails.createdBy &&
-													` by ${versionDetails.createdBy}`}
-											</p>
-											{versionDetails.notes && (
-												<p className="text-sm mt-2 p-2 bg-muted rounded-md">
-													{versionDetails.notes}
-												</p>
-											)}
+					{/* Timeline */}
+					<div className="relative pl-6 border-l border-border space-y-6">
+						{sortedVersions.map((version, index) => {
+							const previousVersion = sortedVersions[index + 1]
+							const changedFields = getChangedFields(
+								version.data,
+								previousVersion?.data,
+							)
+							const isDraft = version.status === 'draft'
+
+							return (
+								<div key={version.versionId} className="relative">
+									{/* Timeline dot */}
+									<div
+										className={`absolute -left-[31px] top-1 h-2.5 w-2.5 rounded-full ring-4 ring-background ${
+											isDraft ? 'bg-amber-400' : 'bg-muted-foreground/30'
+										}`}
+									/>
+
+									{/* Version card */}
+									<div
+										className={`p-4 rounded-lg border transition-all ${
+											isDraft
+												? 'bg-muted/50 border-border'
+												: 'border-border hover:bg-muted/30'
+										}`}
+									>
+										<div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+											<div className="flex gap-3">
+												<Avatar className="h-8 w-8">
+													<AvatarFallback className="text-xs font-semibold bg-muted">
+														{getInitials(version.createdBy)}
+													</AvatarFallback>
+												</Avatar>
+												<div>
+													<div className="flex items-center gap-2 flex-wrap">
+														<span className="text-sm font-medium text-foreground">
+															{getVersionTitle(version, index)}
+														</span>
+														{isDraft && (
+															<span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-100 text-amber-700 border border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800">
+																Unpublished
+															</span>
+														)}
+														{version.status === 'published' && (
+															<span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-100 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800">
+																Published
+															</span>
+														)}
+														{version.status === 'archived' && (
+															<span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-muted text-muted-foreground border">
+																Archived
+															</span>
+														)}
+													</div>
+													<p className="text-xs text-muted-foreground mt-1">
+														{version.createdBy ? (
+															<>
+																Edited by{' '}
+																<span className="text-foreground">
+																	{version.createdBy}
+																</span>{' '}
+																• {formatRelativeDate(version.createdAt)}
+															</>
+														) : (
+															formatRelativeDate(version.createdAt)
+														)}
+													</p>
+												</div>
+											</div>
+
+											{/* Action buttons */}
+											<div className="flex gap-2 shrink-0">
+												{isDraft && (
+													<Button
+														size="sm"
+														variant="outline"
+														onClick={() =>
+															publishMutation.mutate(version.versionId)
+														}
+														disabled={publishMutation.isPending}
+													>
+														{publishMutation.isPending
+															? 'Publishing...'
+															: 'Publish'}
+													</Button>
+												)}
+
+												{version.status === 'published' && (
+													<Button
+														size="sm"
+														variant="outline"
+														onClick={() =>
+															archiveMutation.mutate(version.versionId)
+														}
+														disabled={archiveMutation.isPending}
+													>
+														{archiveMutation.isPending
+															? 'Archiving...'
+															: 'Archive'}
+													</Button>
+												)}
+
+												{version.status === 'archived' && (
+													<Button
+														size="sm"
+														variant="outline"
+														onClick={() =>
+															restoreMutation.mutate(version.versionId)
+														}
+														disabled={restoreMutation.isPending}
+													>
+														{restoreMutation.isPending
+															? 'Restoring...'
+															: 'Restore'}
+													</Button>
+												)}
+
+												<Button
+													size="sm"
+													variant="ghost"
+													className="text-destructive hover:text-destructive hover:bg-destructive/10"
+													onClick={() =>
+														deleteMutation.mutate(version.versionId)
+													}
+													disabled={deleteMutation.isPending}
+												>
+													{deleteMutation.isPending ? 'Deleting...' : 'Delete'}
+												</Button>
+											</div>
 										</div>
 
-										<div className="flex gap-2">
-											{versionDetails.status === 'draft' && (
-												<Button
-													size="sm"
-													variant="outline"
-													onClick={() =>
-														publishMutation.mutate(versionDetails.versionId)
-													}
-													disabled={publishMutation.isPending}
-												>
-													{publishMutation.isPending
-														? 'Publishing...'
-														: 'Publish'}
-												</Button>
-											)}
+										{/* Change badges */}
+										{changedFields.length > 0 && (
+											<div className="mt-3 ml-11 flex flex-wrap gap-2">
+												{changedFields.slice(0, 3).map((change) => (
+													<span
+														key={change}
+														className="inline-flex items-center px-2 py-1 rounded-md bg-background border text-[10px] text-muted-foreground font-mono"
+													>
+														{change.length > 40
+															? `${change.substring(0, 40)}...`
+															: change}
+													</span>
+												))}
+												{changedFields.length > 3 && (
+													<span className="inline-flex items-center px-2 py-1 rounded-md bg-background border text-[10px] text-muted-foreground">
+														+{changedFields.length - 3} more
+													</span>
+												)}
+											</div>
+										)}
 
-											{versionDetails.status === 'published' && (
-												<Button
-													size="sm"
-													variant="outline"
-													onClick={() =>
-														archiveMutation.mutate(versionDetails.versionId)
-													}
-													disabled={archiveMutation.isPending}
-												>
-													{archiveMutation.isPending
-														? 'Archiving...'
-														: 'Archive'}
-												</Button>
-											)}
-
-											{versionDetails.status !== 'published' && (
-												<Button
-													size="sm"
-													variant="outline"
-													onClick={() =>
-														restoreMutation.mutate(versionDetails.versionId)
-													}
-													disabled={restoreMutation.isPending}
-												>
-													{restoreMutation.isPending
-														? 'Restoring...'
-														: 'Restore'}
-												</Button>
-											)}
-
-											<Button
-												size="sm"
-												variant="destructive"
-												onClick={() =>
-													deleteMutation.mutate(versionDetails.versionId)
-												}
-												disabled={deleteMutation.isPending}
-											>
-												{deleteMutation.isPending ? 'Deleting...' : 'Delete'}
-											</Button>
-										</div>
+										{/* Content preview collapsible */}
+										<Collapsible className="mt-4 ml-11">
+											<CollapsibleTrigger className="flex items-center gap-2 px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide rounded-md border bg-background hover:bg-muted/50 transition-colors group">
+												<ChevronDown className="h-3.5 w-3.5 transition-transform group-data-[state=open]:rotate-180" />
+												Content Preview
+											</CollapsibleTrigger>
+											<CollapsibleContent className="mt-2">
+												<pre className="text-xs overflow-auto p-4 bg-muted/50 rounded-lg border max-h-[400px] font-mono">
+													{JSON.stringify(version.data, null, 2)}
+												</pre>
+											</CollapsibleContent>
+										</Collapsible>
 									</div>
-
-									{/* Content preview */}
-									<div className="border rounded-md p-4 bg-muted/50">
-										<h3 className="text-sm font-medium mb-2">
-											Content Preview
-										</h3>
-										<pre className="text-xs overflow-auto p-2 bg-background rounded-md max-h-[500px]">
-											{JSON.stringify(versionDetails.data, null, 2)}
-										</pre>
-									</div>
-								</div>
-							) : (
-								<div className="p-4 text-center text-muted-foreground">
-									Failed to load version details.
 								</div>
 							)
-						) : (
-							<div className="p-4 text-center text-muted-foreground h-64 flex items-center justify-center">
-								Select a version to view details
-							</div>
-						)}
+						})}
 					</div>
 				</div>
 			</div>

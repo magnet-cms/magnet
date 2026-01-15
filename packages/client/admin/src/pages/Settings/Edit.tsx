@@ -63,7 +63,7 @@ const SettingsEdit = () => {
 	}
 
 	return (
-		<>
+		<div className="flex flex-col w-full min-h-0">
 			<Head
 				title={name.title}
 				actions={
@@ -82,12 +82,16 @@ const SettingsEdit = () => {
 					</Button>
 				}
 			/>
-			<FormBuilder
-				schema={schema as SchemaMetadata}
-				onSubmit={handleSubmit}
-				initialValues={initialValues}
-			/>
-		</>
+
+			<div className="flex-1 overflow-y-auto p-6">
+				<FormBuilder
+					key={name.key}
+					schema={schema as SchemaMetadata}
+					onSubmit={handleSubmit}
+					initialValues={initialValues}
+				/>
+			</div>
+		</div>
 	)
 }
 

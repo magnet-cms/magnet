@@ -9,6 +9,7 @@ import { FormBuilder } from '~/components/FormBuilder'
 import type { LocaleOption } from '~/components/LocaleSwitcher'
 import type { ContentData, LocaleStatus } from '~/core/adapters/types'
 import { useAdapter } from '~/core/provider/MagnetProvider'
+import { useAutoSave } from '~/hooks/useAutoSave'
 import { useContentManager } from '~/hooks/useContentManager'
 
 const ContentManagerViewerEdit = () => {
@@ -16,7 +17,6 @@ const ContentManagerViewerEdit = () => {
 	const navigate = useNavigate()
 	const queryClient = useQueryClient()
 	const adapter = useAdapter()
-	const isCreating = !documentId || documentId === 'create'
 
 	// State for locale
 	const [currentLocale, setCurrentLocale] = useState('en')
@@ -52,7 +52,7 @@ const ContentManagerViewerEdit = () => {
 		queryKey: ['content', schemaName, documentId, 'locales'],
 		queryFn: () =>
 			adapter.content.getLocaleStatuses(name.key, documentId as string),
-		enabled: !isCreating && !!documentId && hasI18n,
+		enabled: !!documentId && hasI18n,
 	})
 
 	// Get current locale status
@@ -74,7 +74,7 @@ const ContentManagerViewerEdit = () => {
 		return 'draft' // Default for new documents
 	})()
 
-	// Fetch item if editing
+	// Fetch item
 	const { data: item, isLoading: isLoadingItem } = useQuery({
 		queryKey: [
 			'content',
@@ -88,48 +88,20 @@ const ContentManagerViewerEdit = () => {
 				...(hasI18n && { locale: currentLocale }),
 				...(hasVersioning && { status: effectiveStatus }),
 			}),
-		enabled: !isCreating && !!documentId,
+		enabled: !!documentId,
 	})
 
-	// Create mutation
-	const createMutation = useMutation({
-		mutationFn: (data: ContentData) =>
-			adapter.content.create<
-				ContentData & { documentId?: string; id?: string }
-			>(name.key, data, {
-				...(hasI18n && { locale: currentLocale }),
-			}),
-		onSuccess: (data) => {
-			toast.success('Content created', {
-				description: `${name.title} was created successfully`,
-			})
-			queryClient.invalidateQueries({ queryKey: ['content', schemaName] })
-			// Use documentId if available (i18n/versioning enabled), otherwise use id
-			const itemId = data.documentId || data.id
-			navigate(`/content-manager/${name.key}/${itemId}`)
-		},
-		onError: (error) => {
-			toast.error(`Failed to create ${name.title}: ${error.message}`)
-		},
-	})
-
-	// Update mutation - always saves to draft
-	const updateMutation = useMutation({
-		mutationFn: (data: ContentData) =>
-			adapter.content.update(name.key, documentId as string, data, {
-				...(hasI18n && { locale: currentLocale }),
-				...(hasVersioning && { status: 'draft' }),
-			}),
+	// Auto-save hook
+	const autoSave = useAutoSave({
+		documentId: documentId as string,
+		schema: name.key,
+		locale: hasI18n ? currentLocale : undefined,
+		enabled: !!documentId,
 		onSuccess: () => {
-			toast.success('Content updated', {
-				description: `${name.title} was updated successfully`,
-			})
+			// Invalidate locale statuses to update the status badge
 			queryClient.invalidateQueries({
-				queryKey: ['content', schemaName, documentId],
+				queryKey: ['content', schemaName, documentId, 'locales'],
 			})
-		},
-		onError: (error) => {
-			toast.error(`Failed to update ${name.title}: ${error.message}`)
 		},
 	})
 
@@ -195,15 +167,6 @@ const ContentManagerViewerEdit = () => {
 		},
 	})
 
-	// Handler for form submission
-	const handleSubmit = (data: ContentData) => {
-		if (isCreating) {
-			createMutation.mutate(data)
-		} else {
-			updateMutation.mutate(data)
-		}
-	}
-
 	// Handle locale change
 	const handleLocaleChange = (locale: string) => {
 		setCurrentLocale(locale)
@@ -230,24 +193,17 @@ const ContentManagerViewerEdit = () => {
 		addLocaleMutation.mutate({ locale, initialData: userData as ContentData })
 	}
 
-	// Trigger form submission
-	const handleSave = () => {
-		const form = document.querySelector('form')
-		if (form) {
-			form.dispatchEvent(
-				new Event('submit', { cancelable: true, bubbles: true }),
-			)
-		}
+	// Handle form value changes - trigger auto-save
+	const handleFormChange = (data: ContentData) => {
+		autoSave.save(data)
 	}
 
 	// Loading state
-	if (!isCreating && isLoadingItem) {
+	if (isLoadingItem) {
 		return <Spinner />
 	}
 
 	const isMutating =
-		createMutation.isPending ||
-		updateMutation.isPending ||
 		publishMutation.isPending ||
 		unpublishMutation.isPending
 
@@ -255,17 +211,15 @@ const ContentManagerViewerEdit = () => {
 	const basePath = `/content-manager/${name.key}/${documentId}`
 
 	// Tabs for navigation
-	const tabs = isCreating
-		? undefined
-		: [
-				{ label: 'Edit', to: '' },
-				{ label: 'Versions', to: 'versions' },
-				{ label: 'API', to: 'api' },
-			]
+	const tabs = [
+		{ label: 'Edit', to: '' },
+		{ label: 'Versions', to: 'versions' },
+		{ label: 'API', to: 'api' },
+	]
 
 	// More menu items (publish/unpublish actions)
 	const moreMenuItems = []
-	if (!isCreating && hasVersioning) {
+	if (hasVersioning) {
 		// Always show publish option (edits create/update draft, which can be published)
 		moreMenuItems.push({
 			label: 'Publish',
@@ -290,7 +244,7 @@ const ContentManagerViewerEdit = () => {
 		<div className="flex flex-col w-full min-h-0">
 			<ContentHeader
 				basePath={basePath}
-				title={isCreating ? `Create ${name.title}` : name.title}
+				title={name.title}
 				status={displayStatus}
 				lastEdited={
 					typeof currentItem?.updatedAt === 'string' ||
@@ -300,11 +254,13 @@ const ContentManagerViewerEdit = () => {
 				}
 				tabs={tabs}
 				onDiscard={() => navigate(`/content-manager/${name.key}`)}
-				onSave={handleSave}
-				isSaving={isMutating}
-				saveLabel={isCreating ? 'Create' : 'Save changes'}
+				autoSaveStatus={{
+					isSaving: autoSave.isSaving,
+					lastSaved: autoSave.lastSaved,
+					error: autoSave.error,
+				}}
 				localeProps={
-					hasI18n && !isCreating
+					hasI18n
 						? {
 								currentLocale,
 								locales: availableLocales,
@@ -319,7 +275,7 @@ const ContentManagerViewerEdit = () => {
 			/>
 
 			{/* Info bar when editing published content (will create draft on save) */}
-			{!isCreating && hasVersioning && !currentLocaleStatus?.hasDraft && currentLocaleStatus?.hasPublished && (
+			{hasVersioning && !currentLocaleStatus?.hasDraft && currentLocaleStatus?.hasPublished && (
 				<div className="px-6 py-2 border-b border-border bg-amber-50 dark:bg-amber-950/30 flex items-center gap-2">
 					<span className="text-xs text-amber-700 dark:text-amber-400">
 						Editing published content. Changes will be saved as a new draft.
@@ -331,29 +287,25 @@ const ContentManagerViewerEdit = () => {
 			<div className="flex-1 overflow-y-auto p-6">
 				<FormBuilder
 					schema={schemaMetadata as SchemaMetadata}
-					onSubmit={handleSubmit}
 					initialValues={currentItem}
-					metadata={
-						!isCreating
-							? {
-									createdAt:
-										typeof currentItem?.createdAt === 'string' ||
-										currentItem?.createdAt instanceof Date
-											? currentItem.createdAt
-											: undefined,
-									updatedAt:
-										typeof currentItem?.updatedAt === 'string' ||
-										currentItem?.updatedAt instanceof Date
-											? currentItem.updatedAt
-											: undefined,
-									publishedAt:
-										typeof currentItem?.publishedAt === 'string' ||
-										currentItem?.publishedAt instanceof Date
-											? currentItem.publishedAt
-											: undefined,
-								}
-							: undefined
-					}
+					onChange={handleFormChange}
+					metadata={{
+						createdAt:
+							typeof currentItem?.createdAt === 'string' ||
+							currentItem?.createdAt instanceof Date
+								? currentItem.createdAt
+								: undefined,
+						updatedAt:
+							typeof currentItem?.updatedAt === 'string' ||
+							currentItem?.updatedAt instanceof Date
+								? currentItem.updatedAt
+								: undefined,
+						publishedAt:
+							typeof currentItem?.publishedAt === 'string' ||
+							currentItem?.publishedAt instanceof Date
+								? currentItem.publishedAt
+								: undefined,
+					}}
 				/>
 			</div>
 		</div>

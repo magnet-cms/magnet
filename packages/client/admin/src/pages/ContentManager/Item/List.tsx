@@ -90,6 +90,17 @@ const ContentManagerList = () => {
 		},
 	})
 
+	// Create empty document mutation (for immediate redirect flow)
+	const createMutation = useMutation({
+		mutationFn: () => adapter.content.createEmpty(name.key),
+		onSuccess: (data) => {
+			navigate(`/content-manager/${name.key}/${data.documentId}`)
+		},
+		onError: (error) => {
+			toast.error(`Failed to create ${name.title}: ${error.message}`)
+		},
+	})
+
 	if (isLoading) return <Spinner />
 
 	if (error)
@@ -187,20 +198,23 @@ const ContentManagerList = () => {
 	]
 
 	return (
-		<div className="w-full">
+		<div className="flex flex-col w-full min-h-0">
 			<Head
 				title={name.title}
 				actions={
 					<Button
-						onClick={() => navigate(`/content-manager/${name.key}/create`)}
+						onClick={() => createMutation.mutate()}
+						disabled={createMutation.isPending}
 					>
-						Create {name.title}
+						{createMutation.isPending ? 'Creating...' : `Create ${name.title}`}
 					</Button>
 				}
 			/>
 
-			<div className="rounded-md border mt-4">
-				<DataTable columns={tableColumns} data={items || []} />
+			<div className="flex-1 overflow-y-auto p-6">
+				<div className="rounded-md border">
+					<DataTable columns={tableColumns} data={items || []} />
+				</div>
 			</div>
 
 			{/* Delete confirmation dialog */}

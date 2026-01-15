@@ -220,6 +220,10 @@ export interface MagnetApiAdapter {
 			data: Partial<T>,
 			options?: ContentCreateOptions,
 		): Promise<T>
+		createEmpty(
+			schema: string,
+			options?: { locale?: string; createdBy?: string },
+		): Promise<{ documentId: string }>
 		update<T = ContentData>(
 			schema: string,
 			documentId: string,

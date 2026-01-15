@@ -224,6 +224,19 @@ export function createHttpAdapter(config: HttpAdapterConfig): MagnetApiAdapter {
 				})
 			},
 
+			async createEmpty(
+				schema: string,
+				options?: { locale?: string; createdBy?: string },
+			): Promise<{ documentId: string }> {
+				return request<{ documentId: string }>(`/content/${schema}/new`, {
+					method: 'POST',
+					body: {
+						locale: options?.locale,
+						createdBy: options?.createdBy,
+					},
+				})
+			},
+
 			async update<T = ContentData>(
 				schema: string,
 				documentId: string,

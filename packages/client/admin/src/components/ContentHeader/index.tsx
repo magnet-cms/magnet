@@ -34,6 +34,12 @@ interface MoreMenuItem {
 	variant?: 'destructive'
 }
 
+interface AutoSaveStatus {
+	isSaving: boolean
+	lastSaved: Date | null
+	error: Error | null
+}
+
 interface ContentHeaderProps {
 	// Base path for tab navigation (e.g., "/content-manager/cat/123")
 	basePath?: string
@@ -46,6 +52,8 @@ interface ContentHeaderProps {
 	onSave?: () => void
 	isSaving?: boolean
 	saveLabel?: string
+	// Auto-save status (optional - for Payload-style auto-save UI)
+	autoSaveStatus?: AutoSaveStatus
 	// Locale (optional)
 	localeProps?: LocaleProps
 	// More menu (optional)
@@ -62,6 +70,7 @@ export const ContentHeader = ({
 	onSave,
 	isSaving,
 	saveLabel = 'Save changes',
+	autoSaveStatus,
 	localeProps,
 	moreMenuItems,
 }: ContentHeaderProps) => {
@@ -114,8 +123,47 @@ export const ContentHeader = ({
 		(l) => l.code === localeProps.currentLocale,
 	)?.name
 
+	// Format auto-save status text (falls back to lastEdited if no save in current session)
+	const formatAutoSaveStatus = () => {
+		if (!autoSaveStatus) return null
+		if (autoSaveStatus.error) {
+			return (
+				<span className="text-xs text-destructive">
+					Save failed
+				</span>
+			)
+		}
+		if (autoSaveStatus.isSaving) {
+			return (
+				<span className="text-xs text-muted-foreground flex items-center gap-1.5">
+					<span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+					Saving...
+				</span>
+			)
+		}
+		if (autoSaveStatus.lastSaved) {
+			return (
+				<span className="text-xs text-muted-foreground">
+					Saved {formatDistanceToNow(autoSaveStatus.lastSaved, { addSuffix: true })}
+				</span>
+			)
+		}
+		// Fall back to lastEdited from document if no save in current session
+		if (lastEdited) {
+			return (
+				<span className="text-xs text-muted-foreground">
+					Saved {formatLastEdited(lastEdited)}
+				</span>
+			)
+		}
+		return null
+	}
+
+	// Get auto-save status content (memoized to check if we have content)
+	const autoSaveContent = autoSaveStatus ? formatAutoSaveStatus() : null
+
 	// Status badge content for portal
-	const statusContent = (status || lastEdited) && (
+	const statusContent = (status || lastEdited || autoSaveStatus) && (
 		<>
 			{status && (
 				<Badge
@@ -130,7 +178,13 @@ export const ContentHeader = ({
 					{status === 'published' ? 'Published' : 'Draft'}
 				</Badge>
 			)}
-			{lastEdited && (
+			{autoSaveContent && (
+				<>
+					<div className="h-4 w-px bg-border" />
+					{autoSaveContent}
+				</>
+			)}
+			{!autoSaveStatus && lastEdited && (
 				<>
 					<div className="h-4 w-px bg-border" />
 					<span className="text-xs text-muted-foreground">

@@ -72,6 +72,34 @@ export class ContentController {
 	}
 
 	/**
+	 * Create a new empty document (for immediate redirect flow)
+	 * POST /content/:schema/new
+	 * Body: { locale?, createdBy? }
+	 * Returns: { documentId: string }
+	 */
+	@Post(':schema/new')
+	async createEmpty(
+		@Param('schema') schema: string,
+		@Body() body?: {
+			locale?: string
+			createdBy?: string
+		},
+	) {
+		try {
+			const result = await this.contentService.create(schema, {}, {
+				locale: body?.locale,
+				createdBy: body?.createdBy,
+			})
+			return { documentId: result.documentId }
+		} catch (error) {
+			throw new HttpException(
+				error instanceof Error ? error.message : 'Failed to create document',
+				HttpStatus.BAD_REQUEST,
+			)
+		}
+	}
+
+	/**
 	 * Create a new document
 	 * POST /content/:schema
 	 * Body: { data, locale?, createdBy? }
