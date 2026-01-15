@@ -86,10 +86,14 @@ export class ContentController {
 		},
 	) {
 		try {
-			const result = await this.contentService.create(schema, {}, {
-				locale: body?.locale,
-				createdBy: body?.createdBy,
-			})
+			const result = await this.contentService.create(
+				schema,
+				{},
+				{
+					locale: body?.locale,
+					createdBy: body?.createdBy,
+				},
+			)
 			return { documentId: result.documentId }
 		} catch (error) {
 			throw new HttpException(

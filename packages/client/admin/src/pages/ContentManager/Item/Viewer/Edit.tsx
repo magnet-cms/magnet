@@ -203,9 +203,7 @@ const ContentManagerViewerEdit = () => {
 		return <Spinner />
 	}
 
-	const isMutating =
-		publishMutation.isPending ||
-		unpublishMutation.isPending
+	const isMutating = publishMutation.isPending || unpublishMutation.isPending
 
 	// Base path for tab navigation
 	const basePath = `/content-manager/${name.key}/${documentId}`
@@ -275,13 +273,15 @@ const ContentManagerViewerEdit = () => {
 			/>
 
 			{/* Info bar when editing published content (will create draft on save) */}
-			{hasVersioning && !currentLocaleStatus?.hasDraft && currentLocaleStatus?.hasPublished && (
-				<div className="px-6 py-2 border-b border-border bg-amber-50 dark:bg-amber-950/30 flex items-center gap-2">
-					<span className="text-xs text-amber-700 dark:text-amber-400">
-						Editing published content. Changes will be saved as a new draft.
-					</span>
-				</div>
-			)}
+			{hasVersioning &&
+				!currentLocaleStatus?.hasDraft &&
+				currentLocaleStatus?.hasPublished && (
+					<div className="px-6 py-2 border-b border-border bg-amber-50 dark:bg-amber-950/30 flex items-center gap-2">
+						<span className="text-xs text-amber-700 dark:text-amber-400">
+							Editing published content. Changes will be saved as a new draft.
+						</span>
+					</div>
+				)}
 
 			{/* Content form */}
 			<div className="flex-1 overflow-y-auto p-6">

@@ -20,7 +20,8 @@ export interface DocumentMetadata {
 /**
  * A complete document with content and metadata
  */
-export type Document<T = Record<string, any>> = T & DocumentMetadata & { id: string }
+export type Document<T = Record<string, any>> = T &
+	DocumentMetadata & { id: string }
 
 /**
  * Options for finding documents

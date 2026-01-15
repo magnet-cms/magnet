@@ -1,10 +1,8 @@
 import {
 	Button,
 	DataTable,
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger,
+	type DataTableColumn,
+	type DataTableRowAction,
 } from '@magnet/ui/components'
 import { Spinner } from '@magnet/ui/components'
 import {
@@ -16,7 +14,6 @@ import {
 	DialogTitle,
 } from '@magnet/ui/components'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Copy, Edit, Globe, MoreHorizontal, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -111,29 +108,34 @@ const ContentManagerList = () => {
 		)
 
 	// Get visible properties (only those with UI defined)
-	const visibleProperties = schemaMetadata?.properties?.filter(
-		(prop) => prop.ui && prop.name !== 'id',
-	) || []
+	const visibleProperties =
+		schemaMetadata?.properties?.filter(
+			(prop) => prop.ui && prop.name !== 'id',
+		) || []
 
-	// Transform items for the DataTable with an actions column
-	const tableColumns = [
+	// Transform items for the DataTable with typed columns
+	const tableColumns: DataTableColumn<ContentItem>[] = [
 		// Use schema properties with UI defined for columns
 		...(visibleProperties.length > 0
 			? visibleProperties.map((prop) => ({
+					type: 'text' as const,
 					accessorKey: prop.name,
-					header: prop.ui?.label ||
+					header:
+						prop.ui?.label ||
 						prop.name.charAt(0).toUpperCase() +
-						prop.name
-							.slice(1)
-							.replace(/([A-Z])/g, ' $1')
-							.trim(),
+							prop.name
+								.slice(1)
+								.replace(/([A-Z])/g, ' $1')
+								.trim(),
 				}))
 			: items && items.length > 0
 				? Object.keys(items[0] || {})
 						.filter(
-							(key) => key !== 'id' && key !== 'createdAt' && key !== 'updatedAt',
+							(key) =>
+								key !== 'id' && key !== 'createdAt' && key !== 'updatedAt',
 						)
 						.map((key) => ({
+							type: 'text' as const,
 							accessorKey: key,
 							header:
 								key.charAt(0).toUpperCase() +
@@ -143,57 +145,34 @@ const ContentManagerList = () => {
 									.trim(),
 						}))
 				: []),
+	]
 
-		// Actions column
+	// Define row actions for the DataTable
+	const rowActions: DataTableRowAction<ContentItem>[] = [
 		{
-			id: 'actions',
-			cell: ({ row }: { row: { original: ContentItem } }) => {
-				const item = row.original
-
-				return (
-					<DropdownMenu>
-						<DropdownMenuTrigger asChild>
-							<Button variant="ghost" className="h-8 w-8 p-0">
-								<span className="sr-only">Open menu</span>
-								<MoreHorizontal className="h-4 w-4" />
-							</Button>
-						</DropdownMenuTrigger>
-						<DropdownMenuContent align="end">
-							<DropdownMenuItem
-								onClick={() =>
-									navigate(`/content-manager/${name.key}/${item.documentId || item.id}`)
-								}
-							>
-								<Edit className="mr-2 h-4 w-4" />
-								<span>Edit</span>
-							</DropdownMenuItem>
-							{schemaOptions?.versioning !== false && (
-								<DropdownMenuItem onClick={() => duplicateMutation.mutate(item)}>
-									<Copy className="mr-2 h-4 w-4" />
-									<span>Duplicate</span>
-								</DropdownMenuItem>
-							)}
-							{schemaOptions?.versioning !== false && (
-								<DropdownMenuItem
-									onClick={() =>
-										navigate(`/content-manager/${name.key}/${item.documentId || item.id}/versions`)
-									}
-								>
-									<Globe className="mr-2 h-4 w-4" />
-									<span>Versions</span>
-								</DropdownMenuItem>
-							)}
-							<DropdownMenuItem
-								onClick={() => setItemToDelete(item)}
-								className="text-destructive focus:text-destructive"
-							>
-								<Trash2 className="mr-2 h-4 w-4" />
-								<span>Delete</span>
-							</DropdownMenuItem>
-						</DropdownMenuContent>
-					</DropdownMenu>
-				)
-			},
+			label: 'Edit',
+			onSelect: (item) =>
+				navigate(`/content-manager/${name.key}/${item.documentId || item.id}`),
+		},
+		...(schemaOptions?.versioning !== false
+			? [
+					{
+						label: 'Duplicate',
+						onSelect: (item: ContentItem) => duplicateMutation.mutate(item),
+					},
+					{
+						label: 'Versions',
+						onSelect: (item: ContentItem) =>
+							navigate(
+								`/content-manager/${name.key}/${item.documentId || item.id}/versions`,
+							),
+					},
+				]
+			: []),
+		{
+			label: 'Delete',
+			onSelect: (item) => setItemToDelete(item),
+			destructive: true,
 		},
 	]
 
@@ -212,9 +191,18 @@ const ContentManagerList = () => {
 			/>
 
 			<div className="flex-1 overflow-y-auto p-6">
-				<div className="rounded-md border">
-					<DataTable columns={tableColumns} data={items || []} />
-				</div>
+				<DataTable
+					columns={tableColumns}
+					data={items || []}
+					options={{
+						rowActions: {
+							items: rowActions,
+						},
+					}}
+					getRowId={(row) => row.documentId || row.id}
+					enablePagination
+					enableSorting
+				/>
 			</div>
 
 			{/* Delete confirmation dialog */}

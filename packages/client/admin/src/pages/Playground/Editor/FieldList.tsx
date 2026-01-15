@@ -1,3 +1,4 @@
+import type { UniqueIdentifier } from '@dnd-kit/core'
 import {
 	Sortable,
 	SortableContent,
@@ -66,10 +67,10 @@ export function FieldList({ onAddField }: FieldListProps) {
 						))}
 					</SortableContent>
 
-					<SortableOverlay>
-						{({ value }: { value: string }) => {
-							const field = state.fields.find((f) => f.id === value)
-							return field ? (
+				<SortableOverlay>
+					{({ value }: { value: UniqueIdentifier }) => {
+						const field = state.fields.find((f) => f.id === value)
+						return field ? (
 								<div className="bg-background border rounded-lg shadow-lg">
 									<FieldCard
 										field={field}

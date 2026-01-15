@@ -1,16 +1,11 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import {
-	createContext,
-	useContext,
-	useMemo,
-	type ReactNode,
-} from 'react'
+import { type ReactNode, createContext, useContext, useMemo } from 'react'
+import { createHttpAdapter } from '../adapters/http-adapter'
 import type {
 	MagnetApiAdapter,
 	MagnetConfig,
 	TokenStorage,
 } from '../adapters/types'
-import { createHttpAdapter } from '../adapters/http-adapter'
 import { createLegacyLocalStorage } from '../storage/localStorage'
 
 interface MagnetContextValue {
@@ -143,9 +138,7 @@ export function MagnetProvider({ config = {}, children }: MagnetProviderProps) {
 
 	return (
 		<MagnetContext.Provider value={contextValue}>
-			<QueryClientProvider client={queryClient}>
-				{children}
-			</QueryClientProvider>
+			<QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
 		</MagnetContext.Provider>
 	)
 }

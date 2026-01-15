@@ -17,7 +17,11 @@ export interface CookieStorageOptions {
 	setCookie: (
 		name: string,
 		value: string,
-		options?: { maxAge?: number; secure?: boolean; sameSite?: 'strict' | 'lax' | 'none' },
+		options?: {
+			maxAge?: number
+			secure?: boolean
+			sameSite?: 'strict' | 'lax' | 'none'
+		},
 	) => void
 
 	/**
@@ -59,7 +63,9 @@ export interface CookieStorageOptions {
  *   deleteCookie: (name) => cookies().delete(name),
  * })
  */
-export function createCookieStorage(options: CookieStorageOptions): TokenStorage {
+export function createCookieStorage(
+	options: CookieStorageOptions,
+): TokenStorage {
 	const {
 		prefix = 'magnet',
 		getCookie,

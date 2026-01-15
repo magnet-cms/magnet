@@ -53,59 +53,65 @@ export function useAutoSave({
 		}
 	}, [])
 
-	const performSave = useCallback(async (data: Record<string, unknown>) => {
-		if (!isMountedRef.current) return
+	const performSave = useCallback(
+		async (data: Record<string, unknown>) => {
+			if (!isMountedRef.current) return
 
-		// Run validation if trigger is provided
-		if (trigger) {
-			const isValid = await trigger()
-			if (!isValid) {
-				// Silent skip - validation errors shown inline
-				return
+			// Run validation if trigger is provided
+			if (trigger) {
+				const isValid = await trigger()
+				if (!isValid) {
+					// Silent skip - validation errors shown inline
+					return
+				}
 			}
-		}
 
-		setIsSaving(true)
-		setError(null)
+			setIsSaving(true)
+			setError(null)
 
-		try {
-			await adapter.content.update(schema, documentId, data, {
-				locale,
-				status: 'draft',
-			})
+			try {
+				await adapter.content.update(schema, documentId, data, {
+					locale,
+					status: 'draft',
+				})
 
-			if (isMountedRef.current) {
-				setLastSaved(new Date())
-				onSuccess?.()
+				if (isMountedRef.current) {
+					setLastSaved(new Date())
+					onSuccess?.()
+				}
+			} catch (err) {
+				if (isMountedRef.current) {
+					setError(err instanceof Error ? err : new Error('Failed to save'))
+				}
+			} finally {
+				if (isMountedRef.current) {
+					setIsSaving(false)
+				}
 			}
-		} catch (err) {
-			if (isMountedRef.current) {
-				setError(err instanceof Error ? err : new Error('Failed to save'))
+		},
+		[adapter, schema, documentId, locale, trigger, onSuccess],
+	)
+
+	const save = useCallback(
+		(data: Record<string, unknown>) => {
+			if (!enabled) return
+
+			latestDataRef.current = data
+
+			// Clear existing timeout
+			if (timeoutRef.current) {
+				clearTimeout(timeoutRef.current)
 			}
-		} finally {
-			if (isMountedRef.current) {
-				setIsSaving(false)
-			}
-		}
-	}, [adapter, schema, documentId, locale, trigger, onSuccess])
 
-	const save = useCallback((data: Record<string, unknown>) => {
-		if (!enabled) return
-
-		latestDataRef.current = data
-
-		// Clear existing timeout
-		if (timeoutRef.current) {
-			clearTimeout(timeoutRef.current)
-		}
-
-		// Set new debounced save
-		timeoutRef.current = setTimeout(() => {
-			if (latestDataRef.current) {
-				performSave(latestDataRef.current)
-			}
-		}, debounceMs)
-	}, [enabled, debounceMs, performSave])
+			// Set new debounced save
+			timeoutRef.current = setTimeout(() => {
+				if (latestDataRef.current) {
+					performSave(latestDataRef.current)
+				}
+			}, debounceMs)
+		},
+		[enabled, debounceMs, performSave],
+	)
 
 	const reset = useCallback(() => {
 		setLastSaved(null)

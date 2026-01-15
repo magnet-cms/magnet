@@ -35,6 +35,12 @@ export class DiscoveryService implements OnModuleInit {
 			.map((schema) => schema.name)
 	}
 
+	getAllDiscoveredSchemas(): SchemaMetadata[] {
+		return this.schemas.filter(
+			(schema) => !EXCLUDED_SCHEMAS.includes(schema.name.toLowerCase()),
+		)
+	}
+
 	getDiscoveredSchema(name: string): SchemaMetadata | { error: string } {
 		return (
 			this.schemas.find((schema) => schema.name === name) || {
@@ -46,6 +52,10 @@ export class DiscoveryService implements OnModuleInit {
 	getDiscoveredSettingsSchemas(): string[] {
 		// Return lowercase names to match URL conventions
 		return this.settingsSchemas.map((schema) => schema.name.toLowerCase())
+	}
+
+	getAllDiscoveredSettingsSchemas(): SchemaMetadata[] {
+		return this.settingsSchemas
 	}
 
 	getDiscoveredSettingsSchemaNames(): string[] {

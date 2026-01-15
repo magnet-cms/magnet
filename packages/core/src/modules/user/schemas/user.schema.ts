@@ -1,6 +1,12 @@
 import { Prop, Schema, UI, Validators } from '@magnet/common'
-import { IsEmail, IsNotEmpty, IsOptional, IsString, Length } from 'class-validator'
 import { hash } from 'bcryptjs'
+import {
+	IsEmail,
+	IsNotEmpty,
+	IsOptional,
+	IsString,
+	Length,
+} from 'class-validator'
 
 @Schema({ versioning: false, i18n: false })
 export class User {

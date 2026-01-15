@@ -1,7 +1,7 @@
-import { InitialConfig } from '@magnet/common'
-import { Injectable, Logger } from '@nestjs/common'
 import { existsSync } from 'node:fs'
 import { join, resolve } from 'node:path'
+import { InitialConfig } from '@magnet/common'
+import { Injectable, Logger } from '@nestjs/common'
 import type { NextFunction, Request, Response } from 'express'
 import { createProxyMiddleware } from 'http-proxy-middleware'
 import { DiscoveryService } from '../discovery/discovery.service'
@@ -10,8 +10,7 @@ import { SettingsService } from '../settings/settings.service'
 @Injectable()
 export class AdminService {
 	private readonly logger = new Logger(AdminService.name)
-	private readonly isDevelopment =
-		process.env.NODE_ENV !== 'production'
+	private readonly isDevelopment = process.env.NODE_ENV !== 'production'
 	private readonly adminDistPath: string
 
 	constructor(
@@ -22,8 +21,7 @@ export class AdminService {
 		// In production, it should be in node_modules/@magnet/admin/dist/client
 		// Or copied to a custom location via MAGNET_ADMIN_PATH env var
 		this.adminDistPath =
-			process.env.MAGNET_ADMIN_PATH ||
-			this.findAdminDistPath()
+			process.env.MAGNET_ADMIN_PATH || this.findAdminDistPath()
 
 		this.logger.log(
 			`Admin mode: ${this.isDevelopment ? 'development (proxy)' : 'production (static)'}`,
@@ -128,8 +126,8 @@ export class AdminService {
 	}
 
 	async getInitialConfig(): Promise<InitialConfig> {
-		const schemas = this.discoveryService.getDiscoveredSchemas()
-		const settings = this.discoveryService.getDiscoveredSettingsSchemas()
+		const schemas = this.discoveryService.getAllDiscoveredSchemas()
+		const settings = this.discoveryService.getAllDiscoveredSettingsSchemas()
 		const overview = await this.settingsService.getSettingsByGroup('overview')
 
 		const title = overview.find((setting) => setting.key === 'title')?.value

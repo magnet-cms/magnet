@@ -5,10 +5,7 @@ import { ContentController } from './content.controller'
 import { ContentService } from './content.service'
 
 @Module({
-	imports: [
-		forwardRef(() => DocumentModule),
-		forwardRef(() => HistoryModule),
-	],
+	imports: [forwardRef(() => DocumentModule), forwardRef(() => HistoryModule)],
 	controllers: [ContentController],
 	providers: [ContentService],
 	exports: [ContentService],

@@ -11,7 +11,9 @@ export interface LocalStorageOptions {
  * Creates a localStorage-based token storage
  * This is the default storage for browser-based SPAs
  */
-export function createLocalStorage(options?: LocalStorageOptions): TokenStorage {
+export function createLocalStorage(
+	options?: LocalStorageOptions,
+): TokenStorage {
 	const prefix = options?.prefix || 'magnet_auth'
 	const tokenKey = `${prefix}_token`
 	const refreshTokenKey = `${prefix}_refresh_token`

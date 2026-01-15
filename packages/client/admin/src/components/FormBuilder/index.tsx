@@ -171,7 +171,13 @@ export const FormBuilder = <T extends Record<string, unknown>>({
 
 						{/* Single tab - show as section */}
 						{tabs.length === 1 && (
-							<div className={fieldsWithoutTabs.length > 0 ? 'border-t border-border pt-8' : ''}>
+							<div
+								className={
+									fieldsWithoutTabs.length > 0
+										? 'border-t border-border pt-8'
+										: ''
+								}
+							>
 								<h3 className="text-base font-semibold mb-6">{tabs[0]}</h3>
 								<div className="space-y-6">
 									{tabs[0] && renderMainRows(groupedProperties[tabs[0]] || [])}
@@ -181,7 +187,13 @@ export const FormBuilder = <T extends Record<string, unknown>>({
 
 						{/* Multiple tabs */}
 						{tabs.length > 1 && (
-							<div className={fieldsWithoutTabs.length > 0 ? 'border-t border-border pt-8' : ''}>
+							<div
+								className={
+									fieldsWithoutTabs.length > 0
+										? 'border-t border-border pt-8'
+										: ''
+								}
+							>
 								<Tabs value={activeTab} onValueChange={setActiveTab}>
 									<TabsList>
 										{tabs.map((tab) => (

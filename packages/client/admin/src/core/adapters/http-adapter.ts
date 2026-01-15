@@ -1,3 +1,4 @@
+import type { ControllerMetadata, SchemaMetadata } from '@magnet/common'
 import type {
 	ApiRequestConfig,
 	AuthStatus,
@@ -22,7 +23,6 @@ import type {
 	VersionDetails,
 	VersionInfo,
 } from './types'
-import type { ControllerMetadata, SchemaMetadata } from '@magnet/common'
 
 export interface HttpAdapterConfig {
 	baseUrl: string
@@ -387,16 +387,24 @@ export function createHttpAdapter(config: HttpAdapterConfig): MagnetApiAdapter {
 				]
 
 				// Fetch from internationalization settings group
-				const settings = await request<Array<{ key: string; value: unknown }>>('/settings/internationalization')
-				const localesSetting = settings.find(s => s.key === 'locales')
-				const defaultLocaleSetting = settings.find(s => s.key === 'defaultLocale')
+				const settings = await request<Array<{ key: string; value: unknown }>>(
+					'/settings/internationalization',
+				)
+				const localesSetting = settings.find((s) => s.key === 'locales')
+				const defaultLocaleSetting = settings.find(
+					(s) => s.key === 'defaultLocale',
+				)
 
-				const configured = Array.isArray(localesSetting?.value) && localesSetting.value.length > 0
-					? localesSetting.value as string[]
-					: ['en']
-				const defaultLocale = typeof defaultLocaleSetting?.value === 'string' && defaultLocaleSetting.value
-					? defaultLocaleSetting.value
-					: configured[0] ?? 'en'
+				const configured =
+					Array.isArray(localesSetting?.value) &&
+					localesSetting.value.length > 0
+						? (localesSetting.value as string[])
+						: ['en']
+				const defaultLocale =
+					typeof defaultLocaleSetting?.value === 'string' &&
+					defaultLocaleSetting.value
+						? defaultLocaleSetting.value
+						: (configured[0] ?? 'en')
 
 				return {
 					available: availableLocales,
@@ -460,10 +468,13 @@ export function createHttpAdapter(config: HttpAdapterConfig): MagnetApiAdapter {
 				name: string,
 				data: PlaygroundCreateSchemaDto,
 			): Promise<PlaygroundUpdateSchemaResponse> {
-				return request<PlaygroundUpdateSchemaResponse>(`/playground/schemas/${name}`, {
-					method: 'PUT',
-					body: data,
-				})
+				return request<PlaygroundUpdateSchemaResponse>(
+					`/playground/schemas/${name}`,
+					{
+						method: 'PUT',
+						body: data,
+					},
+				)
 			},
 
 			async deleteSchema(name: string): Promise<{ success: boolean }> {

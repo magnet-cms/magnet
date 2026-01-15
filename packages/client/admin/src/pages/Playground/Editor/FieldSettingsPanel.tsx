@@ -304,8 +304,8 @@ export function FieldSettingsPanel() {
 						<div className="space-y-4">
 							<h3 className="text-xs font-medium">Select Options</h3>
 
-							{(selectedField.ui.options || []).map((option, index) => (
-								<div key={index} className="flex items-center gap-2">
+						{(selectedField.ui.options || []).map((option, index) => (
+							<div key={option.key || `option-${index}`} className="flex items-center gap-2">
 									<Input
 										value={option.key}
 										onChange={(e) => {
@@ -467,7 +467,7 @@ export function FieldSettingsPanel() {
 										{Array.from({ length: ruleDef.constraintCount }).map(
 											(_, i) => (
 												<Input
-													key={i}
+													key={`${validation.type}-constraint-${i}`}
 													type={
 														validation.type.includes('Length') ||
 														validation.type.includes('Min') ||

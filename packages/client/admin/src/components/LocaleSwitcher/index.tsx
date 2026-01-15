@@ -41,7 +41,9 @@ export const LocaleSwitcher = ({
 
 	// Get available locales (ones that have content)
 	const availableLocales = locales.filter(
-		(l) => localeStatuses?.[l.code]?.hasDraft || localeStatuses?.[l.code]?.hasPublished,
+		(l) =>
+			localeStatuses?.[l.code]?.hasDraft ||
+			localeStatuses?.[l.code]?.hasPublished,
 	)
 
 	// Get missing locales (ones that can be added)
@@ -114,9 +116,7 @@ export const LocaleSwitcher = ({
 									{locale.code === currentLocale && (
 										<Check className="h-4 w-4" />
 									)}
-									{locale.code !== currentLocale && (
-										<span className="w-4" />
-									)}
+									{locale.code !== currentLocale && <span className="w-4" />}
 									{locale.name}
 								</span>
 								{getStatusBadge(locale.code)}

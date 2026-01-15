@@ -93,27 +93,21 @@ export type {
 	// Config
 	MagnetConfig,
 	RouterType,
-
 	// API Request/Response
 	ApiRequestConfig,
-
 	// Token Storage
 	TokenStorage,
-
 	// Main Adapter Interface
 	MagnetApiAdapter,
-
 	// Auth Types
 	LoginCredentials,
 	RegisterCredentials,
 	AuthTokens,
 	AuthUser,
 	AuthStatus,
-
 	// Discovery Types
 	SchemaMetadata,
 	ControllerMetadata,
-
 	// History Types
 	VersionInfo,
 } from './core/adapters/types'

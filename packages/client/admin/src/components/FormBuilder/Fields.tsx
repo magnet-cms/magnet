@@ -181,5 +181,6 @@ export const fieldRenderer: Record<
 			description={prop.ui?.description}
 		/>
 	),
+	table: (_prop: SchemaProperty) => <div>table</div>,
 	upload: (_prop) => <div>upload</div>,
 }

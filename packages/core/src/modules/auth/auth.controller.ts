@@ -4,12 +4,15 @@ import {
 	Controller,
 	Get,
 	Post,
+	Put,
 	Request,
 	UseGuards,
 } from '@nestjs/common'
 import { AuthService } from './auth.service'
 
+import { ChangePasswordDto } from './dto/change-password.dto'
 import { RegisterDTO } from './dto/register.dto'
+import { UpdateProfileDto } from './dto/update-profile.dto'
 import { JwtAuthGuard } from './guards/jwt-auth.guard'
 
 interface AuthenticatedUser {
@@ -38,8 +41,8 @@ export class AuthController {
 
 	@UseGuards(JwtAuthGuard)
 	@Get('me')
-	me(@Request() req: { user: AuthenticatedUser }) {
-		return req.user
+	async me(@Request() req: { user: AuthenticatedUser }) {
+		return this.authService.getUserById(req.user.id)
 	}
 
 	@Get('status')
@@ -57,5 +60,23 @@ export class AuthController {
 				? 'Authentication required.'
 				: 'No users found. Initial setup required.',
 		}
+	}
+
+	@UseGuards(JwtAuthGuard)
+	@Put('account/profile')
+	async updateProfile(
+		@Request() req: { user: AuthenticatedUser },
+		@Body() updateProfileDto: UpdateProfileDto,
+	) {
+		return this.authService.updateProfile(req.user.id, updateProfileDto)
+	}
+
+	@UseGuards(JwtAuthGuard)
+	@Put('account/password')
+	async changePassword(
+		@Request() req: { user: AuthenticatedUser },
+		@Body() changePasswordDto: ChangePasswordDto,
+	) {
+		return this.authService.changePassword(req.user.id, changePasswordDto)
 	}
 }

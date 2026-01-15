@@ -1,7 +1,6 @@
 import {
 	Avatar,
 	AvatarFallback,
-	AvatarImage,
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuGroup,
@@ -14,25 +13,38 @@ import {
 	SidebarMenuItem,
 	useSidebar,
 } from '@magnet/ui/components'
-import {
-	BadgeCheck,
-	Bell,
-	ChevronsUpDown,
-	CreditCard,
-	LogOut,
-	Sparkles,
-} from 'lucide-react'
+import { BadgeCheck, Bell, ChevronsUpDown, LogOut } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { useNotifications } from '~/contexts/NotificationsContext'
+import { useAuth } from '~/hooks/useAuth'
 
-export const NavUser = ({
-	user,
-}: {
-	user: {
-		name: string
-		email: string
-		avatar: string
-	}
-}) => {
+export const NavUser = () => {
 	const { isMobile } = useSidebar()
+	const { user, logout } = useAuth()
+	const { open: openNotifications } = useNotifications()
+	const navigate = useNavigate()
+
+	const handleLogout = async () => {
+		await logout()
+		navigate('/auth')
+	}
+
+	const handleAccountClick = () => {
+		navigate('/account')
+	}
+
+	const getInitials = (name: string) => {
+		return name
+			.split(' ')
+			.map((n) => n[0])
+			.join('')
+			.toUpperCase()
+			.slice(0, 2)
+	}
+
+	if (!user) {
+		return null
+	}
 
 	return (
 		<SidebarMenu>
@@ -44,8 +56,9 @@ export const NavUser = ({
 							className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
 						>
 							<Avatar className="h-8 w-8 rounded-lg">
-								<AvatarImage src={user.avatar} alt={user.name} />
-								<AvatarFallback className="rounded-lg">CN</AvatarFallback>
+								<AvatarFallback className="rounded-lg">
+									{getInitials(user.name)}
+								</AvatarFallback>
 							</Avatar>
 							<div className="grid flex-1 text-left text-sm leading-tight">
 								<span className="truncate font-semibold">{user.name}</span>
@@ -63,8 +76,9 @@ export const NavUser = ({
 						<DropdownMenuLabel className="p-0 font-normal">
 							<div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
 								<Avatar className="h-8 w-8 rounded-lg">
-									<AvatarImage src={user.avatar} alt={user.name} />
-									<AvatarFallback className="rounded-lg">CN</AvatarFallback>
+									<AvatarFallback className="rounded-lg">
+										{getInitials(user.name)}
+									</AvatarFallback>
 								</Avatar>
 								<div className="grid flex-1 text-left text-sm leading-tight">
 									<span className="truncate font-semibold">{user.name}</span>
@@ -74,28 +88,17 @@ export const NavUser = ({
 						</DropdownMenuLabel>
 						<DropdownMenuSeparator />
 						<DropdownMenuGroup>
-							<DropdownMenuItem>
-								<Sparkles />
-								Upgrade to Pro
-							</DropdownMenuItem>
-						</DropdownMenuGroup>
-						<DropdownMenuSeparator />
-						<DropdownMenuGroup>
-							<DropdownMenuItem>
+							<DropdownMenuItem onClick={handleAccountClick}>
 								<BadgeCheck />
 								Account
 							</DropdownMenuItem>
-							<DropdownMenuItem>
-								<CreditCard />
-								Billing
-							</DropdownMenuItem>
-							<DropdownMenuItem>
+							<DropdownMenuItem onClick={openNotifications}>
 								<Bell />
 								Notifications
 							</DropdownMenuItem>
 						</DropdownMenuGroup>
 						<DropdownMenuSeparator />
-						<DropdownMenuItem>
+						<DropdownMenuItem onClick={handleLogout}>
 							<LogOut />
 							Log out
 						</DropdownMenuItem>

@@ -21,6 +21,7 @@ export type UITypes =
 	| 'richText'
 	| 'select'
 	| 'switch'
+	| 'table'
 	| 'text'
 	| 'textarea'
 	| 'upload'
@@ -66,4 +67,21 @@ export type UICombobox = UIBase & {
 	options: UISelectItem[]
 }
 
-export type UIDecoratorOptions = UITab | UISide | UISelect | UIMultiSelect | UICombobox
+export type UITableColumn = {
+	key: string
+	header: string
+	type?: 'text' | 'badge' | 'status' | 'input' | 'code'
+}
+
+export type UITable = UIBase & {
+	type: 'table'
+	columns?: UITableColumn[]
+}
+
+export type UIDecoratorOptions =
+	| UITab
+	| UISide
+	| UISelect
+	| UIMultiSelect
+	| UICombobox
+	| UITable

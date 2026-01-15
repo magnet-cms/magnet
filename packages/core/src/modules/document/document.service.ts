@@ -106,22 +106,30 @@ export class DocumentService {
 
 		// If both locale and status are specified, return single document
 		if (options.locale && options.status) {
-			let doc = await model.findOne(query as unknown as Partial<T & { id: string }>)
+			let doc = await model.findOne(
+				query as unknown as Partial<T & { id: string }>,
+			)
 
 			// Fallback: try finding by id for schemas without i18n/versioning
 			if (!doc) {
-				doc = await model.findOne({ id: documentId } as unknown as Partial<T & { id: string }>)
+				doc = await model.findOne({ id: documentId } as unknown as Partial<
+					T & { id: string }
+				>)
 			}
 
 			return doc as unknown as Document<T> | null
 		}
 
 		// Otherwise return all matching documents
-		let docs = await model.findMany(query as unknown as Partial<T & { id: string }>)
+		let docs = await model.findMany(
+			query as unknown as Partial<T & { id: string }>,
+		)
 
 		// Fallback: try finding by id for schemas without i18n/versioning
 		if ((!docs || docs.length === 0) && !options.locale && !options.status) {
-			const doc = await model.findOne({ id: documentId } as unknown as Partial<T & { id: string }>)
+			const doc = await model.findOne({ id: documentId } as unknown as Partial<
+				T & { id: string }
+			>)
 			if (doc) {
 				docs = [doc]
 			}
@@ -179,7 +187,9 @@ export class DocumentService {
 			query.status = options.status
 		}
 
-		const docs = await model.findMany(query as unknown as Partial<T & { id: string }>)
+		const docs = await model.findMany(
+			query as unknown as Partial<T & { id: string }>,
+		)
 		return docs as unknown as Document<T>[]
 	}
 
@@ -368,7 +378,9 @@ export class DocumentService {
 
 		// Delete each document row
 		for (const doc of docs) {
-			await model.delete({ id: doc.id } as unknown as Partial<T & { id: string }>)
+			await model.delete({ id: doc.id } as unknown as Partial<
+				T & { id: string }
+			>)
 		}
 
 		return true

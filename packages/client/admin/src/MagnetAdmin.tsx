@@ -1,6 +1,3 @@
-import { MagnetProvider } from './core/provider/MagnetProvider'
-import { MagnetRouter } from './core/router/MagnetRouter'
-import { routes } from './routes/index.tsx'
 import type { QueryClient } from '@tanstack/react-query'
 import type {
 	MagnetApiAdapter,
@@ -8,6 +5,9 @@ import type {
 	RouterType,
 	TokenStorage,
 } from './core/adapters/types'
+import { MagnetProvider } from './core/provider/MagnetProvider'
+import { MagnetRouter } from './core/router/MagnetRouter'
+import { routes } from './routes/index.tsx'
 
 export interface MagnetAdminProps {
 	/**

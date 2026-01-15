@@ -1,12 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useState } from 'react'
-import { useAdapter, useTokenStorage } from '~/core/provider/MagnetProvider'
 import type {
 	AuthStatus,
 	AuthUser,
 	LoginCredentials,
 	RegisterCredentials,
 } from '~/core/adapters/types'
+import { useAdapter, useTokenStorage } from '~/core/provider/MagnetProvider'
 
 // Query Keys
 export const AUTH_ME_KEY = ['auth', 'me']

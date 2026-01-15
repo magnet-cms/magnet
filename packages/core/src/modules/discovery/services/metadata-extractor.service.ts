@@ -1,13 +1,13 @@
 import {
 	ControllerMetadata,
 	DESIGN_TYPE,
-	getSchemaOptions,
 	MethodMetadata,
 	PROP_METADATA_KEY,
 	RESOLVE_METADATA_KEY,
 	SchemaMetadata,
 	UIFieldMetadata,
 	UI_METADATA_KEY,
+	getSchemaOptions,
 } from '@magnet/common'
 import { Injectable, RequestMethod, Type } from '@nestjs/common'
 import {

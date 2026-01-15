@@ -296,7 +296,9 @@ export interface MagnetApiAdapter {
 	playground: {
 		listSchemas(): Promise<PlaygroundSchemaListItem[]>
 		getSchema(name: string): Promise<PlaygroundSchemaDetail>
-		createSchema(data: PlaygroundCreateSchemaDto): Promise<PlaygroundCreateModuleResponse>
+		createSchema(
+			data: PlaygroundCreateSchemaDto,
+		): Promise<PlaygroundCreateModuleResponse>
 		updateSchema(
 			name: string,
 			data: PlaygroundCreateSchemaDto,

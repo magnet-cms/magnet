@@ -142,7 +142,10 @@ export class SettingsService implements OnModuleInit {
 
 			if (existingSetting) {
 				// Only update type/group if changed, but preserve user's value
-				if (existingSetting.type !== setting.type || existingSetting.group !== group) {
+				if (
+					existingSetting.type !== setting.type ||
+					existingSetting.group !== group
+				) {
 					await this.settingModel.update(
 						{ key: setting.key },
 						{ type: setting.type, group },

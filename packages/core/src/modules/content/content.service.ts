@@ -2,7 +2,6 @@ import { Model } from '@magnet/common'
 import { Injectable } from '@nestjs/common'
 import { ModuleRef } from '@nestjs/core'
 import { DocumentService } from '~/modules/document/document.service'
-import { HistoryService } from '~/modules/history/history.service'
 import type {
 	CreateDocumentOptions,
 	FindDocumentOptions,
@@ -10,6 +9,7 @@ import type {
 	PublishDocumentOptions,
 	UpdateDocumentOptions,
 } from '~/modules/document/document.types'
+import { HistoryService } from '~/modules/history/history.service'
 
 @Injectable()
 export class ContentService {
@@ -31,7 +31,9 @@ export class ContentService {
 		try {
 			return this.moduleRef.get<Model<T>>(token, { strict: false })
 		} catch {
-			throw new Error(`Model '${schemaName}' not found. Make sure it's registered.`)
+			throw new Error(
+				`Model '${schemaName}' not found. Make sure it's registered.`,
+			)
 		}
 	}
 

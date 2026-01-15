@@ -111,8 +111,8 @@ export function SchemaPlaygroundEditor() {
 
 	// If editing existing schema, transform metadata to builder state
 	const initialState =
-		!isNewSchema && schemaMetadata
-			? schemaMetadataToBuilderState(schemaName!, schemaMetadata)
+		!isNewSchema && schemaMetadata && schemaName && schemaName !== 'new'
+			? schemaMetadataToBuilderState(schemaName, schemaMetadata)
 			: { ...DEFAULT_BUILDER_STATE, isNew: true }
 
 	return (
@@ -246,9 +246,9 @@ function SchemaEditorInner() {
 								<div className="p-3 bg-blue-50 border border-blue-100 rounded-lg flex items-start gap-3">
 									<Info className="h-4 w-4 text-blue-500 mt-0.5 shrink-0" />
 									<div className="text-xs text-blue-900">
-										<span className="font-medium">Schema Guidelines:</span>{' '}
-										Keep field names in camelCase for better compatibility.
-										Changes here will generate TypeScript code with decorators.
+										<span className="font-medium">Schema Guidelines:</span> Keep
+										field names in camelCase for better compatibility. Changes
+										here will generate TypeScript code with decorators.
 									</div>
 								</div>
 

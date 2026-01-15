@@ -8,6 +8,7 @@ import { AuthModule } from './modules/auth/auth.module'
 import { ContentModule } from './modules/content/content.module'
 import { DatabaseModule } from './modules/database/database.module'
 import { DocumentModule } from './modules/document/document.module'
+import { EnvironmentModule } from './modules/environment/environment.module'
 import { HealthModule } from './modules/health/health.module'
 import { HistoryModule } from './modules/history/history.module'
 import { PlaygroundModule } from './modules/playground/playground.module'
@@ -31,6 +32,7 @@ export class MagnetModule {
 				DBModule,
 				DiscoveryModule,
 				DocumentModule,
+				EnvironmentModule,
 				HistoryModule,
 				HealthModule,
 				PlaygroundModule,

@@ -33,32 +33,32 @@ export const useSettings = () => {
 	})
 }
 
-export const useSchema = (name: string) => {
+export const useSchema = (name: string | undefined) => {
 	const adapter = useAdapter()
 
 	return useQuery<SchemaMetadata | { error: string }, Error>({
 		queryKey: [...SCHEMAS_KEY, name],
-		queryFn: () => adapter.discovery.getSchema(name),
+		queryFn: () => adapter.discovery.getSchema(name as string),
 		enabled: !!name,
 	})
 }
 
-export const useSetting = (name: string) => {
+export const useSetting = (name: string | undefined) => {
 	const adapter = useAdapter()
 
 	return useQuery<SchemaMetadata | { error: string }, Error>({
 		queryKey: [...SETTINGS_KEY, name],
-		queryFn: () => adapter.discovery.getSetting(name),
+		queryFn: () => adapter.discovery.getSetting(name as string),
 		enabled: !!name,
 	})
 }
 
-export const useController = (name: string) => {
+export const useController = (name: string | undefined) => {
 	const adapter = useAdapter()
 
 	return useQuery<ControllerMetadata | { error: string }, Error>({
 		queryKey: [...CONTROLLERS_KEY, name],
-		queryFn: () => adapter.discovery.getController(name),
+		queryFn: () => adapter.discovery.getController(name as string),
 		enabled: !!name,
 	})
 }

@@ -1,10 +1,10 @@
+import { useMemo } from 'react'
 import {
+	RouterProvider,
 	createBrowserRouter,
 	createHashRouter,
 	createMemoryRouter,
-	RouterProvider,
 } from 'react-router-dom'
-import { useMemo } from 'react'
 import type { RouteObject } from 'react-router-dom'
 import type { RouterType } from '../adapters/types'
 

@@ -6,35 +6,12 @@ import {
 	SidebarRail,
 } from '@magnet/ui/components'
 import { names } from '@magnet/utils'
-import {
-	AudioWaveform,
-	Boxes,
-	BookOpen,
-	Command,
-	Database,
-	GalleryVerticalEnd,
-	Settings2,
-} from 'lucide-react'
+import { Boxes, Database, Settings2 } from 'lucide-react'
 import * as React from 'react'
 import { useAdmin } from '~/contexts/useAdmin'
 import { EnvSwitcher } from './EnvSwitcher'
 import { NavMain } from './NavMain'
-import { NavProjects } from './NavProjects'
 import { NavUser } from './NavUser'
-
-const staticData = {
-	user: {
-		name: 'shadcn',
-		email: 'm@example.com',
-		avatar: '/avatars/shadcn.jpg',
-	},
-	environments: [
-		{ name: 'Development', logo: GalleryVerticalEnd, plan: 'Enterprise' },
-		{ name: 'Homologation', logo: AudioWaveform, plan: 'Startup' },
-		{ name: 'Production', logo: Command, plan: 'Free' },
-	],
-	projects: [{ name: 'Documentation', url: '/', icon: BookOpen }],
-}
 
 export const AppSidebar = ({
 	...props
@@ -49,13 +26,16 @@ export const AppSidebar = ({
 		}
 	}) || [{ title: 'No Content Available', url: '/' }]
 
-	const settingsItems = settings?.map((item: string) => {
-		const name = names(item)
-		return {
-			title: name.title,
-			url: `/settings/${name.key}`,
-		}
-	}) || [{ title: 'No Settings Available', url: '/' }]
+	const settingsItems = [
+		{ title: 'Environments', url: '/settings/environments' },
+		...(settings?.map((item: string) => {
+			const name = names(item)
+			return {
+				title: name.title,
+				url: `/settings/${name.key}`,
+			}
+		}) || []),
+	]
 
 	const sidebarMenus = [
 		{
@@ -89,14 +69,13 @@ export const AppSidebar = ({
 	return (
 		<Sidebar collapsible="icon" {...props}>
 			<SidebarHeader>
-				<EnvSwitcher environments={staticData.environments} />
+				<EnvSwitcher />
 			</SidebarHeader>
 			<SidebarContent>
 				<NavMain items={sidebarMenus} />
-				<NavProjects projects={staticData.projects} />
 			</SidebarContent>
 			<SidebarFooter>
-				<NavUser user={staticData.user} />
+				<NavUser />
 			</SidebarFooter>
 			<SidebarRail />
 		</Sidebar>
