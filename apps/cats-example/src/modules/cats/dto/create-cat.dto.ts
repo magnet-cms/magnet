@@ -2,7 +2,6 @@ import { Type } from 'class-transformer'
 import {
 	IsBoolean,
 	IsDate,
-	IsInt,
 	IsNotEmpty,
 	IsNumber,
 	IsPhoneNumber,
@@ -22,12 +21,6 @@ export class CreateCatDto {
 	@Length(2, 255)
 	@IsNotEmpty()
 	name: string
-
-	@IsInt()
-	@Min(0)
-	@Max(30)
-	@IsNotEmpty()
-	age: number
 
 	@Type(() => Date)
 	@IsDate()
