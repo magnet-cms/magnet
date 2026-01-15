@@ -202,7 +202,7 @@ export function createHttpAdapter(config: HttpAdapterConfig): MagnetApiAdapter {
 				schema: string,
 				data: Partial<T>,
 			): Promise<T> {
-				return request<T>(`/${schema}`, {
+				return request<T>(`/${schema}s`, {
 					method: 'POST',
 					body: data,
 				})
@@ -214,7 +214,7 @@ export function createHttpAdapter(config: HttpAdapterConfig): MagnetApiAdapter {
 				data: Partial<T>,
 				options?: ContentQueryOptions,
 			): Promise<T> {
-				const url = buildUrl(`/${schema}/${id}`, {
+				const url = buildUrl(`/${schema}s/${id}`, {
 					locale: options?.locale,
 					version: options?.version,
 				})
@@ -225,7 +225,7 @@ export function createHttpAdapter(config: HttpAdapterConfig): MagnetApiAdapter {
 			},
 
 			async delete(schema: string, id: string): Promise<void> {
-				await request(`/${schema}/${id}`, {
+				await request(`/${schema}s/${id}`, {
 					method: 'DELETE',
 				})
 			},
