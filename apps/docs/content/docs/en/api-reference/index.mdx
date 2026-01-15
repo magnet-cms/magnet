@@ -1,0 +1,118 @@
+---
+title: API Reference
+description: Complete API documentation
+---
+
+# API Reference
+
+This section provides complete API documentation for all Magnet packages.
+
+## REST API
+
+The admin module exposes a REST API for content management.
+
+### Authentication
+
+#### POST /admin/api/auth/login
+
+Login and get JWT token.
+
+**Request:**
+```json
+{
+  "email": "admin@example.com",
+  "password": "password"
+}
+```
+
+**Response:**
+```json
+{
+  "token": "eyJhbGc...",
+  "user": {
+    "id": "...",
+    "email": "admin@example.com"
+  }
+}
+```
+
+### Schemas
+
+#### GET /admin/api/schemas
+
+List all registered schemas.
+
+**Response:**
+```json
+{
+  "schemas": [
+    {
+      "name": "Post",
+      "collection": "posts",
+      "displayName": "Blog Posts"
+    }
+  ]
+}
+```
+
+#### GET /admin/api/schemas/:name
+
+Get schema metadata.
+
+**Response:**
+```json
+{
+  "name": "Post",
+  "collection": "posts",
+  "displayName": "Blog Posts",
+  "fields": [...]
+}
+```
+
+### Content
+
+#### GET /admin/api/content/:schema
+
+List content items.
+
+**Query Parameters:**
+- `page` - Page number (default: 1)
+- `limit` - Items per page (default: 20)
+- `sort` - Sort field (prefix with `-` for descending)
+- `filter` - JSON filter object
+
+**Response:**
+```json
+{
+  "data": [...],
+  "total": 100,
+  "page": 1,
+  "pageSize": 20
+}
+```
+
+#### GET /admin/api/content/:schema/:id
+
+Get single content item.
+
+#### POST /admin/api/content/:schema
+
+Create content item.
+
+#### PUT /admin/api/content/:schema/:id
+
+Update content item.
+
+#### DELETE /admin/api/content/:schema/:id
+
+Delete content item.
+
+## Package APIs
+
+For detailed API documentation of each package, see:
+
+- [@magnet/core](/docs/core)
+- [@magnet/common](/docs/common)
+- [@magnet/adapter-mongoose](/docs/adapters/mongoose)
+- [@magnet/admin](/docs/client/admin)
+- [@magnet/ui](/docs/client/ui)

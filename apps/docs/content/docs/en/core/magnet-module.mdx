@@ -1,0 +1,130 @@
+---
+title: Magnet Module
+description: Main module configuration and options
+---
+
+# Magnet Module
+
+The `MagnetModule` is the entry point for Magnet functionality in your NestJS application.
+
+## forRoot Configuration
+
+```ts
+import { MagnetModule } from '@magnet/core'
+
+MagnetModule.forRoot({
+  adapter: adapter,       // Required: Database adapter
+  schemas: [],            // Optional: Schema classes
+  plugins: [],            // Optional: Plugins
+  admin: {},              // Optional: Admin config
+  auth: {},               // Optional: Auth config
+})
+```
+
+## forRootAsync Configuration
+
+For dynamic configuration:
+
+```ts
+import { MagnetModule } from '@magnet/core'
+import { ConfigModule, ConfigService } from '@nestjs/config'
+
+MagnetModule.forRootAsync({
+  imports: [ConfigModule],
+  useFactory: (config: ConfigService) => ({
+    adapter: new MongooseAdapter({
+      uri: config.get('MONGODB_URI'),
+    }),
+  }),
+  inject: [ConfigService],
+})
+```
+
+## Configuration Options
+
+### adapter (required)
+
+The database adapter instance:
+
+```ts
+import { MongooseAdapter } from '@magnet/adapter-mongoose'
+
+{
+  adapter: new MongooseAdapter({
+    uri: 'mongodb://localhost:27017/magnet',
+  }),
+}
+```
+
+### schemas
+
+Array of schema classes to register:
+
+```ts
+{
+  schemas: [Post, Category, User],
+}
+```
+
+### plugins
+
+Array of plugin instances:
+
+```ts
+import { ContentBuilderPlugin } from '@magnet/plugin-content-builder'
+
+{
+  plugins: [new ContentBuilderPlugin()],
+}
+```
+
+### admin
+
+Admin UI configuration:
+
+```ts
+{
+  admin: {
+    enabled: true,
+    basePath: '/admin',
+  },
+}
+```
+
+### auth
+
+Authentication configuration:
+
+```ts
+{
+  auth: {
+    enabled: true,
+    jwtSecret: process.env.JWT_SECRET,
+    jwtExpiresIn: '7d',
+  },
+}
+```
+
+## Exported Services
+
+The module exports several services for use in your application:
+
+- `MagnetService` - Core orchestration service
+- `AdminService` - Admin operations
+- `AuthService` - Authentication operations
+- `ContentService` - Content CRUD operations
+- `DiscoveryService` - Schema discovery
+
+```ts
+import { Injectable } from '@nestjs/common'
+import { ContentService } from '@magnet/core'
+
+@Injectable()
+export class MyService {
+  constructor(private contentService: ContentService) {}
+
+  async getPosts() {
+    return this.contentService.findAll('posts')
+  }
+}
+```

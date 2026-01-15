@@ -42,21 +42,24 @@ export const FormBuilder = <T extends Record<string, unknown>>({
 	const groupedProperties: Record<string, SchemaProperty[]> = {}
 	const sidePanelFields: SchemaProperty[] = []
 
-	schema.properties.forEach((prop) => {
-		if ((prop.ui as UISide)?.side) {
-			sidePanelFields.push(prop)
-		} else {
-			const tab = (prop.ui as UITab)?.tab
-			if (!tab) {
-				fieldsWithoutTabs.push(prop)
+	// Only process properties that have UI defined (skip hidden fields like password)
+	schema.properties
+		.filter((prop) => prop.ui !== undefined && prop.ui !== null)
+		.forEach((prop) => {
+			if ((prop.ui as UISide)?.side) {
+				sidePanelFields.push(prop)
 			} else {
-				if (!groupedProperties[tab]) {
-					groupedProperties[tab] = []
+				const tab = (prop.ui as UITab)?.tab
+				if (!tab) {
+					fieldsWithoutTabs.push(prop)
+				} else {
+					if (!groupedProperties[tab]) {
+						groupedProperties[tab] = []
+					}
+					groupedProperties[tab].push(prop)
 				}
-				groupedProperties[tab].push(prop)
 			}
-		}
-	})
+		})
 
 	const tabs = Object.keys(groupedProperties)
 	const [activeTab, setActiveTab] = useState<string>(

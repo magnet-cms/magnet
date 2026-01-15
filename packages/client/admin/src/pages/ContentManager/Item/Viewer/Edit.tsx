@@ -1,7 +1,7 @@
 import { SchemaMetadata } from '@magnet/common'
 import { Button, Separator, Spinner } from '@magnet/ui/components'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { FormBuilder } from '~/components/FormBuilder'
@@ -11,15 +11,6 @@ import { StatusIndicator } from '~/components/StatusIndicator'
 import { useAdapter } from '~/core/provider/MagnetProvider'
 import { useContentManager } from '~/hooks/useContentManager'
 import type { ContentData, LocaleStatus } from '~/core/adapters/types'
-
-// Default locales - should be fetched from settings
-const DEFAULT_LOCALES: LocaleOption[] = [
-	{ code: 'en', name: 'English' },
-	{ code: 'es', name: 'Spanish' },
-	{ code: 'fr', name: 'French' },
-	{ code: 'de', name: 'German' },
-	{ code: 'pt', name: 'Portuguese' },
-]
 
 const ContentManagerViewerEdit = () => {
 	const { id: documentId, schema: schemaName } = useParams()
@@ -37,45 +28,66 @@ const ContentManagerViewerEdit = () => {
 	if (!contentManager) return <Spinner />
 
 	const { name, schemaMetadata } = contentManager
+	const schemaOptions = schemaMetadata?.options
+	const hasI18n = schemaOptions?.i18n !== false
+	const hasVersioning = schemaOptions?.versioning !== false
 
-	// Fetch locale statuses for the document
+	// Fetch available locales from settings
+	const { data: localesConfig } = useQuery({
+		queryKey: ['settings', 'locales'],
+		queryFn: () => adapter.settings.getLocales(),
+		enabled: hasI18n,
+	})
+
+	// Convert configured locales to LocaleOption format
+	const availableLocales: LocaleOption[] = useMemo(() => {
+		if (!localesConfig) return [{ code: 'en', name: 'English' }]
+		return localesConfig.configured.map(code => {
+			const locale = localesConfig.available.find(l => l.value === code)
+			return { code, name: locale?.key ?? code }
+		})
+	}, [localesConfig])
+
+	// Fetch locale statuses for the document (only if i18n is enabled)
 	const { data: localeStatuses } = useQuery({
 		queryKey: ['content', schemaName, documentId, 'locales'],
 		queryFn: () => adapter.content.getLocaleStatuses(name.key, documentId as string),
-		enabled: !isCreating && !!documentId,
+		enabled: !isCreating && !!documentId && hasI18n,
 	})
 
 	// Fetch item if editing
 	const { data: item, isLoading: isLoadingItem } = useQuery({
-		queryKey: ['content', schemaName, documentId, currentLocale, currentStatus],
+		queryKey: ['content', schemaName, documentId, hasI18n ? currentLocale : undefined, hasVersioning ? currentStatus : undefined],
 		queryFn: () =>
 			adapter.content.get<ContentData>(name.key, documentId as string, {
-				locale: currentLocale,
-				status: currentStatus,
+				...(hasI18n && { locale: currentLocale }),
+				...(hasVersioning && { status: currentStatus }),
 			}),
 		enabled: !isCreating && !!documentId,
 	})
 
-	// Fetch versions for the current locale
+	// Fetch versions for the current locale (only if versioning is enabled)
 	const { data: versions } = useQuery({
 		queryKey: ['content', schemaName, documentId, 'versions', currentLocale],
 		queryFn: () =>
 			adapter.content.getVersions(name.key, documentId as string, currentLocale),
-		enabled: !isCreating && !!documentId,
+		enabled: !isCreating && !!documentId && hasVersioning,
 	})
 
 	// Create mutation
 	const createMutation = useMutation({
 		mutationFn: (data: ContentData) =>
-			adapter.content.create<ContentData & { documentId: string }>(name.key, data, {
-				locale: currentLocale,
+			adapter.content.create<ContentData & { documentId?: string; id?: string }>(name.key, data, {
+				...(hasI18n && { locale: currentLocale }),
 			}),
 		onSuccess: (data) => {
 			toast.success('Content created', {
 				description: `${name.title} was created successfully`,
 			})
 			queryClient.invalidateQueries({ queryKey: ['content', schemaName] })
-			navigate(`/content-manager/${name.key}/${data.documentId}`)
+			// Use documentId if available (i18n/versioning enabled), otherwise use id
+			const itemId = data.documentId || data.id
+			navigate(`/content-manager/${name.key}/${itemId}`)
 		},
 		onError: (error) => {
 			toast.error(`Failed to create ${name.title}: ${error.message}`)
@@ -86,8 +98,8 @@ const ContentManagerViewerEdit = () => {
 	const updateMutation = useMutation({
 		mutationFn: (data: ContentData) =>
 			adapter.content.update(name.key, documentId as string, data, {
-				locale: currentLocale,
-				status: currentStatus,
+				...(hasI18n && { locale: currentLocale }),
+				...(hasVersioning && { status: currentStatus }),
 			}),
 		onSuccess: () => {
 			toast.success('Content updated', {
@@ -102,11 +114,11 @@ const ContentManagerViewerEdit = () => {
 		},
 	})
 
-	// Publish mutation
+	// Publish mutation (only used if versioning is enabled)
 	const publishMutation = useMutation({
 		mutationFn: () =>
 			adapter.content.publish(name.key, documentId as string, {
-				locale: currentLocale,
+				...(hasI18n && { locale: currentLocale }),
 			}),
 		onSuccess: () => {
 			toast.success('Content published', {
@@ -226,58 +238,64 @@ const ContentManagerViewerEdit = () => {
 				}
 			/>
 
-			{/* Locale switcher and status indicator */}
-			{!isCreating && (
+			{/* Locale switcher and status indicator - only show if i18n or versioning is enabled */}
+			{!isCreating && (hasI18n || hasVersioning) && (
 				<div className="bg-card border rounded-md p-4 flex flex-wrap items-center justify-between gap-4">
 					<div className="flex items-center gap-4">
-						{/* Locale selector */}
-						<LocaleSwitcher
-							currentLocale={currentLocale}
-							locales={DEFAULT_LOCALES}
-							localeStatuses={localeStatuses}
-							onLocaleChange={handleLocaleChange}
-							onAddLocale={handleAddLocale}
-							disabled={isMutating || addLocaleMutation.isPending}
-						/>
+						{/* Locale selector - only show if i18n is enabled */}
+						{hasI18n && (
+							<LocaleSwitcher
+								currentLocale={currentLocale}
+								locales={availableLocales}
+								localeStatuses={localeStatuses}
+								onLocaleChange={handleLocaleChange}
+								onAddLocale={handleAddLocale}
+								disabled={isMutating || addLocaleMutation.isPending}
+							/>
+						)}
 
-						{/* Status toggle */}
-						<div className="flex items-center gap-2">
-							<Button
-								variant={currentStatus === 'draft' ? 'default' : 'outline'}
-								size="sm"
-								onClick={() => setCurrentStatus('draft')}
-								disabled={!currentLocaleStatus?.hasDraft}
-							>
-								Draft
-							</Button>
-							<Button
-								variant={currentStatus === 'published' ? 'default' : 'outline'}
-								size="sm"
-								onClick={() => setCurrentStatus('published')}
-								disabled={!currentLocaleStatus?.hasPublished}
-							>
-								Published
-							</Button>
-						</div>
+						{/* Status toggle - only show if versioning is enabled */}
+						{hasVersioning && (
+							<div className="flex items-center gap-2">
+								<Button
+									variant={currentStatus === 'draft' ? 'default' : 'outline'}
+									size="sm"
+									onClick={() => setCurrentStatus('draft')}
+									disabled={!currentLocaleStatus?.hasDraft}
+								>
+									Draft
+								</Button>
+								<Button
+									variant={currentStatus === 'published' ? 'default' : 'outline'}
+									size="sm"
+									onClick={() => setCurrentStatus('published')}
+									disabled={!currentLocaleStatus?.hasPublished}
+								>
+									Published
+								</Button>
+							</div>
+						)}
 					</div>
 
-					{/* Status indicator with publish/unpublish */}
-					<StatusIndicator
-						status={currentStatus}
-						hasPublished={currentLocaleStatus?.hasPublished}
-						onPublish={() => publishMutation.mutate()}
-						onUnpublish={() => unpublishMutation.mutate()}
-						isPublishing={publishMutation.isPending}
-						isUnpublishing={unpublishMutation.isPending}
-						disabled={isMutating}
-					/>
+					{/* Status indicator with publish/unpublish - only show if versioning is enabled */}
+					{hasVersioning && (
+						<StatusIndicator
+							status={currentStatus}
+							hasPublished={currentLocaleStatus?.hasPublished}
+							onPublish={() => publishMutation.mutate()}
+							onUnpublish={() => unpublishMutation.mutate()}
+							isPublishing={publishMutation.isPending}
+							isUnpublishing={unpublishMutation.isPending}
+							disabled={isMutating}
+						/>
+					)}
 				</div>
 			)}
 
-			{/* Version info */}
-			{!isCreating && versions && versions.length > 0 && (
+			{/* Version info - only show if versioning is enabled */}
+			{!isCreating && hasVersioning && versions && versions.length > 0 && (
 				<div className="text-sm text-muted-foreground">
-					{versions.length} version(s) for {currentLocale}
+					{versions.length} version(s){hasI18n ? ` for ${currentLocale}` : ''}
 				</div>
 			)}
 

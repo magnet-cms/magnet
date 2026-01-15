@@ -1,0 +1,50 @@
+---
+title: Common Package
+description: Shared types, decorators, and utilities
+---
+
+# @magnet/common
+
+The common package provides shared TypeScript decorators, types, and utilities used across Magnet packages.
+
+## Installation
+
+```bash
+bun add @magnet/common
+```
+
+## Features
+
+- **Schema Decorators** - Define content schemas
+- **Property Decorators** - Configure field properties
+- **UI Decorators** - Customize admin interface
+- **Validation Decorators** - Add validation rules
+- **TypeScript Types** - Shared type definitions
+
+## Quick Example
+
+```ts
+import { Schema, Prop, UI, Validators } from '@magnet/common'
+
+@Schema({
+  collection: 'posts',
+  displayName: 'Blog Posts',
+})
+export class Post {
+  @Prop({ required: true })
+  @UI({ label: 'Title', placeholder: 'Enter title' })
+  @Validators({ minLength: 3, maxLength: 200 })
+  title: string
+
+  @Prop()
+  @UI({ label: 'Content', component: 'richtext' })
+  content: string
+}
+```
+
+## Sections
+
+<Cards>
+  <Card title="Decorators" href="/docs/common/decorators" description="All available decorators" />
+  <Card title="Types" href="/docs/common/types" description="TypeScript type definitions" />
+</Cards>

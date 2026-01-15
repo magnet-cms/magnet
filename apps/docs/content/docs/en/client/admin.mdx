@@ -1,0 +1,94 @@
+---
+title: Admin UI
+description: Admin interface for content management
+---
+
+# Admin UI
+
+The `@magnet/admin` package provides a complete admin interface for managing content.
+
+## Installation
+
+```bash
+bun add @magnet/admin @magnet/ui
+```
+
+## Usage
+
+### Embedded Mode
+
+The admin UI is automatically served by the NestJS backend:
+
+```ts
+MagnetModule.forRoot({
+  admin: {
+    enabled: true,
+    basePath: '/admin',
+  },
+})
+```
+
+Access at: `http://localhost:3000/admin`
+
+### Standalone Mode
+
+Run the admin as a separate application:
+
+```tsx
+import { MagnetAdmin } from '@magnet/admin'
+import '@magnet/admin/styles.css'
+
+function App() {
+  return (
+    <MagnetAdmin
+      apiUrl="http://localhost:3000/admin/api"
+    />
+  )
+}
+```
+
+## Features
+
+### Content Manager
+
+- List, create, update, delete content
+- Schema-driven forms
+- Filtering and sorting
+- Pagination
+
+### Form Builder
+
+Dynamic forms based on schema metadata:
+
+- Text inputs
+- Rich text editors
+- Date pickers
+- Relation selectors
+- File uploads
+
+### Authentication
+
+- Login/logout
+- JWT token management
+- Protected routes
+
+## Configuration
+
+```tsx
+<MagnetAdmin
+  apiUrl="http://localhost:3000/admin/api"
+  branding={{
+    name: 'My CMS',
+    logo: '/logo.png',
+  }}
+  theme="light" // or "dark" or "system"
+/>
+```
+
+### Props
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `apiUrl` | string | Backend API URL |
+| `branding` | object | Custom branding |
+| `theme` | string | Color theme |

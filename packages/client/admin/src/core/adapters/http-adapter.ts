@@ -346,6 +346,45 @@ export function createHttpAdapter(config: HttpAdapterConfig): MagnetApiAdapter {
 					body: data,
 				})
 			},
+
+			async getLocales(): Promise<{
+				available: Array<{ key: string; value: string }>
+				configured: string[]
+				default: string
+			}> {
+				// Available locales - matches internationalization.setting.ts
+				const availableLocales = [
+					{ key: 'English', value: 'en' },
+					{ key: 'Spanish', value: 'es' },
+					{ key: 'French', value: 'fr' },
+					{ key: 'German', value: 'de' },
+					{ key: 'Italian', value: 'it' },
+					{ key: 'Portuguese', value: 'pt' },
+					{ key: 'Russian', value: 'ru' },
+					{ key: 'Chinese', value: 'zh' },
+					{ key: 'Japanese', value: 'ja' },
+					{ key: 'Korean', value: 'ko' },
+					{ key: 'Arabic', value: 'ar' },
+				]
+
+				// Fetch from internationalization settings group
+				const settings = await request<Array<{ key: string; value: unknown }>>('/settings/internationalization')
+				const localesSetting = settings.find(s => s.key === 'locales')
+				const defaultLocaleSetting = settings.find(s => s.key === 'defaultLocale')
+
+				const configured = Array.isArray(localesSetting?.value) && localesSetting.value.length > 0
+					? localesSetting.value as string[]
+					: ['en']
+				const defaultLocale = typeof defaultLocaleSetting?.value === 'string' && defaultLocaleSetting.value
+					? defaultLocaleSetting.value
+					: configured[0] ?? 'en'
+
+				return {
+					available: availableLocales,
+					configured,
+					default: defaultLocale,
+				}
+			},
 		},
 
 		history: {

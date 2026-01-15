@@ -1,0 +1,149 @@
+---
+title: Decorators
+description: All available decorators in @magnet/common
+---
+
+# Decorators
+
+Complete reference for all decorators available in `@magnet/common`.
+
+## @Schema
+
+Defines a content schema class.
+
+```ts
+@Schema({
+  collection: 'posts',       // MongoDB collection name
+  displayName: 'Blog Posts', // Human-readable name
+  description: 'Blog posts', // Description for admin
+  icon: 'file-text',         // Icon name
+  timestamps: true,          // Add createdAt/updatedAt
+})
+export class Post {}
+```
+
+### Options
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `collection` | string | MongoDB collection name |
+| `displayName` | string | Display name in admin UI |
+| `description` | string | Description text |
+| `icon` | string | Icon identifier |
+| `timestamps` | boolean | Auto timestamps |
+
+## @Prop
+
+Configures a property on the schema.
+
+```ts
+@Prop({
+  required: true,        // Field is required
+  default: 'draft',      // Default value
+  unique: true,          // Unique constraint
+  index: true,           // Create index
+  ref: 'Category',       // Reference to another schema
+  enum: ['a', 'b', 'c'], // Allowed values
+})
+title: string
+```
+
+### Options
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `required` | boolean | Field is required |
+| `default` | any | Default value |
+| `unique` | boolean | Unique constraint |
+| `index` | boolean | Create database index |
+| `ref` | string | Reference to another schema |
+| `enum` | array | Allowed values |
+| `type` | any | Property type |
+
+## @UI
+
+Configures the admin UI appearance.
+
+```ts
+@UI({
+  label: 'Post Title',           // Field label
+  placeholder: 'Enter title',    // Placeholder text
+  description: 'The post title', // Help text
+  component: 'text',             // UI component type
+  hidden: false,                 // Hide from admin
+  readOnly: false,               // Read-only field
+  order: 1,                      // Display order
+})
+title: string
+```
+
+### Component Types
+
+| Component | Description |
+|-----------|-------------|
+| `text` | Single-line text input |
+| `textarea` | Multi-line text input |
+| `richtext` | Rich text editor |
+| `number` | Number input |
+| `switch` | Boolean toggle |
+| `select` | Dropdown select |
+| `date` | Date picker |
+| `datetime` | Date and time picker |
+| `image` | Image upload |
+| `file` | File upload |
+| `relation` | Relation picker |
+
+## @Validators
+
+Adds validation rules to a property.
+
+```ts
+@Validators({
+  minLength: 3,                    // Minimum length
+  maxLength: 200,                  // Maximum length
+  min: 0,                          // Minimum number
+  max: 100,                        // Maximum number
+  pattern: '^[a-z-]+$',            // Regex pattern
+  email: true,                     // Email validation
+  url: true,                       // URL validation
+  custom: (v) => v.length > 0,     // Custom validator
+})
+title: string
+```
+
+### Validation Options
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `minLength` | number | Minimum string length |
+| `maxLength` | number | Maximum string length |
+| `min` | number | Minimum number value |
+| `max` | number | Maximum number value |
+| `pattern` | string | Regex pattern |
+| `email` | boolean | Email validation |
+| `url` | boolean | URL validation |
+| `custom` | function | Custom validation function |
+
+## @Version
+
+Enables versioning for a schema.
+
+```ts
+@Schema({ collection: 'posts' })
+@Version({
+  enabled: true,
+  maxVersions: 10,
+})
+export class Post {}
+```
+
+## Combining Decorators
+
+Decorators can be combined on a single property:
+
+```ts
+@Prop({ required: true })
+@UI({ label: 'Title', component: 'text' })
+@Validators({ minLength: 3, maxLength: 200 })
+title: string
+```

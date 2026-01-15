@@ -1,0 +1,81 @@
+---
+title: Auth Module
+description: Authentication and authorization with JWT
+---
+
+# Auth Module
+
+The Auth module provides JWT-based authentication for the admin interface and API.
+
+## Auth Service
+
+```ts
+import { Injectable } from '@nestjs/common'
+import { AuthService } from '@magnet/core'
+
+@Injectable()
+export class MyService {
+  constructor(private authService: AuthService) {}
+
+  async login(email: string, password: string) {
+    return this.authService.login({ email, password })
+  }
+
+  async validateToken(token: string) {
+    return this.authService.validateToken(token)
+  }
+}
+```
+
+## API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/admin/api/auth/login` | Login and get JWT token |
+| POST | `/admin/api/auth/logout` | Logout and invalidate token |
+| GET | `/admin/api/auth/me` | Get current user info |
+| POST | `/admin/api/auth/refresh` | Refresh JWT token |
+
+## Guards
+
+### JwtAuthGuard
+
+Protects routes requiring authentication:
+
+```ts
+import { Controller, Get, UseGuards } from '@nestjs/common'
+import { JwtAuthGuard } from '@magnet/core'
+
+@Controller('protected')
+@UseGuards(JwtAuthGuard)
+export class ProtectedController {
+  @Get()
+  getProtectedData() {
+    return { message: 'This is protected' }
+  }
+}
+```
+
+## Configuration
+
+```ts
+MagnetModule.forRoot({
+  auth: {
+    enabled: true,
+    jwtSecret: process.env.JWT_SECRET,
+    jwtExpiresIn: '7d',
+  },
+})
+```
+
+### Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `enabled` | boolean | `true` | Enable authentication |
+| `jwtSecret` | string | - | Secret for signing JWTs |
+| `jwtExpiresIn` | string | `'7d'` | Token expiration time |
+
+<Callout type="warn">
+Always set `JWT_SECRET` via environment variables in production. Never commit secrets to version control.
+</Callout>

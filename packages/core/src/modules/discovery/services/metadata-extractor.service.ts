@@ -1,6 +1,7 @@
 import {
 	ControllerMetadata,
 	DESIGN_TYPE,
+	getSchemaOptions,
 	MethodMetadata,
 	PROP_METADATA_KEY,
 	RESOLVE_METADATA_KEY,
@@ -18,7 +19,6 @@ import { RouteParamtypes } from '@nestjs/common/enums/route-paramtypes.enum'
 import { InstanceWrapper } from '@nestjs/core/injector/instance-wrapper'
 import { getMetadataStorage } from 'class-validator'
 import { requestMethodMap } from '../constants'
-import { getDefaultUIForType } from '../utils'
 
 @Injectable()
 export class MetadataExtractorService {
@@ -108,17 +108,14 @@ export class MetadataExtractorService {
 					metatype.prototype,
 					prop.propertyKey,
 				)
-				const designTypeName = designTypeMetadata?.name || 'Unknown'
 
-				const inferredUI = uiField
-					? undefined
-					: getDefaultUIForType(designTypeName)
-
+				// Only include UI if explicitly defined with @UI() decorator
+				// Fields without @UI() are hidden from the admin interface
 				return {
 					name: prop.propertyKey,
 					type: prop.options?.type?.name || designTypeMetadata,
 					validations: this.getValidationMetadata(metatype, prop.propertyKey),
-					ui: uiField ? uiField.options : inferredUI,
+					ui: uiField?.options,
 					...prop.options,
 				}
 			},
@@ -127,6 +124,7 @@ export class MetadataExtractorService {
 		return {
 			name: metatype.name.toLowerCase() ?? 'unknownschema',
 			properties,
+			options: getSchemaOptions(metatype),
 		}
 	}
 

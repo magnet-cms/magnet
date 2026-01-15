@@ -1,0 +1,126 @@
+---
+title: Utilities
+description: Utility functions for Magnet
+---
+
+# @magnet/utils
+
+The utils package provides common utility functions used across Magnet.
+
+## Installation
+
+```bash
+bun add @magnet/utils
+```
+
+## String Utilities
+
+### slugify
+
+Generate URL-friendly slugs:
+
+```ts
+import { slugify } from '@magnet/utils'
+
+slugify('Hello World!') // 'hello-world'
+slugify('Café Latte')   // 'cafe-latte'
+```
+
+### truncate
+
+Truncate text with ellipsis:
+
+```ts
+import { truncate } from '@magnet/utils'
+
+truncate('Long text here', 10) // 'Long te...'
+```
+
+### capitalize
+
+Capitalize first letter:
+
+```ts
+import { capitalize } from '@magnet/utils'
+
+capitalize('hello') // 'Hello'
+```
+
+## Date Utilities
+
+### formatDate
+
+Format dates:
+
+```ts
+import { formatDate } from '@magnet/utils'
+
+formatDate(new Date(), 'YYYY-MM-DD') // '2024-01-15'
+```
+
+### timeAgo
+
+Relative time:
+
+```ts
+import { timeAgo } from '@magnet/utils'
+
+timeAgo(new Date(Date.now() - 60000)) // '1 minute ago'
+```
+
+## Object Utilities
+
+### pick
+
+Pick properties from object:
+
+```ts
+import { pick } from '@magnet/utils'
+
+pick({ a: 1, b: 2, c: 3 }, ['a', 'c']) // { a: 1, c: 3 }
+```
+
+### omit
+
+Omit properties from object:
+
+```ts
+import { omit } from '@magnet/utils'
+
+omit({ a: 1, b: 2, c: 3 }, ['b']) // { a: 1, c: 3 }
+```
+
+### deepMerge
+
+Deep merge objects:
+
+```ts
+import { deepMerge } from '@magnet/utils'
+
+deepMerge({ a: { b: 1 } }, { a: { c: 2 } })
+// { a: { b: 1, c: 2 } }
+```
+
+## Validation Utilities
+
+### isEmail
+
+Validate email:
+
+```ts
+import { isEmail } from '@magnet/utils'
+
+isEmail('test@example.com') // true
+isEmail('invalid')          // false
+```
+
+### isUrl
+
+Validate URL:
+
+```ts
+import { isUrl } from '@magnet/utils'
+
+isUrl('https://example.com') // true
+isUrl('not-a-url')           // false
+```

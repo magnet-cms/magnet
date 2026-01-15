@@ -78,7 +78,11 @@ export class ContentController {
 	@Post(':schema')
 	async create(
 		@Param('schema') schema: string,
-		@Body() body: { data: Record<string, unknown>; locale?: string; createdBy?: string },
+		@Body() body: {
+			data: Record<string, unknown>
+			locale?: string
+			createdBy?: string
+		},
 	) {
 		try {
 			return await this.contentService.create(schema, body.data, {
@@ -200,7 +204,11 @@ export class ContentController {
 		@Query('locale') locale?: string,
 	) {
 		try {
-			const result = await this.contentService.unpublish(schema, documentId, locale)
+			const result = await this.contentService.unpublish(
+				schema,
+				documentId,
+				locale,
+			)
 			return { success: result }
 		} catch (error) {
 			throw new HttpException(
@@ -219,7 +227,11 @@ export class ContentController {
 	async addLocale(
 		@Param('schema') schema: string,
 		@Param('documentId') documentId: string,
-		@Body() body: { locale: string; data: Record<string, unknown>; createdBy?: string },
+		@Body() body: {
+			locale: string
+			data: Record<string, unknown>
+			createdBy?: string
+		},
 	) {
 		try {
 			return await this.contentService.addLocale(
@@ -275,7 +287,9 @@ export class ContentController {
 			return await this.contentService.getLocaleStatuses(schema, documentId)
 		} catch (error) {
 			throw new HttpException(
-				error instanceof Error ? error.message : 'Failed to get locale statuses',
+				error instanceof Error
+					? error.message
+					: 'Failed to get locale statuses',
 				HttpStatus.BAD_REQUEST,
 			)
 		}
@@ -315,9 +329,12 @@ export class ContentController {
 		@Query('version') version: string,
 	) {
 		try {
-			const versionNumber = parseInt(version, 10)
-			if (isNaN(versionNumber)) {
-				throw new HttpException('Invalid version number', HttpStatus.BAD_REQUEST)
+			const versionNumber = Number.parseInt(version, 10)
+			if (Number.isNaN(versionNumber)) {
+				throw new HttpException(
+					'Invalid version number',
+					HttpStatus.BAD_REQUEST,
+				)
 			}
 			const result = await this.contentService.restoreVersion(
 				schema,

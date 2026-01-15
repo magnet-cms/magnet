@@ -1,0 +1,19 @@
+@import 'tailwindcss';
+@import 'fumadocs-ui/css/neutral.css';
+@import 'fumadocs-ui/css/preset.css';
+
+/* Scan Fumadocs UI for Tailwind classes */
+@source '../node_modules/fumadocs-ui/dist/**/*.js';
+
+/* Custom theme colors for Magnet */
+@theme {
+  --color-fd-primary: hsl(220, 90%, 56%);
+  --color-fd-primary-foreground: hsl(0, 0%, 100%);
+}
+
+/* Custom styles for Magnet documentation */
+@layer base {
+  :root {
+    --fd-sidebar-width: 280px;
+  }
+}

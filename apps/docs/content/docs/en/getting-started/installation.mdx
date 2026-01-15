@@ -1,0 +1,88 @@
+---
+title: Installation
+description: Install Magnet and its dependencies
+---
+
+# Installation
+
+This guide covers the installation of Magnet packages.
+
+## Requirements
+
+- **Runtime**: Bun 1.2.2+ (recommended) or Node.js 18+
+- **Database**: MongoDB 6.0+ (for Mongoose adapter)
+- **Framework**: NestJS 11+
+
+## Package Installation
+
+### Core Packages
+
+```bash
+# Using Bun (recommended)
+bun add @magnet/core @magnet/common @magnet/adapter-mongoose
+
+# Using npm
+npm install @magnet/core @magnet/common @magnet/adapter-mongoose
+
+# Using pnpm
+pnpm add @magnet/core @magnet/common @magnet/adapter-mongoose
+```
+
+### Admin UI (Optional)
+
+If you want to use the admin interface:
+
+```bash
+bun add @magnet/admin @magnet/ui
+```
+
+### Plugins (Optional)
+
+```bash
+# Content Builder plugin
+bun add @magnet/plugin-content-builder
+
+# SEO plugin
+bun add @magnet/plugin-seo
+```
+
+## Peer Dependencies
+
+Ensure you have the required NestJS packages:
+
+```bash
+bun add @nestjs/common @nestjs/core @nestjs/platform-express rxjs reflect-metadata
+```
+
+## TypeScript Configuration
+
+Magnet is built with TypeScript. Ensure your `tsconfig.json` includes:
+
+```json
+{
+  "compilerOptions": {
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "strict": true,
+    "target": "ES2021",
+    "module": "commonjs"
+  }
+}
+```
+
+## Verifying Installation
+
+After installation, verify by importing the module:
+
+```ts
+import { MagnetModule } from '@magnet/core'
+import { Schema, Prop } from '@magnet/common'
+import { MongooseAdapter } from '@magnet/adapter-mongoose'
+
+console.log('Magnet installed successfully!')
+```
+
+## Next Steps
+
+- [Quick Start](/docs/getting-started/quick-start) - Create your first schema
+- [Configuration](/docs/getting-started/configuration) - Configure Magnet options

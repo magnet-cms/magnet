@@ -31,6 +31,10 @@ export const useSettingMutation = <T extends Record<string, unknown>>(
 		onSuccess: () => {
 			// Invalidate the settings query to refetch the data
 			queryClient.invalidateQueries({ queryKey: ['settings', group] })
+			// Also invalidate locales cache when internationalization settings change
+			if (group.toLowerCase() === 'internationalization') {
+				queryClient.invalidateQueries({ queryKey: ['settings', 'locales'] })
+			}
 		},
 	})
 }

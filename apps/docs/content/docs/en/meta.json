@@ -1,0 +1,17 @@
+{
+  "title": "Documentation",
+  "pages": [
+    "index",
+    "---Getting Started---",
+    "getting-started",
+    "---Packages---",
+    "core",
+    "common",
+    "adapters",
+    "client",
+    "plugins",
+    "utils",
+    "---Reference---",
+    "api-reference"
+  ]
+}

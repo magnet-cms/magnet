@@ -106,12 +106,27 @@ export class DocumentService {
 
 		// If both locale and status are specified, return single document
 		if (options.locale && options.status) {
-			const doc = await model.findOne(query as unknown as Partial<T & { id: string }>)
+			let doc = await model.findOne(query as unknown as Partial<T & { id: string }>)
+
+			// Fallback: try finding by id for schemas without i18n/versioning
+			if (!doc) {
+				doc = await model.findOne({ id: documentId } as unknown as Partial<T & { id: string }>)
+			}
+
 			return doc as unknown as Document<T> | null
 		}
 
 		// Otherwise return all matching documents
-		const docs = await model.findMany(query as unknown as Partial<T & { id: string }>)
+		let docs = await model.findMany(query as unknown as Partial<T & { id: string }>)
+
+		// Fallback: try finding by id for schemas without i18n/versioning
+		if ((!docs || docs.length === 0) && !options.locale && !options.status) {
+			const doc = await model.findOne({ id: documentId } as unknown as Partial<T & { id: string }>)
+			if (doc) {
+				docs = [doc]
+			}
+		}
+
 		return docs as unknown as Document<T>[]
 	}
 
@@ -358,8 +373,12 @@ export class DocumentService {
 		data: Partial<T>,
 		options: { createdBy?: string } = {},
 	): Promise<Document<T>> {
-		// Check if this locale already exists
-		const existing = await this.findDraft(model, documentId, locale)
+		// Direct check without fallback - query exactly for this locale and status
+		const existing = await model.findOne({
+			documentId,
+			locale,
+			status: 'draft',
+		} as unknown as Partial<T & { id: string }>)
 		if (existing) {
 			throw new Error(
 				`Locale '${locale}' already exists for document '${documentId}'`,

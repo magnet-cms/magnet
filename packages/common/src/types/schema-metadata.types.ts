@@ -1,4 +1,5 @@
 import { Type } from '@nestjs/common'
+import { SchemaOptions } from './decorator.types'
 import { UIDecoratorOptions } from './ui.types'
 
 export type MethodMetadata = {
@@ -44,4 +45,5 @@ export type SchemaProperty = {
 export type SchemaMetadata = {
 	name: string
 	properties: SchemaProperty[]
+	options?: SchemaOptions
 }

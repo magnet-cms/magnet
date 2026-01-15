@@ -1,0 +1,116 @@
+---
+title: Mongoose Adapter
+description: MongoDB database adapter using Mongoose ODM
+---
+
+# Mongoose Adapter
+
+The Mongoose adapter provides MongoDB support using the Mongoose ODM.
+
+## Installation
+
+```bash
+bun add @magnet/adapter-mongoose
+```
+
+## Configuration
+
+```ts
+import { MagnetModule } from '@magnet/core'
+import { MongooseAdapter } from '@magnet/adapter-mongoose'
+
+MagnetModule.forRoot({
+  adapter: new MongooseAdapter({
+    uri: 'mongodb://localhost:27017/magnet',
+    options: {
+      maxPoolSize: 10,
+      serverSelectionTimeoutMS: 5000,
+    },
+  }),
+})
+```
+
+### Options
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `uri` | string | MongoDB connection URI |
+| `options` | object | Mongoose connection options |
+
+## Connection Options
+
+```ts
+new MongooseAdapter({
+  uri: process.env.MONGODB_URI,
+  options: {
+    maxPoolSize: 10,
+    minPoolSize: 2,
+    serverSelectionTimeoutMS: 5000,
+    socketTimeoutMS: 45000,
+    family: 4, // Use IPv4
+  },
+})
+```
+
+## Features
+
+### Schema Registration
+
+Schemas decorated with `@Schema` are automatically registered:
+
+```ts
+@Schema({ collection: 'posts' })
+export class Post {
+  @Prop({ required: true })
+  title: string
+}
+```
+
+### Mongoose-Specific Features
+
+Access Mongoose models directly:
+
+```ts
+import { Injectable } from '@nestjs/common'
+import { InjectModel } from '@nestjs/mongoose'
+import { Model } from 'mongoose'
+
+@Injectable()
+export class PostsService {
+  constructor(@InjectModel('Post') private postModel: Model<Post>) {}
+
+  async findWithAggregate() {
+    return this.postModel.aggregate([
+      { $match: { published: true } },
+      { $group: { _id: '$category', count: { $sum: 1 } } },
+    ])
+  }
+}
+```
+
+### Internationalization
+
+The adapter supports i18n for multilingual content:
+
+```ts
+@Schema({ collection: 'posts' })
+export class Post {
+  @Prop()
+  @UI({ i18n: true })
+  title: string // Will store as { en: '...', pt: '...' }
+}
+```
+
+## Environment Variables
+
+```bash
+# MongoDB connection
+MONGODB_URI=mongodb://localhost:27017/magnet
+
+# For replica sets
+MONGODB_URI=mongodb://host1:27017,host2:27017,host3:27017/magnet?replicaSet=rs0
+```
+
+<Callout type="info">
+For production, use MongoDB Atlas or a managed MongoDB service with proper authentication and SSL.
+</Callout>

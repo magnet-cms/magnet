@@ -1,0 +1,136 @@
+---
+title: Types
+description: TypeScript type definitions
+---
+
+# Types
+
+TypeScript type definitions exported from `@magnet/common`.
+
+## Schema Types
+
+### SchemaOptions
+
+Options for the `@Schema` decorator:
+
+```ts
+interface SchemaOptions {
+  collection: string
+  displayName?: string
+  description?: string
+  icon?: string
+  timestamps?: boolean
+}
+```
+
+### PropOptions
+
+Options for the `@Prop` decorator:
+
+```ts
+interface PropOptions {
+  required?: boolean
+  default?: any
+  unique?: boolean
+  index?: boolean
+  ref?: string
+  enum?: any[]
+  type?: any
+}
+```
+
+### UIOptions
+
+Options for the `@UI` decorator:
+
+```ts
+interface UIOptions {
+  label?: string
+  placeholder?: string
+  description?: string
+  component?: UIComponentType
+  hidden?: boolean
+  readOnly?: boolean
+  order?: number
+}
+```
+
+### ValidatorOptions
+
+Options for the `@Validators` decorator:
+
+```ts
+interface ValidatorOptions {
+  minLength?: number
+  maxLength?: number
+  min?: number
+  max?: number
+  pattern?: string
+  email?: boolean
+  url?: boolean
+  custom?: (value: any) => boolean
+}
+```
+
+## Metadata Types
+
+### SchemaMetadata
+
+Full schema metadata:
+
+```ts
+interface SchemaMetadata {
+  name: string
+  collection: string
+  displayName: string
+  description?: string
+  icon?: string
+  fields: FieldMetadata[]
+}
+```
+
+### FieldMetadata
+
+Field metadata:
+
+```ts
+interface FieldMetadata {
+  name: string
+  type: string
+  required: boolean
+  default?: any
+  ui?: UIOptions
+  validators?: ValidatorOptions
+}
+```
+
+## Utility Types
+
+### QueryOptions
+
+Query options for content service:
+
+```ts
+interface QueryOptions {
+  filter?: Record<string, any>
+  sort?: Record<string, 1 | -1>
+  skip?: number
+  limit?: number
+  select?: string[]
+  populate?: string[]
+}
+```
+
+### PaginatedResult
+
+Paginated query result:
+
+```ts
+interface PaginatedResult<T> {
+  data: T[]
+  total: number
+  page: number
+  pageSize: number
+  totalPages: number
+}
+```

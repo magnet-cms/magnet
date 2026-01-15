@@ -38,7 +38,8 @@ const ContentManagerList = () => {
 
 	if (!contentManager) return <Spinner />
 
-	const { name } = contentManager
+	const { name, schemaMetadata } = contentManager
+	const schemaOptions = schemaMetadata?.options
 
 	// Fetch content items
 	const {
@@ -97,24 +98,39 @@ const ContentManagerList = () => {
 			</div>
 		)
 
+	// Get visible properties (only those with UI defined)
+	const visibleProperties = schemaMetadata?.properties?.filter(
+		(prop) => prop.ui && prop.name !== 'id',
+	) || []
+
 	// Transform items for the DataTable with an actions column
 	const tableColumns = [
-		// Existing columns from items (if any)
-		...(items && items.length > 0
-			? Object.keys(items[0] || {})
-					.filter(
-						(key) => key !== 'id' && key !== 'createdAt' && key !== 'updatedAt',
-					)
-					.map((key) => ({
-						accessorKey: key,
-						header:
-							key.charAt(0).toUpperCase() +
-							key
-								.slice(1)
-								.replace(/([A-Z])/g, ' $1')
-								.trim(),
-					}))
-			: []),
+		// Use schema properties with UI defined for columns
+		...(visibleProperties.length > 0
+			? visibleProperties.map((prop) => ({
+					accessorKey: prop.name,
+					header: prop.ui?.label ||
+						prop.name.charAt(0).toUpperCase() +
+						prop.name
+							.slice(1)
+							.replace(/([A-Z])/g, ' $1')
+							.trim(),
+				}))
+			: items && items.length > 0
+				? Object.keys(items[0] || {})
+						.filter(
+							(key) => key !== 'id' && key !== 'createdAt' && key !== 'updatedAt',
+						)
+						.map((key) => ({
+							accessorKey: key,
+							header:
+								key.charAt(0).toUpperCase() +
+								key
+									.slice(1)
+									.replace(/([A-Z])/g, ' $1')
+									.trim(),
+						}))
+				: []),
 
 		// Actions column
 		{
@@ -139,18 +155,22 @@ const ContentManagerList = () => {
 								<Edit className="mr-2 h-4 w-4" />
 								<span>Edit</span>
 							</DropdownMenuItem>
-							<DropdownMenuItem onClick={() => duplicateMutation.mutate(item)}>
-								<Copy className="mr-2 h-4 w-4" />
-								<span>Duplicate</span>
-							</DropdownMenuItem>
-							<DropdownMenuItem
-								onClick={() =>
-									navigate(`/content-manager/${name.key}/${item.id}/versions`)
-								}
-							>
-								<Globe className="mr-2 h-4 w-4" />
-								<span>Versions</span>
-							</DropdownMenuItem>
+							{schemaOptions?.versioning !== false && (
+								<DropdownMenuItem onClick={() => duplicateMutation.mutate(item)}>
+									<Copy className="mr-2 h-4 w-4" />
+									<span>Duplicate</span>
+								</DropdownMenuItem>
+							)}
+							{schemaOptions?.versioning !== false && (
+								<DropdownMenuItem
+									onClick={() =>
+										navigate(`/content-manager/${name.key}/${item.id}/versions`)
+									}
+								>
+									<Globe className="mr-2 h-4 w-4" />
+									<span>Versions</span>
+								</DropdownMenuItem>
+							)}
 							<DropdownMenuItem
 								onClick={() => setItemToDelete(item)}
 								className="text-destructive focus:text-destructive"

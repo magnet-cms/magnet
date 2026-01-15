@@ -1,0 +1,93 @@
+---
+title: Discovery Module
+description: Schema and route discovery services
+---
+
+# Discovery Module
+
+The Discovery module automatically discovers and registers schemas decorated with Magnet decorators.
+
+## Schema Discovery
+
+The `DiscoveryService` scans your application for classes decorated with `@Schema`:
+
+```ts
+import { Injectable } from '@nestjs/common'
+import { DiscoveryService } from '@magnet/core'
+
+@Injectable()
+export class MyService {
+  constructor(private discoveryService: DiscoveryService) {}
+
+  getSchemas() {
+    return this.discoveryService.getSchemas()
+  }
+
+  getSchemaMetadata(name: string) {
+    return this.discoveryService.getSchemaMetadata(name)
+  }
+}
+```
+
+## Metadata Extraction
+
+The discovery service extracts metadata from decorators:
+
+```ts
+// Schema class
+@Schema({
+  collection: 'posts',
+  displayName: 'Blog Posts',
+})
+export class Post {
+  @Prop({ required: true })
+  @UI({ label: 'Title' })
+  title: string
+}
+
+// Extracted metadata
+{
+  name: 'Post',
+  collection: 'posts',
+  displayName: 'Blog Posts',
+  fields: [
+    {
+      name: 'title',
+      type: 'string',
+      required: true,
+      ui: { label: 'Title' }
+    }
+  ]
+}
+```
+
+## Auto-Registration
+
+Schemas are automatically registered when:
+
+1. They are decorated with `@Schema`
+2. They are exported from a module
+3. They are included in the `schemas` array
+
+```ts
+MagnetModule.forRoot({
+  schemas: [Post, Category], // Explicit registration
+})
+```
+
+## Discovery Events
+
+Listen for schema discovery events:
+
+```ts
+import { OnEvent } from '@nestjs/event-emitter'
+import { SchemaDiscoveredEvent } from '@magnet/core'
+
+@Injectable()
+export class SchemaListener {
+  @OnEvent('schema.discovered')
+  handleSchemaDiscovered(event: SchemaDiscoveredEvent) {
+    console.log('Schema discovered:', event.name)
+  }
+}
+```

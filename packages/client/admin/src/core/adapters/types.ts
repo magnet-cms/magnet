@@ -272,7 +272,14 @@ export interface MagnetApiAdapter {
 	settings: {
 		getByGroup<T = ContentData>(group: string): Promise<T[]>
 		updateByGroup<T = ContentData>(group: string, data: Partial<T>): Promise<T>
+		getLocales(): Promise<LocalesConfig>
 	}
+}
+
+export interface LocalesConfig {
+	available: Array<{ key: string; value: string }>
+	configured: string[]
+	default: string
 
 	/**
 	 * Version history operations

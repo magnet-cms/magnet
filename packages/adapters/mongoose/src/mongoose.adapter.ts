@@ -70,16 +70,16 @@ class MongooseAdapter extends DatabaseAdapter {
 	}
 
 	/**
-	 * Apply document plugin to a schema based on schema options and intl properties
-	 * This adds documentId, locale, and status fields for the document-based i18n system
+	 * Apply document plugin to a schema based on schema options
+	 * This adds documentId, locale, and status fields for the document-based i18n/versioning system
 	 * @param schema The Mongoose schema to apply the plugin to
 	 * @param schemaClass The schema class to read options from
 	 */
 	private applyDocumentPlugin(schema: Schema, schemaClass: Type) {
 		const options = getSchemaOptions(schemaClass)
 
-		// Skip document plugin entirely if i18n is disabled for this schema
-		if (options.i18n === false) {
+		// Skip document plugin entirely if both i18n and versioning are disabled
+		if (options.i18n === false && options.versioning === false) {
 			return
 		}
 
@@ -91,10 +91,8 @@ class MongooseAdapter extends DatabaseAdapter {
 			}
 		})
 
-		// If the schema has intl properties, apply the document plugin
-		if (hasIntlProperties) {
-			this.documentPlugin.applyDocumentPlugin(schema, { hasIntl: true })
-		}
+		// Apply document plugin for i18n/versioning support
+		this.documentPlugin.applyDocumentPlugin(schema, { hasIntl: hasIntlProperties })
 	}
 }
 

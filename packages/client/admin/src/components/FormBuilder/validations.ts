@@ -59,28 +59,31 @@ export const buildFormSchema = (
 		isNumber: (field) => (field instanceof z.ZodNumber ? field : z.number()),
 	}
 
-	schema.properties.forEach((prop: SchemaProperty) => {
-		let field = typeMappings[prop.ui?.type || 'text']?.() || z.string()
+	// Only include properties that have UI defined (skip hidden fields like password)
+	schema.properties
+		.filter((prop) => prop.ui !== undefined && prop.ui !== null)
+		.forEach((prop: SchemaProperty) => {
+			let field = typeMappings[prop.ui?.type || 'text']?.() || z.string()
 
-		if (prop.ui?.type === 'select' && (prop.ui as UISelect).multi) {
-			field = z.array(z.string())
-		}
+			if (prop.ui?.type === 'select' && (prop.ui as UISelect).multi) {
+				field = z.array(z.string())
+			}
 
-		if (prop.validations) {
-			prop.validations.forEach((validation: Validations[number]) => {
-				if (validationMappings[validation.name]) {
-					const validationFn = validationMappings[validation.name]
-					if (validationFn) {
-						field = validationFn(field, validation.constraints || [])
+			if (prop.validations) {
+				prop.validations.forEach((validation: Validations[number]) => {
+					if (validationMappings[validation.name]) {
+						const validationFn = validationMappings[validation.name]
+						if (validationFn) {
+							field = validationFn(field, validation.constraints || [])
+						}
 					}
-				}
-			})
-		}
+				})
+			}
 
-		field = prop.required ? field : field.optional()
+			field = prop.required ? field : field.optional()
 
-		shape[prop.name] = field
-	})
+			shape[prop.name] = field
+		})
 
 	return z.object(shape)
 }

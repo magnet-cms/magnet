@@ -1,0 +1,47 @@
+---
+title: Welcome to Magnet
+description: A modern, headless CMS framework built on NestJS with first-class support for Bun
+---
+
+# Welcome to Magnet
+
+Magnet is a modern, headless CMS framework built on NestJS with first-class support for Bun. It provides a flexible architecture for building content management systems with a powerful admin UI.
+
+## Features
+
+- **NestJS Core**: Built on the robust NestJS framework for enterprise-grade applications
+- **Database Agnostic**: Ships with Mongoose adapter, easily extensible for other databases
+- **Admin UI**: Beautiful React-based admin interface with content management
+- **Plugin System**: Extend functionality with plugins like Content Builder and SEO
+- **TypeScript First**: Full TypeScript support throughout the entire stack
+- **Schema Discovery**: Automatic schema detection and metadata extraction
+- **Authentication**: Built-in JWT authentication with guards and strategies
+
+## Quick Start
+
+```bash
+# Install core packages
+bun add @magnet/core @magnet/adapter-mongoose @magnet/common
+```
+
+## Package Overview
+
+| Package | Description |
+|---------|-------------|
+| `@magnet/core` | Core NestJS module with Admin, Auth, Content, and Database modules |
+| `@magnet/common` | Shared types, decorators, and utilities |
+| `@magnet/adapter-mongoose` | Mongoose database adapter |
+| `@magnet/admin` | React admin UI |
+| `@magnet/ui` | Shared UI component library |
+| `@magnet/plugin-content-builder` | Content builder plugin |
+| `@magnet/plugin-seo` | SEO plugin |
+| `@magnet/utils` | Utility functions |
+
+## Next Steps
+
+<Cards>
+  <Card title="Installation" href="/docs/getting-started/installation" />
+  <Card title="Quick Start" href="/docs/getting-started/quick-start" />
+  <Card title="Core Module" href="/docs/core" />
+  <Card title="Admin UI" href="/docs/client/admin" />
+</Cards>

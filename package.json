@@ -7,6 +7,7 @@
     "lint": "turbo run lint",
     "check-types": "turbo run check-types",
     "dev:admin": "node dev-admin.js",
+    "dev:docs": "turbo run dev --filter=@magnet/docs",
     "test:e2e": "turbo run test --filter=@magnet/e2e"
   },
   "devDependencies": {

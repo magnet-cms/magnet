@@ -5,7 +5,7 @@
     "build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": ["dist/**"]
+      "outputs": ["dist/**", ".next/**", "!.next/cache/**"]
     },
     "lint": {
       "dependsOn": ["^lint"]
@@ -22,7 +22,7 @@
     "test": {
       "dependsOn": ["^build"],
       "cache": false,
-      "env": ["API_BASE_URL", "UI_BASE_URL", "CI"]
+      "env": ["API_BASE_URL", "UI_BASE_URL", "DOCS_BASE_URL", "CI"]
     }
   }
 }

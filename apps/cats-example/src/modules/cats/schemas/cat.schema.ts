@@ -21,6 +21,7 @@ export class Cat {
 
 	@Prop({ required: true })
 	@Validators(IsString(), Length(10, 255), IsNotEmpty())
+	@UI({ tab: 'General', row: true })
 	name: string
 
 	@Type(() => Date)
