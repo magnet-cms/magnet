@@ -136,34 +136,27 @@ export class SettingsService implements OnModuleInit {
 		group: string,
 		settings: SchemaSetting[],
 	): Promise<void> {
-		const existingSettings: Setting[] = await this.getSettingsByGroup(group)
-		const settingsMap: Map<string, Setting> = new Map(
-			existingSettings.map((s: Setting) => [s.key, s]),
-		)
+		for (const setting of settings) {
+			const existingSetting = await this.settingModel.findOne({
+				key: setting.key,
+			})
 
-		const bulkOperations: Promise<Setting>[] = settings.map(
-			(setting: SchemaSetting) => {
-				const existingSetting: Setting | undefined = settingsMap.get(
-					setting.key,
-				)
-				if (existingSetting) {
-					if (
-						JSON.stringify(existingSetting.value) !==
-							JSON.stringify(setting.value) ||
-						existingSetting.type !== setting.type
-					) {
-						return this.settingModel.update(
-							{ group, key: setting.key },
-							{ value: setting.value, type: setting.type },
-						)
-					}
-					return Promise.resolve(existingSetting)
+			if (existingSetting) {
+				if (
+					JSON.stringify(existingSetting.value) !==
+						JSON.stringify(setting.value) ||
+					existingSetting.type !== setting.type ||
+					existingSetting.group !== group
+				) {
+					await this.settingModel.update(
+						{ key: setting.key },
+						{ value: setting.value, type: setting.type, group },
+					)
 				}
-				return this.settingModel.create({ group, ...setting })
-			},
-		)
-
-		await Promise.all(bulkOperations)
+			} else {
+				await this.settingModel.create({ group, ...setting })
+			}
+		}
 	}
 
 	async registerSettingsFromSchema<T>(

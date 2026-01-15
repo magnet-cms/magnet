@@ -8,7 +8,7 @@
   "scripts": {
     "build": "nest build",
     "start": "nest start",
-    "start:prod": "node dist/main",
+    "start:prod": "cross-env NODE_ENV=production nest start",
     "dev": "nest start --watch",
     "dev:debug": "nest start --debug --watch"
   },

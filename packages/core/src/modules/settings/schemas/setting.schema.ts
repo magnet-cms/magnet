@@ -1,6 +1,6 @@
 import { Mixed, Prop, Schema } from '@magnet/common'
 
-@Schema()
+@Schema({ versioning: false, i18n: false })
 export class Setting {
 	@Prop({ required: true, unique: true })
 	key!: string

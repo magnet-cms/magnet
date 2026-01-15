@@ -1,6 +1,6 @@
 import { Mixed, Prop, Schema } from '@magnet/common'
 
-@Schema()
+@Schema({ versioning: false, i18n: false })
 export class History {
 	@Prop({ required: true })
 	documentId!: string
