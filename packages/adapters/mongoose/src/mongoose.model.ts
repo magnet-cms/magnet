@@ -47,9 +47,10 @@ export function createModel<T>(
 
 		/**
 		 * Check if versioning is enabled for this model
+		 * Auto-versioning is disabled - versioning is handled explicitly by HistoryService
 		 */
 		isVersioningEnabled(): boolean {
-			return true
+			return false
 		}
 
 		/**
@@ -105,7 +106,7 @@ export function createModel<T>(
 			return versionModel
 				.find({
 					documentId,
-					collection: this.model.modelName,
+					schemaName: this.model.modelName,
 				})
 				.lean()
 		}
@@ -160,7 +161,7 @@ export function createModel<T>(
 			return versionModel.create({
 				documentId,
 				versionId,
-				collection: this.model.modelName,
+				schemaName: this.model.modelName,
 				status,
 				data,
 				createdAt: new Date(),
@@ -207,7 +208,7 @@ export function createModel<T>(
 					// Find all documents with the requested status
 					const versions = await versionModel
 						.find({
-							collection: this.model.modelName,
+							schemaName: this.model.modelName,
 							status: this.currentVersion,
 						})
 						.lean()
@@ -260,7 +261,7 @@ export function createModel<T>(
 					const versions = await versionModel
 						.find({
 							documentId: id,
-							collection: this.model.modelName,
+							schemaName: this.model.modelName,
 							status: this.currentVersion,
 						})
 						.sort({ createdAt: -1 })
@@ -311,7 +312,7 @@ export function createModel<T>(
 					const versions = await versionModel
 						.find({
 							documentId: docId,
-							collection: this.model.modelName,
+							schemaName: this.model.modelName,
 							status: this.currentVersion,
 						})
 						.sort({ createdAt: -1 })
@@ -377,7 +378,7 @@ export function createModel<T>(
 					const versions = await versionModel
 						.find({
 							documentId: { $in: docIds },
-							collection: this.model.modelName,
+							schemaName: this.model.modelName,
 							status: this.currentVersion,
 						})
 						.lean()
