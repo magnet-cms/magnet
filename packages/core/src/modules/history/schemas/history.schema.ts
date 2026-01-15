@@ -9,7 +9,7 @@ export class History {
 	versionId!: string
 
 	@Prop({ required: true })
-	collection!: string
+	schemaName!: string
 
 	@Prop({ required: true, default: 'en' })
 	locale!: string

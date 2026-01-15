@@ -45,7 +45,7 @@ export class HistoryService {
 		const version = await this.historyModel.create({
 			documentId,
 			versionId,
-			collection,
+			schemaName: collection,
 			locale,
 			versionNumber,
 			status,
@@ -95,7 +95,7 @@ export class HistoryService {
 	): Promise<History[]> {
 		return this.historyModel.findMany({
 			documentId,
-			collection,
+			schemaName: collection,
 		} as Partial<History>)
 	}
 
@@ -112,7 +112,7 @@ export class HistoryService {
 	): Promise<History[]> {
 		return this.historyModel.findMany({
 			documentId,
-			collection,
+			schemaName: collection,
 			locale,
 		} as Partial<History>)
 	}
@@ -142,7 +142,7 @@ export class HistoryService {
 	): Promise<History | null> {
 		return this.historyModel.findOne({
 			documentId,
-			collection,
+			schemaName: collection,
 			locale,
 			versionNumber,
 		} as Partial<History>)
@@ -163,7 +163,7 @@ export class HistoryService {
 	): Promise<History | null> {
 		const query: Partial<History> = {
 			documentId,
-			collection,
+			schemaName: collection,
 			locale,
 		}
 
