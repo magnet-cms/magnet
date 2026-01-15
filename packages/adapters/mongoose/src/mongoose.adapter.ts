@@ -83,16 +83,21 @@ class MongooseAdapter extends DatabaseAdapter {
 			return
 		}
 
-		// Check if the schema has any properties with intl: true
-		let hasIntlProperties = false
-		schema.eachPath((path, schemaType) => {
-			if (schemaType.options?.intl) {
-				hasIntlProperties = true
-			}
-		})
+		// Check if i18n is enabled at the schema level (default is true if not explicitly disabled)
+		// OR if the schema has any properties with intl: true
+		let hasIntl = options.i18n !== false
+
+		// Also check for property-level intl settings
+		if (!hasIntl) {
+			schema.eachPath((path, schemaType) => {
+				if (schemaType.options?.intl) {
+					hasIntl = true
+				}
+			})
+		}
 
 		// Apply document plugin for i18n/versioning support
-		this.documentPlugin.applyDocumentPlugin(schema, { hasIntl: hasIntlProperties })
+		this.documentPlugin.applyDocumentPlugin(schema, { hasIntl })
 	}
 }
 

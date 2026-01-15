@@ -121,14 +121,13 @@ export class SettingsService implements OnModuleInit {
 			key,
 		})
 		if (existingSetting) {
-			if (
-				JSON.stringify(existingSetting.value) === JSON.stringify(value) &&
-				existingSetting.type === type
-			) {
-				return existingSetting
+			// Only update type if changed, preserve user's value
+			if (existingSetting.type !== type) {
+				return this.settingModel.update({ group, key }, { type })
 			}
-			return this.settingModel.update({ group, key }, { value, type })
+			return existingSetting
 		}
+		// Only create with default value if setting doesn't exist
 		return this.settingModel.create({ group, key, type, value })
 	}
 
@@ -142,18 +141,15 @@ export class SettingsService implements OnModuleInit {
 			})
 
 			if (existingSetting) {
-				if (
-					JSON.stringify(existingSetting.value) !==
-						JSON.stringify(setting.value) ||
-					existingSetting.type !== setting.type ||
-					existingSetting.group !== group
-				) {
+				// Only update type/group if changed, but preserve user's value
+				if (existingSetting.type !== setting.type || existingSetting.group !== group) {
 					await this.settingModel.update(
 						{ key: setting.key },
-						{ value: setting.value, type: setting.type, group },
+						{ type: setting.type, group },
 					)
 				}
 			} else {
+				// Only create with default value if setting doesn't exist
 				await this.settingModel.create({ group, ...setting })
 			}
 		}

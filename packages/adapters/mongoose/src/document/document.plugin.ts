@@ -72,6 +72,83 @@ export class DocumentPluginService {
 
 		// Index for listing all documents by status
 		schema.index({ status: 1, locale: 1 }, { name: 'status_locale' })
+
+		// Convert unique indexes to partial unique indexes for i18n support
+		this.convertUniqueIndexes(schema)
+	}
+
+	/**
+	 * Convert simple unique indexes to partial unique indexes for i18n support
+	 * This allows different locales of the same document to share unique field values
+	 * while still enforcing uniqueness across different documents
+	 */
+	private convertUniqueIndexes(schema: Schema): void {
+		const fieldsToConvert: string[] = []
+		const indexesToAdd: Array<{ fields: Record<string, 1 | -1>; options: Record<string, unknown> }> = []
+
+		// Iterate over schema paths to find unique fields
+		schema.eachPath((pathName, schemaType) => {
+			// Skip system fields
+			if (['documentId', 'locale', 'status', 'publishedAt', '_id', '__v', 'createdAt', 'updatedAt', 'createdBy', 'updatedBy'].includes(pathName)) {
+				return
+			}
+
+			// Check if this field has unique: true
+			if (schemaType.options?.unique === true) {
+				this.logger.log(`Converting unique index on '${pathName}' to partial unique index for i18n support`)
+
+				// Remove the unique constraint from the field definition
+				schemaType.options.unique = false
+
+				// Remove the internal _index property that Mongoose uses to create indexes
+				// This is where Mongoose stores index definitions from path options
+				if ((schemaType as any)._index) {
+					;(schemaType as any)._index = null
+				}
+
+				// Track this field for index removal
+				fieldsToConvert.push(pathName)
+
+				// Add a partial unique index that only applies to the default locale
+				// This ensures uniqueness across different documents while allowing same-document locale copies
+				indexesToAdd.push({
+					fields: { [pathName]: 1 as const },
+					options: {
+						unique: true,
+						name: `${pathName}_unique_i18n`,
+						partialFilterExpression: {
+							locale: 'en', // Only enforce uniqueness on default locale
+						},
+					},
+				})
+			}
+		})
+
+		// Remove existing unique index definitions for these fields from the schema
+		// Mongoose stores indexes in a private _indexes array
+		const schemaIndexes = (schema as any)._indexes as Array<[Record<string, unknown>, Record<string, unknown>]> | undefined
+		if (schemaIndexes && Array.isArray(schemaIndexes)) {
+			// Filter out single-field unique indexes for fields we're converting
+			const filteredIndexes = schemaIndexes.filter(([fields, options]) => {
+				const fieldKeys = Object.keys(fields)
+				// Keep if it's not a single-field index
+				if (fieldKeys.length !== 1) return true
+				// Keep if it's not one of our fields to convert
+				if (!fieldsToConvert.includes(fieldKeys[0])) return true
+				// Remove if it's a unique index on one of our fields
+				if (options?.unique === true) {
+					this.logger.log(`Removing original unique index definition for '${fieldKeys[0]}'`)
+					return false
+				}
+				return true
+			})
+			;(schema as any)._indexes = filteredIndexes
+		}
+
+		// Add the new partial unique indexes
+		for (const index of indexesToAdd) {
+			schema.index(index.fields, index.options)
+		}
 	}
 
 	/**

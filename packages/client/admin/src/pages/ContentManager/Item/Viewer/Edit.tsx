@@ -154,9 +154,9 @@ const ContentManagerViewerEdit = () => {
 
 	// Add locale mutation
 	const addLocaleMutation = useMutation({
-		mutationFn: (locale: string) =>
-			adapter.content.addLocale(name.key, documentId as string, locale, {}),
-		onSuccess: (_, locale) => {
+		mutationFn: ({ locale, initialData }: { locale: string; initialData: ContentData }) =>
+			adapter.content.addLocale(name.key, documentId as string, locale, initialData),
+		onSuccess: (_, { locale }) => {
 			toast.success('Locale added', {
 				description: `${locale} translation was created`,
 			})
@@ -186,9 +186,12 @@ const ContentManagerViewerEdit = () => {
 		setCurrentStatus('draft')
 	}
 
-	// Handle add locale
+	// Handle add locale - copy current item's data as initial content
 	const handleAddLocale = (locale: string) => {
-		addLocaleMutation.mutate(locale)
+		const currentItem = Array.isArray(item) ? item[0] : item
+		// Strip system fields, keep only user data
+		const { id, _id, documentId: _docId, locale: _locale, status, createdAt, updatedAt, publishedAt, createdBy, updatedBy, __v, ...userData } = currentItem || {}
+		addLocaleMutation.mutate({ locale, initialData: userData as ContentData })
 	}
 
 	// Get current locale status

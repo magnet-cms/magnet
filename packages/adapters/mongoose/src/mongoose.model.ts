@@ -179,7 +179,8 @@ export function createModel<T>(
 				}
 
 				return this.applyLocale(mappedDoc) as BaseSchema<T>
-			} catch (error) {
+			} catch (error: any) {
+				// Handle MongoDB duplicate key errors
 				if (isMongoServerError(error)) {
 					const property = Object.keys(error.keyPattern)[0] ?? 'unknown'
 
@@ -191,6 +192,17 @@ export function createModel<T>(
 							},
 						},
 					])
+				}
+
+				// Handle Mongoose validation errors
+				if (error.name === 'ValidationError' && error.errors) {
+					const validationErrors = Object.entries(error.errors).map(([property, err]: [string, any]) => ({
+						property,
+						constraints: {
+							[err.kind || 'validation']: err.message,
+						},
+					}))
+					throw new ValidationException(validationErrors)
 				}
 
 				throw error

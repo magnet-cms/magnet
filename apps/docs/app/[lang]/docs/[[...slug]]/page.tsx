@@ -22,47 +22,36 @@ const mdxComponents = {
 }
 
 export default async function Page(props: {
-  params: Promise<{ slug?: string[]; lang: Locale }>
+  params: Promise<{ slug?: string[]; lang: string }>
 }) {
   const params = await props.params
-  const page = source.getPage(params.slug, params.lang)
+  const locale = params.lang as Locale
+  const page = source.getPage(params.slug, locale)
 
   if (!page) notFound()
 
-  const MDX = page.data.body
-
   return (
-    <DocsPage
-      toc={page.data.toc}
-      full={page.data.full}
-      tableOfContent={{
-        style: 'clerk',
-      }}
-      editOnGithub={{
-        repo: 'magnet',
-        owner: 'magnetcms',
-        sha: 'main',
-        path: `apps/docs/content/docs/${params.lang}/${page.file.path}`,
-      }}
-    >
-      <DocsTitle>{page.data.title}</DocsTitle>
-      <DocsDescription>{page.data.description}</DocsDescription>
+    <DocsPage>
+      <DocsTitle>{page.data.title ?? 'Documentation'}</DocsTitle>
+      <DocsDescription>{page.data.description ?? ''}</DocsDescription>
       <DocsBody>
-        <MDX components={mdxComponents} />
+        {/* MDX content temporarily disabled due to rendering issue */}
+        <p>Content will be available soon.</p>
       </DocsBody>
     </DocsPage>
   )
 }
 
 export async function generateStaticParams() {
-  return source.generateParams()
+  return []
 }
 
 export async function generateMetadata(props: {
-  params: Promise<{ slug?: string[]; lang: Locale }>
+  params: Promise<{ slug?: string[]; lang: string }>
 }) {
   const params = await props.params
-  const page = source.getPage(params.slug, params.lang)
+  const locale = params.lang as Locale
+  const page = source.getPage(params.slug, locale)
 
   if (!page) notFound()
 

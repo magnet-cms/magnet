@@ -1,3 +1,4 @@
+import { ValidationException } from '@magnet/common'
 import {
 	Body,
 	Controller,
@@ -242,6 +243,10 @@ export class ContentController {
 				{ createdBy: body.createdBy },
 			)
 		} catch (error) {
+			// Let ValidationException propagate to global filter for proper error formatting
+			if (error instanceof ValidationException) {
+				throw error
+			}
 			throw new HttpException(
 				error instanceof Error ? error.message : 'Failed to add locale',
 				HttpStatus.BAD_REQUEST,

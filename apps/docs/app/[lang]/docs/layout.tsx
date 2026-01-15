@@ -10,27 +10,19 @@ export default async function Layout({
   params,
 }: {
   children: ReactNode
-  params: Promise<{ lang: Locale }>
+  params: Promise<{ lang: string }>
 }) {
   const { lang } = await params
+  const locale = lang as Locale
 
   return (
     <DocsLayout
-      tree={source.pageTree[lang]}
+      tree={source.pageTree[locale]!}
       {...baseOptions}
       sidebar={{
         defaultOpenLevel: 1,
       }}
-      i18n={{
-        locale: lang,
-        onChange: (newLocale) => {
-          // Client-side navigation handled by DocsLayout
-        },
-        locales: i18n.languages.map((locale) => ({
-          locale,
-          name: getLanguageLabel(locale),
-        })),
-      }}
+      i18n
     >
       {children}
     </DocsLayout>
