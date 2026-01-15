@@ -186,6 +186,7 @@ export class ContentController {
 			return result
 		} catch (error) {
 			if (error instanceof HttpException) throw error
+			if (error instanceof ValidationException) throw error
 			throw new HttpException(
 				error instanceof Error ? error.message : 'Failed to publish document',
 				HttpStatus.BAD_REQUEST,

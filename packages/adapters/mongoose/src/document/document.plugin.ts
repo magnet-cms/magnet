@@ -93,31 +93,38 @@ export class DocumentPluginService {
 				return
 			}
 
-			// Check if this field has unique: true
-			if (schemaType.options?.unique === true) {
+			// Check if this field has unique: true OR has a unique index defined
+			const hasUniqueOption = schemaType.options?.unique === true
+			const hasUniqueIndex = (schemaType as any)._index?.unique === true
+
+			if (hasUniqueOption || hasUniqueIndex) {
 				this.logger.log(`Converting unique index on '${pathName}' to partial unique index for i18n support`)
 
 				// Remove the unique constraint from the field definition
-				schemaType.options.unique = false
+				if (schemaType.options) {
+					schemaType.options.unique = false
+					schemaType.options.index = false
+				}
 
 				// Remove the internal _index property that Mongoose uses to create indexes
 				// This is where Mongoose stores index definitions from path options
-				if ((schemaType as any)._index) {
-					;(schemaType as any)._index = null
-				}
+				;(schemaType as any)._index = undefined
 
 				// Track this field for index removal
 				fieldsToConvert.push(pathName)
 
-				// Add a partial unique index that only applies to the default locale
-				// This ensures uniqueness across different documents while allowing same-document locale copies
+				// Add a partial unique index that only applies to the default locale AND draft status
+				// This ensures uniqueness across different documents while allowing:
+				// - Same-document locale copies (different locales can share tagID)
+				// - Same-document draft/published copies (published can have same tagID as draft)
 				indexesToAdd.push({
 					fields: { [pathName]: 1 as const },
 					options: {
 						unique: true,
 						name: `${pathName}_unique_i18n`,
 						partialFilterExpression: {
-							locale: 'en', // Only enforce uniqueness on default locale
+							locale: 'en',
+							status: 'draft',
 						},
 					},
 				})
@@ -133,11 +140,12 @@ export class DocumentPluginService {
 				const fieldKeys = Object.keys(fields)
 				// Keep if it's not a single-field index
 				if (fieldKeys.length !== 1) return true
+				const fieldName = fieldKeys[0] as string
 				// Keep if it's not one of our fields to convert
-				if (!fieldsToConvert.includes(fieldKeys[0])) return true
+				if (!fieldsToConvert.includes(fieldName)) return true
 				// Remove if it's a unique index on one of our fields
 				if (options?.unique === true) {
-					this.logger.log(`Removing original unique index definition for '${fieldKeys[0]}'`)
+					this.logger.log(`Removing original unique index definition for '${fieldName}'`)
 					return false
 				}
 				return true

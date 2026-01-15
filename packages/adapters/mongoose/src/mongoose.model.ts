@@ -366,10 +366,18 @@ export function createModel<T>(
 			}
 
 			// Normal findOne operation
-			const result = await this.model.findOne(mapQueryId(query)).lean()
-			if (!result) return null
-			const mappedResult = mapDocumentId(result)
-			return this.applyLocale(mappedResult) as BaseSchema<T>
+			try {
+				const result = await this.model.findOne(mapQueryId(query)).lean()
+				if (!result) return null
+				const mappedResult = mapDocumentId(result)
+				return this.applyLocale(mappedResult) as BaseSchema<T>
+			} catch (error: any) {
+				// Handle CastError when trying to find by id with non-ObjectId value
+				if (error.name === 'CastError' && error.path === '_id') {
+					return null
+				}
+				throw error
+			}
 		}
 
 		async findMany(query: Partial<BaseSchema<T>>): Promise<BaseSchema<T>[]> {
@@ -444,9 +452,17 @@ export function createModel<T>(
 			}
 
 			// Normal findMany operation
-			const results = await this.model.find(mapQueryId(query)).lean()
-			const mappedResults = results.map((result) => mapDocumentId<T>(result))
-			return this.applyLocale(mappedResults) as BaseSchema<T>[]
+			try {
+				const results = await this.model.find(mapQueryId(query)).lean()
+				const mappedResults = results.map((result) => mapDocumentId<T>(result))
+				return this.applyLocale(mappedResults) as BaseSchema<T>[]
+			} catch (error: any) {
+				// Handle CastError when trying to find by id with non-ObjectId value
+				if (error.name === 'CastError' && error.path === '_id') {
+					return []
+				}
+				throw error
+			}
 		}
 
 		async update(
