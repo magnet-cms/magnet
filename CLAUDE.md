@@ -216,3 +216,40 @@ magnet/
 | Lint | `bun run lint` |
 | E2E tests | `bun run test:e2e` |
 | Type check | `bun run check-types` |
+| Add changeset | `bun changeset` |
+
+---
+
+## Publishing Packages
+
+This project uses [Changesets](https://github.com/changesets/changesets) for automated versioning and publishing.
+
+### Adding a Changeset
+
+When making changes that should be released, create a changeset:
+
+```bash
+bun changeset
+```
+
+This prompts you to:
+1. Select which packages changed
+2. Choose bump type (major/minor/patch)
+3. Write a change summary
+
+### Release Workflow
+
+1. **Develop**: Add changesets as you make changes
+2. **Merge to main**: CI creates a "Release Packages" PR automatically
+3. **Review PR**: Shows version bumps and changelog updates
+4. **Merge PR**: Triggers automatic npm publish
+
+### Changeset Guidelines
+
+- **patch**: Bug fixes, documentation updates
+- **minor**: New features, non-breaking changes
+- **major**: Breaking changes
+
+### Required GitHub Secrets
+
+- `NPM_TOKEN`: npm automation token for publishing

@@ -1,28 +1,25 @@
-name: Publish to NPM
+name: Release
 
 on:
   push:
-    tags:
-      - "v*"
+    branches:
+      - main
   workflow_dispatch:
-    inputs:
-      tag:
-        description: "Version tag to publish (e.g., v1.0.0)"
-        required: false
-        type: string
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
-  publish:
+  release:
+    name: Release
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
+      pull-requests: write
       id-token: write
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -38,181 +35,14 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      - name: Build all packages
-        run: bun run build
-
-      - name: Configure Git
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-
-      - name: Prepare packages for publishing
-        run: |
-          # Function to update workspace dependencies in package.json
-          update_workspace_deps() {
-            local pkg_dir=$1
-            local pkg_json="$pkg_dir/package.json"
-            
-            if [ ! -f "$pkg_json" ]; then
-              return
-            fi
-            
-            # Check if package is private
-            is_private=$(node -p "require('$pkg_json').private || false")
-            if [ "$is_private" = "true" ]; then
-              echo "Skipping private package: $pkg_dir"
-              return
-            fi
-            
-            echo "Processing: $pkg_dir"
-            
-            # Replace workspace:* with actual versions
-            node -e "
-              const fs = require('fs');
-              const path = require('path');
-              const pkg = require('$pkg_json');
-              
-              const replaceWorkspace = (deps) => {
-                if (!deps) return;
-                for (const [name, version] of Object.entries(deps)) {
-                  if (version.startsWith('workspace:')) {
-                    // Find the actual package and get its version
-                    const pkgName = name.replace('@magnet/', '').replace('@repo/', '');
-                    let pkgPath = '';
-                    
-                    if (name.startsWith('@magnet/adapter-')) {
-                      pkgPath = path.join('$PWD', 'packages', 'adapters', pkgName.replace('adapter-', ''), 'package.json');
-                    } else if (name.startsWith('@magnet/plugin-')) {
-                      pkgPath = path.join('$PWD', 'packages', 'plugins', pkgName.replace('plugin-', ''), 'package.json');
-                    } else if (name.startsWith('@magnet/')) {
-                      // Try different locations
-                      const locations = [
-                        path.join('$PWD', 'packages', pkgName, 'package.json'),
-                        path.join('$PWD', 'packages', 'client', pkgName, 'package.json')
-                      ];
-                      for (const loc of locations) {
-                        if (fs.existsSync(loc)) {
-                          pkgPath = loc;
-                          break;
-                        }
-                      }
-                    }
-                    
-                    if (pkgPath && fs.existsSync(pkgPath)) {
-                      const depPkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
-                      deps[name] = '^' + depPkg.version;
-                      console.log(\`  Updated \${name}: \${version} -> ^\${depPkg.version}\`);
-                    }
-                  }
-                }
-              };
-              
-              replaceWorkspace(pkg.dependencies);
-              replaceWorkspace(pkg.devDependencies);
-              replaceWorkspace(pkg.peerDependencies);
-              
-              fs.writeFileSync('$pkg_json', JSON.stringify(pkg, null, 2) + '\n');
-            "
-          }
-
-          # Process all package directories
-          for dir in packages/*/; do
-            update_workspace_deps "$dir"
-          done
-
-          for dir in packages/client/*/; do
-            update_workspace_deps "$dir"
-          done
-
-          for dir in packages/adapters/*/; do
-            update_workspace_deps "$dir"
-          done
-
-          for dir in packages/plugins/*/; do
-            update_workspace_deps "$dir"
-          done
-
-      - name: Publish packages
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: |
-          # Function to publish a package
-          publish_package() {
-            local pkg_dir=$1
-            local pkg_json="$pkg_dir/package.json"
-            
-            if [ ! -f "$pkg_json" ]; then
-              return
-            fi
-            
-            # Check if package is private
-            is_private=$(node -p "require('$pkg_json').private || false")
-            if [ "$is_private" = "true" ]; then
-              echo "⏭️  Skipping private package: $pkg_dir"
-              return
-            fi
-            
-            # Get package name and version
-            pkg_name=$(node -p "require('$pkg_json').name")
-            pkg_version=$(node -p "require('$pkg_json').version")
-            
-            echo "📦 Publishing $pkg_name@$pkg_version"
-            
-            cd "$pkg_dir"
-            
-            # Check if version already exists
-            if npm view "$pkg_name@$pkg_version" version 2>/dev/null; then
-              echo "⚠️  Version $pkg_version already published for $pkg_name, skipping"
-            else
-              npm publish --access public
-              echo "✅ Successfully published $pkg_name@$pkg_version"
-            fi
-            
-            cd - > /dev/null
-          }
-
-          # Publish order matters - publish base packages first
-          echo "Publishing base packages..."
-          publish_package "packages/utils"
-          publish_package "packages/common"
-
-          echo "Publishing adapters..."
-          for dir in packages/adapters/*/; do
-            publish_package "$dir"
-          done
-
-          echo "Publishing core..."
-          publish_package "packages/core"
-
-          echo "Publishing client packages..."
-          publish_package "packages/client/ui"
-          publish_package "packages/client/admin"
-
-          echo "Publishing plugins..."
-          for dir in packages/plugins/*/; do
-            publish_package "$dir"
-          done
-
-          echo "✨ Publishing complete!"
-
-      - name: Create GitHub Release
-        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
-        uses: actions/create-release@v1
+      - name: Create Release Pull Request or Publish
+        id: changesets
+        uses: changesets/action@v1
+        with:
+          version: bun run version-packages
+          publish: bun run release
+          title: "chore: release packages"
+          commit: "chore: release packages"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref_name }}
-          release_name: Release ${{ github.ref_name }}
-          body: |
-            ## Packages Published
-
-            This release includes all Magnet CMS packages published to npm.
-
-            ### Installation
-            ```bash
-            npm install @magnet/core @magnet/admin
-            ```
-
-            See the [documentation](https://github.com/magnet/magnet) for more details.
-          draft: false
-          prerelease: false
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

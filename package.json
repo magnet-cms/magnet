@@ -10,14 +10,13 @@
     "dev:docs": "turbo run dev --filter=@magnet/docs",
     "test:e2e": "turbo run test --filter=@magnet/e2e",
     "prepare": "husky",
-    "prepare-publish": "node scripts/prepare-publish.js",
-    "validate-publish": "node scripts/validate-publish.js",
-    "bump:patch": "node scripts/bump-version.js patch",
-    "bump:minor": "node scripts/bump-version.js minor",
-    "bump:major": "node scripts/bump-version.js major",
-    "version": "node scripts/bump-version.js"
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "bun run build && changeset publish"
   },
   "devDependencies": {
+    "@changesets/changelog-github": "0.5.2",
+    "@changesets/cli": "2.29.8",
     "@commitlint/cli": "^20.3.1",
     "@commitlint/config-conventional": "^20.3.1",
     "cross-env": "^7.0.3",
