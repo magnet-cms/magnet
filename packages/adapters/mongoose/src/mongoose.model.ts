@@ -1,5 +1,6 @@
 import { BaseSchema, Model, ValidationException } from '@magnet/common'
 import { Document, Model as MongooseModel } from 'mongoose'
+import { MongooseQueryBuilder } from '~/mongoose.query-builder'
 import { isMongoServerError, mapDocumentId, mapQueryId } from '~/utils'
 
 export function createModel<T>(
@@ -196,12 +197,14 @@ export function createModel<T>(
 
 				// Handle Mongoose validation errors
 				if (error.name === 'ValidationError' && error.errors) {
-					const validationErrors = Object.entries(error.errors).map(([property, err]: [string, any]) => ({
-						property,
-						constraints: {
-							[err.kind || 'validation']: err.message,
-						},
-					}))
+					const validationErrors = Object.entries(error.errors).map(
+						([property, err]: [string, any]) => ({
+							property,
+							constraints: {
+								[err.kind || 'validation']: err.message,
+							},
+						}),
+					)
 					throw new ValidationException(validationErrors)
 				}
 
@@ -538,6 +541,37 @@ export function createModel<T>(
 			}
 
 			return !!result
+		}
+
+		/**
+		 * Create a query builder for advanced queries with sorting, pagination, and operators.
+		 * The query builder inherits the current locale/version context.
+		 *
+		 * @example
+		 * ```typescript
+		 * const results = await model.query()
+		 *   .where({ status: 'active', age: { $gte: 18 } })
+		 *   .sort({ createdAt: -1 })
+		 *   .limit(10)
+		 *   .exec()
+		 * ```
+		 */
+		query(): MongooseQueryBuilder<T> {
+			return new MongooseQueryBuilder<T>(
+				this.model,
+				this.currentLocale,
+				this.currentVersion,
+			)
+		}
+
+		/**
+		 * Get access to the native Mongoose model.
+		 * Use with caution - bypasses Magnet abstractions like locale and versioning.
+		 *
+		 * @returns The underlying Mongoose Model
+		 */
+		native(): MongooseModel<Document & BaseSchema<T>> {
+			return this.model
 		}
 	}
 }

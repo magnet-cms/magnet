@@ -63,25 +63,29 @@ export class HistoryService {
 
 	/**
 	 * Get the next version number for a document+locale
+	 * Optimized: Uses query builder to fetch only the latest version instead of all versions
 	 */
 	private async getNextVersionNumber(
 		documentId: string,
 		collection: string,
 		locale: string,
 	): Promise<number> {
-		const versions = await this.findVersionsByLocale(
-			documentId,
-			collection,
-			locale,
-		)
+		const latestVersion = await this.historyModel
+			.query()
+			.where({
+				documentId,
+				schemaName: collection,
+				locale,
+			} as any)
+			.sort({ versionNumber: -1 } as any)
+			.limit(1)
+			.execOne()
 
-		if (versions.length === 0) {
+		if (!latestVersion) {
 			return 1
 		}
 
-		// Find the highest version number
-		const maxVersion = Math.max(...versions.map((v) => v.versionNumber || 1))
-		return maxVersion + 1
+		return (latestVersion.versionNumber || 1) + 1
 	}
 
 	/**
@@ -150,6 +154,7 @@ export class HistoryService {
 
 	/**
 	 * Find the latest version of a document for a specific locale
+	 * Optimized: Uses query builder with sort and limit instead of fetching all versions
 	 * @param documentId The document ID
 	 * @param collection The collection name
 	 * @param locale The locale
@@ -161,25 +166,22 @@ export class HistoryService {
 		locale: string,
 		status?: 'draft' | 'published' | 'archived',
 	): Promise<History | null> {
-		const query: Partial<History> = {
+		const filter: Record<string, any> = {
 			documentId,
 			schemaName: collection,
 			locale,
 		}
 
 		if (status) {
-			query.status = status
+			filter.status = status
 		}
 
-		const versions = await this.historyModel.findMany(query as Partial<History>)
-
-		if (!versions.length) return null
-
-		// Sort by versionNumber in descending order and return the first one
-		const sortedVersions = versions.sort(
-			(a, b) => (b.versionNumber || 0) - (a.versionNumber || 0),
-		)
-		return sortedVersions[0] || null
+		return this.historyModel
+			.query()
+			.where(filter as any)
+			.sort({ versionNumber: -1 } as any)
+			.limit(1)
+			.execOne()
 	}
 
 	/**
@@ -310,6 +312,7 @@ export class HistoryService {
 
 	/**
 	 * Clean up old versions to maintain the maximum number of versions per locale
+	 * Optimized: Uses query builder with count, sort, skip, and limit
 	 * @param documentId The document ID
 	 * @param collection The collection name
 	 * @param locale The locale to clean up
@@ -321,25 +324,31 @@ export class HistoryService {
 	): Promise<void> {
 		const maxVersions = await this.getMaxVersions()
 
-		// Get all versions for this document+locale
-		const versions = await this.findVersionsByLocale(
-			documentId,
-			collection,
-			locale,
-		)
+		// Count versions for this document+locale
+		const totalVersions = await this.historyModel
+			.query()
+			.where({
+				documentId,
+				schemaName: collection,
+				locale,
+			} as any)
+			.count()
 
 		// If we have more versions than the maximum, delete the oldest ones
-		if (versions.length > maxVersions) {
-			// Sort by versionNumber in ascending order (oldest first)
-			const sortedVersions = versions.sort(
-				(a, b) => (a.versionNumber || 0) - (b.versionNumber || 0),
-			)
+		if (totalVersions > maxVersions) {
+			const countToDelete = totalVersions - maxVersions
 
-			// Get the versions to delete (oldest ones)
-			const versionsToDelete = sortedVersions.slice(
-				0,
-				versions.length - maxVersions,
-			)
+			// Get only the oldest versions that need to be deleted
+			const versionsToDelete = await this.historyModel
+				.query()
+				.where({
+					documentId,
+					schemaName: collection,
+					locale,
+				} as any)
+				.sort({ versionNumber: 1 } as any)
+				.limit(countToDelete)
+				.exec()
 
 			// Delete each version
 			for (const version of versionsToDelete) {

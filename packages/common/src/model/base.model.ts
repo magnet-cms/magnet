@@ -1,3 +1,5 @@
+import type { QueryBuilder } from './query-builder'
+
 export type BaseSchema<T> = { id: string } & T
 
 export abstract class Model<Schema> {
@@ -58,5 +60,32 @@ export abstract class Model<Schema> {
 	restoreVersion(versionId: string): Promise<BaseSchema<Schema> | null> {
 		// This is a base implementation that will be overridden by adapters
 		return Promise.resolve(null)
+	}
+
+	/**
+	 * Create a query builder for advanced queries with sorting, pagination, and operators.
+	 * The query builder inherits the current locale/version context.
+	 *
+	 * @example
+	 * ```typescript
+	 * const results = await model.query()
+	 *   .where({ status: 'active', age: { $gte: 18 } })
+	 *   .sort({ createdAt: -1 })
+	 *   .limit(10)
+	 *   .exec()
+	 * ```
+	 */
+	query(): QueryBuilder<Schema> {
+		throw new Error('QueryBuilder not implemented by this adapter')
+	}
+
+	/**
+	 * Get access to the native database model/collection.
+	 * Use with caution - bypasses Magnet abstractions like locale and versioning.
+	 *
+	 * @returns The underlying database model (e.g., Mongoose Model)
+	 */
+	native(): unknown {
+		throw new Error('Native access not implemented by this adapter')
 	}
 }
