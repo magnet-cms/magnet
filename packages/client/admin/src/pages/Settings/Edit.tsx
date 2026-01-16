@@ -1,11 +1,13 @@
 import { type SchemaMetadata } from '@magnet/common'
 import { Button, Spinner } from '@magnet/ui/components'
 import { names } from '@magnet/utils'
+import { useMemo } from 'react'
 import { useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { FormBuilder } from '~/components/FormBuilder'
 import { Head } from '~/components/Head'
 import { useSetting } from '~/hooks/useDiscovery'
+import { useLocalEnvironment } from '~/hooks/useEnvironment'
 import { useSettingData, useSettingMutation } from '~/hooks/useSetting'
 
 type SettingValue = {
@@ -15,10 +17,20 @@ type SettingValue = {
 	type: string
 }
 
+type EnvironmentItem = {
+	id: string
+	name: string
+	connectionString: string
+	description?: string
+	isDefault: boolean
+	isLocal?: boolean
+}
+
 const SettingsEdit = () => {
 	const { group } = useParams()
 
 	const name = names(group as string)
+	const isEnvironments = name.key === 'environments'
 
 	// Fetch schema metadata
 	const { data: schema } = useSetting(name.key)
@@ -27,20 +39,40 @@ const SettingsEdit = () => {
 	const { data: settingsData, isLoading: isLoadingData } =
 		useSettingData<SettingValue>(name.key)
 
+	// Fetch local environment (only for environments page)
+	const { data: localEnv, isLoading: isLoadingLocal } = useLocalEnvironment()
+
 	// Mutation for updating settings
 	const mutation = useSettingMutation(name.key)
 
 	// Transform settings array to object for form initial values
-	const initialValues = settingsData?.reduce<Record<string, unknown>>(
-		(acc, setting) => {
-			acc[setting.key] = setting.value
-			return acc
-		},
-		{},
-	)
+	const initialValues = useMemo(() => {
+		const values = settingsData?.reduce<Record<string, unknown>>(
+			(acc, setting) => {
+				acc[setting.key] = setting.value
+				return acc
+			},
+			{},
+		)
+
+		// For environments, prepend the local environment to the list
+		if (isEnvironments && values && localEnv) {
+			const customEnvs = (values.environments as EnvironmentItem[]) || []
+			values.environments = [localEnv, ...customEnvs]
+		}
+
+		return values
+	}, [settingsData, isEnvironments, localEnv])
 
 	// Handle form submission
 	const handleSubmit = (data: Record<string, unknown>) => {
+		// For environments, filter out the local environment before saving
+		if (isEnvironments && Array.isArray(data.environments)) {
+			data.environments = (data.environments as EnvironmentItem[]).filter(
+				(env) => !env.isLocal,
+			)
+		}
+
 		mutation.mutate(data, {
 			onSuccess: () => {
 				toast.success('Settings saved', {
@@ -54,7 +86,8 @@ const SettingsEdit = () => {
 	}
 
 	// Loading state
-	if (!schema || isLoadingData) {
+	const isLoading = !schema || isLoadingData || (isEnvironments && isLoadingLocal)
+	if (isLoading) {
 		return (
 			<div className="flex items-center justify-center h-64">
 				<Spinner />

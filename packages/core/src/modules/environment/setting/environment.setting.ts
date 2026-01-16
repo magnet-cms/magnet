@@ -1,5 +1,5 @@
 import { Prop, Setting, UI } from '@magnet/common'
-import { IsArray, IsBoolean, IsOptional, IsString } from 'class-validator'
+import { IsArray } from 'class-validator'
 
 export interface EnvironmentItem {
 	id: string
@@ -11,20 +11,19 @@ export interface EnvironmentItem {
 }
 
 @Setting()
-export class EnvironmentSettings {
-	@Prop({ required: true, default: [] })
+export class Environments {
+	@Prop({ required: false, default: [] })
 	@IsArray()
-	@UI({ type: 'array', label: 'Environments', tab: 'Main' })
+	@UI({
+		type: 'table',
+		label: 'Environments',
+		description: 'Configure database environments for your application',
+		columns: [
+			{ key: 'name', header: 'Name', type: 'text' },
+			{ key: 'connectionString', header: 'Connection String', type: 'code' },
+			{ key: 'description', header: 'Description', type: 'text' },
+			{ key: 'isDefault', header: 'Default', type: 'status' },
+		],
+	})
 	environments!: EnvironmentItem[]
-
-	@Prop({ required: true, default: 'local' })
-	@IsString()
-	@UI({ type: 'text', label: 'Active Environment', side: true })
-	activeEnvironment!: string
-
-	@Prop({ required: false, default: true })
-	@IsBoolean()
-	@IsOptional()
-	@UI({ type: 'checkbox', label: 'Use Local by Default', side: true })
-	useLocalByDefault!: boolean
 }

@@ -30,7 +30,7 @@ export const EnvironmentProvider: React.FC<{ children: React.ReactNode }> = ({
 		const stored = environments.find((env) => env.id === storedId)
 		const defaultEnv = environments.find((env) => env.isDefault)
 
-		setActiveEnvironmentState(stored || defaultEnv || environments[0])
+		setActiveEnvironmentState(stored ?? defaultEnv ?? environments[0] ?? null)
 	}, [environments])
 
 	const setActiveEnvironment = (environment: Environment) => {

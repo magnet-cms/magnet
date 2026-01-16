@@ -3,6 +3,7 @@ import {
 	UICombobox,
 	UIMultiSelect,
 	UISelect,
+	UITable,
 	UITypes,
 } from '@magnet/common'
 import {
@@ -14,8 +15,10 @@ import {
 	RHFPhone,
 	RHFQuantity,
 	RHFRadioGroup,
+	RHFRichText,
 	RHFSelect,
 	RHFSwitch,
+	RHFTable,
 	RHFText,
 	RHFTextarea,
 } from '@magnet/ui/components'
@@ -127,7 +130,14 @@ export const fieldRenderer: Record<
 		/>
 	),
 	relationship: (_prop) => <div>relationship</div>,
-	richText: (_prop) => <div>richText</div>,
+	richText: (prop) => (
+		<RHFRichText
+			key={prop.name}
+			name={prop.name}
+			label={capitalize(prop.ui?.label || prop.name)}
+			description={prop.ui?.description}
+		/>
+	),
 	text: (prop) => (
 		<RHFText
 			key={prop.name}
@@ -181,6 +191,21 @@ export const fieldRenderer: Record<
 			description={prop.ui?.description}
 		/>
 	),
-	table: (_prop: SchemaProperty) => <div>table</div>,
+	table: (prop) => {
+		const ui = prop.ui as UITable
+		return (
+			<RHFTable
+				key={prop.name}
+				name={prop.name}
+				label={capitalize(ui?.label || prop.name)}
+				description={ui?.description}
+				columns={ui?.columns || []}
+				addButtonLabel="Add Environment"
+				editDialogTitle="Edit Environment"
+				addDialogTitle="Add Environment"
+				dialogDescription="Configure a database environment for your application."
+			/>
+		)
+	},
 	upload: (_prop) => <div>upload</div>,
 }

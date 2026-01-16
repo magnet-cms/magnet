@@ -19,6 +19,8 @@ export const buildFormSchema = (
 		email: () => z.string().email(),
 		text: () => z.string(),
 		switch: () => z.boolean(),
+		table: () => z.array(z.record(z.unknown())),
+		array: () => z.array(z.unknown()),
 	}
 
 	const validationMappings: Record<

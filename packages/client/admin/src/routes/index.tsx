@@ -26,7 +26,6 @@ import Playground from '~/pages/Playground'
 import { SchemaPlaygroundEditor } from '~/pages/Playground/Editor'
 import Settings from '~/pages/Settings'
 import SettingsEdit from '~/pages/Settings/Edit'
-import EnvironmentsSettings from '~/pages/Settings/Environments'
 
 const withSuspense = (Component: React.ComponentType<any>) => (
 	<Suspense fallback={<Loader />}>
@@ -124,10 +123,6 @@ export const routes = [
 									{
 										path: '',
 										element: <Settings />,
-									},
-									{
-										path: 'environments',
-										element: <EnvironmentsSettings />,
 									},
 									{
 										path: ':group',

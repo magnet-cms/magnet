@@ -21,40 +21,39 @@ export class EnvironmentService {
 		return `${db.type}://${db.host}:${db.port}/${db.database}`
 	}
 
-	async findAll(): Promise<EnvironmentItem[]> {
-		// Get local environment from module options (always first, read-only)
-		const localEnv: EnvironmentItem = {
+	/**
+	 * Get the local environment from server configuration
+	 * This is always present and connection string cannot be changed
+	 */
+	getLocalEnvironment(): EnvironmentItem {
+		return {
 			id: 'local',
 			name: 'Local',
 			connectionString: this.getConnectionString(),
 			description: 'Local environment from application configuration',
-			isDefault: false,
+			isDefault: true,
 			isLocal: true,
 		}
+	}
+
+	async findAll(): Promise<EnvironmentItem[]> {
+		// Get local environment from module options (always first, read-only)
+		const localEnv = this.getLocalEnvironment()
 
 		// Get custom environments from settings
-		const settings = await this.settingsService.getSettingsByGroup(
-			'environmentsettings',
-		)
+		const settings =
+			await this.settingsService.getSettingsByGroup('environments')
 		const environmentsSetting = settings.find((s) => s.key === 'environments')
 		const customEnvs: EnvironmentItem[] =
 			(environmentsSetting?.value as EnvironmentItem[]) || []
 
-		// Check if local should be default
+		// Check if any custom env is default
 		const hasDefault = customEnvs.some((env) => env.isDefault)
-		if (!hasDefault) {
-			localEnv.isDefault = true
+		if (hasDefault) {
+			localEnv.isDefault = false
 		}
 
 		return [localEnv, ...customEnvs]
-	}
-
-	async getActiveEnvironment(): Promise<string> {
-		const settings = await this.settingsService.getSettingsByGroup(
-			'environmentsettings',
-		)
-		const activeSetting = settings.find((s) => s.key === 'activeEnvironment')
-		return (activeSetting?.value as string) || 'local'
 	}
 
 	async testConnection(connectionString: string): Promise<boolean> {

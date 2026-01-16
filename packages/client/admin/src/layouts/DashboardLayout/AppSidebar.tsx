@@ -26,16 +26,14 @@ export const AppSidebar = ({
 		}
 	}) || [{ title: 'No Content Available', url: '/' }]
 
-	const settingsItems = [
-		{ title: 'Environments', url: '/settings/environments' },
-		...(settings?.map((item: string) => {
+	const settingsItems =
+		settings?.map((item: string) => {
 			const name = names(item)
 			return {
 				title: name.title,
 				url: `/settings/${name.key}`,
 			}
-		}) || []),
-	]
+		}) || []
 
 	const sidebarMenus = [
 		{
@@ -49,14 +47,6 @@ export const AppSidebar = ({
 			title: 'Playground',
 			url: '/playground',
 			icon: Boxes,
-			items: [
-				{ title: 'All Schemas', url: '/playground' },
-				{ title: 'Create New', url: '/playground/new' },
-				...contentManagerItems.map((item) => ({
-					title: item.title,
-					url: `/playground/${item.url.split('/').pop()}`,
-				})),
-			],
 		},
 		{
 			title: 'Settings',
