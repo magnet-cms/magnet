@@ -1,4 +1,10 @@
-import { BaseSchema, Model, ValidationException } from '@magnet/common'
+import {
+	BaseSchema,
+	Model,
+	ModelCreateOptions,
+	ModelUpdateOptions,
+	ValidationException,
+} from '@magnet/common'
 import { Document, Model as MongooseModel } from 'mongoose'
 import { MongooseQueryBuilder } from '~/mongoose.query-builder'
 import { isMongoServerError, mapDocumentId, mapQueryId } from '~/utils'
@@ -169,9 +175,22 @@ export function createModel<T>(
 			})
 		}
 
-		async create(data: Partial<BaseSchema<T>>): Promise<BaseSchema<T>> {
+		async create(
+			data: Partial<BaseSchema<T>>,
+			options?: ModelCreateOptions,
+		): Promise<BaseSchema<T>> {
 			try {
-				const createdDoc = await this.model.create(data)
+				let createdDoc: any
+
+				if (options?.skipValidation) {
+					// Create document without validation (for drafts)
+					const doc = new this.model(data)
+					createdDoc = await doc.save({ validateBeforeSave: false })
+				} else {
+					// Normal create with validation
+					createdDoc = await this.model.create(data)
+				}
+
 				const mappedDoc = mapDocumentId<T>(createdDoc.toObject())
 
 				// If versioning is enabled, create a version
@@ -471,6 +490,7 @@ export function createModel<T>(
 		async update(
 			query: Partial<BaseSchema<T>>,
 			data: Partial<BaseSchema<T>>,
+			options?: ModelUpdateOptions,
 		): Promise<BaseSchema<T>> {
 			const mongooseQuery = mapQueryId(query)
 			const mongooseData = mapQueryId(data)
@@ -490,6 +510,19 @@ export function createModel<T>(
 
 				// Return the updated data without actually updating the document
 				return updatedData as BaseSchema<T>
+			}
+
+			// Handle update with skipValidation option
+			if (options?.skipValidation) {
+				const doc = await this.model.findOne(mongooseQuery)
+				if (!doc) throw new Error('Document not found')
+
+				// Update fields manually
+				Object.assign(doc, mongooseData)
+				await doc.save({ validateBeforeSave: false })
+
+				const mappedResult = mapDocumentId<T>(doc.toObject())
+				return this.applyLocale(mappedResult) as BaseSchema<T>
 			}
 
 			// Normal update operation

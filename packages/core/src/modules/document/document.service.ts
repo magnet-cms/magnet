@@ -77,8 +77,10 @@ export class DocumentService {
 			createdBy: options.createdBy,
 		}
 
+		// Skip validation for drafts - validation happens on publish
 		const created = await model.create(
 			documentData as unknown as Partial<T & { id: string }>,
+			{ skipValidation: true },
 		)
 		return created as unknown as Document<T>
 	}
@@ -237,8 +239,10 @@ export class DocumentService {
 					updatedAt: now,
 					updatedBy: options.updatedBy,
 				}
+				// Skip validation for drafts - validation happens on publish
 				const created = await model.create(
 					draftData as unknown as Partial<T & { id: string }>,
+					{ skipValidation: true },
 				)
 				return created as unknown as Document<T>
 			}
@@ -253,9 +257,11 @@ export class DocumentService {
 			updatedBy: options.updatedBy,
 		}
 
+		// Skip validation for drafts - validation happens on publish
 		const updated = await model.update(
 			query as unknown as Partial<T & { id: string }>,
 			updateData as unknown as Partial<T & { id: string }>,
+			{ skipValidation: true },
 		)
 
 		return updated as unknown as Document<T>
@@ -453,8 +459,10 @@ export class DocumentService {
 			createdBy: options.createdBy,
 		}
 
+		// Skip validation for drafts - validation happens on publish
 		const created = await model.create(
 			documentData as unknown as Partial<T & { id: string }>,
+			{ skipValidation: true },
 		)
 		return created as unknown as Document<T>
 	}

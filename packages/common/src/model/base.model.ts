@@ -2,9 +2,20 @@ import type { QueryBuilder } from './query-builder'
 
 export type BaseSchema<T> = { id: string } & T
 
+export interface ModelCreateOptions {
+	/** Skip database-level validation (useful for draft documents) */
+	skipValidation?: boolean
+}
+
+export interface ModelUpdateOptions {
+	/** Skip database-level validation (useful for draft documents) */
+	skipValidation?: boolean
+}
+
 export abstract class Model<Schema> {
 	abstract create(
 		data: Partial<BaseSchema<Schema>>,
+		options?: ModelCreateOptions,
 	): Promise<BaseSchema<Schema>>
 	abstract find(): Promise<BaseSchema<Schema>[]>
 	abstract findById(id: string): Promise<BaseSchema<Schema> | null>
@@ -17,6 +28,7 @@ export abstract class Model<Schema> {
 	abstract update(
 		query: Partial<BaseSchema<Schema>>,
 		data: Partial<BaseSchema<Schema>>,
+		options?: ModelUpdateOptions,
 	): Promise<BaseSchema<Schema>>
 	abstract delete(query: Partial<BaseSchema<Schema>>): Promise<boolean>
 

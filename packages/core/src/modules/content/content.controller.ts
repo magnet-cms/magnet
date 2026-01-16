@@ -96,6 +96,8 @@ export class ContentController {
 			)
 			return { documentId: result.documentId }
 		} catch (error) {
+			// Let ValidationException propagate to global filter for proper error formatting
+			if (error instanceof ValidationException) throw error
 			throw new HttpException(
 				error instanceof Error ? error.message : 'Failed to create document',
 				HttpStatus.BAD_REQUEST,
@@ -123,6 +125,8 @@ export class ContentController {
 				createdBy: body.createdBy,
 			})
 		} catch (error) {
+			// Let ValidationException propagate to global filter for proper error formatting
+			if (error instanceof ValidationException) throw error
 			throw new HttpException(
 				error instanceof Error ? error.message : 'Failed to create document',
 				HttpStatus.BAD_REQUEST,
@@ -161,6 +165,8 @@ export class ContentController {
 			return result
 		} catch (error) {
 			if (error instanceof HttpException) throw error
+			// Let ValidationException propagate to global filter for proper error formatting
+			if (error instanceof ValidationException) throw error
 			throw new HttpException(
 				error instanceof Error ? error.message : 'Failed to update document',
 				HttpStatus.BAD_REQUEST,
