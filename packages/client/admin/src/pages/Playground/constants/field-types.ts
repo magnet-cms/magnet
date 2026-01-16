@@ -102,6 +102,54 @@ export function getFieldTypeDefinition(
 }
 
 /**
+ * UI subtype definition for field type variations
+ */
+export interface UISubtypeDefinition {
+	id: string
+	label: string
+	description: string
+}
+
+/**
+ * Available UI subtypes for each base field type.
+ * These map to the UITypes in @magnet/common and are rendered by FormBuilder.
+ */
+export const UI_SUBTYPES: Record<FieldType, UISubtypeDefinition[]> = {
+	text: [
+		{ id: 'text', label: 'Text Input', description: 'Single line text' },
+		{ id: 'textarea', label: 'Text Area', description: 'Multi-line text' },
+		{ id: 'email', label: 'Email', description: 'Email with validation' },
+		{ id: 'phone', label: 'Phone', description: 'Phone number input' },
+		{ id: 'richText', label: 'Rich Text', description: 'Rich text editor' },
+	],
+	number: [
+		{ id: 'number', label: 'Number Input', description: 'Standard number field' },
+		{ id: 'quantity', label: 'Quantity', description: 'Number with +/- buttons' },
+	],
+	date: [{ id: 'date', label: 'Date Picker', description: 'Calendar date selection' }],
+	boolean: [
+		{ id: 'switch', label: 'Switch', description: 'Toggle switch' },
+		{ id: 'checkbox', label: 'Checkbox', description: 'Checkbox input' },
+	],
+	select: [
+		{ id: 'select', label: 'Dropdown', description: 'Single select dropdown' },
+		{ id: 'multiSelect', label: 'Multi Select', description: 'Select multiple options' },
+		{ id: 'combobox', label: 'Combobox', description: 'Searchable dropdown' },
+		{ id: 'radio', label: 'Radio Group', description: 'Radio button options' },
+	],
+	relation: [
+		{ id: 'relationship', label: 'Relationship', description: 'Link to another schema' },
+	],
+}
+
+/**
+ * Get UI subtypes for a field type
+ */
+export function getUISubtypes(type: FieldType): UISubtypeDefinition[] {
+	return UI_SUBTYPES[type] || []
+}
+
+/**
  * Get the icon component for a field type
  */
 export function getFieldTypeIcon(type: FieldType): LucideIcon {
