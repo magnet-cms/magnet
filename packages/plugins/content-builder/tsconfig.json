@@ -7,9 +7,9 @@
     "baseUrl": ".",
     "paths": {
       "~/*": ["./src/*"],
-      "@magnet/admin": ["../../client/admin/src/index.ts"],
-      "@magnet/ui/*": ["../../client/ui/src/*"],
-      "@magnet/utils": ["../../utils/src/index.ts"]
+      "@magnet-cms/admin": ["../../client/admin/src/index.ts"],
+      "@magnet-cms/ui/*": ["../../client/ui/src/*"],
+      "@magnet-cms/utils": ["../../utils/src/index.ts"]
     }
   }
 }

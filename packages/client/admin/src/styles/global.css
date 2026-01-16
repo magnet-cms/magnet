@@ -1,4 +1,4 @@
-@import "@magnet/ui/globals.css";
+@import "@magnet-cms/ui/globals.css";
 
 @source "../../../ui/src";
 /* Scan styles directory for plugin-safelist.tsx */
@@ -8,7 +8,7 @@
 @source "../../../../plugins/*/src/frontend";
 
 /* Production - scan installed plugins from node_modules (root hoisted) */
-@source "../../../../../node_modules/@magnet/plugin-*/src/frontend";
+@source "../../../../../node_modules/@magnet-cms/plugin-*/src/frontend";
 
 /* Production - scan from local node_modules if not hoisted */
-@source "../../../node_modules/@magnet/plugin-*/src/frontend";
+@source "../../../node_modules/@magnet-cms/plugin-*/src/frontend";
