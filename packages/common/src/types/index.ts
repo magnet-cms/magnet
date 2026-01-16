@@ -1,4 +1,5 @@
 export * from './admin.types'
+export * from './auth.types'
 export * from './config.types'
 export * from './database.types'
 export * from './decorator.types'

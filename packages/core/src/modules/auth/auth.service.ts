@@ -1,3 +1,4 @@
+import type { AuthStrategy } from '@magnet/common'
 import { MagnetModuleOptions } from '@magnet/common'
 import {
 	BadRequestException,
@@ -6,9 +7,9 @@ import {
 	Injectable,
 	NotFoundException,
 } from '@nestjs/common'
-import { JwtService } from '@nestjs/jwt'
 import { compare, hash } from 'bcryptjs'
 import { UserService } from '~/modules/user'
+import { AUTH_STRATEGY } from './auth.constants'
 import { ChangePasswordDto } from './dto/change-password.dto'
 import { RegisterDTO } from './dto/register.dto'
 import { UpdateProfileDto } from './dto/update-profile.dto'
@@ -17,50 +18,47 @@ import { UpdateProfileDto } from './dto/update-profile.dto'
 export class AuthService {
 	constructor(
 		private userService: UserService,
-		private jwtService: JwtService,
+		@Inject(AUTH_STRATEGY) private readonly authStrategy: AuthStrategy,
 		@Inject(MagnetModuleOptions) private readonly options: MagnetModuleOptions,
 	) {}
 
+	/**
+	 * Register a new user via the configured auth strategy
+	 */
 	async register(registerDto: RegisterDTO) {
-		const existingUser = await this.userService.findOne({
+		return this.authStrategy.register({
 			email: registerDto.email,
+			password: registerDto.password,
+			name: registerDto.name,
+			role: registerDto.role,
 		})
-
-		if (existingUser) throw new ConflictException('Email already in use')
-
-		const hashedPassword = await hash(registerDto.password, 10)
-		const newUser = await this.userService.create({
-			...registerDto,
-			password: hashedPassword,
-		})
-
-		return newUser
 	}
 
+	/**
+	 * Validate user credentials via the configured auth strategy
+	 */
 	async validateUser(email: string, pass: string) {
-		const user = await this.userService.findOne({ email })
-		if (!user) return null
-
-		const isPasswordValid = await compare(pass, user.password)
-		if (!isPasswordValid) return null
-
-		return user
+		return this.authStrategy.validateCredentials(email, pass)
 	}
 
-	async login(user: { id: string; email: string; role: string }) {
-		const payload = { sub: user.id, email: user.email, role: user.role }
-		return {
-			access_token: this.jwtService.sign(payload, {
-				secret: this.options.jwt.secret,
-			}),
-		}
+	/**
+	 * Login with credentials and return tokens via the configured auth strategy
+	 */
+	async login(credentials: { email: string; password: string }) {
+		return this.authStrategy.login(credentials)
 	}
 
+	/**
+	 * Check if any users exist in the system
+	 */
 	async exists() {
 		const users = await this.userService.findAll()
 		return users.length > 0
 	}
 
+	/**
+	 * Get user by ID
+	 */
 	async getUserById(id: string) {
 		const user = await this.userService.findOneById(id)
 		if (!user) throw new NotFoundException('User not found')
@@ -73,6 +71,9 @@ export class AuthService {
 		}
 	}
 
+	/**
+	 * Update user profile
+	 */
 	async updateProfile(userId: string, updateProfileDto: UpdateProfileDto) {
 		const user = await this.userService.findOneById(userId)
 		if (!user) throw new NotFoundException('User not found')
@@ -88,6 +89,9 @@ export class AuthService {
 		return this.getUserById(userId)
 	}
 
+	/**
+	 * Change user password
+	 */
 	async changePassword(userId: string, changePasswordDto: ChangePasswordDto) {
 		const user = await this.userService.findOneById(userId)
 		if (!user) throw new NotFoundException('User not found')
@@ -104,5 +108,12 @@ export class AuthService {
 		await this.userService.update(userId, { password: hashedPassword })
 
 		return { message: 'Password changed successfully' }
+	}
+
+	/**
+	 * Get the current auth strategy name
+	 */
+	getStrategyName(): string {
+		return this.authStrategy.name
 	}
 }

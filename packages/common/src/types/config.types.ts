@@ -1,4 +1,5 @@
 import { Type } from '@nestjs/common'
+import type { AuthConfig } from './auth.types'
 import { DBConfig } from './database.types'
 import type { PluginConfig } from './plugin.types'
 import { StorageConfig } from './storage.types'
@@ -26,6 +27,10 @@ export class MagnetModuleOptions {
 	jwt: {
 		secret: string
 	}
+	/**
+	 * Auth configuration (optional, uses JWT by default)
+	 */
+	auth?: AuthConfig
 	internationalization?: InternationalizationOptions
 	playground?: PlaygroundOptions
 	storage?: StorageConfig
@@ -37,6 +42,7 @@ export class MagnetModuleOptions {
 	constructor({
 		db,
 		jwt,
+		auth,
 		internationalization,
 		playground,
 		storage,
@@ -44,6 +50,7 @@ export class MagnetModuleOptions {
 	}: MagnetModuleOptions) {
 		this.db = db
 		this.jwt = jwt
+		this.auth = auth
 		this.internationalization = internationalization
 		this.playground = playground
 		this.storage = storage

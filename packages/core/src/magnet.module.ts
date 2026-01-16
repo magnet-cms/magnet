@@ -26,12 +26,14 @@ export class MagnetModule {
 		const DBModule = DatabaseModule.register(defaultOptions)
 		const StorageModuleConfig = StorageModule.forRoot(defaultOptions.storage)
 
+		const AuthModuleConfig = AuthModule.forRoot(defaultOptions.auth)
+
 		return {
 			module: MagnetModule,
 			global: true,
 			imports: [
 				AdminModule,
-				AuthModule,
+				AuthModuleConfig,
 				ContentModule,
 				DBModule,
 				DiscoveryModule,

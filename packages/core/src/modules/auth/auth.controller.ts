@@ -1,5 +1,4 @@
 import {
-	BadRequestException,
 	Body,
 	Controller,
 	Get,
@@ -27,22 +26,34 @@ export class AuthController {
 
 	@Post('register')
 	async register(@Body() registerDto: RegisterDTO) {
-		const user = await this.authService.register(registerDto)
-		return this.authService.login(user)
+		await this.authService.register(registerDto)
+		return this.authService.login({
+			email: registerDto.email,
+			password: registerDto.password,
+		})
 	}
 
 	@Post('login')
 	async login(@Body() body: { email: string; password: string }) {
-		const user = await this.authService.validateUser(body.email, body.password)
-		if (!user) throw new BadRequestException('Invalid credentials')
-
-		return this.authService.login(user as AuthenticatedUser)
+		return this.authService.login(body)
 	}
 
 	@UseGuards(JwtAuthGuard)
 	@Get('me')
 	async me(@Request() req: { user: AuthenticatedUser }) {
-		return this.authService.getUserById(req.user.id)
+		try {
+			// Try to get full user info from database
+			return await this.authService.getUserById(req.user.id)
+		} catch {
+			// For external auth providers (Supabase, Auth0) or custom strategies,
+			// the user may not exist in the local database. Return JWT payload instead.
+			return {
+				id: req.user.id,
+				email: req.user.email,
+				role: req.user.role,
+				name: req.user.email.split('@')[0], // Use email prefix as fallback name
+			}
+		}
 	}
 
 	@Get('status')

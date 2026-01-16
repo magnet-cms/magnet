@@ -1,11 +1,23 @@
 ---
 title: Auth Module
-description: Authentication and authorization with JWT
+description: Extensible authentication system with JWT and custom strategies
 ---
 
 # Auth Module
 
-The Auth module provides JWT-based authentication for the admin interface and API.
+The Auth module provides an extensible authentication system for the admin interface and API. By default, it uses JWT-based authentication, but you can implement custom strategies for other providers like Supabase, Auth0, or your own authentication system.
+
+## Quick Start
+
+By default, Magnet uses JWT authentication. No additional configuration is needed:
+
+```ts
+MagnetModule.forRoot({
+  db: { uri: 'mongodb://localhost:27017/myapp' },
+  jwt: { secret: process.env.JWT_SECRET },
+  // auth config is optional - defaults to JWT strategy
+})
+```
 
 ## Auth Service
 
@@ -21,8 +33,8 @@ export class MyService {
     return this.authService.login({ email, password })
   }
 
-  async validateToken(token: string) {
-    return this.authService.validateToken(token)
+  async register(email: string, password: string, name: string) {
+    return this.authService.register({ email, password, name })
   }
 }
 ```
@@ -31,10 +43,12 @@ export class MyService {
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | `/admin/api/auth/login` | Login and get JWT token |
-| POST | `/admin/api/auth/logout` | Logout and invalidate token |
-| GET | `/admin/api/auth/me` | Get current user info |
-| POST | `/admin/api/auth/refresh` | Refresh JWT token |
+| POST | `/auth/register` | Register a new user |
+| POST | `/auth/login` | Login and get access token |
+| GET | `/auth/me` | Get current user info (requires auth) |
+| GET | `/auth/status` | Check authentication status |
+| PUT | `/auth/account/profile` | Update user profile (requires auth) |
+| PUT | `/auth/account/password` | Change password (requires auth) |
 
 ## Guards
 
@@ -58,23 +72,33 @@ export class ProtectedController {
 
 ## Configuration
 
+### Default JWT Strategy
+
 ```ts
 MagnetModule.forRoot({
+  db: { uri: 'mongodb://localhost:27017/myapp' },
+  jwt: { secret: process.env.JWT_SECRET },
   auth: {
-    enabled: true,
-    jwtSecret: process.env.JWT_SECRET,
-    jwtExpiresIn: '7d',
+    strategy: 'jwt', // default
+    jwt: {
+      secret: process.env.JWT_SECRET, // optional, falls back to jwt.secret
+      expiresIn: '7d', // optional, defaults to '7d'
+    },
   },
 })
 ```
 
-### Options
+### Auth Config Options
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `enabled` | boolean | `true` | Enable authentication |
-| `jwtSecret` | string | - | Secret for signing JWTs |
-| `jwtExpiresIn` | string | `'7d'` | Token expiration time |
+| `strategy` | string | `'jwt'` | Authentication strategy name |
+| `jwt.secret` | string | - | JWT signing secret (falls back to `jwt.secret`) |
+| `jwt.expiresIn` | string | `'7d'` | Token expiration time |
+
+## Custom Strategies
+
+Magnet supports custom authentication strategies for integrating with external providers. See the [Custom Auth Strategies](/docs/en/core/auth/custom-strategies) guide for details.
 
 <Callout type="warn">
 Always set `JWT_SECRET` via environment variables in production. Never commit secrets to version control.
