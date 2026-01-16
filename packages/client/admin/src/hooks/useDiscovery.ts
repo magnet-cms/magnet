@@ -1,4 +1,4 @@
-import type { ControllerMetadata, SchemaMetadata } from '@magnet/common'
+import type { ControllerMetadata, SchemaMetadata } from '@magnet-cms/common'
 import { useQuery } from '@tanstack/react-query'
 import { useAdapter } from '~/core/provider/MagnetProvider'
 

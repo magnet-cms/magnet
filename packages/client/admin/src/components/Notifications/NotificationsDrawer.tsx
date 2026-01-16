@@ -4,7 +4,7 @@ import {
 	SheetDescription,
 	SheetHeader,
 	SheetTitle,
-} from '@magnet/ui/components'
+} from '@magnet-cms/ui/components'
 import { Bell } from 'lucide-react'
 import { useNotifications } from '~/contexts/NotificationsContext'
 

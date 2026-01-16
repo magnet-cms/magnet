@@ -84,7 +84,7 @@ export interface MagnetAdminProps {
  *
  * @example
  * // Simplest usage - NestJS standalone
- * import { MagnetAdmin } from '@magnet/admin'
+ * import { MagnetAdmin } from '@magnet-cms/admin'
  *
  * function App() {
  *   return <MagnetAdmin />
@@ -92,7 +92,7 @@ export interface MagnetAdminProps {
  *
  * @example
  * // With custom API URL
- * import { MagnetAdmin } from '@magnet/admin'
+ * import { MagnetAdmin } from '@magnet-cms/admin'
  *
  * function App() {
  *   return (
@@ -105,7 +105,7 @@ export interface MagnetAdminProps {
  *
  * @example
  * // In Next.js with cookie storage
- * import { MagnetAdmin, createCookieStorage } from '@magnet/admin'
+ * import { MagnetAdmin, createCookieStorage } from '@magnet-cms/admin'
  *
  * export default function AdminPage() {
  *   return (
@@ -119,7 +119,7 @@ export interface MagnetAdminProps {
  *
  * @example
  * // Embedded in existing app (memory router)
- * import { MagnetAdmin } from '@magnet/admin'
+ * import { MagnetAdmin } from '@magnet-cms/admin'
  *
  * function AdminSection() {
  *   return (
@@ -132,7 +132,7 @@ export interface MagnetAdminProps {
  *
  * @example
  * // With custom adapter (GraphQL, tRPC, etc.)
- * import { MagnetAdmin } from '@magnet/admin'
+ * import { MagnetAdmin } from '@magnet-cms/admin'
  * import { myGraphQLAdapter } from './adapters/graphql'
  *
  * function App() {

@@ -5,7 +5,7 @@ import type {
 	AuthUser,
 	LoginCredentials,
 	RegisterData,
-} from '@magnet/common'
+} from '@magnet-cms/common'
 import { ConflictException, UnauthorizedException } from '@nestjs/common'
 import { PassportStrategy } from '@nestjs/passport'
 import { compare, hash } from 'bcryptjs'

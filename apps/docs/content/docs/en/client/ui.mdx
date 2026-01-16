@@ -5,12 +5,12 @@ description: Shared UI component library
 
 # UI Components
 
-The `@magnet/ui` package provides reusable React components built with Radix UI and Tailwind CSS.
+The `@magnet-cms/ui` package provides reusable React components built with Radix UI and Tailwind CSS.
 
 ## Installation
 
 ```bash
-bun add @magnet/ui
+bun add @magnet-cms/ui
 ```
 
 ## Components
@@ -20,7 +20,7 @@ bun add @magnet/ui
 #### Input
 
 ```tsx
-import { Input } from '@magnet/ui'
+import { Input } from '@magnet-cms/ui'
 
 <Input
   label="Email"
@@ -33,7 +33,7 @@ import { Input } from '@magnet/ui'
 #### Select
 
 ```tsx
-import { Select } from '@magnet/ui'
+import { Select } from '@magnet-cms/ui'
 
 <Select
   label="Category"
@@ -47,7 +47,7 @@ import { Select } from '@magnet/ui'
 #### Switch
 
 ```tsx
-import { Switch } from '@magnet/ui'
+import { Switch } from '@magnet-cms/ui'
 
 <Switch
   label="Published"
@@ -61,7 +61,7 @@ import { Switch } from '@magnet/ui'
 #### Card
 
 ```tsx
-import { Card, CardHeader, CardContent } from '@magnet/ui'
+import { Card, CardHeader, CardContent } from '@magnet-cms/ui'
 
 <Card>
   <CardHeader>Title</CardHeader>
@@ -72,7 +72,7 @@ import { Card, CardHeader, CardContent } from '@magnet/ui'
 #### Dialog
 
 ```tsx
-import { Dialog, DialogTrigger, DialogContent } from '@magnet/ui'
+import { Dialog, DialogTrigger, DialogContent } from '@magnet-cms/ui'
 
 <Dialog>
   <DialogTrigger>Open</DialogTrigger>
@@ -87,7 +87,7 @@ import { Dialog, DialogTrigger, DialogContent } from '@magnet/ui'
 #### Table
 
 ```tsx
-import { DataTable } from '@magnet/ui'
+import { DataTable } from '@magnet-cms/ui'
 
 <DataTable
   columns={columns}
@@ -100,7 +100,7 @@ import { DataTable } from '@magnet/ui'
 #### Badge
 
 ```tsx
-import { Badge } from '@magnet/ui'
+import { Badge } from '@magnet-cms/ui'
 
 <Badge variant="success">Published</Badge>
 <Badge variant="warning">Draft</Badge>
@@ -122,5 +122,5 @@ Components support theming via CSS variables:
 The package is designed to work with Tailwind CSS v4:
 
 ```css
-@import '@magnet/ui/styles.css';
+@import '@magnet-cms/ui/styles.css';
 ```

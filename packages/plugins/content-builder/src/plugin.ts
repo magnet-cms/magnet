@@ -1,4 +1,4 @@
-import { Plugin } from '@magnet/core'
+import { Plugin } from '@magnet-cms/core'
 import { ContentBuilderModule } from './backend/content-builder.module'
 
 /**

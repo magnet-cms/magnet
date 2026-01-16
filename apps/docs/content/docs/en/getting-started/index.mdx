@@ -30,7 +30,7 @@ Before you begin, ensure you have:
     ### Install Magnet packages
 
     ```bash
-    bun add @magnet/core @magnet/common @magnet/adapter-mongoose
+    bun add @magnet-cms/core @magnet-cms/common @magnet-cms/adapter-mongoose
     ```
   </Step>
   <Step>
@@ -40,8 +40,8 @@ Before you begin, ensure you have:
 
     ```ts
     import { Module } from '@nestjs/common'
-    import { MagnetModule } from '@magnet/core'
-    import { MongooseAdapter } from '@magnet/adapter-mongoose'
+    import { MagnetModule } from '@magnet-cms/core'
+    import { MongooseAdapter } from '@magnet-cms/adapter-mongoose'
 
     @Module({
       imports: [

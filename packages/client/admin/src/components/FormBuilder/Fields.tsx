@@ -5,7 +5,7 @@ import {
 	UISelect,
 	UITable,
 	UITypes,
-} from '@magnet/common'
+} from '@magnet-cms/common'
 import {
 	RHFCheckbox,
 	RHFCombobox,
@@ -21,8 +21,8 @@ import {
 	RHFTable,
 	RHFText,
 	RHFTextarea,
-} from '@magnet/ui/components'
-import { capitalize } from '@magnet/utils'
+} from '@magnet-cms/ui/components'
+import { capitalize } from '@magnet-cms/utils'
 import { ReactElement } from 'react'
 
 export const fieldRenderer: Record<

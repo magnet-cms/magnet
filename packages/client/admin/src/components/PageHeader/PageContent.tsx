@@ -1,4 +1,4 @@
-import { cn } from '@magnet/ui/lib'
+import { cn } from '@magnet-cms/ui/lib'
 import type { PageContentProps } from './types'
 
 export function PageContent({ children, className }: PageContentProps) {

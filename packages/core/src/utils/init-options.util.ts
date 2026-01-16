@@ -1,4 +1,4 @@
-import { MagnetModuleOptions } from '@magnet/common'
+import { MagnetModuleOptions } from '@magnet-cms/common'
 
 export const initOptions = (
 	options?: MagnetModuleOptions,

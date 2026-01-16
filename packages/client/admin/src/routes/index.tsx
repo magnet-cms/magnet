@@ -1,4 +1,4 @@
-import { Toaster } from '@magnet/ui/components'
+import { Toaster } from '@magnet-cms/ui/components'
 import React, { Suspense } from 'react'
 import { Outlet, Route, Routes } from 'react-router-dom'
 import type { RouteObject } from 'react-router-dom'

@@ -1,4 +1,4 @@
-import { PropOptions } from '@magnet/common'
+import { PropOptions } from '@magnet-cms/common'
 import { Prop as MongooseProp } from '@nestjs/mongoose'
 import { SchemaTypes } from 'mongoose'
 

@@ -1,4 +1,4 @@
-import { Button } from '@magnet/ui/components'
+import { Button } from '@magnet-cms/ui/components'
 import React from 'react'
 
 const HomePage: React.FC = () => {

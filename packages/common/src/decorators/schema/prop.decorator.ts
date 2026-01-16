@@ -13,7 +13,7 @@ export function Prop(options?: PropOptions): PropertyDecorator {
 			target,
 		)
 
-		const { Prop } = require(`@magnet/adapter-${adapter}`)
+		const { Prop } = require(`@magnet-cms/adapter-${adapter}`)
 		return Prop(options)(target, propertyKey)
 	}
 }

@@ -12,7 +12,7 @@ import {
 	SidebarMenuButton,
 	SidebarMenuItem,
 	useSidebar,
-} from '@magnet/ui/components'
+} from '@magnet-cms/ui/components'
 import { BadgeCheck, Bell, ChevronsUpDown, LogOut } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useNotifications } from '~/contexts/NotificationsContext'

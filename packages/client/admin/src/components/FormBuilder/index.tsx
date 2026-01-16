@@ -1,5 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { SchemaMetadata, SchemaProperty, UISide, UITab } from '@magnet/common'
+import {
+	SchemaMetadata,
+	SchemaProperty,
+	UISide,
+	UITab,
+} from '@magnet-cms/common'
 import {
 	FormProvider,
 	RHFText,
@@ -7,7 +12,7 @@ import {
 	TabsContent,
 	TabsList,
 	TabsTrigger,
-} from '@magnet/ui/components'
+} from '@magnet-cms/ui/components'
 import { format } from 'date-fns'
 import { ReactElement, useEffect, useRef, useState } from 'react'
 import { SubmitHandler, useForm } from 'react-hook-form'

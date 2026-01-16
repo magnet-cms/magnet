@@ -25,7 +25,7 @@ export class PluginAssetsController {
 		@Param('path') assetPath: string,
 		@Res() res: Response,
 	) {
-		const pluginPackageName = `@magnet/plugin-${pluginName}`
+		const pluginPackageName = `@magnet-cms/plugin-${pluginName}`
 		const pluginPath = this.resolvePluginPath(pluginPackageName)
 
 		if (!pluginPath) {
@@ -83,12 +83,12 @@ export class PluginAssetsController {
 			resolve(
 				process.cwd(),
 				'../../packages/plugins',
-				packageName.replace('@magnet/plugin-', ''),
+				packageName.replace('@magnet-cms/plugin-', ''),
 			),
 			resolve(
 				process.cwd(),
 				'../packages/plugins',
-				packageName.replace('@magnet/plugin-', ''),
+				packageName.replace('@magnet-cms/plugin-', ''),
 			),
 			// Installed as dependency
 			resolve(process.cwd(), 'node_modules', packageName),

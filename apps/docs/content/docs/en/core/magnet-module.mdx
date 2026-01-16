@@ -10,7 +10,7 @@ The `MagnetModule` is the entry point for Magnet functionality in your NestJS ap
 ## forRoot Configuration
 
 ```ts
-import { MagnetModule } from '@magnet/core'
+import { MagnetModule } from '@magnet-cms/core'
 
 MagnetModule.forRoot({
   adapter: adapter,       // Required: Database adapter
@@ -26,7 +26,7 @@ MagnetModule.forRoot({
 For dynamic configuration:
 
 ```ts
-import { MagnetModule } from '@magnet/core'
+import { MagnetModule } from '@magnet-cms/core'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 
 MagnetModule.forRootAsync({
@@ -47,7 +47,7 @@ MagnetModule.forRootAsync({
 The database adapter instance:
 
 ```ts
-import { MongooseAdapter } from '@magnet/adapter-mongoose'
+import { MongooseAdapter } from '@magnet-cms/adapter-mongoose'
 
 {
   adapter: new MongooseAdapter({
@@ -71,7 +71,7 @@ Array of schema classes to register:
 Array of plugin instances:
 
 ```ts
-import { ContentBuilderPlugin } from '@magnet/plugin-content-builder'
+import { ContentBuilderPlugin } from '@magnet-cms/plugin-content-builder'
 
 {
   plugins: [new ContentBuilderPlugin()],
@@ -117,7 +117,7 @@ The module exports several services for use in your application:
 
 ```ts
 import { Injectable } from '@nestjs/common'
-import { ContentService } from '@magnet/core'
+import { ContentService } from '@magnet-cms/core'
 
 @Injectable()
 export class MyService {

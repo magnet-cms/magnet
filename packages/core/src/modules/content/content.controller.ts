@@ -1,4 +1,4 @@
-import { ValidationException } from '@magnet/common'
+import { ValidationException } from '@magnet-cms/common'
 import {
 	Body,
 	Controller,

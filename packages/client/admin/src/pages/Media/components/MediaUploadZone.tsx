@@ -1,5 +1,5 @@
-import { Button } from '@magnet/ui/components'
-import { cn } from '@magnet/ui/lib'
+import { Button } from '@magnet-cms/ui/components'
+import { cn } from '@magnet-cms/ui/lib'
 import { CloudUpload, File, X } from 'lucide-react'
 import { useCallback, useState } from 'react'
 

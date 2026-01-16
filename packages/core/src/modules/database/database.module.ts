@@ -3,7 +3,7 @@ import {
 	MagnetModuleOptions,
 	getModelToken,
 	getSchemaToken,
-} from '@magnet/common'
+} from '@magnet-cms/common'
 import { DynamicModule, Module, Scope, Type } from '@nestjs/common'
 import { ModuleRef } from '@nestjs/core'
 import { DatabaseAdapterFactory } from './database-adapter.factory'

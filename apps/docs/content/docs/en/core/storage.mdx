@@ -21,7 +21,7 @@ The Storage module provides a complete media management system for Magnet CMS, i
 Add storage configuration to your `MagnetModule.forRoot()`:
 
 ```ts
-import { MagnetModule } from '@magnet/core'
+import { MagnetModule } from '@magnet-cms/core'
 
 MagnetModule.forRoot({
   db: { uri: 'mongodb://localhost:27017/myapp' },
@@ -50,7 +50,7 @@ MagnetModule.forRoot({
 For cloud storage, install the adapter package:
 
 ```bash
-bun add @magnet/adapter-storage-s3
+bun add @magnet-cms/adapter-storage-s3
 ```
 
 ```ts
@@ -231,7 +231,7 @@ Access the Media Library at `/admin/media`.
 Implement the `StorageAdapter` abstract class:
 
 ```ts
-import { StorageAdapter, UploadOptions, UploadResult, TransformOptions } from '@magnet/common'
+import { StorageAdapter, UploadOptions, UploadResult, TransformOptions } from '@magnet-cms/common'
 import type { Readable } from 'stream'
 
 export class CustomStorageAdapter extends StorageAdapter {

@@ -1,4 +1,4 @@
-import { Button } from '@magnet/ui/components'
+import { Button } from '@magnet-cms/ui/components'
 import { Check, Copy } from 'lucide-react'
 import { useState } from 'react'
 import { useSchemaBuilder } from '../hooks/useSchemaBuilder'

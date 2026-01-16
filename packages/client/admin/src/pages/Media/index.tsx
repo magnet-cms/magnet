@@ -12,7 +12,7 @@ import {
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from '@magnet/ui/components'
+} from '@magnet-cms/ui/components'
 import { CloudUpload, Grid, List, Search, Trash2 } from 'lucide-react'
 import { useCallback, useState } from 'react'
 import { useNavigate } from 'react-router-dom'

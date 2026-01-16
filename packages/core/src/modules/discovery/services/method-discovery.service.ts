@@ -1,4 +1,4 @@
-import { ControllerMetadata, MethodMetadata } from '@magnet/common'
+import { ControllerMetadata, MethodMetadata } from '@magnet-cms/common'
 import { Injectable } from '@nestjs/common'
 import { PATH_METADATA } from '@nestjs/common/constants'
 import { ModulesContainer } from '@nestjs/core'

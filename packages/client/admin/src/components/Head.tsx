@@ -1,4 +1,4 @@
-import { Button, ToggleGroup, ToggleGroupItem } from '@magnet/ui/components'
+import { Button, ToggleGroup, ToggleGroupItem } from '@magnet-cms/ui/components'
 import { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 

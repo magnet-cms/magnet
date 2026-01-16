@@ -1,4 +1,4 @@
-import { MagnetModuleOptions } from '@magnet/common'
+import { MagnetModuleOptions } from '@magnet-cms/common'
 import { Inject, Injectable } from '@nestjs/common'
 import { PassportStrategy } from '@nestjs/passport'
 import { ExtractJwt, Strategy } from 'passport-jwt'

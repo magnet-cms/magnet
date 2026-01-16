@@ -1,4 +1,4 @@
-import { Model } from '@magnet/common'
+import { Model } from '@magnet-cms/common'
 import { Injectable } from '@nestjs/common'
 import { InternationalizationService } from '~/modules/database/modules/internationalization/internationalization.service'
 import { HistoryService } from '~/modules/history/history.service'

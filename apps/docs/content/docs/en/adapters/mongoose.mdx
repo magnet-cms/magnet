@@ -10,14 +10,14 @@ The Mongoose adapter provides MongoDB support using the Mongoose ODM.
 ## Installation
 
 ```bash
-bun add @magnet/adapter-mongoose
+bun add @magnet-cms/adapter-mongoose
 ```
 
 ## Configuration
 
 ```ts
-import { MagnetModule } from '@magnet/core'
-import { MongooseAdapter } from '@magnet/adapter-mongoose'
+import { MagnetModule } from '@magnet-cms/core'
+import { MongooseAdapter } from '@magnet-cms/adapter-mongoose'
 
 MagnetModule.forRoot({
   adapter: new MongooseAdapter({
@@ -108,7 +108,7 @@ The Mongoose adapter provides a powerful query builder for advanced database ope
 ### Basic Usage
 
 ```ts
-import { InjectModel, Model } from '@magnet/common'
+import { InjectModel, Model } from '@magnet-cms/common'
 
 @Injectable()
 export class PostsService {

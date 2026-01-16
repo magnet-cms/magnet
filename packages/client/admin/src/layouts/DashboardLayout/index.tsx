@@ -4,7 +4,7 @@ import {
 	SidebarInset,
 	SidebarProvider,
 	SidebarTrigger,
-} from '@magnet/ui/components'
+} from '@magnet-cms/ui/components'
 import { Outlet } from 'react-router-dom'
 import { NotificationsDrawer } from '~/components/Notifications'
 import { EnvironmentProvider } from '~/contexts/EnvironmentContext'

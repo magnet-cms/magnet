@@ -6,7 +6,7 @@ import {
 	CollapsibleContent,
 	CollapsibleTrigger,
 	Spinner,
-} from '@magnet/ui/components'
+} from '@magnet-cms/ui/components'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { formatDistanceToNow } from 'date-fns'
 import { ChevronDown } from 'lucide-react'

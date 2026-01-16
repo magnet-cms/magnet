@@ -5,7 +5,7 @@ import type {
 	AuthUser,
 	LoginCredentials,
 	RegisterData,
-} from '@magnet/common'
+} from '@magnet-cms/common'
 import { ConflictException, UnauthorizedException } from '@nestjs/common'
 import { sign } from 'jsonwebtoken'
 
@@ -23,7 +23,7 @@ import { sign } from 'jsonwebtoken'
  * @example
  * ```typescript
  * // Register the strategy before module initialization
- * import { AuthStrategyFactory } from '@magnet/core'
+ * import { AuthStrategyFactory } from '@magnet-cms/core'
  * import { MockAuthStrategy } from './strategies/mock-auth.strategy'
  *
  * AuthStrategyFactory.registerStrategy('mock', MockAuthStrategy)

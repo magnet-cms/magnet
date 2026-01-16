@@ -1,5 +1,5 @@
-import { SchemaMetadata } from '@magnet/common'
-import { TextNames, names } from '@magnet/utils'
+import { SchemaMetadata } from '@magnet-cms/common'
+import { TextNames, names } from '@magnet-cms/utils'
 import { useOutletContext, useParams } from 'react-router-dom'
 import { useSchema } from '~/hooks/useDiscovery'
 

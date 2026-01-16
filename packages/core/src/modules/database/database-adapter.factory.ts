@@ -1,4 +1,4 @@
-import { DatabaseAdapter, detectDatabaseAdapter } from '@magnet/common'
+import { DatabaseAdapter, detectDatabaseAdapter } from '@magnet-cms/common'
 
 export class DatabaseAdapterFactory {
 	private static cachedAdapter: DatabaseAdapter
@@ -11,7 +11,7 @@ export class DatabaseAdapterFactory {
 
 		try {
 			DatabaseAdapterFactory.cachedAdapter = require(
-				`@magnet/adapter-${adapterName}`,
+				`@magnet-cms/adapter-${adapterName}`,
 			).Adapter
 		} catch (error) {
 			throw new Error(`Adapter ${adapterName} not found`)

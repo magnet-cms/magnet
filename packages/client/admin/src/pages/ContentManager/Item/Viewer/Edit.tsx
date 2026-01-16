@@ -1,5 +1,5 @@
-import { SchemaMetadata } from '@magnet/common'
-import { Spinner } from '@magnet/ui/components'
+import { SchemaMetadata } from '@magnet-cms/common'
+import { Spinner } from '@magnet-cms/ui/components'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'

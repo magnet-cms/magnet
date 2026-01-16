@@ -6,5 +6,5 @@ export default defineConfig({
 	treeshake: true,
 	clean: true,
 	dts: true,
-	external: ['@magnet/common', '@magnet/core', '@nestjs/common'],
+	external: ['@magnet-cms/common', '@magnet-cms/core', '@nestjs/common'],
 })

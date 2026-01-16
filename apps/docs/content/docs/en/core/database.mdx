@@ -28,8 +28,8 @@ interface DatabaseAdapter {
 ## Using an Adapter
 
 ```ts
-import { MagnetModule } from '@magnet/core'
-import { MongooseAdapter } from '@magnet/adapter-mongoose'
+import { MagnetModule } from '@magnet-cms/core'
+import { MongooseAdapter } from '@magnet-cms/adapter-mongoose'
 
 MagnetModule.forRoot({
   adapter: new MongooseAdapter({
@@ -42,14 +42,14 @@ MagnetModule.forRoot({
 
 | Adapter | Package | Description |
 |---------|---------|-------------|
-| Mongoose | `@magnet/adapter-mongoose` | MongoDB via Mongoose ODM |
+| Mongoose | `@magnet-cms/adapter-mongoose` | MongoDB via Mongoose ODM |
 
 ## Creating Custom Adapters
 
 To create a custom adapter, implement the `DatabaseAdapter` interface:
 
 ```ts
-import { DatabaseAdapter } from '@magnet/core'
+import { DatabaseAdapter } from '@magnet-cms/core'
 
 export class CustomAdapter implements DatabaseAdapter {
   async connect() {

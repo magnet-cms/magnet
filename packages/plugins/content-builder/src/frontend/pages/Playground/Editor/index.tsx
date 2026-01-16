@@ -1,5 +1,5 @@
-import { PageContent, PageHeader, useSchema } from '@magnet/admin'
-import { Button, Spinner } from '@magnet/ui/components'
+import { PageContent, PageHeader, useSchema } from '@magnet-cms/admin'
+import { Button, Spinner } from '@magnet-cms/ui/components'
 import {
 	AlertCircle,
 	Boxes,

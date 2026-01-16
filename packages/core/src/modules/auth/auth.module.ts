@@ -1,5 +1,5 @@
-import type { AuthConfig } from '@magnet/common'
-import { MagnetModuleOptions } from '@magnet/common'
+import type { AuthConfig } from '@magnet-cms/common'
+import { MagnetModuleOptions } from '@magnet-cms/common'
 import { DynamicModule, Module } from '@nestjs/common'
 import { JwtModule } from '@nestjs/jwt'
 import { PassportModule } from '@nestjs/passport'

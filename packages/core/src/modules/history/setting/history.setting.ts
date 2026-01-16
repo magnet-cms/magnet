@@ -1,4 +1,4 @@
-import { Prop, Setting, UI } from '@magnet/common'
+import { Prop, Setting, UI } from '@magnet-cms/common'
 
 const draftOptions = [
 	{ key: 'Enabled', value: 'true' },

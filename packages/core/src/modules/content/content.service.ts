@@ -1,4 +1,4 @@
-import { Model } from '@magnet/common'
+import { Model } from '@magnet-cms/common'
 import { Injectable } from '@nestjs/common'
 import { ModuleRef } from '@nestjs/core'
 import { DocumentService } from '~/modules/document/document.service'

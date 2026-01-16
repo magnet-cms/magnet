@@ -10,13 +10,13 @@ The SEO plugin adds search engine optimization features to your content.
 ## Installation
 
 ```bash
-bun add @magnet/plugin-seo
+bun add @magnet-cms/plugin-seo
 ```
 
 ## Configuration
 
 ```ts
-import { SeoPlugin } from '@magnet/plugin-seo'
+import { SeoPlugin } from '@magnet-cms/plugin-seo'
 
 MagnetModule.forRoot({
   plugins: [
@@ -42,8 +42,8 @@ MagnetModule.forRoot({
 Add SEO fields to your schemas:
 
 ```ts
-import { Schema, Prop, UI } from '@magnet/common'
-import { Seo } from '@magnet/plugin-seo'
+import { Schema, Prop, UI } from '@magnet-cms/common'
+import { Seo } from '@magnet-cms/plugin-seo'
 
 @Schema({ collection: 'posts' })
 export class Post {

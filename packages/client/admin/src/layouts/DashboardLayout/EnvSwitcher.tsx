@@ -10,7 +10,7 @@ import {
 	SidebarMenuItem,
 	Skeleton,
 	useSidebar,
-} from '@magnet/ui/components'
+} from '@magnet-cms/ui/components'
 import { Check, ChevronsUpDown, Database, Settings } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useEnvironmentContext } from '~/contexts/EnvironmentContext'

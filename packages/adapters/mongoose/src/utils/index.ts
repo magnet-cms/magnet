@@ -1,4 +1,4 @@
-import { BaseSchema } from '@magnet/common'
+import { BaseSchema } from '@magnet-cms/common'
 import { MongoServerError } from 'mongodb'
 
 export function mapQueryId<T>(query: Partial<BaseSchema<T>>): any {

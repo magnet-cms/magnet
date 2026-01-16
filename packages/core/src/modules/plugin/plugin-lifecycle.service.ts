@@ -2,7 +2,7 @@ import type {
 	PluginConfig,
 	PluginLifecycle,
 	PluginMetadata,
-} from '@magnet/common'
+} from '@magnet-cms/common'
 import {
 	Inject,
 	Injectable,

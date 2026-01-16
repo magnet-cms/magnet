@@ -9,7 +9,7 @@ import {
 	Tabs,
 	TabsList,
 	TabsTrigger,
-} from '@magnet/ui/components'
+} from '@magnet-cms/ui/components'
 import { formatDistanceToNow } from 'date-fns'
 import { ChevronDown, Globe, MoreVertical } from 'lucide-react'
 import { useEffect, useState } from 'react'

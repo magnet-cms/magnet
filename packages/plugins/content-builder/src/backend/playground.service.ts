@@ -1,6 +1,6 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
-import { MagnetModuleOptions } from '@magnet/common'
+import { MagnetModuleOptions } from '@magnet-cms/common'
 import { Inject, Injectable, Logger, Optional } from '@nestjs/common'
 import type {
 	CodePreviewDto,
@@ -393,7 +393,7 @@ export class PlaygroundService {
 	 */
 	private generateModuleCode(name: string): string {
 		const lowerName = name.toLowerCase()
-		return `import { MagnetModule } from '@magnet/core'
+		return `import { MagnetModule } from '@magnet-cms/core'
 import { Module } from '@nestjs/common'
 import { ${name}Controller } from './${lowerName}.controller'
 import { ${name}Service } from './${lowerName}.service'
@@ -413,7 +413,7 @@ export class ${name}Module {}
 	 */
 	private generateControllerCode(name: string): string {
 		const lowerName = name.toLowerCase()
-		return `import { Resolve } from '@magnet/common'
+		return `import { Resolve } from '@magnet-cms/common'
 import {
 	Body,
 	Controller,
@@ -469,7 +469,7 @@ export class ${name}Controller {
 	 */
 	private generateServiceCode(name: string): string {
 		const lowerName = name.toLowerCase()
-		return `import { InjectModel, Model } from '@magnet/common'
+		return `import { InjectModel, Model } from '@magnet-cms/common'
 import { Injectable } from '@nestjs/common'
 import { Create${name}Dto } from './dto/create-${lowerName}.dto'
 import { ${name} } from './${lowerName}.schema'
@@ -645,7 +645,7 @@ ${properties}
 		const lines: string[] = []
 
 		lines.push(
-			`import { ${Array.from(magnetImports).sort().join(', ')} } from '@magnet/common'`,
+			`import { ${Array.from(magnetImports).sort().join(', ')} } from '@magnet-cms/common'`,
 		)
 
 		if (needsTypeTransformer) {

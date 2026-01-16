@@ -1,4 +1,4 @@
-import { InjectModel, Model } from '@magnet/common'
+import { InjectModel, Model } from '@magnet-cms/common'
 import { Injectable } from '@nestjs/common'
 import { CreateCatDto } from './dto/create-cat.dto'
 import { Cat } from './schemas/cat.schema'

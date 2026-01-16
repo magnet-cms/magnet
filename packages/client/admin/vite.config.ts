@@ -20,12 +20,12 @@ export default defineConfig({
 			},
 			// Admin (for plugin imports)
 			{
-				find: '@magnet/admin',
+				find: '@magnet-cms/admin',
 				replacement: fileURLToPath(new URL('./src', import.meta.url)),
 			},
 			// UI
 			{
-				find: '@magnet/ui',
+				find: '@magnet-cms/ui',
 				replacement: fileURLToPath(new URL('../ui/src', import.meta.url)),
 			},
 			{
@@ -34,7 +34,7 @@ export default defineConfig({
 			},
 			// Utils
 			{
-				find: '@magnet/utils',
+				find: '@magnet-cms/utils',
 				replacement: fileURLToPath(new URL('../../utils/src', import.meta.url)),
 			},
 		],

@@ -1,4 +1,4 @@
-import { Spinner } from '@magnet/ui/components'
+import { Spinner } from '@magnet-cms/ui/components'
 
 export const Loader = () => {
 	return (

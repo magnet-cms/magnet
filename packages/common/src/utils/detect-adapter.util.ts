@@ -14,13 +14,13 @@ function isPackageInstalled(packageName: string): boolean {
 export function detectDatabaseAdapter(): 'mongoose' | 'typeorm' {
 	if (cachedAdapter) return cachedAdapter
 
-	if (isPackageInstalled('@magnet/adapter-mongoose')) {
+	if (isPackageInstalled('@magnet-cms/adapter-mongoose')) {
 		cachedAdapter = 'mongoose'
-	} else if (isPackageInstalled('@magnet/adapter-typeorm')) {
+	} else if (isPackageInstalled('@magnet-cms/adapter-typeorm')) {
 		cachedAdapter = 'typeorm'
 	} else {
 		throw new Error(
-			'❌ No supported database adapter found. Install @magnet/adapter-mongoose or @magnet/adapter-typeorm.',
+			'❌ No supported database adapter found. Install @magnet-cms/adapter-mongoose or @magnet-cms/adapter-typeorm.',
 		)
 	}
 

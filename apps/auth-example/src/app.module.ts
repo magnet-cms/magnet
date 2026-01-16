@@ -1,4 +1,4 @@
-import { AuthStrategyFactory, MagnetModule } from '@magnet/core'
+import { AuthStrategyFactory, MagnetModule } from '@magnet-cms/core'
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { MockAuthStrategy } from './strategies/mock-auth.strategy'

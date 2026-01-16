@@ -1,4 +1,4 @@
-import { Resolve } from '@magnet/common'
+import { Resolve } from '@magnet-cms/common'
 import {
 	Body,
 	Controller,

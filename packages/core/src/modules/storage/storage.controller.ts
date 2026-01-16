@@ -1,4 +1,4 @@
-import type { MediaQueryOptions } from '@magnet/common'
+import type { MediaQueryOptions } from '@magnet-cms/common'
 import {
 	Body,
 	Controller,

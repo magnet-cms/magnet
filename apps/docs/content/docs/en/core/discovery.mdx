@@ -13,7 +13,7 @@ The `DiscoveryService` scans your application for classes decorated with `@Schem
 
 ```ts
 import { Injectable } from '@nestjs/common'
-import { DiscoveryService } from '@magnet/core'
+import { DiscoveryService } from '@magnet-cms/core'
 
 @Injectable()
 export class MyService {
@@ -81,7 +81,7 @@ Listen for schema discovery events:
 
 ```ts
 import { OnEvent } from '@nestjs/event-emitter'
-import { SchemaDiscoveredEvent } from '@magnet/core'
+import { SchemaDiscoveredEvent } from '@magnet-cms/core'
 
 @Injectable()
 export class SchemaListener {

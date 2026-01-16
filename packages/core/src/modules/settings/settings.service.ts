@@ -6,7 +6,7 @@ import {
 	SchemaSetting,
 	SettingType,
 	ValidationException,
-} from '@magnet/common'
+} from '@magnet-cms/common'
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
 import { plainToInstance } from 'class-transformer'
 import { validate } from 'class-validator'

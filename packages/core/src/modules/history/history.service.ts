@@ -1,4 +1,4 @@
-import { InjectModel, Model } from '@magnet/common'
+import { InjectModel, Model } from '@magnet-cms/common'
 import { Injectable } from '@nestjs/common'
 import { SettingsService } from '~/modules/settings/settings.service'
 import { History } from './schemas/history.schema'

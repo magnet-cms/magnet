@@ -1,4 +1,4 @@
-import { Model, getModelToken } from '@magnet/common'
+import { Model, getModelToken } from '@magnet-cms/common'
 import { Module, forwardRef } from '@nestjs/common'
 import { ModuleRef } from '@nestjs/core'
 import { DatabaseModule } from '~/modules/database'

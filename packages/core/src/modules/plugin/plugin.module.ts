@@ -2,7 +2,7 @@ import type {
 	PluginConfig,
 	PluginMetadata,
 	PluginModuleOptions,
-} from '@magnet/common'
+} from '@magnet-cms/common'
 import type { Type } from '@nestjs/common'
 import { DynamicModule, Module, Provider } from '@nestjs/common'
 import { DiscoveryModule } from '@nestjs/core'

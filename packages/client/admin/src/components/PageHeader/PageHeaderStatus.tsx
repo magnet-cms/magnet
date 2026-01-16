@@ -1,4 +1,4 @@
-import { cn } from '@magnet/ui/lib'
+import { cn } from '@magnet-cms/ui/lib'
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { HEADER_STATUS_PORTAL_ID } from '~/layouts/DashboardLayout'
@@ -49,7 +49,9 @@ export function PageHeaderStatus({ badges }: PageHeaderStatusProps) {
 					)}
 				>
 					{badge.dot && (
-						<div className={cn('w-1 h-1 rounded-full', dotStyles[badge.type])} />
+						<div
+							className={cn('w-1 h-1 rounded-full', dotStyles[badge.type])}
+						/>
 					)}
 					{badge.label}
 				</span>

@@ -1,4 +1,4 @@
-import type { AuthConfig, AuthStrategy } from '@magnet/common'
+import type { AuthConfig, AuthStrategy } from '@magnet-cms/common'
 import type { UserService } from '~/modules/user'
 
 // Type for custom strategy constructors
@@ -38,7 +38,7 @@ export class AuthStrategyFactory {
 	 *
 	 * @example
 	 * ```typescript
-	 * import { AuthStrategyFactory } from '@magnet/core'
+	 * import { AuthStrategyFactory } from '@magnet-cms/core'
 	 * import { SupabaseAuthStrategy } from './strategies/supabase-auth.strategy'
 	 *
 	 * AuthStrategyFactory.registerStrategy('supabase', SupabaseAuthStrategy)

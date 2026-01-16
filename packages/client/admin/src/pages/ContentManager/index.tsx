@@ -7,8 +7,8 @@ import {
 	CardHeader,
 	CardTitle,
 	Spinner,
-} from '@magnet/ui/components'
-import { names } from '@magnet/utils'
+} from '@magnet-cms/ui/components'
+import { names } from '@magnet-cms/utils'
 import { Database, Globe, Layout, PlusCircle, Settings } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useAdmin } from '~/contexts/useAdmin'

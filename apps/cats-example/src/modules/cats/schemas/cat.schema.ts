@@ -1,4 +1,4 @@
-import { Prop, Schema, UI, Validators } from '@magnet/common'
+import { Prop, Schema, UI, Validators } from '@magnet-cms/common'
 import { Type } from 'class-transformer'
 import {
 	IsBoolean,

@@ -11,17 +11,17 @@ Plugins extend Magnet functionality with additional features.
 
 | Plugin | Package | Description |
 |--------|---------|-------------|
-| Content Builder | `@magnet/plugin-content-builder` | Visual content builder |
-| SEO | `@magnet/plugin-seo` | SEO metadata management |
+| Content Builder | `@magnet-cms/plugin-content-builder` | Visual content builder |
+| SEO | `@magnet-cms/plugin-seo` | SEO metadata management |
 
 ## Using Plugins
 
 Register plugins in your MagnetModule configuration:
 
 ```ts
-import { MagnetModule } from '@magnet/core'
-import { ContentBuilderPlugin } from '@magnet/plugin-content-builder'
-import { SeoPlugin } from '@magnet/plugin-seo'
+import { MagnetModule } from '@magnet-cms/core'
+import { ContentBuilderPlugin } from '@magnet-cms/plugin-content-builder'
+import { SeoPlugin } from '@magnet-cms/plugin-seo'
 
 MagnetModule.forRoot({
   plugins: [
@@ -44,7 +44,7 @@ Plugins can:
 ## Creating Custom Plugins
 
 ```ts
-import { MagnetPlugin } from '@magnet/core'
+import { MagnetPlugin } from '@magnet-cms/core'
 
 export class CustomPlugin implements MagnetPlugin {
   name = 'custom-plugin'

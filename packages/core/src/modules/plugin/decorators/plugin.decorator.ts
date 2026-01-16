@@ -1,4 +1,4 @@
-import type { PluginFrontendManifest, PluginMetadata } from '@magnet/common'
+import type { PluginFrontendManifest, PluginMetadata } from '@magnet-cms/common'
 import type { Type } from '@nestjs/common'
 import { Injectable } from '@nestjs/common'
 import {

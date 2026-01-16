@@ -12,7 +12,7 @@ import {
 	TableHead,
 	TableHeader,
 	TableRow,
-} from '@magnet/ui/components'
+} from '@magnet-cms/ui/components'
 import { useQuery } from '@tanstack/react-query'
 import { Check, Copy, Globe } from 'lucide-react'
 import { useMemo, useState } from 'react'

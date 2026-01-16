@@ -6,7 +6,7 @@ import { defineConfig } from 'vite'
 import dts from 'vite-plugin-dts'
 
 /**
- * Vite configuration for building @magnet/admin as a library
+ * Vite configuration for building @magnet-cms/admin as a library
  *
  * Usage:
  *   bun run build:lib
@@ -38,7 +38,7 @@ export default defineConfig({
 			},
 			// UI - these will be external in lib build
 			{
-				find: '@magnet/ui',
+				find: '@magnet-cms/ui',
 				replacement: fileURLToPath(new URL('../ui/src', import.meta.url)),
 			},
 			{
@@ -47,7 +47,7 @@ export default defineConfig({
 			},
 			// Utils
 			{
-				find: '@magnet/utils',
+				find: '@magnet-cms/utils',
 				replacement: fileURLToPath(new URL('../../utils/src', import.meta.url)),
 			},
 		],

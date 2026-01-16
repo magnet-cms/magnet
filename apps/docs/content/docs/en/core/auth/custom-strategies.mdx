@@ -27,7 +27,7 @@ import type {
   AuthUser,
   LoginCredentials,
   RegisterData,
-} from '@magnet/common'
+} from '@magnet-cms/common'
 
 export abstract class AuthStrategy {
   // Unique identifier for this strategy
@@ -108,7 +108,7 @@ import type {
   AuthUser,
   LoginCredentials,
   RegisterData,
-} from '@magnet/common'
+} from '@magnet-cms/common'
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 
 export class SupabaseAuthStrategy implements AuthStrategy {
@@ -199,7 +199,7 @@ Register your strategy before initializing `MagnetModule`:
 
 ```ts
 // src/app.module.ts
-import { AuthStrategyFactory, MagnetModule } from '@magnet/core'
+import { AuthStrategyFactory, MagnetModule } from '@magnet-cms/core'
 import { Module } from '@nestjs/common'
 import { SupabaseAuthStrategy } from './strategies/supabase-auth.strategy'
 

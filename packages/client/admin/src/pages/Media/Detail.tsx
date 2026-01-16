@@ -15,7 +15,7 @@ import {
 	Label,
 	Separator,
 	Textarea,
-} from '@magnet/ui/components'
+} from '@magnet-cms/ui/components'
 import {
 	ArrowLeft,
 	Calendar,

@@ -45,7 +45,7 @@ export class AdminController {
 			return res
 				.status(404)
 				.send(
-					'Admin panel not found. Make sure @magnet/admin is installed and built.',
+					'Admin panel not found. Make sure @magnet-cms/admin is installed and built.',
 				)
 		}
 

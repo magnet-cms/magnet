@@ -1,5 +1,5 @@
-import { Badge, Button, SortableItemHandle } from '@magnet/ui/components'
-import { cn } from '@magnet/ui/lib'
+import { Badge, Button, SortableItemHandle } from '@magnet-cms/ui/components'
+import { cn } from '@magnet-cms/ui/lib'
 import { GripVertical, Pencil, Trash2 } from 'lucide-react'
 import {
 	FIELD_TYPE_COLORS,

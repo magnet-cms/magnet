@@ -3,8 +3,8 @@ import {
 	SidebarContent,
 	SidebarFooter,
 	SidebarHeader,
-} from '@magnet/ui/components'
-import { names } from '@magnet/utils'
+} from '@magnet-cms/ui/components'
+import { names } from '@magnet-cms/utils'
 import { Database, ImageIcon, Settings2 } from 'lucide-react'
 import type * as React from 'react'
 import { useAdmin } from '~/contexts/useAdmin'

@@ -8,8 +8,8 @@ import {
 	DialogTitle,
 	Input,
 	Label,
-} from '@magnet/ui/components'
-import { cn } from '@magnet/ui/lib'
+} from '@magnet-cms/ui/components'
+import { cn } from '@magnet-cms/ui/lib'
 import { useState } from 'react'
 import {
 	FIELD_TYPES,

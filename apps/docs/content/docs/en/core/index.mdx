@@ -3,14 +3,14 @@ title: Core Module
 description: The main NestJS module providing CMS functionality
 ---
 
-# @magnet/core
+# @magnet-cms/core
 
 The core package provides the main `MagnetModule` which orchestrates all CMS functionality including admin services, authentication, content management, and database operations.
 
 ## Installation
 
 ```bash
-bun add @magnet/core
+bun add @magnet-cms/core
 ```
 
 ## Module Architecture
@@ -29,8 +29,8 @@ The core module consists of several sub-modules:
 
 ```ts
 import { Module } from '@nestjs/common'
-import { MagnetModule } from '@magnet/core'
-import { MongooseAdapter } from '@magnet/adapter-mongoose'
+import { MagnetModule } from '@magnet-cms/core'
+import { MongooseAdapter } from '@magnet-cms/adapter-mongoose'
 
 @Module({
   imports: [

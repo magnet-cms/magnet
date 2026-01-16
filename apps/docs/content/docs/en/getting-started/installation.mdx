@@ -19,13 +19,13 @@ This guide covers the installation of Magnet packages.
 
 ```bash
 # Using Bun (recommended)
-bun add @magnet/core @magnet/common @magnet/adapter-mongoose
+bun add @magnet-cms/core @magnet-cms/common @magnet-cms/adapter-mongoose
 
 # Using npm
-npm install @magnet/core @magnet/common @magnet/adapter-mongoose
+npm install @magnet-cms/core @magnet-cms/common @magnet-cms/adapter-mongoose
 
 # Using pnpm
-pnpm add @magnet/core @magnet/common @magnet/adapter-mongoose
+pnpm add @magnet-cms/core @magnet-cms/common @magnet-cms/adapter-mongoose
 ```
 
 ### Admin UI (Optional)
@@ -33,17 +33,17 @@ pnpm add @magnet/core @magnet/common @magnet/adapter-mongoose
 If you want to use the admin interface:
 
 ```bash
-bun add @magnet/admin @magnet/ui
+bun add @magnet-cms/admin @magnet-cms/ui
 ```
 
 ### Plugins (Optional)
 
 ```bash
 # Content Builder plugin
-bun add @magnet/plugin-content-builder
+bun add @magnet-cms/plugin-content-builder
 
 # SEO plugin
-bun add @magnet/plugin-seo
+bun add @magnet-cms/plugin-seo
 ```
 
 ## Peer Dependencies
@@ -75,9 +75,9 @@ Magnet is built with TypeScript. Ensure your `tsconfig.json` includes:
 After installation, verify by importing the module:
 
 ```ts
-import { MagnetModule } from '@magnet/core'
-import { Schema, Prop } from '@magnet/common'
-import { MongooseAdapter } from '@magnet/adapter-mongoose'
+import { MagnetModule } from '@magnet-cms/core'
+import { Schema, Prop } from '@magnet-cms/common'
+import { MongooseAdapter } from '@magnet-cms/adapter-mongoose'
 
 console.log('Magnet installed successfully!')
 ```

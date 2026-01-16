@@ -1,4 +1,4 @@
-import { Prop, Setting, UI } from '@magnet/common'
+import { Prop, Setting, UI } from '@magnet-cms/common'
 import { IsArray } from 'class-validator'
 
 export interface EnvironmentItem {

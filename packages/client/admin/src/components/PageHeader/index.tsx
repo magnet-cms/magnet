@@ -1,5 +1,5 @@
-import { Input, Separator } from '@magnet/ui/components'
-import { cn } from '@magnet/ui/lib'
+import { Input, Separator } from '@magnet-cms/ui/components'
+import { cn } from '@magnet-cms/ui/lib'
 import type { LucideIcon } from 'lucide-react'
 import { PageHeaderStatus } from './PageHeaderStatus'
 import { PageHeaderTabs } from './PageHeaderTabs'
@@ -56,14 +56,12 @@ export function PageHeader<T extends string = string>({
 						{/* Icon */}
 						{icon && (
 							<div className="p-2 bg-muted rounded-md border">
-								{isIconComponent(icon) ? (
-									(() => {
-										const Icon = icon
-										return <Icon className="h-5 w-5 text-muted-foreground" />
-									})()
-								) : (
-									icon
-								)}
+								{isIconComponent(icon)
+									? (() => {
+											const Icon = icon
+											return <Icon className="h-5 w-5 text-muted-foreground" />
+										})()
+									: icon}
 							</div>
 						)}
 

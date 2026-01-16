@@ -11,7 +11,7 @@ The Mongoose adapter includes built-in support for internationalization of schem
 To use the internationalization feature, simply add the `intl: true` option to the properties that should be internationalized:
 
 ```typescript
-import { Prop, Schema } from '@magnet/adapter-mongoose'
+import { Prop, Schema } from '@magnet-cms/adapter-mongoose'
 
 @Schema()
 export class Product {
@@ -149,7 +149,7 @@ By default, the internationalization plugin uses the following configuration:
 You can customize these settings by providing internationalization options in your MagnetModuleOptions:
 
 ```typescript
-import { MagnetModule } from '@magnet/core'
+import { MagnetModule } from '@magnet-cms/core'
 
 @Module({
   imports: [

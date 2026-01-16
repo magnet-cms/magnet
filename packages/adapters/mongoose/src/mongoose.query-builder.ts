@@ -5,7 +5,7 @@ import type {
 	ProjectionQuery,
 	QueryBuilder,
 	SortQuery,
-} from '@magnet/common'
+} from '@magnet-cms/common'
 import type { Document, Model as MongooseModel } from 'mongoose'
 import { mapDocumentId, mapQueryId } from '~/utils'
 

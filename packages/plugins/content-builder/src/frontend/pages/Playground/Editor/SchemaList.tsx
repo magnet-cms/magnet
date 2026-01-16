@@ -1,6 +1,6 @@
-import { useAdmin } from '@magnet/admin'
-import { Button, Spinner } from '@magnet/ui/components'
-import { names } from '@magnet/utils'
+import { useAdmin } from '@magnet-cms/admin'
+import { Button, Spinner } from '@magnet-cms/ui/components'
+import { names } from '@magnet-cms/utils'
 import { Database, Plus } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router-dom'
 

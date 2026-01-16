@@ -10,7 +10,7 @@ export function InjectModel(model: Type): ParameterDecorator {
 			Reflect.defineMetadata(INJECT_MODEL, model, target, propertyKey)
 		}
 
-		const { InjectModel } = require(`@magnet/adapter-${adapter}`)
+		const { InjectModel } = require(`@magnet-cms/adapter-${adapter}`)
 		return InjectModel(model)(target, propertyKey, parameterIndex)
 	}
 }

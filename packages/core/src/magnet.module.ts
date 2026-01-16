@@ -1,4 +1,4 @@
-import { MagnetModuleOptions } from '@magnet/common'
+import { MagnetModuleOptions } from '@magnet-cms/common'
 import { DynamicModule, Module, Type, ValidationPipe } from '@nestjs/common'
 import { APP_FILTER, APP_GUARD, APP_PIPE, DiscoveryModule } from '@nestjs/core'
 import { RestrictedGuard } from './guards/restricted.guard'

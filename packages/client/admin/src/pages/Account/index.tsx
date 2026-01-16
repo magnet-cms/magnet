@@ -14,7 +14,7 @@ import {
 	TabsContent,
 	TabsList,
 	TabsTrigger,
-} from '@magnet/ui/components'
+} from '@magnet-cms/ui/components'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { Head } from '~/components/Head'

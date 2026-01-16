@@ -16,7 +16,7 @@ This guide walks you through creating your first content schema with Magnet.
     Create a new file `src/schemas/post.schema.ts`:
 
     ```ts
-    import { Schema, Prop, UI, Validators } from '@magnet/common'
+    import { Schema, Prop, UI, Validators } from '@magnet-cms/common'
     import { Document } from 'mongoose'
 
     @Schema({
@@ -55,8 +55,8 @@ This guide walks you through creating your first content schema with Magnet.
 
     ```ts
     import { Module } from '@nestjs/common'
-    import { MagnetModule } from '@magnet/core'
-    import { MongooseAdapter } from '@magnet/adapter-mongoose'
+    import { MagnetModule } from '@magnet-cms/core'
+    import { MongooseAdapter } from '@magnet-cms/adapter-mongoose'
     import { Post } from './schemas/post.schema'
 
     @Module({

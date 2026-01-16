@@ -1,4 +1,4 @@
-import { Mixed, Prop, Schema } from '@magnet/common'
+import { Mixed, Prop, Schema } from '@magnet-cms/common'
 
 @Schema({ versioning: false, i18n: false })
 export class History {

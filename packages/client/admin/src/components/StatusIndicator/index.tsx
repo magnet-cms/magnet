@@ -1,4 +1,4 @@
-import { Badge, Button } from '@magnet/ui/components'
+import { Badge, Button } from '@magnet-cms/ui/components'
 import { Eye, EyeOff, Loader2 } from 'lucide-react'
 
 interface StatusIndicatorProps {

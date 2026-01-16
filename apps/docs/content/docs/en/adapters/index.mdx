@@ -11,7 +11,7 @@ Adapters provide the database layer for Magnet, allowing you to use different da
 
 | Adapter | Package | Database |
 |---------|---------|----------|
-| Mongoose | `@magnet/adapter-mongoose` | MongoDB |
+| Mongoose | `@magnet-cms/adapter-mongoose` | MongoDB |
 
 ## Choosing an Adapter
 
@@ -23,7 +23,7 @@ Best for:
 - Existing MongoDB infrastructure
 
 ```bash
-bun add @magnet/adapter-mongoose
+bun add @magnet-cms/adapter-mongoose
 ```
 
 ## Adapter Interface
@@ -49,7 +49,7 @@ interface DatabaseAdapter {
 You can create adapters for other databases:
 
 ```ts
-import { DatabaseAdapter } from '@magnet/core'
+import { DatabaseAdapter } from '@magnet-cms/core'
 
 export class PostgresAdapter implements DatabaseAdapter {
   // Implement interface methods

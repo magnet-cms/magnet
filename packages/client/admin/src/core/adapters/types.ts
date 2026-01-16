@@ -1,10 +1,10 @@
 import type {
 	ControllerMetadata as ControllerMetadataBase,
 	SchemaMetadata as SchemaMetadataBase,
-} from '@magnet/common'
+} from '@magnet-cms/common'
 import type { QueryClient } from '@tanstack/react-query'
 
-// Re-export types from @magnet/common
+// Re-export types from @magnet-cms/common
 export type SchemaMetadata = SchemaMetadataBase
 export type ControllerMetadata = ControllerMetadataBase
 

@@ -1,4 +1,4 @@
-import { MagnetModuleOptions } from '@magnet/common'
+import { MagnetModuleOptions } from '@magnet-cms/common'
 import { Inject, Injectable } from '@nestjs/common'
 import mongoose from 'mongoose'
 import { SettingsService } from '~/modules/settings/settings.service'

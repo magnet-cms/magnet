@@ -3,7 +3,7 @@ import {
 	SchemaProperty,
 	UISelect,
 	Validations,
-} from '@magnet/common'
+} from '@magnet-cms/common'
 import { ZodObject, ZodType, z } from 'zod'
 
 export const buildFormSchema = (

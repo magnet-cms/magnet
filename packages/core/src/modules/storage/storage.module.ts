@@ -1,4 +1,4 @@
-import { StorageConfig } from '@magnet/common'
+import { StorageConfig } from '@magnet-cms/common'
 import { DynamicModule, Module } from '@nestjs/common'
 import { DatabaseModule } from '~/modules/database'
 import { Media } from './schemas/media.schema'

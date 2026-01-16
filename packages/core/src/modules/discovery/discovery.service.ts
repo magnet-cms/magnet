@@ -2,7 +2,7 @@ import {
 	ControllerMetadata,
 	MethodMetadata,
 	SchemaMetadata,
-} from '@magnet/common'
+} from '@magnet-cms/common'
 import { Injectable, OnModuleInit } from '@nestjs/common'
 import { ControllerDiscoveryService } from './services/controller-discovery.service'
 import { MethodDiscoveryService } from './services/method-discovery.service'

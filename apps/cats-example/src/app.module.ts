@@ -1,5 +1,5 @@
-import { MagnetModule } from '@magnet/core'
-import { ContentBuilderPlugin } from '@magnet/plugin-content-builder'
+import { MagnetModule } from '@magnet-cms/core'
+import { ContentBuilderPlugin } from '@magnet-cms/plugin-content-builder'
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { CatsModule } from './modules/cats/cats.module'

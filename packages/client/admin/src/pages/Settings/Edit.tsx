@@ -1,6 +1,6 @@
-import { type SchemaMetadata } from '@magnet/common'
-import { Button, Spinner } from '@magnet/ui/components'
-import { names } from '@magnet/utils'
+import { type SchemaMetadata } from '@magnet-cms/common'
+import { Button, Spinner } from '@magnet-cms/ui/components'
+import { names } from '@magnet-cms/utils'
 import { useMemo } from 'react'
 import { useParams } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -86,7 +86,8 @@ const SettingsEdit = () => {
 	}
 
 	// Loading state
-	const isLoading = !schema || isLoadingData || (isEnvironments && isLoadingLocal)
+	const isLoading =
+		!schema || isLoadingData || (isEnvironments && isLoadingLocal)
 	if (isLoading) {
 		return (
 			<div className="flex items-center justify-center h-64">

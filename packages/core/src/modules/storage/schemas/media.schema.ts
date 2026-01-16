@@ -1,4 +1,4 @@
-import { Mixed, Prop, Schema } from '@magnet/common'
+import { Mixed, Prop, Schema } from '@magnet-cms/common'
 
 /**
  * Media schema for storing file metadata.

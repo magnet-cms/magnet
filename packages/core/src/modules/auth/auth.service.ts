@@ -1,5 +1,5 @@
-import type { AuthStrategy } from '@magnet/common'
-import { MagnetModuleOptions } from '@magnet/common'
+import type { AuthStrategy } from '@magnet-cms/common'
+import { MagnetModuleOptions } from '@magnet-cms/common'
 import {
 	BadRequestException,
 	ConflictException,

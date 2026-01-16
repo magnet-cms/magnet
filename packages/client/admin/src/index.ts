@@ -1,5 +1,5 @@
 /**
- * @magnet/admin - A flexible, decoupled admin UI for Magnet CMS
+ * @magnet-cms/admin - A flexible, decoupled admin UI for Magnet CMS
  *
  * This package provides a complete admin interface that can be:
  * - Used standalone with NestJS (default)
@@ -8,8 +8,8 @@
  *
  * @example
  * // Simplest usage
- * import { MagnetAdmin } from '@magnet/admin'
- * import '@magnet/admin/styles'
+ * import { MagnetAdmin } from '@magnet-cms/admin'
+ * import '@magnet-cms/admin/styles'
  *
  * function App() {
  *   return <MagnetAdmin apiBaseUrl="http://localhost:3000" />
@@ -17,8 +17,8 @@
  *
  * @example
  * // With Next.js
- * import { MagnetAdmin, createCookieStorage } from '@magnet/admin'
- * import '@magnet/admin/styles'
+ * import { MagnetAdmin, createCookieStorage } from '@magnet-cms/admin'
+ * import '@magnet-cms/admin/styles'
  *
  * export default function AdminPage() {
  *   return (

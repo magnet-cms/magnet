@@ -1,6 +1,6 @@
 import type { Type } from '@nestjs/common'
 
-// Re-export types from @magnet/common for backward compatibility
+// Re-export types from @magnet-cms/common for backward compatibility
 export type {
 	PluginConfig,
 	PluginFrontendManifest,
@@ -11,10 +11,10 @@ export type {
 	PluginSettingsPage,
 	PluginSidebarItem,
 	RegisteredPluginInfo,
-} from '@magnet/common'
+} from '@magnet-cms/common'
 
 /**
- * @deprecated Use PluginModuleOptions from @magnet/common instead
+ * @deprecated Use PluginModuleOptions from @magnet-cms/common instead
  */
 export type PluginOptions = {
 	plugins: Type[]

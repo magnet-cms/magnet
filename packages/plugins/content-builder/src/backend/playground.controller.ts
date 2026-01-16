@@ -1,4 +1,4 @@
-import { RestrictedRoute } from '@magnet/core'
+import { RestrictedRoute } from '@magnet-cms/core'
 import {
 	Body,
 	Controller,

@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs'
 import { join, resolve } from 'node:path'
-import { InitialConfig } from '@magnet/common'
+import { InitialConfig } from '@magnet-cms/common'
 import { Injectable, Logger } from '@nestjs/common'
 import type { NextFunction, Request, Response } from 'express'
 import { createProxyMiddleware } from 'http-proxy-middleware'
@@ -18,7 +18,7 @@ export class AdminService {
 		private readonly settingsService: SettingsService,
 	) {
 		// Try to find the admin dist folder
-		// In production, it should be in node_modules/@magnet/admin/dist/client
+		// In production, it should be in node_modules/@magnet-cms/admin/dist/client
 		// Or copied to a custom location via MAGNET_ADMIN_PATH env var
 		this.adminDistPath =
 			process.env.MAGNET_ADMIN_PATH || this.findAdminDistPath()
@@ -44,7 +44,7 @@ export class AdminService {
 			resolve(process.cwd(), '../../packages/client/admin/dist/client'),
 			resolve(process.cwd(), '../packages/client/admin/dist/client'),
 			// Installed as dependency (fallback)
-			resolve(process.cwd(), 'node_modules/@magnet/admin/dist/client'),
+			resolve(process.cwd(), 'node_modules/@magnet-cms/admin/dist/client'),
 		]
 
 		for (const path of possiblePaths) {
@@ -54,7 +54,7 @@ export class AdminService {
 		}
 
 		// Default fallback
-		return resolve(process.cwd(), 'node_modules/@magnet/admin/dist/client')
+		return resolve(process.cwd(), 'node_modules/@magnet-cms/admin/dist/client')
 	}
 
 	/**

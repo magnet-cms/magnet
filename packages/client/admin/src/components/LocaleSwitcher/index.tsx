@@ -10,7 +10,7 @@ import {
 	TooltipContent,
 	TooltipProvider,
 	TooltipTrigger,
-} from '@magnet/ui/components'
+} from '@magnet-cms/ui/components'
 import { Check, ChevronDown, Globe, Plus } from 'lucide-react'
 import type { LocaleStatus } from '~/core/adapters/types'
 

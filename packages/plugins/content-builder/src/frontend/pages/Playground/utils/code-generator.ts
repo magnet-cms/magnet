@@ -48,7 +48,7 @@ function generateImports(fields: SchemaField[]): string {
 
 	// Magnet imports
 	lines.push(
-		`import { ${Array.from(magnetImports).sort().join(', ')} } from '@magnet/common'`,
+		`import { ${Array.from(magnetImports).sort().join(', ')} } from '@magnet-cms/common'`,
 	)
 
 	// Class-transformer imports

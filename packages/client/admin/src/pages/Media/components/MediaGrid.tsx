@@ -1,4 +1,4 @@
-import { cn } from '@magnet/ui/lib'
+import { cn } from '@magnet-cms/ui/lib'
 import { Check, File, FileText, Film, ImageIcon, Music } from 'lucide-react'
 import type { MediaItem } from '~/core/adapters/types'
 import { useMediaUrl } from '~/hooks/useMedia'

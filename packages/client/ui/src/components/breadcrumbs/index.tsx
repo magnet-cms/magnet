@@ -6,7 +6,7 @@ import {
 	BreadcrumbPage,
 	BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
-import { names } from '@magnet/utils'
+import { names } from '@magnet-cms/utils'
 import { Fragment } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 

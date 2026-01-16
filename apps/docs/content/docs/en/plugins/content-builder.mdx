@@ -10,13 +10,13 @@ The Content Builder plugin provides a visual, block-based content editor.
 ## Installation
 
 ```bash
-bun add @magnet/plugin-content-builder
+bun add @magnet-cms/plugin-content-builder
 ```
 
 ## Configuration
 
 ```ts
-import { ContentBuilderPlugin } from '@magnet/plugin-content-builder'
+import { ContentBuilderPlugin } from '@magnet-cms/plugin-content-builder'
 
 MagnetModule.forRoot({
   plugins: [
@@ -62,7 +62,7 @@ export class Page {
 Create custom blocks:
 
 ```ts
-import { defineBlock } from '@magnet/plugin-content-builder'
+import { defineBlock } from '@magnet-cms/plugin-content-builder'
 
 const ctaBlock = defineBlock({
   name: 'cta',

@@ -3,8 +3,8 @@ import {
 	DataTable,
 	type DataTableColumn,
 	type DataTableRowAction,
-} from '@magnet/ui/components'
-import { Spinner } from '@magnet/ui/components'
+} from '@magnet-cms/ui/components'
+import { Spinner } from '@magnet-cms/ui/components'
 import {
 	Dialog,
 	DialogContent,
@@ -12,7 +12,7 @@ import {
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-} from '@magnet/ui/components'
+} from '@magnet-cms/ui/components'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'

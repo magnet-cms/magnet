@@ -13,7 +13,7 @@ import {
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-} from '@magnet/ui/components'
+} from '@magnet-cms/ui/components'
 import {
 	type ReactNode,
 	createContext,

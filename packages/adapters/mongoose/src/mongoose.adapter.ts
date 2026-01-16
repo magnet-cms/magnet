@@ -1,10 +1,10 @@
 import {
 	BaseSchema,
 	DatabaseAdapter,
-	getSchemaOptions,
 	MagnetModuleOptions,
 	MongooseConfig,
-} from '@magnet/common'
+	getSchemaOptions,
+} from '@magnet-cms/common'
 import { DynamicModule, Injectable, Type } from '@nestjs/common'
 import { MongooseModule, SchemaFactory, getModelToken } from '@nestjs/mongoose'
 import mongoose, { Document, Model as MongooseModel, Schema } from 'mongoose'

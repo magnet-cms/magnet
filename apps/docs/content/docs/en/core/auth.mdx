@@ -23,7 +23,7 @@ MagnetModule.forRoot({
 
 ```ts
 import { Injectable } from '@nestjs/common'
-import { AuthService } from '@magnet/core'
+import { AuthService } from '@magnet-cms/core'
 
 @Injectable()
 export class MyService {
@@ -58,7 +58,7 @@ Protects routes requiring authentication:
 
 ```ts
 import { Controller, Get, UseGuards } from '@nestjs/common'
-import { JwtAuthGuard } from '@magnet/core'
+import { JwtAuthGuard } from '@magnet-cms/core'
 
 @Controller('protected')
 @UseGuards(JwtAuthGuard)

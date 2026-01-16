@@ -1,4 +1,4 @@
-import { useAdmin } from '@magnet/admin'
+import { useAdmin } from '@magnet-cms/admin'
 import {
 	Button,
 	Dialog,
@@ -14,8 +14,8 @@ import {
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from '@magnet/ui/components'
-import { cn } from '@magnet/ui/lib'
+} from '@magnet-cms/ui/components'
+import { cn } from '@magnet-cms/ui/lib'
 import { useState } from 'react'
 import type { RelationConfig } from '../types/builder.types'
 

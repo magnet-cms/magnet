@@ -1,4 +1,4 @@
-import { Prop, Schema, UI, Validators } from '@magnet/common'
+import { Prop, Schema, UI, Validators } from '@magnet-cms/common'
 import { hash } from 'bcryptjs'
 import {
 	IsEmail,

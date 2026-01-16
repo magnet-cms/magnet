@@ -1,4 +1,4 @@
-import { UITypes } from '@magnet/common'
+import { UITypes } from '@magnet-cms/common'
 
 const defaultUIMapping: Record<string, UITypes> = {
 	String: 'text',

@@ -32,7 +32,7 @@ export default defineConfig({
 				'react/jsx-dev-runtime',
 				'react-router-dom',
 				'lucide-react',
-				// Externalize all @magnet/* packages
+				// Externalize all @magnet-cms/* packages
 				/^@magnet\/.*/,
 				// Externalize dnd-kit
 				/^@dnd-kit\/.*/,
@@ -45,10 +45,10 @@ export default defineConfig({
 					'react/jsx-dev-runtime': 'ReactJsxRuntime',
 					'react-router-dom': 'ReactRouterDOM',
 					'lucide-react': 'LucideReact',
-					'@magnet/ui/components': 'MagnetUI',
-					'@magnet/ui/lib': 'MagnetUILib',
-					'@magnet/admin': 'MagnetAdmin',
-					'@magnet/utils': 'MagnetUtils',
+					'@magnet-cms/ui/components': 'MagnetUI',
+					'@magnet-cms/ui/lib': 'MagnetUILib',
+					'@magnet-cms/admin': 'MagnetAdmin',
+					'@magnet-cms/utils': 'MagnetUtils',
 					'@dnd-kit/core': 'DndKitCore',
 					'@dnd-kit/sortable': 'DndKitSortable',
 					'@dnd-kit/utilities': 'DndKitUtilities',

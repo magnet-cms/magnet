@@ -4,7 +4,7 @@ import {
 	ModelCreateOptions,
 	ModelUpdateOptions,
 	ValidationException,
-} from '@magnet/common'
+} from '@magnet-cms/common'
 import { Document, Model as MongooseModel } from 'mongoose'
 import { MongooseQueryBuilder } from '~/mongoose.query-builder'
 import { isMongoServerError, mapDocumentId, mapQueryId } from '~/utils'

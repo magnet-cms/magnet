@@ -13,8 +13,8 @@ The `MagnetModule.forRoot()` method accepts a configuration object:
 
 ```ts
 import { Module } from '@nestjs/common'
-import { MagnetModule } from '@magnet/core'
-import { MongooseAdapter } from '@magnet/adapter-mongoose'
+import { MagnetModule } from '@magnet-cms/core'
+import { MongooseAdapter } from '@magnet-cms/adapter-mongoose'
 
 @Module({
   imports: [
@@ -53,7 +53,7 @@ export class AppModule {}
 ### Mongoose Adapter
 
 ```ts
-import { MongooseAdapter } from '@magnet/adapter-mongoose'
+import { MongooseAdapter } from '@magnet-cms/adapter-mongoose'
 
 const adapter = new MongooseAdapter({
   // MongoDB connection URI
@@ -129,8 +129,8 @@ MagnetModule.forRoot({
 ## Plugin Configuration
 
 ```ts
-import { ContentBuilderPlugin } from '@magnet/plugin-content-builder'
-import { SeoPlugin } from '@magnet/plugin-seo'
+import { ContentBuilderPlugin } from '@magnet-cms/plugin-content-builder'
+import { SeoPlugin } from '@magnet-cms/plugin-seo'
 
 MagnetModule.forRoot({
   plugins: [

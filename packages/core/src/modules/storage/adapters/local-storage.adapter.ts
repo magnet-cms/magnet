@@ -10,7 +10,7 @@ import type {
 	TransformOptions,
 	UploadOptions,
 	UploadResult,
-} from '@magnet/common'
+} from '@magnet-cms/common'
 import { Logger } from '@nestjs/common'
 
 // MIME type mappings

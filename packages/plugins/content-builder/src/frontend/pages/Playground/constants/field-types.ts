@@ -112,7 +112,7 @@ export interface UISubtypeDefinition {
 
 /**
  * Available UI subtypes for each base field type.
- * These map to the UITypes in @magnet/common and are rendered by FormBuilder.
+ * These map to the UITypes in @magnet-cms/common and are rendered by FormBuilder.
  */
 export const UI_SUBTYPES: Record<FieldType, UISubtypeDefinition[]> = {
 	text: [

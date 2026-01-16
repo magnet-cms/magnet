@@ -1,4 +1,4 @@
-import { useAdmin } from '@magnet/admin'
+import { useAdmin } from '@magnet-cms/admin'
 import {
 	Accordion,
 	AccordionContent,
@@ -14,7 +14,7 @@ import {
 	SelectValue,
 	Switch,
 	Textarea,
-} from '@magnet/ui/components'
+} from '@magnet-cms/ui/components'
 import { ChevronRight, Lock, Plus, Trash2, X } from 'lucide-react'
 import { useState } from 'react'
 import {

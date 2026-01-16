@@ -1,4 +1,4 @@
-import type { StorageAdapter, StorageConfig } from '@magnet/common'
+import type { StorageAdapter, StorageConfig } from '@magnet-cms/common'
 import { LocalStorageAdapter } from './adapters/local-storage.adapter'
 
 /**
@@ -41,11 +41,11 @@ export class StorageAdapterFactory {
 					throw new Error('S3 configuration is required for S3 adapter')
 				}
 				try {
-					const { S3StorageAdapter } = require('@magnet/adapter-storage-s3')
+					const { S3StorageAdapter } = require('@magnet-cms/adapter-storage-s3')
 					StorageAdapterFactory.cachedAdapter = new S3StorageAdapter(config.s3)
 				} catch {
 					throw new Error(
-						'S3 storage adapter not found. Please install @magnet/adapter-storage-s3',
+						'S3 storage adapter not found. Please install @magnet-cms/adapter-storage-s3',
 					)
 				}
 				break
@@ -55,11 +55,11 @@ export class StorageAdapterFactory {
 					throw new Error('R2 configuration is required for R2 adapter')
 				}
 				try {
-					const { R2StorageAdapter } = require('@magnet/adapter-storage-s3')
+					const { R2StorageAdapter } = require('@magnet-cms/adapter-storage-s3')
 					StorageAdapterFactory.cachedAdapter = new R2StorageAdapter(config.r2)
 				} catch {
 					throw new Error(
-						'R2 storage adapter not found. Please install @magnet/adapter-storage-s3',
+						'R2 storage adapter not found. Please install @magnet-cms/adapter-storage-s3',
 					)
 				}
 				break

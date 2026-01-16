@@ -8,7 +8,7 @@ import {
 	UIFieldMetadata,
 	UI_METADATA_KEY,
 	getSchemaOptions,
-} from '@magnet/common'
+} from '@magnet-cms/common'
 import { Injectable, RequestMethod, Type } from '@nestjs/common'
 import {
 	PARAMTYPES_METADATA,

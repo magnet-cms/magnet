@@ -1,4 +1,4 @@
-import type { TransformOptions } from '@magnet/common'
+import type { TransformOptions } from '@magnet-cms/common'
 import {
 	Controller,
 	Get,

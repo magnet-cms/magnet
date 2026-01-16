@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Button, FormProvider, RHFText } from '@magnet/ui/components'
+import { Button, FormProvider, RHFText } from '@magnet-cms/ui/components'
 import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
 import { z } from 'zod'

@@ -1,5 +1,5 @@
-import { useDialog } from '@magnet/admin'
-import { Button, Switch } from '@magnet/ui/components'
+import { useDialog } from '@magnet-cms/admin'
+import { Button, Switch } from '@magnet-cms/ui/components'
 import { useEffect } from 'react'
 import { useSchemaBuilder } from '../hooks/useSchemaBuilder'
 

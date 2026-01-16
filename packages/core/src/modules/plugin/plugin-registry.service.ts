@@ -4,7 +4,7 @@ import type {
 	PluginFrontendManifest,
 	PluginMetadata,
 	RegisteredPluginInfo,
-} from '@magnet/common'
+} from '@magnet-cms/common'
 import { Inject, Injectable, OnModuleInit, Optional } from '@nestjs/common'
 import { ModulesContainer } from '@nestjs/core'
 import { PLUGIN_FRONTEND_MANIFEST, PLUGIN_METADATA } from './constants'

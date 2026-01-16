@@ -6,7 +6,7 @@ import {
 	type StorageAdapter,
 	type TransformOptions,
 	type UploadOptions,
-} from '@magnet/common'
+} from '@magnet-cms/common'
 import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common'
 import { ModuleRef } from '@nestjs/core'
 import { Media } from './schemas/media.schema'

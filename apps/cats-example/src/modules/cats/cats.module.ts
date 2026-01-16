@@ -1,4 +1,4 @@
-import { MagnetModule } from '@magnet/core'
+import { MagnetModule } from '@magnet-cms/core'
 import { Module } from '@nestjs/common'
 import { CatsController } from './cats.controller'
 import { CatsService } from './cats.service'

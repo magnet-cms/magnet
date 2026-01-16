@@ -1,4 +1,4 @@
-import { MethodMetadata } from '@magnet/common'
+import { MethodMetadata } from '@magnet-cms/common'
 import { Controller, Get, Param } from '@nestjs/common'
 import { RestrictedRoute } from '~/decorators/restricted.route'
 import { DiscoveryService } from './discovery.service'

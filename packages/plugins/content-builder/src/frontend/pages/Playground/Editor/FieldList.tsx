@@ -4,7 +4,7 @@ import {
 	SortableContent,
 	SortableItem,
 	SortableOverlay,
-} from '@magnet/ui/components'
+} from '@magnet-cms/ui/components'
 import { AlertCircle, Plus } from 'lucide-react'
 import { useSchemaBuilder } from '../hooks/useSchemaBuilder'
 import type { SchemaField } from '../types/builder.types'
