@@ -33,7 +33,7 @@ export default defineConfig({
 				'react-router-dom',
 				'lucide-react',
 				// Externalize all @magnet-cms/* packages
-				/^@magnet\/.*/,
+				/^@magnet-cms\/.*/,
 				// Externalize dnd-kit
 				/^@dnd-kit\/.*/,
 			],
