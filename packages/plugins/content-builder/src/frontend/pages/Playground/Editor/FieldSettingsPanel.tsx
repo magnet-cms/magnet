@@ -1,3 +1,4 @@
+import { useAdmin } from '@magnet/admin'
 import {
 	Accordion,
 	AccordionContent,
@@ -16,7 +17,6 @@ import {
 } from '@magnet/ui/components'
 import { ChevronRight, Lock, Plus, Trash2, X } from 'lucide-react'
 import { useState } from 'react'
-import { useAdmin } from '~/contexts/useAdmin'
 import {
 	FIELD_TYPES,
 	RELATION_TYPES,
@@ -373,9 +373,7 @@ export function FieldSettingsPanel() {
 										<Input
 											value={option.key}
 											onChange={(e) => {
-												const newOptions = [
-													...(selectedField.ui.options || []),
-												]
+												const newOptions = [...(selectedField.ui.options || [])]
 												newOptions[index] = { ...option, key: e.target.value }
 												updateField(selectedField.id, {
 													ui: { ...selectedField.ui, options: newOptions },
@@ -387,9 +385,7 @@ export function FieldSettingsPanel() {
 										<Input
 											value={option.value}
 											onChange={(e) => {
-												const newOptions = [
-													...(selectedField.ui.options || []),
-												]
+												const newOptions = [...(selectedField.ui.options || [])]
 												newOptions[index] = { ...option, value: e.target.value }
 												updateField(selectedField.id, {
 													ui: { ...selectedField.ui, options: newOptions },
@@ -465,7 +461,8 @@ export function FieldSettingsPanel() {
 											<ChevronRight className="w-3 h-3 text-muted-foreground/60" />
 										</div>
 										<div className="px-2 py-1 bg-background border rounded text-xs font-medium shadow-sm">
-											{selectedField.relationConfig?.targetSchema || 'Select...'}
+											{selectedField.relationConfig?.targetSchema ||
+												'Select...'}
 										</div>
 									</div>
 
@@ -567,44 +564,46 @@ export function FieldSettingsPanel() {
 												<Trash2 className="h-3 w-3" />
 											</Button>
 										</div>
-										{ruleDef?.constraintCount && ruleDef.constraintCount > 0 && (
-											<div className="flex gap-2">
-												{Array.from({ length: ruleDef.constraintCount }).map(
-													(_, i) => (
-														<Input
-															key={`${validation.type}-constraint-${i}`}
-															type={
-																validation.type.includes('Length') ||
-																validation.type.includes('Min') ||
-																validation.type.includes('Max')
-																	? 'number'
-																	: 'text'
-															}
-															placeholder={
-																ruleDef.constraintLabels?.[i] || `Arg ${i + 1}`
-															}
-															value={validation.constraints?.[i] ?? ''}
-															onChange={(e) => {
-																const newConstraints = [
-																	...(validation.constraints || []),
-																]
-																newConstraints[i] =
+										{ruleDef?.constraintCount &&
+											ruleDef.constraintCount > 0 && (
+												<div className="flex gap-2">
+													{Array.from({ length: ruleDef.constraintCount }).map(
+														(_, i) => (
+															<Input
+																key={`${validation.type}-constraint-${i}`}
+																type={
 																	validation.type.includes('Length') ||
 																	validation.type.includes('Min') ||
 																	validation.type.includes('Max')
-																		? Number(e.target.value)
-																		: e.target.value
-																handleUpdateValidationConstraints(
-																	validation.type,
-																	newConstraints,
-																)
-															}}
-															className="flex-1"
-														/>
-													),
-												)}
-											</div>
-										)}
+																		? 'number'
+																		: 'text'
+																}
+																placeholder={
+																	ruleDef.constraintLabels?.[i] ||
+																	`Arg ${i + 1}`
+																}
+																value={validation.constraints?.[i] ?? ''}
+																onChange={(e) => {
+																	const newConstraints = [
+																		...(validation.constraints || []),
+																	]
+																	newConstraints[i] =
+																		validation.type.includes('Length') ||
+																		validation.type.includes('Min') ||
+																		validation.type.includes('Max')
+																			? Number(e.target.value)
+																			: e.target.value
+																	handleUpdateValidationConstraints(
+																		validation.type,
+																		newConstraints,
+																	)
+																}}
+																className="flex-1"
+															/>
+														),
+													)}
+												</div>
+											)}
 									</div>
 								)
 							})}

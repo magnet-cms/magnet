@@ -4,6 +4,10 @@ import { Outlet } from 'react-router-dom'
 
 import { Loader } from '~/components/Loader'
 import { AdminProvider } from '~/contexts/useAdmin'
+import {
+	PluginRegistryProvider,
+	getRegisteredPluginRoutes,
+} from '~/core/plugins/PluginRegistry'
 import { PrivateRoute } from './PrivateRoute'
 import { PublicRoute } from './PublicRoute'
 
@@ -21,27 +25,116 @@ import ContentManagerViewerEdit from '~/pages/ContentManager/Item/Viewer/Edit'
 import ContentManagerViewerLivePreview from '~/pages/ContentManager/Item/Viewer/LivePreview'
 import ContentManagerViewerVersions from '~/pages/ContentManager/Item/Viewer/Versions'
 import HomePage from '~/pages/Home'
+import MediaLibrary from '~/pages/Media'
+import MediaDetail from '~/pages/Media/Detail'
 import NotFound from '~/pages/NotFound'
-import Playground from '~/pages/Playground'
-import { SchemaPlaygroundEditor } from '~/pages/Playground/Editor'
 import Settings from '~/pages/Settings'
 import SettingsEdit from '~/pages/Settings/Edit'
 
-const withSuspense = (Component: React.ComponentType<any>) => (
+const withSuspense = (Component: React.ComponentType<unknown>) => (
 	<Suspense fallback={<Loader />}>
 		<Component />
 	</Suspense>
 )
 
 /**
- * Root layout that provides AdminProvider and Toaster to all routes
+ * Root layout that provides AdminProvider, PluginRegistryProvider and Toaster to all routes
  */
 const RootLayout = () => (
 	<AdminProvider>
-		<Outlet />
-		<Toaster />
+		<PluginRegistryProvider>
+			<Outlet />
+			<Toaster />
+		</PluginRegistryProvider>
 	</AdminProvider>
 )
+
+/**
+ * Core dashboard routes (content manager, settings, account)
+ */
+const coreDashboardRoutes = [
+	{ path: '', element: withSuspense(HomePage) },
+	{
+		path: 'content-manager',
+		element: <Outlet />,
+		children: [
+			{
+				path: '',
+				element: <ContentManager />,
+			},
+			{
+				path: ':schema',
+				element: <ContentManagerItem />,
+				children: [
+					{
+						path: '',
+						element: <ContentManagerList />,
+					},
+					{
+						path: ':id',
+						element: <ContentManagerViewer />,
+						children: [
+							{
+								path: '',
+								element: <ContentManagerViewerEdit />,
+							},
+							{
+								path: 'live-preview',
+								element: <ContentManagerViewerLivePreview />,
+							},
+							{
+								path: 'versions',
+								element: <ContentManagerViewerVersions />,
+							},
+							{
+								path: 'api',
+								element: <ContentManagerViewerAPI />,
+							},
+						],
+					},
+				],
+			},
+		],
+	},
+	{
+		path: 'settings',
+		element: <Outlet />,
+		children: [
+			{
+				path: '',
+				element: <Settings />,
+			},
+			{
+				path: ':group',
+				element: <SettingsEdit />,
+			},
+		],
+	},
+	{
+		path: 'media',
+		element: <Outlet />,
+		children: [
+			{
+				path: '',
+				element: <MediaLibrary />,
+			},
+			{
+				path: ':id',
+				element: <MediaDetail />,
+			},
+		],
+	},
+	{
+		path: 'account',
+		element: <AccountPage />,
+	},
+]
+
+/**
+ * Combined dashboard routes: core routes + plugin routes
+ * Plugin routes are registered via registerMagnetPlugin() and resolved at build time
+ */
+const dashboardRoutes = [...coreDashboardRoutes, ...getRegisteredPluginRoutes()]
 
 export const routes = [
 	{
@@ -54,87 +147,7 @@ export const routes = [
 					{
 						path: '/',
 						element: <DashboardLayout />,
-						children: [
-							{ path: '', element: withSuspense(HomePage) },
-							{
-								path: 'content-manager',
-								element: <Outlet />,
-								children: [
-									{
-										path: '',
-										element: <ContentManager />,
-									},
-									{
-										path: ':schema',
-										element: <ContentManagerItem />,
-										children: [
-											{
-												path: '',
-												element: <ContentManagerList />,
-											},
-											{
-												path: ':id',
-												element: <ContentManagerViewer />,
-												children: [
-													{
-														path: '',
-														element: <ContentManagerViewerEdit />,
-													},
-													{
-														path: 'live-preview',
-														element: <ContentManagerViewerLivePreview />,
-													},
-													{
-														path: 'versions',
-														element: <ContentManagerViewerVersions />,
-													},
-													{
-														path: 'api',
-														element: <ContentManagerViewerAPI />,
-													},
-												],
-											},
-										],
-									},
-								],
-							},
-							{
-								path: 'playground',
-								element: <Outlet />,
-								children: [
-									{
-										path: '',
-										element: <Playground />,
-									},
-									{
-										path: 'new',
-										element: <SchemaPlaygroundEditor />,
-									},
-									{
-										path: ':schemaName',
-										element: <SchemaPlaygroundEditor />,
-									},
-								],
-							},
-							{
-								path: 'settings',
-								element: <Outlet />,
-								children: [
-									{
-										path: '',
-										element: <Settings />,
-									},
-									{
-										path: ':group',
-										element: <SettingsEdit />,
-									},
-								],
-							},
-							{
-								path: 'account',
-								element: <AccountPage />,
-							},
-						],
+						children: dashboardRoutes,
 					},
 				],
 			},

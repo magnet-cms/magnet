@@ -123,22 +123,44 @@ export const UI_SUBTYPES: Record<FieldType, UISubtypeDefinition[]> = {
 		{ id: 'richText', label: 'Rich Text', description: 'Rich text editor' },
 	],
 	number: [
-		{ id: 'number', label: 'Number Input', description: 'Standard number field' },
-		{ id: 'quantity', label: 'Quantity', description: 'Number with +/- buttons' },
+		{
+			id: 'number',
+			label: 'Number Input',
+			description: 'Standard number field',
+		},
+		{
+			id: 'quantity',
+			label: 'Quantity',
+			description: 'Number with +/- buttons',
+		},
 	],
-	date: [{ id: 'date', label: 'Date Picker', description: 'Calendar date selection' }],
+	date: [
+		{
+			id: 'date',
+			label: 'Date Picker',
+			description: 'Calendar date selection',
+		},
+	],
 	boolean: [
 		{ id: 'switch', label: 'Switch', description: 'Toggle switch' },
 		{ id: 'checkbox', label: 'Checkbox', description: 'Checkbox input' },
 	],
 	select: [
 		{ id: 'select', label: 'Dropdown', description: 'Single select dropdown' },
-		{ id: 'multiSelect', label: 'Multi Select', description: 'Select multiple options' },
+		{
+			id: 'multiSelect',
+			label: 'Multi Select',
+			description: 'Select multiple options',
+		},
 		{ id: 'combobox', label: 'Combobox', description: 'Searchable dropdown' },
 		{ id: 'radio', label: 'Radio Group', description: 'Radio button options' },
 	],
 	relation: [
-		{ id: 'relationship', label: 'Relationship', description: 'Link to another schema' },
+		{
+			id: 'relationship',
+			label: 'Relationship',
+			description: 'Link to another schema',
+		},
 	],
 }
 

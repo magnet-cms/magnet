@@ -18,6 +18,11 @@ export default defineConfig({
 				find: '~',
 				replacement: fileURLToPath(new URL('./src', import.meta.url)),
 			},
+			// Admin (for plugin imports)
+			{
+				find: '@magnet/admin',
+				replacement: fileURLToPath(new URL('./src', import.meta.url)),
+			},
 			// UI
 			{
 				find: '@magnet/ui',

@@ -1,0 +1,287 @@
+---
+title: Storage Module
+description: File upload, media management, and on-demand image transforms
+---
+
+# Storage Module
+
+The Storage module provides a complete media management system for Magnet CMS, including file uploads, metadata management, and on-demand image transformations.
+
+## Features
+
+- File uploads with metadata (filename, MIME type, size, dimensions)
+- Folder and tag organization
+- On-demand image transforms (resize, crop, format conversion)
+- Adapter architecture for different storage backends
+- Built-in local storage adapter
+- Optional S3/R2 adapters via separate packages
+
+## Configuration
+
+Add storage configuration to your `MagnetModule.forRoot()`:
+
+```ts
+import { MagnetModule } from '@magnet/core'
+
+MagnetModule.forRoot({
+  db: { uri: 'mongodb://localhost:27017/myapp' },
+  jwt: { secret: 'your-secret' },
+  storage: {
+    adapter: 'local', // 'local', 's3', or 'r2'
+    local: {
+      uploadDir: './uploads',
+      publicPath: '/media',
+      maxFileSize: 50 * 1024 * 1024, // 50MB
+    },
+  },
+})
+```
+
+### Local Storage Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `uploadDir` | `string` | `'./uploads'` | Directory for stored files |
+| `publicPath` | `string` | `'/media'` | URL path prefix for serving files |
+| `maxFileSize` | `number` | `52428800` | Maximum file size in bytes (50MB) |
+
+### S3/R2 Storage Options
+
+For cloud storage, install the adapter package:
+
+```bash
+bun add @magnet/adapter-storage-s3
+```
+
+```ts
+storage: {
+  adapter: 's3',
+  s3: {
+    bucket: 'my-bucket',
+    region: 'us-east-1',
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    endpoint: 'https://s3.amazonaws.com', // Optional
+    publicUrl: 'https://cdn.example.com', // Optional CDN URL
+  },
+}
+```
+
+## API Endpoints
+
+### Upload Endpoints (Authenticated)
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/media/upload` | Upload a single file |
+| `POST` | `/media/upload-multiple` | Upload multiple files |
+
+### Media Management (Authenticated)
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/media` | List media with pagination and filters |
+| `GET` | `/media/:id` | Get single media item |
+| `PUT` | `/media/:id` | Update media metadata |
+| `DELETE` | `/media/:id` | Delete a media item |
+| `POST` | `/media/delete-many` | Batch delete media items |
+| `GET` | `/media/meta/folders` | List all folders |
+| `GET` | `/media/meta/tags` | List all tags |
+| `GET` | `/media/meta/stats` | Get storage statistics |
+
+### Public File Serving
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/media/file/:id` | Serve file with optional transforms |
+| `GET` | `/media/download/:id` | Download file with original filename |
+
+## Image Transforms
+
+Request transformed images by adding query parameters:
+
+```
+/media/file/:id?w=200&h=200&fit=cover&f=webp&q=80
+```
+
+### Transform Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `w` | `number` | Width in pixels (1-4000) |
+| `h` | `number` | Height in pixels (1-4000) |
+| `fit` | `string` | Resize mode: `cover`, `contain`, `fill`, `inside`, `outside` |
+| `f` | `string` | Output format: `jpeg`, `png`, `webp`, `avif` |
+| `q` | `number` | Quality (1-100) |
+
+### Transform Examples
+
+```
+# Resize to 200px width, maintain aspect ratio
+/media/file/abc123?w=200
+
+# Create 200x200 cover thumbnail
+/media/file/abc123?w=200&h=200&fit=cover
+
+# Convert to WebP at 80% quality
+/media/file/abc123?f=webp&q=80
+
+# Full transformation
+/media/file/abc123?w=400&h=300&fit=cover&f=webp&q=85
+```
+
+## Upload Example
+
+### Single File Upload
+
+```ts
+const formData = new FormData()
+formData.append('file', file)
+formData.append('folder', 'images')
+formData.append('tags', JSON.stringify(['hero', 'homepage']))
+formData.append('alt', 'Hero image')
+
+const response = await fetch('/media/upload', {
+  method: 'POST',
+  headers: {
+    Authorization: `Bearer ${token}`,
+  },
+  body: formData,
+})
+
+const media = await response.json()
+// { id, filename, url, mimeType, size, width, height, ... }
+```
+
+### Multiple File Upload
+
+```ts
+const formData = new FormData()
+files.forEach(file => formData.append('files', file))
+formData.append('folder', 'gallery')
+
+const response = await fetch('/media/upload-multiple', {
+  method: 'POST',
+  headers: {
+    Authorization: `Bearer ${token}`,
+  },
+  body: formData,
+})
+
+const mediaItems = await response.json()
+```
+
+## Media Item Schema
+
+```ts
+interface MediaItem {
+  id: string
+  filename: string
+  originalFilename: string
+  mimeType: string
+  size: number
+  path: string
+  url: string
+  folder?: string
+  tags?: string[]
+  alt?: string
+  width?: number
+  height?: number
+  customFields?: Record<string, unknown>
+  createdAt: string
+  updatedAt: string
+  createdBy?: string
+}
+```
+
+## Query Options
+
+List media with filters:
+
+```
+GET /media?page=1&limit=20&folder=images&mimeType=image/&search=hero&sortBy=createdAt&sortOrder=desc
+```
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `page` | `number` | Page number (default: 1) |
+| `limit` | `number` | Items per page (default: 20) |
+| `folder` | `string` | Filter by folder |
+| `mimeType` | `string` | Filter by MIME type prefix |
+| `tags` | `string[]` | Filter by tags |
+| `search` | `string` | Search in filename |
+| `sortBy` | `string` | Sort field: `createdAt`, `filename`, `size` |
+| `sortOrder` | `string` | Sort direction: `asc`, `desc` |
+
+## Admin UI
+
+The Storage module includes a Media Library page in the admin UI:
+
+- Grid and list view toggles
+- Drag-and-drop uploads
+- Folder and tag filtering
+- Search functionality
+- Bulk selection and deletion
+- Media detail editing
+
+Access the Media Library at `/admin/media`.
+
+## Creating Custom Adapters
+
+Implement the `StorageAdapter` abstract class:
+
+```ts
+import { StorageAdapter, UploadOptions, UploadResult, TransformOptions } from '@magnet/common'
+import type { Readable } from 'stream'
+
+export class CustomStorageAdapter extends StorageAdapter {
+  async initialize(): Promise<void> {
+    // Initialize connection
+  }
+
+  async upload(
+    file: Buffer | Readable,
+    originalFilename: string,
+    options?: UploadOptions
+  ): Promise<UploadResult> {
+    // Upload implementation
+  }
+
+  async delete(path: string): Promise<boolean> {
+    // Delete implementation
+  }
+
+  getUrl(path: string, transform?: TransformOptions): string {
+    // Return public URL
+  }
+
+  async getStream(path: string): Promise<Readable> {
+    // Return file stream
+  }
+
+  async getBuffer(path: string): Promise<Buffer> {
+    // Return file buffer
+  }
+
+  async exists(path: string): Promise<boolean> {
+    // Check if file exists
+  }
+
+  async transform(path: string, options: TransformOptions): Promise<Buffer> {
+    // Apply image transforms
+  }
+}
+```
+
+## Environment Variables
+
+Auto-detect storage adapter from environment:
+
+| Variable | Adapter |
+|----------|---------|
+| `S3_BUCKET` | S3 |
+| `AWS_S3_BUCKET` | S3 |
+| `R2_BUCKET` | R2 |
+| `CLOUDFLARE_R2_BUCKET` | R2 |
+
+If no environment variables are set, local storage is used by default.

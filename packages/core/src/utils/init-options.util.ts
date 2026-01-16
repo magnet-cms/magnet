@@ -13,4 +13,6 @@ export const initOptions = (
 		locales: ['en'],
 		defaultLocale: 'en',
 	},
+	plugins: options?.plugins || [],
+	storage: options?.storage,
 })

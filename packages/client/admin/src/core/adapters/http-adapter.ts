@@ -12,6 +12,11 @@ import type {
 	LocaleStatus,
 	LoginCredentials,
 	MagnetApiAdapter,
+	MediaItem,
+	MediaQueryOptions,
+	MediaStats,
+	MediaUploadOptions,
+	PaginatedMedia,
 	PlaygroundCodePreview,
 	PlaygroundCreateModuleResponse,
 	PlaygroundCreateSchemaDto,
@@ -20,6 +25,7 @@ import type {
 	PlaygroundUpdateSchemaResponse,
 	RegisterCredentials,
 	TokenStorage,
+	TransformOptions,
 	VersionDetails,
 	VersionInfo,
 } from './types'
@@ -490,6 +496,156 @@ export function createHttpAdapter(config: HttpAdapterConfig): MagnetApiAdapter {
 					method: 'POST',
 					body: data,
 				})
+			},
+		},
+
+		media: {
+			async list(options?: MediaQueryOptions): Promise<PaginatedMedia> {
+				const params: Record<string, string | undefined> = {}
+				if (options?.page) params.page = options.page.toString()
+				if (options?.limit) params.limit = options.limit.toString()
+				if (options?.folder) params.folder = options.folder
+				if (options?.mimeType) params.mimeType = options.mimeType
+				if (options?.tags?.length) params.tags = options.tags.join(',')
+				if (options?.search) params.search = options.search
+				if (options?.sortBy) params.sortBy = options.sortBy
+				if (options?.sortOrder) params.sortOrder = options.sortOrder
+
+				const url = buildUrl('/media', params)
+				return request<PaginatedMedia>(url)
+			},
+
+			async get(id: string): Promise<MediaItem> {
+				return request<MediaItem>(`/media/${id}`)
+			},
+
+			async upload(
+				file: File,
+				options?: MediaUploadOptions,
+			): Promise<MediaItem> {
+				const formData = new FormData()
+				formData.append('file', file)
+				if (options?.folder) formData.append('folder', options.folder)
+				if (options?.tags) formData.append('tags', JSON.stringify(options.tags))
+				if (options?.alt) formData.append('alt', options.alt)
+
+				const token = tokenStorage.getAccessToken()
+				const res = await fetch(`${baseUrl}/media/upload`, {
+					method: 'POST',
+					headers: {
+						...(token ? { Authorization: `Bearer ${token}` } : {}),
+					},
+					body: formData,
+				})
+
+				if (res.status === 401) {
+					onUnauthorized?.()
+					throw new Error('Unauthorized')
+				}
+
+				if (!res.ok) {
+					const error = new Error(`Upload failed: ${res.statusText}`)
+					onError?.(error)
+					throw error
+				}
+
+				return res.json()
+			},
+
+			async uploadMultiple(
+				files: File[],
+				options?: MediaUploadOptions,
+			): Promise<MediaItem[]> {
+				const formData = new FormData()
+				for (const file of files) {
+					formData.append('files', file)
+				}
+				if (options?.folder) formData.append('folder', options.folder)
+
+				const token = tokenStorage.getAccessToken()
+				const res = await fetch(`${baseUrl}/media/upload-multiple`, {
+					method: 'POST',
+					headers: {
+						...(token ? { Authorization: `Bearer ${token}` } : {}),
+					},
+					body: formData,
+				})
+
+				if (res.status === 401) {
+					onUnauthorized?.()
+					throw new Error('Unauthorized')
+				}
+
+				if (!res.ok) {
+					const error = new Error(`Upload failed: ${res.statusText}`)
+					onError?.(error)
+					throw error
+				}
+
+				return res.json()
+			},
+
+			async update(
+				id: string,
+				data: { alt?: string; tags?: string[]; folder?: string },
+			): Promise<MediaItem> {
+				return request<MediaItem>(`/media/${id}`, {
+					method: 'PUT',
+					body: data,
+				})
+			},
+
+			async delete(id: string): Promise<{ success: boolean }> {
+				return request<{ success: boolean }>(`/media/${id}`, {
+					method: 'DELETE',
+				})
+			},
+
+			async deleteMany(
+				ids: string[],
+			): Promise<{ deleted: number; failed: string[] }> {
+				return request<{ deleted: number; failed: string[] }>(
+					'/media/delete-many',
+					{
+						method: 'POST',
+						body: { ids },
+					},
+				)
+			},
+
+			async getFolders(): Promise<string[]> {
+				return request<string[]>('/media/meta/folders')
+			},
+
+			async getTags(): Promise<string[]> {
+				return request<string[]>('/media/meta/tags')
+			},
+
+			async getStats(): Promise<MediaStats> {
+				return request<MediaStats>('/media/meta/stats')
+			},
+
+			getUrl(id: string, transform?: TransformOptions): string {
+				let url = `${baseUrl}/media/file/${id}`
+				if (transform) {
+					const params = new URLSearchParams()
+					if (transform.width) params.set('w', transform.width.toString())
+					if (transform.height) params.set('h', transform.height.toString())
+					if (transform.fit) params.set('fit', transform.fit)
+					if (transform.format) params.set('f', transform.format)
+					if (transform.quality) params.set('q', transform.quality.toString())
+
+					const queryString = params.toString()
+					if (queryString) {
+						url += `?${queryString}`
+					}
+				}
+				return url
+			},
+
+			getFileUrl(id: string, transform?: TransformOptions): string {
+				// Alias for getUrl for convenience
+				return this.getUrl(id, transform)
 			},
 		},
 	}

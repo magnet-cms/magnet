@@ -1,5 +1,7 @@
 import { Type } from '@nestjs/common'
 import { DBConfig } from './database.types'
+import type { PluginConfig } from './plugin.types'
+import { StorageConfig } from './storage.types'
 
 export interface InternationalizationOptions {
 	locales: string[]
@@ -26,17 +28,26 @@ export class MagnetModuleOptions {
 	}
 	internationalization?: InternationalizationOptions
 	playground?: PlaygroundOptions
+	storage?: StorageConfig
+	/**
+	 * Plugins to load with the Magnet module
+	 */
+	plugins?: PluginConfig[]
 
 	constructor({
 		db,
 		jwt,
 		internationalization,
 		playground,
+		storage,
+		plugins,
 	}: MagnetModuleOptions) {
 		this.db = db
 		this.jwt = jwt
 		this.internationalization = internationalization
 		this.playground = playground
+		this.storage = storage
+		this.plugins = plugins
 	}
 }
 

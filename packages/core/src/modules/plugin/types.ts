@@ -1,16 +1,21 @@
-import { Type } from '@nestjs/common'
+import type { Type } from '@nestjs/common'
 
-export interface PluginMetadata {
-	name: string
-	description?: string
-	version?: string
-}
+// Re-export types from @magnet/common for backward compatibility
+export type {
+	PluginConfig,
+	PluginFrontendManifest,
+	PluginHook,
+	PluginMetadata,
+	PluginModuleOptions,
+	PluginRouteDefinition,
+	PluginSettingsPage,
+	PluginSidebarItem,
+	RegisteredPluginInfo,
+} from '@magnet/common'
 
-export interface PluginOptions {
+/**
+ * @deprecated Use PluginModuleOptions from @magnet/common instead
+ */
+export type PluginOptions = {
 	plugins: Type[]
-}
-
-export interface PluginHook {
-	instance: any
-	methodName: string | symbol
 }

@@ -9,3 +9,6 @@ export * from './provider'
 
 // Router
 export * from './router'
+
+// Plugins
+export * from './plugins'

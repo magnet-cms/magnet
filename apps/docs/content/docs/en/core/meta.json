@@ -1,4 +1,4 @@
 {
   "title": "Core",
-  "pages": ["index", "magnet-module", "admin", "auth", "content", "database", "discovery"]
+  "pages": ["index", "magnet-module", "admin", "auth", "content", "database", "discovery", "storage"]
 }

@@ -12,15 +12,19 @@ import { EnvironmentModule } from './modules/environment/environment.module'
 import { HealthModule } from './modules/health/health.module'
 import { HistoryModule } from './modules/history/history.module'
 import { PlaygroundModule } from './modules/playground/playground.module'
+import { PluginModule } from './modules/plugin/plugin.module'
 import { SettingsModule } from './modules/settings/settings.module'
+import { StorageModule } from './modules/storage/storage.module'
 import { initOptions } from './utils'
 
 @Module({})
 export class MagnetModule {
 	static forRoot(options?: MagnetModuleOptions): DynamicModule {
 		const defaultOptions: MagnetModuleOptions = initOptions(options)
+		const plugins = defaultOptions.plugins || []
 
 		const DBModule = DatabaseModule.register(defaultOptions)
+		const StorageModuleConfig = StorageModule.forRoot(defaultOptions.storage)
 
 		return {
 			module: MagnetModule,
@@ -36,7 +40,9 @@ export class MagnetModule {
 				HistoryModule,
 				HealthModule,
 				PlaygroundModule,
+				PluginModule.forRoot({ plugins }),
 				SettingsModule,
+				StorageModuleConfig,
 			],
 			providers: [
 				{ provide: APP_PIPE, useClass: ValidationPipe },
@@ -53,6 +59,8 @@ export class MagnetModule {
 				SettingsModule,
 				HistoryModule,
 				HealthModule,
+				PluginModule,
+				StorageModuleConfig,
 			],
 		}
 	}

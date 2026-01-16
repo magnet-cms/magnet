@@ -160,9 +160,48 @@ export { FormBuilder } from './components/FormBuilder'
 export { DashboardLayout } from './layouts/DashboardLayout'
 export { AuthLayout } from './layouts/AuthLayout'
 export { Loader } from './components/Loader'
+export {
+	PageHeader,
+	PageContent,
+	PageHeaderStatus,
+	PageHeaderTabs,
+} from './components/PageHeader'
+export type {
+	EditableTitleConfig,
+	PageContentProps,
+	PageHeaderProps,
+	PageHeaderStatusProps,
+	PageHeaderTabsProps,
+	StatusBadge,
+	StatusType,
+	TabItem,
+	TabsConfig,
+	TitleConfig,
+} from './components/PageHeader'
 
 // =============================================================================
 // Routes
 // =============================================================================
 
 export { routes, getBasePath, normalizePath } from './routes'
+
+// =============================================================================
+// Plugin System - For building plugins
+// =============================================================================
+
+export {
+	registerMagnetPlugin,
+	getRegisteredPluginRoutes,
+	usePluginRegistry,
+	usePluginRoutes,
+	usePluginSidebarItems,
+	PluginRegistryProvider,
+} from './core/plugins'
+export type {
+	FrontendPluginManifest,
+	PluginRegistrationFn,
+	PluginRouteDefinition,
+	PluginSidebarItem,
+	ResolvedPlugin,
+	ResolvedSidebarItem,
+} from './core/plugins'

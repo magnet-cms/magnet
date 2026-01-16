@@ -1,38 +1,78 @@
 {
   "name": "@magnet/plugin-content-builder",
-  "version": "0.0.1",
-  "description": "",
+  "version": "1.0.0",
+  "description": "Visual schema builder and code generator for Magnet CMS",
   "private": true,
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "exports": {
-    "import": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
     },
-    "require": {
-      "types": "./dist/index.d.cts",
-      "default": "./dist/index.cjs"
+    "./backend": {
+      "import": {
+        "types": "./dist/backend/index.d.ts",
+        "default": "./dist/backend/index.js"
+      },
+      "require": {
+        "types": "./dist/backend/index.d.cts",
+        "default": "./dist/backend/index.cjs"
+      }
+    },
+    "./frontend": {
+      "import": "./src/frontend/index.ts",
+      "types": "./src/frontend/index.ts"
     }
   },
   "types": "./dist/index.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "src/frontend"
   ],
   "scripts": {
     "build:dev": "tsup --watch",
     "build": "tsup"
   },
   "devDependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@magnet/admin": "workspace:*",
+    "@magnet/common": "workspace:*",
+    "@magnet/core": "workspace:*",
+    "@magnet/ui": "workspace:*",
+    "@magnet/utils": "workspace:*",
     "@nestjs/common": "^11.0.8",
     "@repo/biome": "workspace:*",
     "@repo/tsup": "workspace:*",
     "@repo/typescript-config": "workspace:*",
+    "@types/react": "^19.0.1",
+    "lucide-react": "^0.468.0",
+    "react": "^19.0.0",
+    "react-router-dom": "^7.1.1",
     "reflect-metadata": "0.2.2"
   },
   "peerDependencies": {
+    "@magnet/admin": "workspace:*",
+    "@magnet/common": "workspace:*",
+    "@magnet/core": "workspace:*",
+    "@magnet/ui": "workspace:*",
+    "@magnet/utils": "workspace:*",
     "@nestjs/common": "^11.0.0",
+    "lucide-react": ">=0.400.0",
+    "react": ">=18.0.0",
+    "react-router-dom": ">=6.0.0",
     "reflect-metadata": "0.2.2"
+  },
+  "magnet": {
+    "type": "plugin",
+    "backend": true,
+    "frontend": true
   }
 }

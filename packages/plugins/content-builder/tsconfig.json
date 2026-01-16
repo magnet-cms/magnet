@@ -3,9 +3,13 @@
   "compilerOptions": {
     "module": "Preserve",
     "moduleResolution": "bundler",
-    "baseUrl": "./src",
+    "jsx": "react-jsx",
+    "baseUrl": ".",
     "paths": {
-      "~/*": ["./*"]
+      "~/*": ["./src/*"],
+      "@magnet/admin": ["../../client/admin/src/index.ts"],
+      "@magnet/ui/*": ["../../client/ui/src/*"],
+      "@magnet/utils": ["../../utils/src/index.ts"]
     }
-  } 
+  }
 }

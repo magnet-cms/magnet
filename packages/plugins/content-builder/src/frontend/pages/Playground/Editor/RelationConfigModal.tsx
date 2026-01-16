@@ -1,3 +1,4 @@
+import { useAdmin } from '@magnet/admin'
 import {
 	Button,
 	Dialog,
@@ -16,8 +17,6 @@ import {
 } from '@magnet/ui/components'
 import { cn } from '@magnet/ui/lib'
 import { useState } from 'react'
-import { useAdmin } from '~/contexts/useAdmin'
-import { RELATION_TYPES } from '../constants/field-types'
 import type { RelationConfig } from '../types/builder.types'
 
 interface RelationConfigModalProps {
@@ -113,10 +112,7 @@ function RelationDiagram({
 					)}
 				/>
 				<div
-					className={cn(
-						'h-px bg-muted-foreground/60',
-						small ? 'w-6' : 'w-10',
-					)}
+					className={cn('h-px bg-muted-foreground/60', small ? 'w-6' : 'w-10')}
 				/>
 				<div
 					className={cn(

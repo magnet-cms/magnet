@@ -1,3 +1,4 @@
+import { PageContent, PageHeader, useSchema } from '@magnet/admin'
 import { Button, Spinner } from '@magnet/ui/components'
 import {
 	AlertCircle,
@@ -11,8 +12,6 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { PageContent, PageHeader } from '~/components/PageHeader'
-import { useSchema } from '~/hooks/useDiscovery'
 import {
 	SchemaBuilderContext,
 	useSchemaBuilder,
@@ -160,7 +159,11 @@ function SchemaEditorInner() {
 
 	const statusBadges = []
 	if (state.isDirty) {
-		statusBadges.push({ type: 'warning' as const, label: 'Unsaved changes', dot: true })
+		statusBadges.push({
+			type: 'warning' as const,
+			label: 'Unsaved changes',
+			dot: true,
+		})
 	}
 	if (state.lastSaved) {
 		statusBadges.push({ type: 'success' as const, label: 'Saved', dot: true })

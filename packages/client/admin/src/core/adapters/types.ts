@@ -306,6 +306,30 @@ export interface MagnetApiAdapter {
 		deleteSchema(name: string): Promise<{ success: boolean }>
 		previewCode(data: PlaygroundCreateSchemaDto): Promise<PlaygroundCodePreview>
 	}
+
+	/**
+	 * Media/Storage operations
+	 */
+	media: {
+		list(options?: MediaQueryOptions): Promise<PaginatedMedia>
+		get(id: string): Promise<MediaItem>
+		upload(file: File, options?: MediaUploadOptions): Promise<MediaItem>
+		uploadMultiple(
+			files: File[],
+			options?: MediaUploadOptions,
+		): Promise<MediaItem[]>
+		update(
+			id: string,
+			data: { alt?: string; tags?: string[]; folder?: string },
+		): Promise<MediaItem>
+		delete(id: string): Promise<{ success: boolean }>
+		deleteMany(ids: string[]): Promise<{ deleted: number; failed: string[] }>
+		getFolders(): Promise<string[]>
+		getTags(): Promise<string[]>
+		getStats(): Promise<MediaStats>
+		getUrl(id: string, transform?: TransformOptions): string
+		getFileUrl(id: string, transform?: TransformOptions): string
+	}
 }
 
 export interface LocalesConfig {
@@ -410,4 +434,66 @@ export interface PlaygroundCreateModuleResponse extends PlaygroundSchemaDetail {
 
 export interface PlaygroundUpdateSchemaResponse extends PlaygroundSchemaDetail {
 	conflicts: PlaygroundConflictInfo[]
+}
+
+// ============================================================================
+// Media/Storage Types
+// ============================================================================
+
+export interface MediaItem {
+	id: string
+	filename: string
+	originalFilename: string
+	mimeType: string
+	size: number
+	path: string
+	url: string
+	folder?: string
+	tags?: string[]
+	alt?: string
+	width?: number
+	height?: number
+	customFields?: Record<string, unknown>
+	createdAt: string
+	updatedAt: string
+	createdBy?: string
+}
+
+export interface MediaQueryOptions {
+	page?: number
+	limit?: number
+	folder?: string
+	mimeType?: string
+	tags?: string[]
+	search?: string
+	sortBy?: 'createdAt' | 'filename' | 'size'
+	sortOrder?: 'asc' | 'desc'
+}
+
+export interface PaginatedMedia {
+	items: MediaItem[]
+	total: number
+	page: number
+	limit: number
+	totalPages: number
+}
+
+export interface MediaUploadOptions {
+	folder?: string
+	tags?: string[]
+	alt?: string
+}
+
+export interface TransformOptions {
+	width?: number
+	height?: number
+	fit?: 'cover' | 'contain' | 'fill' | 'inside' | 'outside'
+	format?: 'jpeg' | 'png' | 'webp' | 'avif'
+	quality?: number
+}
+
+export interface MediaStats {
+	totalFiles: number
+	totalSize: number
+	byMimeType: Record<string, { count: number; size: number }>
 }
