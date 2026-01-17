@@ -81,7 +81,7 @@ export const RHFRadioGroup = ({
 							)}
 						</RadioGroup>
 					</FormControl>
-					{description && <FormDescription>{description}</FormDescription>}
+					<FormDescription>{description}</FormDescription>
 					<FormMessage />
 				</FormItem>
 			)}

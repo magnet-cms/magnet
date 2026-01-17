@@ -45,7 +45,7 @@ export const RHFSwitch = ({
 				>
 					<div className="space-y-0.5">
 						<FormLabel>{label}</FormLabel>
-						{description && <FormDescription>{description}</FormDescription>}
+						<FormDescription>{description}</FormDescription>
 					</div>
 					<FormControl>
 						<Switch

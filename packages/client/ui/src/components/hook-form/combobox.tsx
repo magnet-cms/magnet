@@ -116,7 +116,7 @@ export const RHFCombobox = ({
 							</Command>
 						</PopoverContent>
 					</Popover>
-					{description && <FormDescription>{description}</FormDescription>}
+					<FormDescription>{description}</FormDescription>
 					<FormMessage />
 				</FormItem>
 			)}

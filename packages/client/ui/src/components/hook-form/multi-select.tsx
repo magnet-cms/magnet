@@ -175,7 +175,7 @@ export const RHFMultiSelect = ({
 								))}
 							</div>
 						)}
-						{description && <FormDescription>{description}</FormDescription>}
+						<FormDescription>{description}</FormDescription>
 						<FormMessage />
 					</FormItem>
 				)

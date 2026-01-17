@@ -81,7 +81,7 @@ export const RHFSelect = ({
 							</SelectContent>
 						</Select>
 					</FormControl>
-					{description && <FormDescription>{description}</FormDescription>}
+					<FormDescription>{description}</FormDescription>
 					<FormMessage />
 				</FormItem>
 			)}

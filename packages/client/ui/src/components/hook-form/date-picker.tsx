@@ -121,7 +121,7 @@ export const RHFDatePicker = ({
 							/>
 						</PopoverContent>
 					</Popover>
-					{description && <FormDescription>{description}</FormDescription>}
+					<FormDescription>{description}</FormDescription>
 					<FormMessage />
 				</FormItem>
 			)}

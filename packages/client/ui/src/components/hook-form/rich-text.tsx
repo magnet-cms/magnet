@@ -53,7 +53,7 @@ export const RHFRichText = ({
 								onChange={field.onChange}
 							/>
 						</FormControl>
-						{description && <FormDescription>{description}</FormDescription>}
+						<FormDescription>{description}</FormDescription>
 						<FormMessage />
 					</FormItem>
 				)

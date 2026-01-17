@@ -145,7 +145,7 @@ export const RHFText = ({
 								/>
 							)}
 						</FormControl>
-						{description && <FormDescription>{description}</FormDescription>}
+						<FormDescription>{description}</FormDescription>
 						<FormMessage />
 					</FormItem>
 				)

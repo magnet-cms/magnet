@@ -71,7 +71,7 @@ export const RHFTextarea = ({
 								{...textareaProps}
 							/>
 						</FormControl>
-						{description && <FormDescription>{description}</FormDescription>}
+						<FormDescription>{description}</FormDescription>
 						<FormMessage />
 					</FormItem>
 				)

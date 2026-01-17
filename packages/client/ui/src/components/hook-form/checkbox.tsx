@@ -53,7 +53,7 @@ export const RHFCheckbox = ({
 					</FormControl>
 					<div className="space-y-1 leading-none">
 						<FormLabel>{label}</FormLabel>
-						{description && <FormDescription>{description}</FormDescription>}
+						<FormDescription>{description}</FormDescription>
 					</div>
 					<FormMessage />
 				</FormItem>

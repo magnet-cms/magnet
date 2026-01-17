@@ -146,7 +146,7 @@ export const RHFPhone = ({
 								/>
 							</div>
 						</FormControl>
-						{description && <FormDescription>{description}</FormDescription>}
+						<FormDescription>{description}</FormDescription>
 						<FormMessage />
 					</FormItem>
 				)

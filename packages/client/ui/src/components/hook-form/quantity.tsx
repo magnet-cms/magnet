@@ -138,7 +138,7 @@ export const RHFQuantity = ({
 								</Button>
 							</div>
 						</FormControl>
-						{description && <FormDescription>{description}</FormDescription>}
+						<FormDescription>{description}</FormDescription>
 						<FormMessage />
 					</FormItem>
 				)

@@ -76,7 +76,7 @@ export const RHFFileEditor = ({
 								{...rest}
 							/>
 						</FormControl>
-						{description && <FormDescription>{description}</FormDescription>}
+						<FormDescription>{description}</FormDescription>
 						<FormMessage />
 					</FormItem>
 				)
