@@ -1,0 +1,58 @@
+{
+  "name": "@magnet-cms/adapter-drizzle",
+  "version": "1.0.0",
+  "description": "Drizzle ORM database adapter for Magnet CMS - supports PostgreSQL, MySQL, and SQLite",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "exports": {
+    "import": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "require": {
+      "types": "./dist/index.d.cts",
+      "default": "./dist/index.cjs"
+    }
+  },
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build:dev": "tsup --watch",
+    "build": "tsup"
+  },
+  "devDependencies": {
+    "@magnet-cms/common": "workspace:*",
+    "@neondatabase/serverless": "^0.10.0",
+    "@nestjs/common": "^11.1.12",
+    "@repo/biome": "workspace:*",
+    "@repo/tsup": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@types/pg": "^8.11.0",
+    "drizzle-orm": "^0.38.0",
+    "pg": "^8.13.0",
+    "reflect-metadata": "0.2.2"
+  },
+  "peerDependencies": {
+    "@magnet-cms/common": "workspace:*",
+    "@nestjs/common": "^11.1.12",
+    "drizzle-orm": "^0.38.0",
+    "reflect-metadata": "0.2.2"
+  },
+  "peerDependenciesMeta": {
+    "pg": {
+      "optional": true
+    },
+    "@neondatabase/serverless": {
+      "optional": true
+    },
+    "mysql2": {
+      "optional": true
+    },
+    "better-sqlite3": {
+      "optional": true
+    }
+  }
+}

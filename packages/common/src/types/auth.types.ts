@@ -61,6 +61,18 @@ export interface JwtAuthConfig {
 }
 
 /**
+ * Supabase-specific auth configuration
+ */
+export interface SupabaseAuthConfig {
+	/** Supabase project URL */
+	supabaseUrl: string
+	/** Supabase anon/public key */
+	supabaseKey: string
+	/** Default role for new users */
+	defaultRole?: string
+}
+
+/**
  * Auth configuration for MagnetModuleOptions
  */
 export interface AuthConfig {
@@ -68,6 +80,14 @@ export interface AuthConfig {
 	strategy?: string
 	/** JWT-specific configuration */
 	jwt?: JwtAuthConfig
+	/** Supabase-specific configuration (when strategy: 'supabase') */
+	supabaseUrl?: string
+	/** Supabase anon/public key */
+	supabaseKey?: string
+	/** Supabase service role key (required for admin operations like listUsers) */
+	supabaseServiceKey?: string
+	/** Default role for new Supabase users */
+	defaultRole?: string
 	/** Allow extensible config for custom strategies */
 	[key: string]: unknown
 }
@@ -158,6 +178,14 @@ export abstract class AuthStrategy {
 	 * @param token - The token to invalidate
 	 */
 	async logout?(token: string): Promise<void>
+
+	/**
+	 * Check if any users exist in the system (optional)
+	 * Strategies that manage their own user storage should implement this.
+	 * If not implemented, AuthService will fall back to checking the local database.
+	 * @returns true if users exist, false otherwise
+	 */
+	async hasUsers?(): Promise<boolean>
 
 	/**
 	 * Get the Passport strategy name (for guards)

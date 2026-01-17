@@ -108,8 +108,22 @@ const ContentManagerList = () => {
 	}
 
 	// Helper function to create a column format function
-	const createColumnFormat = () => {
+	const createColumnFormat = (fieldType?: string, isRichText?: boolean) => {
 		return (value: unknown) => {
+			// Check if this is a rich text field - show badge instead of content
+			if (isRichText || fieldType === 'richText') {
+				// Always show badge for rich text fields (empty or not)
+				return isEmpty(value) ? (
+					<Badge variant="outline" className="text-muted-foreground">
+						Empty
+					</Badge>
+				) : (
+					<Badge variant="secondary" className="text-xs">
+						Rich Text
+					</Badge>
+				)
+			}
+
 			// Show placeholder chip for empty values
 			if (isEmpty(value)) {
 				return (
@@ -118,6 +132,7 @@ const ContentManagerList = () => {
 					</Badge>
 				)
 			}
+
 			// Handle arrays (like relationships)
 			if (Array.isArray(value)) {
 				return value.length > 0 ? (
@@ -156,8 +171,6 @@ const ContentManagerList = () => {
 	// Memoize columns based on schema to prevent stale column definitions
 	// IMPORTANT: This must be called BEFORE any early returns to follow Rules of Hooks
 	const tableColumns: DataTableColumn<ContentItem>[] = useMemo(() => {
-		const formatFn = createColumnFormat()
-
 		// Always start with ID column
 		// Try documentId first, then fall back to id
 		const idColumn: DataTableColumn<ContentItem> = {
@@ -182,18 +195,22 @@ const ContentManagerList = () => {
 		// Use schema properties with UI defined for columns
 		if (visibleProperties.length > 0) {
 			otherColumns.push(
-				...visibleProperties.map((prop) => ({
-					type: 'text' as const,
-					accessorKey: prop.name,
-					header:
-						prop.ui?.label ||
-						prop.name.charAt(0).toUpperCase() +
-							prop.name
-								.slice(1)
-								.replace(/([A-Z])/g, ' $1')
-								.trim(),
-					format: formatFn,
-				})),
+				...visibleProperties.map((prop) => {
+					const isRichText = prop.ui?.type === 'richText'
+					const formatFn = createColumnFormat(prop.ui?.type, isRichText)
+					return {
+						type: 'text' as const,
+						accessorKey: prop.name,
+						header:
+							prop.ui?.label ||
+							prop.name.charAt(0).toUpperCase() +
+								prop.name
+									.slice(1)
+									.replace(/([A-Z])/g, ' $1')
+									.trim(),
+						format: formatFn,
+					}
+				}),
 			)
 		} else if (items && items.length > 0) {
 			// Fallback: derive columns from first item if schema properties not available
@@ -213,17 +230,20 @@ const ContentManagerList = () => {
 							key !== 'locale' &&
 							key !== '__v',
 					)
-					.map((key) => ({
-						type: 'text' as const,
-						accessorKey: key,
-						header:
-							key.charAt(0).toUpperCase() +
-							key
-								.slice(1)
-								.replace(/([A-Z])/g, ' $1')
-								.trim(),
-						format: formatFn,
-					})),
+					.map((key) => {
+						const formatFn = createColumnFormat()
+						return {
+							type: 'text' as const,
+							accessorKey: key,
+							header:
+								key.charAt(0).toUpperCase() +
+								key
+									.slice(1)
+									.replace(/([A-Z])/g, ' $1')
+									.trim(),
+							format: formatFn,
+						}
+					}),
 			)
 		}
 
@@ -328,7 +348,7 @@ const ContentManagerList = () => {
 		{
 			label: 'Edit',
 			onSelect: (item) =>
-				navigate(`/content-manager/${name.key}/${item.documentId || item.id}`),
+				navigate(`/content-manager/${name?.key}/${item.documentId || item.id}`),
 		},
 		...(schemaOptions?.versioning !== false
 			? [
@@ -340,7 +360,7 @@ const ContentManagerList = () => {
 						label: 'Versions',
 						onSelect: (item: ContentItem) =>
 							navigate(
-								`/content-manager/${name.key}/${item.documentId || item.id}/versions`,
+								`/content-manager/${name?.key}/${item.documentId || item.id}/versions`,
 							),
 					},
 				]
@@ -355,13 +375,13 @@ const ContentManagerList = () => {
 	return (
 		<div className="flex flex-col w-full min-h-0">
 			<Head
-				title={name.title}
+				title={name?.title || ''}
 				actions={
 					<Button
 						onClick={() => createMutation.mutate()}
 						disabled={createMutation.isPending}
 					>
-						{createMutation.isPending ? 'Creating...' : `Create ${name.title}`}
+						{createMutation.isPending ? 'Creating...' : `Create ${name?.title}`}
 					</Button>
 				}
 			/>
@@ -388,10 +408,10 @@ const ContentManagerList = () => {
 			>
 				<DialogContent>
 					<DialogHeader>
-						<DialogTitle>Delete {name.title}</DialogTitle>
+						<DialogTitle>Delete {name?.title || ''}</DialogTitle>
 						<DialogDescription>
-							Are you sure you want to delete this {name.title.toLowerCase()}?
-							This action cannot be undone.
+							Are you sure you want to delete this{' '}
+							{name?.title?.toLowerCase() || ''}? This action cannot be undone.
 						</DialogDescription>
 					</DialogHeader>
 					<DialogFooter>

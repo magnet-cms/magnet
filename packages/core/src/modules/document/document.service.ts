@@ -113,10 +113,15 @@ export class DocumentService {
 			)
 
 			// Fallback: try finding by id for schemas without i18n/versioning
+			// Wrapped in try-catch for cases where id column type doesn't match documentId format
 			if (!doc) {
-				doc = await model.findOne({ id: documentId } as unknown as Partial<
-					T & { id: string }
-				>)
+				try {
+					doc = await model.findOne({ id: documentId } as unknown as Partial<
+						T & { id: string }
+					>)
+				} catch {
+					// Ignore errors (e.g., UUID type mismatch)
+				}
 			}
 
 			return doc as unknown as Document<T> | null
@@ -128,12 +133,17 @@ export class DocumentService {
 		)
 
 		// Fallback: try finding by id for schemas without i18n/versioning
+		// Wrapped in try-catch for cases where id column type doesn't match documentId format
 		if ((!docs || docs.length === 0) && !options.locale && !options.status) {
-			const doc = await model.findOne({ id: documentId } as unknown as Partial<
-				T & { id: string }
-			>)
-			if (doc) {
-				docs = [doc]
+			try {
+				const doc = await model.findOne({
+					id: documentId,
+				} as unknown as Partial<T & { id: string }>)
+				if (doc) {
+					docs = [doc]
+				}
+			} catch {
+				// Ignore errors (e.g., UUID type mismatch)
 			}
 		}
 
@@ -228,8 +238,15 @@ export class DocumentService {
 					id: _id,
 					status: _status,
 					publishedAt: _publishedAt,
+					createdAt: _createdAt,
+					updatedAt: _updatedAt,
 					...publishedData
-				} = published as Document<T> & { id?: string; publishedAt?: Date }
+				} = published as Document<T> & {
+					id?: string
+					publishedAt?: Date | null
+					createdAt?: Date
+					updatedAt?: Date
+				}
 				const now = new Date()
 				const draftData = {
 					...publishedData,
@@ -238,6 +255,7 @@ export class DocumentService {
 					publishedAt: null,
 					updatedAt: now,
 					updatedBy: options.updatedBy,
+					// Don't set createdAt - let database use default
 				}
 				// Skip validation for drafts - validation happens on publish
 				const created = await model.create(

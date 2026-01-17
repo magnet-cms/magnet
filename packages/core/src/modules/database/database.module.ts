@@ -17,7 +17,9 @@ const modules = [InternationalizationModule]
 })
 export class DatabaseModule {
 	static register(options: MagnetModuleOptions): DynamicModule {
-		const adapter: DatabaseAdapter = DatabaseAdapterFactory.getAdapter()
+		const adapter: DatabaseAdapter = DatabaseAdapterFactory.getAdapter(
+			options.db,
+		)
 		const adapterOptions = adapter.connect(options)
 
 		return {

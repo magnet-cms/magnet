@@ -52,6 +52,23 @@ export class AuthService {
 	 * Check if any users exist in the system
 	 */
 	async exists() {
+		// If strategy implements hasUsers(), delegate to it
+		const strategy = this.authStrategy as AuthStrategy & {
+			hasUsers?: () => Promise<boolean>
+		}
+		if (strategy.hasUsers) {
+			try {
+				return await strategy.hasUsers()
+			} catch (error) {
+				// If hasUsers() fails, fall back to database query
+				console.warn(
+					'Failed to check users from auth strategy, falling back to database:',
+					error,
+				)
+			}
+		}
+
+		// Fall back to checking local database
 		const users = await this.userService.findAll()
 		return users.length > 0
 	}

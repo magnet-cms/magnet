@@ -1,5 +1,6 @@
+import type { AuthStrategy } from '@magnet-cms/common'
 import { Model } from '@magnet-cms/common'
-import { Injectable } from '@nestjs/common'
+import { Inject, Injectable, Optional } from '@nestjs/common'
 import { ModuleRef } from '@nestjs/core'
 import { DocumentService } from '~/modules/document/document.service'
 import type {
@@ -10,6 +11,7 @@ import type {
 	UpdateDocumentOptions,
 } from '~/modules/document/document.types'
 import { HistoryService } from '~/modules/history/history.service'
+import { AUTH_STRATEGY } from '../auth/auth.constants'
 import { DiscoveryService } from '../discovery/discovery.service'
 
 @Injectable()
@@ -19,6 +21,9 @@ export class ContentService {
 		private readonly documentService: DocumentService,
 		private readonly historyService: HistoryService,
 		private readonly discoveryService: DiscoveryService,
+		@Optional()
+		@Inject(AUTH_STRATEGY)
+		private readonly authStrategy?: AuthStrategy,
 	) {}
 
 	/**
@@ -120,6 +125,35 @@ export class ContentService {
 	 * List all documents for a schema
 	 */
 	async list<T>(schemaName: string, options: ListDocumentOptions = {}) {
+		// Special handling for "user" schema when using Supabase Auth
+		if (
+			schemaName.toLowerCase() === 'user' &&
+			this.authStrategy?.name === 'supabase'
+		) {
+			// Check if the strategy has listUsers method (SupabaseAuthStrategy)
+			const supabaseStrategy = this.authStrategy as any
+			if (typeof supabaseStrategy.listUsers === 'function') {
+				try {
+					const users = await supabaseStrategy.listUsers()
+					// Transform to match Document<T>[] format (array of documents)
+					return users.map((user: any) => ({
+						id: user.id,
+						email: user.email,
+						name: user.name,
+						role: user.role,
+						createdAt: new Date(),
+						updatedAt: new Date(),
+					})) as unknown as T[]
+				} catch (error) {
+					// If listUsers fails, fall back to database query
+					console.warn(
+						'Failed to list users from Supabase Auth, falling back to database:',
+						error,
+					)
+				}
+			}
+		}
+
 		const model = this.getModel<T>(schemaName)
 		return this.documentService.list(model, options)
 	}

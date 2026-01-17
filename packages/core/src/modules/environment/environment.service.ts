@@ -14,11 +14,19 @@ export class EnvironmentService {
 
 	private getConnectionString(): string {
 		const db = this.options.db
+		// Mongoose config
 		if ('uri' in db) {
 			return db.uri
 		}
-		// For TypeORM configs, construct a connection string representation
-		return `${db.type}://${db.host}:${db.port}/${db.database}`
+		// Drizzle config
+		if ('connectionString' in db) {
+			return db.connectionString
+		}
+		// TypeORM configs - construct a connection string representation
+		if ('type' in db && 'host' in db) {
+			return `${db.type}://${db.host}:${db.port}/${db.database}`
+		}
+		return 'unknown'
 	}
 
 	/**
@@ -44,8 +52,40 @@ export class EnvironmentService {
 		const settings =
 			await this.settingsService.getSettingsByGroup('environments')
 		const environmentsSetting = settings.find((s) => s.key === 'environments')
-		const customEnvs: EnvironmentItem[] =
-			(environmentsSetting?.value as EnvironmentItem[]) || []
+
+		// Parse value - may be a JSON string or already parsed array
+		let customEnvs: EnvironmentItem[] = []
+		if (environmentsSetting?.value) {
+			const val = environmentsSetting.value
+			let parsed: unknown
+			if (typeof val === 'string') {
+				try {
+					parsed = JSON.parse(val)
+				} catch {
+					parsed = null
+				}
+			} else if (Array.isArray(val)) {
+				parsed = val
+			} else {
+				parsed = null
+			}
+
+			// Filter to only include valid EnvironmentItem objects
+			// (must be objects with required fields like id, name, connectionString)
+			if (Array.isArray(parsed)) {
+				customEnvs = parsed.filter(
+					(item): item is EnvironmentItem =>
+						typeof item === 'object' &&
+						item !== null &&
+						'id' in item &&
+						'name' in item &&
+						'connectionString' in item &&
+						typeof item.id === 'string' &&
+						typeof item.name === 'string' &&
+						typeof item.connectionString === 'string',
+				)
+			}
+		}
 
 		// Check if any custom env is default
 		const hasDefault = customEnvs.some((env) => env.isDefault)

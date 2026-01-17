@@ -1,0 +1,321 @@
+# Magnet CMS - Cursor AI Rules
+
+## Type Safety - MANDATORY RULES
+
+### STRICT TYPE SAFETY POLICY
+
+**TypeScript type safety is NON-NEGOTIABLE in this project. We must ensure TypeScript actually works, not bypass it.**
+
+#### Forbidden Patterns (STRICTLY PROHIBITED):
+
+1. **NEVER use `any` type**
+   - ❌ `function fn(param: any): any`
+   - ✅ Use proper types: `function fn<T>(param: T): T`
+   - ✅ Use `unknown` for truly unknown values, then narrow with type guards
+   - ✅ Use generic types for flexible but type-safe APIs
+
+2. **NEVER use unsafe type assertions**
+   - ❌ `value as unknown as TargetType`
+   - ❌ `value as any`
+   - ❌ `(value as any).property`
+   - ✅ Properly type the value from the source
+   - ✅ Use type guards: `function isTargetType(value: unknown): value is TargetType`
+   - ✅ Fix the root cause: ensure types flow correctly through the codebase
+
+3. **NEVER bypass TypeScript's type checking**
+   - ❌ `// @ts-ignore`
+   - ❌ `// @ts-expect-error`
+   - ❌ `// @ts-nocheck`
+   - ✅ Fix the underlying type issue
+   - ✅ Update type definitions if needed
+   - ✅ Refactor code to work with proper types
+
+4. **NEVER use loose type definitions**
+   - ❌ `Record<string, any>`
+   - ❌ `Record<string, unknown>` (unless properly narrowed)
+   - ❌ `object` without additional constraints
+   - ✅ Specific types: `Record<string, User>` or `{ [key: string]: User }`
+   - ✅ Use branded types or literal types when possible
+
+#### Required Practices:
+
+1. **Always use proper type inference**
+   - Let TypeScript infer types when possible
+   - Use explicit types for public APIs and function boundaries
+   - Ensure return types are explicit for exported functions
+
+2. **Implement proper type guards**
+   ```typescript
+   // ✅ Good: Proper type guard
+   function isUser(value: unknown): value is User {
+     return (
+       typeof value === 'object' &&
+       value !== null &&
+       'id' in value &&
+       'name' in value &&
+       typeof (value as { id: unknown }).id === 'string'
+     )
+   }
+   
+   // ❌ Bad: Unsafe assertion
+   const user = value as User
+   ```
+
+3. **Use generics for type-safe abstractions**
+   ```typescript
+   // ✅ Good: Generic type preserves type safety
+   function getById<T extends { id: string }>(
+     items: T[],
+     id: string
+   ): T | undefined {
+     return items.find(item => item.id === id)
+   }
+   
+   // ❌ Bad: Loses type information
+   function getById(items: any[], id: string): any
+   ```
+
+4. **Properly type function parameters and returns**
+   - Always type function parameters explicitly (no implicit any)
+   - Always type return values for exported functions
+   - Use `void` explicitly for functions that don't return values
+
+5. **Use discriminated unions for state management**
+   ```typescript
+   // ✅ Good: Type-safe discriminated union
+   type Result<T> = 
+     | { success: true; data: T }
+     | { success: false; error: string }
+   
+   // ❌ Bad: Any or loose types
+   type Result<T> = { success: boolean; data?: T; error?: string }
+   ```
+
+6. **Validate external data with runtime checks and proper types**
+   - Use libraries like Zod or implement runtime validators
+   - Map validated data to proper TypeScript types
+   - Never trust external data without validation
+
+#### Type Safety Checklist
+
+Before submitting any code, verify:
+
+- [ ] No `any` types anywhere in the codebase
+- [ ] No `as unknown` or `as any` type assertions
+- [ ] No `@ts-ignore` or `@ts-expect-error` comments
+- [ ] All function parameters are explicitly typed
+- [ ] All exported functions have explicit return types
+- [ ] Type guards are used instead of type assertions
+- [ ] Generic types are used for reusable type-safe code
+- [ ] Runtime validation maps to TypeScript types correctly
+- [ ] `bun run check-types` passes with no errors
+- [ ] All types flow correctly from inputs to outputs
+
+## Library Development Guidelines
+
+### When Working on Library Packages
+
+When implementing features in library packages (`packages/*`), follow these principles:
+
+#### 1. Public API Design
+
+- **Exported types and interfaces** must be well-documented
+- **Function signatures** must be clear and type-safe
+- **Generic constraints** should be as specific as possible
+- **Overloads** should be used when necessary for type safety
+
+```typescript
+// ✅ Good: Clear, type-safe API
+/**
+ * Finds a document by ID with optional locale filtering
+ * @param id - The document identifier
+ * @param options - Optional query options
+ * @returns The document or undefined if not found
+ */
+findById<T extends BaseDocument>(
+  id: string,
+  options?: FindOptions
+): Promise<T | undefined>
+
+// ❌ Bad: Unclear or unsafe
+findById(id: any, options?: any): Promise<any>
+```
+
+#### 2. Type Exports
+
+- Always export types that users might need
+- Use `export type` for type-only exports when possible
+- Document exported types with JSDoc comments
+- Group related types together
+
+#### 3. Adapter Pattern
+
+When creating adapters (database, storage, auth):
+
+- **Interface-first design**: Define the interface before implementation
+- **Generic types**: Use generics to preserve type information
+- **Type-safe query builders**: Ensure query results are properly typed
+- **Error types**: Define specific error types, not generic errors
+
+```typescript
+// ✅ Good: Type-safe adapter interface
+interface DatabaseAdapter<TConnection = unknown> {
+  connect(): Promise<TConnection>
+  find<T extends BaseSchema>(
+    schema: Type<T>,
+    query: QueryFilter<T>
+  ): Promise<T[]>
+}
+
+// ❌ Bad: Loses type information
+interface DatabaseAdapter {
+  connect(): Promise<any>
+  find(schema: any, query: any): Promise<any[]>
+}
+```
+
+#### 4. Schema and Model Types
+
+- Schema classes should infer their types correctly
+- Model instances should preserve schema types
+- Query results should be properly typed based on schema
+- Relationships should maintain type relationships
+
+#### 5. Plugin Development
+
+- Plugins should export typed configuration interfaces
+- Hook types should be well-defined
+- Plugin metadata should be type-safe
+- Integration points should maintain type safety
+
+### Common Library Tasks
+
+#### Adding a New Adapter
+
+1. **Define the adapter interface** in `packages/common/src/types/`
+2. **Implement the adapter** with full type safety
+3. **Create factory function** with proper generic constraints
+4. **Export types** needed by consumers
+5. **Add example usage** in example apps
+6. **Document** in `apps/docs/`
+
+#### Adding a New Decorator
+
+1. **Define metadata types** with proper TypeScript types
+2. **Create decorator function** with correct parameter types
+3. **Validate at compile time** using TypeScript's type system
+4. **Export type helpers** for consumers
+5. **Document** with JSDoc and examples
+
+#### Adding a New Service
+
+1. **Define service interface** if needed
+2. **Type all dependencies** (no `any` injections)
+3. **Type all public methods** explicitly
+4. **Use generics** where appropriate
+5. **Handle errors** with typed error classes
+
+#### Working with External Libraries
+
+When integrating third-party libraries:
+
+1. **Install type definitions**: `@types/package-name` when available
+2. **Create type definitions**: If types don't exist, create `types/package-name.d.ts`
+3. **Narrow unknown types**: Use type guards for external data
+4. **Type wrappers**: Wrap external APIs with type-safe wrappers when needed
+
+## Error Handling
+
+### Typed Error Classes
+
+Always use typed error classes instead of generic Error:
+
+```typescript
+// ✅ Good: Specific error type
+class ValidationError extends Error {
+  constructor(
+    public readonly field: string,
+    public readonly value: unknown,
+    message: string
+  ) {
+    super(message)
+    this.name = 'ValidationError'
+  }
+}
+
+// ❌ Bad: Generic error with any
+throw new Error('validation failed')
+```
+
+## Type Narrowing
+
+Always use proper type narrowing:
+
+```typescript
+// ✅ Good: Type guard for narrowing
+function processValue(value: unknown): void {
+  if (typeof value === 'string') {
+    // TypeScript knows value is string here
+    console.log(value.toUpperCase())
+  } else if (isUser(value)) {
+    // TypeScript knows value is User here
+    console.log(value.name)
+  }
+}
+
+// ❌ Bad: Type assertion
+function processValue(value: unknown): void {
+  const str = value as string // Unsafe!
+  console.log(str.toUpperCase())
+}
+```
+
+## Testing Types
+
+When writing tests:
+
+- Test that types work correctly, not just runtime behavior
+- Use TypeScript's type checking in tests
+- Verify generic constraints are enforced
+- Test type inference works as expected
+
+```typescript
+// ✅ Good: Type-safe test
+describe('Model.findById', () => {
+  it('should return typed result', async () => {
+    const result = await model.findById<User>('123')
+    // TypeScript should know result is User | undefined
+    expect(result).toBeDefined()
+    if (result) {
+      expect(typeof result.name).toBe('string') // Type-safe
+    }
+  })
+})
+```
+
+## Reminders
+
+- **When in doubt, dig deeper**: If types seem difficult, there's usually a better way
+- **TypeScript is your friend**: Let it help you, don't fight it
+- **Fix the root cause**: Don't use workarounds; fix the type issue
+- **Consult type experts**: Check TypeScript documentation and advanced types
+- **Test type safety**: Ensure your types actually work, not just compile
+
+## Quick Reference: Type Safety Violations
+
+If you encounter any of these, STOP and fix properly:
+
+🚫 `any`
+🚫 `as unknown as T`
+🚫 `as any`
+🚫 `// @ts-ignore`
+🚫 `// @ts-expect-error`
+🚫 `Record<string, any>`
+🚫 `value: any`
+🚫 `(): any`
+
+✅ Proper generic types
+✅ Type guards
+✅ Explicit types
+✅ Type inference where appropriate
+✅ Runtime validation with type mapping

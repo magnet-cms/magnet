@@ -1,13 +1,17 @@
-import { DatabaseAdapter, detectDatabaseAdapter } from '@magnet-cms/common'
+import {
+	type DBConfig,
+	DatabaseAdapter,
+	detectDatabaseAdapter,
+} from '@magnet-cms/common'
 
 export class DatabaseAdapterFactory {
 	private static cachedAdapter: DatabaseAdapter
 
-	static getAdapter(): DatabaseAdapter {
+	static getAdapter(dbConfig?: DBConfig): DatabaseAdapter {
 		if (DatabaseAdapterFactory.cachedAdapter)
 			return DatabaseAdapterFactory.cachedAdapter
 
-		const adapterName = detectDatabaseAdapter()
+		const adapterName = detectDatabaseAdapter(dbConfig)
 
 		try {
 			DatabaseAdapterFactory.cachedAdapter = require(

@@ -57,7 +57,22 @@ const SettingsEdit = () => {
 
 		// For environments, prepend the local environment to the list
 		if (isEnvironments && values && localEnv) {
-			const customEnvs = (values.environments as EnvironmentItem[]) || []
+			const customEnvsRaw = (values.environments as unknown) || []
+			// Filter to only include valid EnvironmentItem objects (exclude strings like "draft", "published")
+			const customEnvs = Array.isArray(customEnvsRaw)
+				? customEnvsRaw.filter(
+						(item): item is EnvironmentItem =>
+							typeof item === 'object' &&
+							item !== null &&
+							'id' in item &&
+							'name' in item &&
+							'connectionString' in item &&
+							typeof (item as Record<string, unknown>).id === 'string' &&
+							typeof (item as Record<string, unknown>).name === 'string' &&
+							typeof (item as Record<string, unknown>).connectionString ===
+								'string',
+					)
+				: []
 			values.environments = [localEnv, ...customEnvs]
 		}
 

@@ -64,6 +64,26 @@ export class StorageAdapterFactory {
 				}
 				break
 
+			case 'supabase':
+				if (!config?.supabase) {
+					throw new Error(
+						'Supabase configuration is required for Supabase adapter',
+					)
+				}
+				try {
+					const {
+						SupabaseStorageAdapter,
+					} = require('@magnet-cms/adapter-supabase')
+					StorageAdapterFactory.cachedAdapter = new SupabaseStorageAdapter(
+						config.supabase,
+					)
+				} catch {
+					throw new Error(
+						'Supabase storage adapter not found. Please install @magnet-cms/adapter-supabase',
+					)
+				}
+				break
+
 			default:
 				// Default to local storage
 				StorageAdapterFactory.cachedAdapter = new LocalStorageAdapter({
@@ -92,7 +112,16 @@ export class StorageAdapterFactory {
 	/**
 	 * Detect the storage adapter to use based on environment variables
 	 */
-	private static detectStorageAdapter(): 'local' | 's3' | 'r2' {
+	private static detectStorageAdapter(): 'local' | 's3' | 'r2' | 'supabase' {
+		// Check for Supabase environment variables
+		if (
+			process.env.SUPABASE_URL &&
+			process.env.SUPABASE_KEY &&
+			process.env.SUPABASE_STORAGE_BUCKET
+		) {
+			return 'supabase'
+		}
+
 		// Check for S3 environment variables
 		if (
 			process.env.S3_BUCKET ||

@@ -37,15 +37,28 @@ export interface R2StorageConfig extends S3StorageConfig {
 	accountId: string
 }
 
+export interface SupabaseStorageConfig {
+	/** Supabase project URL */
+	supabaseUrl: string
+	/** Supabase service role key (required for storage operations) */
+	supabaseKey: string
+	/** Storage bucket name */
+	bucket: string
+	/** Public URL for the bucket (optional, uses Supabase URL if not provided) */
+	publicUrl?: string
+}
+
 export interface StorageConfig {
 	/** Storage adapter to use */
-	adapter: 'local' | 's3' | 'r2'
+	adapter: 'local' | 's3' | 'r2' | 'supabase'
 	/** Local storage configuration */
 	local?: LocalStorageConfig
 	/** S3 storage configuration */
 	s3?: S3StorageConfig
 	/** R2 storage configuration */
 	r2?: R2StorageConfig
+	/** Supabase storage configuration */
+	supabase?: SupabaseStorageConfig
 }
 
 // ============================================================================
