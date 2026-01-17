@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import type { ContentQueryOptions } from '~/core/adapters/types'
 import { useAdapter } from '~/core/provider/MagnetProvider'
 
 /**
@@ -7,12 +8,13 @@ import { useAdapter } from '~/core/provider/MagnetProvider'
  */
 export const useContentList = <T extends Record<string, unknown>>(
 	schema: string,
+	options?: ContentQueryOptions,
 ) => {
 	const adapter = useAdapter()
 
 	return useQuery<T[], Error>({
-		queryKey: ['content', schema],
-		queryFn: () => adapter.content.list<T>(schema),
+		queryKey: ['content', 'list', schema, options?.status],
+		queryFn: () => adapter.content.list<T>(schema, options),
 		enabled: !!schema,
 	})
 }

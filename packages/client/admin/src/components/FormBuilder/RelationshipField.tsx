@@ -2,11 +2,13 @@ import { SchemaProperty } from '@magnet-cms/common'
 import { RHFMultiSelect, RHFSelect } from '@magnet-cms/ui/components'
 import { capitalize } from '@magnet-cms/utils'
 import { ReactElement } from 'react'
+import { useSchema } from '../../hooks/useDiscovery'
 import { useContentList } from '../../hooks/useSchema'
 
 /**
  * Relationship field that fetches options from the target schema
  * Renders as a select dropdown for single relations or multi-select for arrays
+ * Only fetches published items to avoid showing drafts in relationship selectors
  */
 export function RelationshipField(prop: SchemaProperty): ReactElement {
 	const { ref: targetSchema, name, isArray } = prop
@@ -20,8 +22,23 @@ export function RelationshipField(prop: SchemaProperty): ReactElement {
 		)
 	}
 
-	// Fetch items from the target schema
-	const { data: items = [], isLoading, error } = useContentList(targetSchema)
+	// Fetch target schema metadata to check if versioning is enabled
+	const { data: targetSchemaMetadata } = useSchema(targetSchema)
+	const hasVersioning =
+		targetSchemaMetadata &&
+		'options' in targetSchemaMetadata &&
+		targetSchemaMetadata.options?.versioning !== false
+
+	// Fetch items from the target schema - only published items to avoid drafts
+	// This ensures relationship selectors show only published content, preventing duplicates
+	const {
+		data: items = [],
+		isLoading,
+		error,
+	} = useContentList(targetSchema, {
+		// Filter by published status if versioning is enabled (default behavior)
+		...(hasVersioning && { status: 'published' }),
+	})
 
 	if (error) {
 		return (

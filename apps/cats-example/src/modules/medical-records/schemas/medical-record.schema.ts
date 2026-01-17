@@ -20,6 +20,11 @@ export class MedicalRecord {
 		required: true,
 	})
 	@Validators(IsNotEmpty())
+	@UI({
+		tab: 'Relations',
+		type: 'relationship',
+		description: 'Cat this record belongs to',
+	})
 	cat!: string
 
 	// Many-to-One relation with Veterinarian
@@ -29,6 +34,11 @@ export class MedicalRecord {
 		required: false,
 	})
 	@Validators(IsOptional())
+	@UI({
+		tab: 'Relations',
+		type: 'relationship',
+		description: 'Veterinarian who performed this record',
+	})
 	veterinarian?: string
 
 	@Type(() => Date)
