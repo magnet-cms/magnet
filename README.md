@@ -2,6 +2,8 @@
 
 A modern, headless CMS framework built on NestJS. Magnet provides a flexible architecture for building content management systems with a powerful admin UI and extensible plugin system.
 
+![Magnet CMS Demo](docs/assets/magnet-demo.gif)
+
 ## Features
 
 - **NestJS Core**: Built on the robust NestJS framework for enterprise-grade applications
