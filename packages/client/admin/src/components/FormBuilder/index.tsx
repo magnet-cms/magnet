@@ -256,7 +256,7 @@ export const FormBuilder = <T extends Record<string, unknown>>({
 		return rowFields.map((row) => (
 			<div
 				key={row.map((prop) => prop.name).join('-')}
-				className={`grid gap-4 ${row.length === 2 ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1'}`}
+				className={`grid gap-6 ${row.length === 2 ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1'}`}
 			>
 				{row.map(renderField)}
 			</div>
@@ -288,7 +288,7 @@ export const FormBuilder = <T extends Record<string, unknown>>({
 								<h3 className="text-base font-semibold mb-6">
 									General Information
 								</h3>
-								<div className="space-y-6">
+								<div className="space-y-4">
 									{renderMainRows(fieldsWithoutTabs)}
 								</div>
 							</div>
@@ -304,7 +304,7 @@ export const FormBuilder = <T extends Record<string, unknown>>({
 								}
 							>
 								<h3 className="text-base font-semibold mb-6">{tabs[0]}</h3>
-								<div className="space-y-6">
+								<div className="space-y-4">
 									{tabs[0] && renderMainRows(groupedProperties[tabs[0]] || [])}
 								</div>
 							</div>
@@ -329,7 +329,7 @@ export const FormBuilder = <T extends Record<string, unknown>>({
 									</TabsList>
 									{tabs.map((tab) => (
 										<TabsContent key={tab} value={tab}>
-											<div className="space-y-6 pt-6">
+											<div className="space-y-4 pt-6">
 												{renderMainRows(groupedProperties[tab] || [])}
 											</div>
 										</TabsContent>

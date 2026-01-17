@@ -135,7 +135,7 @@ function FormDescription({
 			<p
 				data-slot="form-description"
 				id={formDescriptionId}
-				className="min-h-[1.25rem]"
+				className="min-h-5"
 				aria-hidden="true"
 			/>
 		)
