@@ -27,9 +27,38 @@ A modern, headless CMS framework built on NestJS. Magnet provides a flexible arc
 
 ## Quick Start
 
+The fastest way to create a new Magnet CMS project is using the `create-magnet` CLI:
+
+```bash
+# Using npx
+npx create-magnet my-project
+
+# Using bun
+bunx create-magnet my-project
+```
+
+The CLI will guide you through selecting:
+- **Database adapter**: MongoDB (Mongoose), PostgreSQL (Drizzle + Neon), or Supabase
+- **Plugins**: Content Builder, SEO
+- **Storage adapter**: Local, S3, R2, Supabase, or none
+- **Example module**: Optional starter CRUD module
+- **Package manager**: npm, bun, pnpm, or yarn
+
+After creation, start your project:
+
+```bash
+cd my-project
+docker compose up -d  # Start the database
+bun run dev           # Start the development server
+```
+
+### Development Setup (Contributing)
+
+To contribute to Magnet CMS:
+
 ```bash
 # Clone the repository
-git clone <repository-url>
+git clone https://github.com/magnetcms/magnet.git
 cd magnet
 
 # Install dependencies
@@ -43,6 +72,12 @@ bun run dev:admin
 ```
 
 ## Package Overview
+
+### CLI
+
+| Package | Description |
+|---------|-------------|
+| `create-magnet` | CLI tool to scaffold new Magnet CMS projects |
 
 ### Core Packages
 
@@ -80,11 +115,10 @@ bun run dev:admin
 magnet/
 ├── apps/
 │   ├── e2e/               # End-to-end tests (Playwright)
-│   └── templates/         # Project templates and examples
-│       ├── drizzle-neon/       # Drizzle + Neon PostgreSQL template
-│       ├── drizzle-supabase/   # Drizzle + Supabase template
-│       ├── mongoose-auth/      # Mongoose + Auth strategy template
-│       └── mongoose-cats/      # Mongoose + Cats example template
+│   └── examples/          # Example projects
+│       ├── drizzle-neon/       # Drizzle + Neon PostgreSQL example
+│       ├── drizzle-supabase/   # Drizzle + Supabase example
+│       └── mongoose/           # Mongoose + MongoDB example
 ├── packages/
 │   ├── adapters/
 │   │   ├── drizzle/       # Drizzle ORM database adapter
@@ -95,6 +129,7 @@ magnet/
 │   │   └── ui/            # Shared UI component library (shadcn/ui based)
 │   ├── common/            # Shared types, decorators, and utilities
 │   ├── core/              # Core Magnet framework (NestJS modules)
+│   ├── create-magnet/     # CLI tool for scaffolding new projects
 │   ├── plugins/
 │   │   ├── content-builder/   # Visual content builder plugin
 │   │   └── seo/               # SEO management plugin
@@ -114,7 +149,6 @@ magnet/
 # Development
 bun run dev              # Start all packages in development mode
 bun run dev:admin        # Start admin UI development server
-bun run dev:docs         # Start documentation site
 
 # Building
 bun run build            # Build all packages
@@ -129,9 +163,19 @@ bun run test:e2e         # Run end-to-end tests
 
 ## Getting Started with Magnet
 
-### Installation
+### Using the CLI (Recommended)
 
-Install Magnet in your NestJS project:
+The easiest way to get started is with the `create-magnet` CLI:
+
+```bash
+npx create-magnet my-project
+```
+
+This will create a fully configured project with your chosen database, plugins, and settings.
+
+### Manual Installation
+
+Install Magnet in an existing NestJS project:
 
 ```bash
 # For MongoDB (Mongoose adapter)
@@ -240,21 +284,20 @@ export class Cat {
 
 ## Documentation
 
-Comprehensive documentation is available at the `/apps/docs` directory or by running:
+Documentation is available through:
 
-```bash
-bun run dev:docs
-```
+- This README for quick start and overview
+- Example projects in `apps/examples/` for reference implementations
+- JSDoc comments throughout the codebase
+- Type definitions in each package
 
-Visit the documentation to learn more about:
+Key topics:
 
-- Installation and setup
-- Core concepts
-- Creating schemas
-- Using adapters
-- Building plugins
-- Admin UI customization
-- API reference
+- **Installation**: Use `npx create-magnet` or manual installation above
+- **Schemas**: Use `@Schema()` and `@Prop()` decorators from `@magnet-cms/common`
+- **Adapters**: Choose Mongoose, Drizzle, or Supabase based on your database
+- **Plugins**: Extend with Content Builder and SEO plugins
+- **Admin UI**: Access at `http://localhost:3001` during development
 
 ## Development
 
@@ -264,28 +307,23 @@ Visit the documentation to learn more about:
 2. Install dependencies: `bun install`
 3. Start development: `bun run dev`
 
-### Running the Example Templates
+### Running the Examples
 
 ```bash
 # MongoDB example
-cd apps/templates/mongoose-cats
-bun install
-bun run start:dev
+cd apps/examples/mongoose
+docker compose up -d
+bun run dev
 
 # Neon PostgreSQL example
-cd apps/templates/drizzle-neon
-bun install
+cd apps/examples/drizzle-neon
+# Configure .env with your Neon connection string
 bun run dev
 
 # Supabase example
-cd apps/templates/drizzle-supabase
-bun install
+cd apps/examples/drizzle-supabase
+# Configure .env with your Supabase credentials
 bun run dev
-
-# Auth strategy example
-cd apps/templates/mongoose-auth
-bun install
-bun run start:dev
 ```
 
 ### Building Packages
@@ -305,13 +343,12 @@ bun run build
 - **Framework**: NestJS
 - **Frontend**: React + Vite
 - **UI Components**: shadcn/ui
-- **Databases**: 
+- **Databases**:
   - MongoDB (via Mongoose adapter)
   - PostgreSQL / MySQL / SQLite (via Drizzle ORM adapter)
   - Supabase (via Supabase adapter)
 - **Build Tool**: Turborepo + tsup
 - **Testing**: Playwright
-- **Documentation**: Next.js + Fumadocs
 - **Code Quality**: Biome + TypeScript
 
 ## Monorepo Tools
