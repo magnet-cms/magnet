@@ -1,5 +1,11 @@
 # create-magnet
 
+## 0.2.2
+
+### Patch Changes
+
+- [`560ffb7`](https://github.com/magnet-cms/magnet/commit/560ffb75b24cf343fb00bf78d6231a1c601e4463) Thanks [@gjsoaresc](https://github.com/gjsoaresc)! - Fix invalid UIType 'boolean' to 'switch' in example module generator
+
 ## 0.2.1
 
 ### Patch Changes
