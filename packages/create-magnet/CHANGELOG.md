@@ -1,5 +1,11 @@
 # create-magnet
 
+## 0.2.1
+
+### Patch Changes
+
+- [`0d764d9`](https://github.com/magnet-cms/magnet/commit/0d764d9a14f7f3ade7724525c1b08cc60fa8dc5a) Thanks [@gjsoaresc](https://github.com/gjsoaresc)! - Fix package versions to match actual published versions on npm
+
 ## 0.2.0
 
 ### Minor Changes
