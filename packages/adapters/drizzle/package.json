@@ -1,6 +1,6 @@
 {
   "name": "@magnet-cms/adapter-drizzle",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Drizzle ORM database adapter for Magnet CMS - supports PostgreSQL, MySQL, and SQLite",
   "type": "module",
   "main": "./dist/index.cjs",

@@ -1,6 +1,6 @@
 {
   "name": "@magnet-cms/adapter-mongoose",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Mongoose database adapter for Magnet CMS",
   "type": "module",
   "main": "./dist/index.cjs",

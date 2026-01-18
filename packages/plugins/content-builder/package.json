@@ -1,6 +1,6 @@
 {
   "name": "@magnet-cms/plugin-content-builder",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Visual schema builder and code generator for Magnet CMS",
   "type": "module",
   "main": "./dist/index.cjs",
