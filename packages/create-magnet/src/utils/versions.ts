@@ -4,12 +4,12 @@
  */
 export const PACKAGE_VERSIONS = {
 	// Magnet CMS packages
-	'@magnet-cms/core': '^0.1.0',
+	'@magnet-cms/core': '^1.0.0',
 	'@magnet-cms/common': '^0.1.0',
-	'@magnet-cms/adapter-mongoose': '^0.1.0',
-	'@magnet-cms/adapter-drizzle': '^0.1.0',
-	'@magnet-cms/adapter-supabase': '^0.1.0',
-	'@magnet-cms/plugin-content-builder': '^0.1.0',
+	'@magnet-cms/adapter-mongoose': '^1.0.0',
+	'@magnet-cms/adapter-drizzle': '^1.0.0',
+	'@magnet-cms/adapter-supabase': '^1.0.0',
+	'@magnet-cms/plugin-content-builder': '^1.0.0',
 	'@magnet-cms/plugin-seo': '^0.1.0',
 
 	// NestJS
