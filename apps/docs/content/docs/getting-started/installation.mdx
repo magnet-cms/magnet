@@ -1,0 +1,55 @@
+---
+title: Installation
+description: Install Magnet and its dependencies
+---
+
+# Installation
+
+This guide covers installing Magnet in your project.
+
+## Package Manager
+
+We recommend using Bun for the best experience:
+
+```bash
+bun add @magnet/core
+```
+
+You can also use npm or yarn:
+
+```bash
+npm install @magnet/core
+# or
+yarn add @magnet/core
+```
+
+## Additional Packages
+
+Depending on your needs, you may want to install additional packages:
+
+```bash
+# Database adapter (required)
+bun add @magnet/adapter-mongoose
+
+# Common utilities and types
+bun add @magnet/common
+
+# Admin UI
+bun add @magnet/admin
+```
+
+## Development Dependencies
+
+For development, you may want:
+
+```bash
+bun add -d typescript @types/node
+```
+
+## Peer Dependencies
+
+Magnet requires NestJS. If you haven't installed it:
+
+```bash
+bun add @nestjs/core @nestjs/common reflect-metadata
+```

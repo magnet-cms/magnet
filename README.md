@@ -1,8 +1,8 @@
+![Magnet CMS Banner](docs/assets/banner.png)
+
 # Magnet CMS
 
 A modern, headless CMS framework built on NestJS. Magnet provides a flexible architecture for building content management systems with a powerful admin UI and extensible plugin system.
-
-![Magnet CMS Demo](docs/assets/magnet-demo.gif)
 
 ## Features
 
@@ -10,6 +10,8 @@ A modern, headless CMS framework built on NestJS. Magnet provides a flexible arc
 - **Database Agnostic**: Supports multiple databases via adapters (Mongoose, Drizzle ORM)
 - **Modern Admin UI**: Beautiful React-based admin interface with comprehensive content management
 - **Plugin System**: Extend functionality with plugins like Content Builder and SEO
+
+![Magnet CMS Demo](docs/assets/magnet-demo.gif)
 - **TypeScript First**: Full TypeScript support throughout the entire stack
 - **Schema Discovery**: Automatic schema detection and metadata extraction
 - **Authentication**: Built-in JWT authentication with guards and strategies
@@ -58,7 +60,7 @@ To contribute to Magnet CMS:
 
 ```bash
 # Clone the repository
-git clone https://github.com/magnetcms/magnet.git
+git clone https://github.com/magnet-cms/magnet.git
 cd magnet
 
 # Install dependencies

@@ -1,0 +1,217 @@
+---
+title: Common Package
+description: Shared types, decorators, and utilities for Magnet CMS
+---
+
+The `@magnet-cms/common` package provides the foundation for building Magnet CMS applications. It includes decorators for schema definition, types for database operations, and utilities shared across all Magnet packages.
+
+## Installation
+
+```bash
+bun add @magnet-cms/common
+```
+
+## Overview
+
+The common package exports:
+
+- **Schema Decorators**: `@Schema()`, `@Prop()`, `@UI()`, `@Validators()`, `@Setting()`, `@Version()`
+- **Injection Decorators**: `@InjectModel()`
+- **Resolver Decorators**: `@Resolver()`, `@Resolve()`
+- **Types**: Model operations, query builders, authentication, storage, plugins
+- **Utilities**: Database adapter detection, token generation
+
+## Quick Start
+
+Define a content schema with decorators:
+
+```typescript
+import { Schema, Prop, UI, Validators } from '@magnet-cms/common'
+import { IsString, IsNotEmpty, Length } from 'class-validator'
+
+@Schema({ versioning: true, i18n: true })
+export class Article {
+  @Prop({ required: true, intl: true })
+  @Validators(IsString(), IsNotEmpty(), Length(5, 200))
+  @UI({ tab: 'General', type: 'text' })
+  title: string
+
+  @Prop({ required: true, intl: true })
+  @Validators(IsString())
+  @UI({ tab: 'Content', type: 'richText' })
+  content: string
+
+  @Prop({ required: true })
+  @UI({ tab: 'General', type: 'switch' })
+  published: boolean
+}
+```
+
+## Decorators
+
+### @Schema()
+
+Marks a class as a Magnet CMS content schema.
+
+```typescript
+@Schema({ versioning: true, i18n: true })
+export class Cat {
+  // properties
+}
+```
+
+**Options:**
+- `versioning` (boolean): Enable version history (default: `true`)
+- `i18n` (boolean): Enable multi-locale support (default: `true`)
+
+### @Prop()
+
+Defines a schema property with database mapping.
+
+```typescript
+@Prop({ required: true, unique: true })
+email: string
+
+@Prop({ type: [String], default: [] })
+tags: string[]
+
+@Prop({ intl: true })
+description: string
+```
+
+**Options:**
+- `type`: Property type (String, Number, Date, Boolean, or arrays)
+- `required`: Whether the field is required
+- `unique`: Enforce uniqueness
+- `default`: Default value
+- `intl`: Mark as translatable for i18n
+- `hidden`: Hide from API/UI
+- `readonly`: Make field read-only
+- `ref`: Reference to another schema
+
+### @UI()
+
+Configures how a property is rendered in the admin UI.
+
+```typescript
+@UI({ tab: 'General', type: 'email', row: true })
+email: string
+
+@UI({ tab: 'Content', type: 'richText' })
+body: string
+
+@UI({
+  tab: 'Settings',
+  type: 'select',
+  options: [
+    { key: 'draft', value: 'Draft' },
+    { key: 'published', value: 'Published' }
+  ]
+})
+status: string
+```
+
+**UI Types:**
+`text`, `textarea`, `email`, `phone`, `richText`, `number`, `date`, `switch`, `checkbox`, `select`, `multiSelect`, `combobox`, `radio`, `upload`, `relationship`, `json`, `code`
+
+### @Validators()
+
+Applies validation decorators from `class-validator`.
+
+```typescript
+import { IsString, IsEmail, Length, Min, Max } from 'class-validator'
+
+@Validators(IsString(), Length(2, 100))
+name: string
+
+@Validators(IsEmail())
+email: string
+
+@Validators(IsNumber(), Min(0), Max(100))
+age: number
+```
+
+### @InjectModel()
+
+Injects a model instance for database operations in services.
+
+```typescript
+import { Injectable } from '@nestjs/common'
+import { InjectModel, Model } from '@magnet-cms/common'
+import { Cat } from './cat.schema'
+
+@Injectable()
+export class CatsService {
+  constructor(
+    @InjectModel(Cat)
+    private model: Model<Cat>,
+  ) {}
+
+  findAll() {
+    return this.model.find()
+  }
+
+  create(data: Partial<Cat>) {
+    return this.model.create(data)
+  }
+}
+```
+
+## Model Operations
+
+The `Model<T>` class provides type-safe database operations:
+
+```typescript
+// CRUD operations
+await model.create(data)
+await model.find()
+await model.findById(id)
+await model.findOne({ email: 'test@example.com' })
+await model.update({ id }, updateData)
+await model.delete({ id })
+
+// Query builder
+await model.query()
+  .where({ status: 'published' })
+  .sort({ createdAt: -1 })
+  .limit(10)
+  .exec()
+
+// i18n support
+await model.locale('pt-BR').find()
+
+// Versioning
+await model.findVersions(documentId)
+await model.restoreVersion(versionId)
+```
+
+## Query Operators
+
+The query builder supports MongoDB-style operators:
+
+```typescript
+// Comparison
+{ field: { $eq: value } }    // Equal
+{ field: { $ne: value } }    // Not equal
+{ field: { $gt: value } }    // Greater than
+{ field: { $gte: value } }   // Greater than or equal
+{ field: { $lt: value } }    // Less than
+{ field: { $lte: value } }   // Less than or equal
+
+// Array
+{ field: { $in: [v1, v2] } }   // In array
+{ field: { $nin: [v1, v2] } }  // Not in array
+
+// Logical
+{ $and: [condition1, condition2] }
+{ $or: [condition1, condition2] }
+
+// Text
+{ field: { $regex: 'pattern', $options: 'i' } }
+```
+
+## Next Steps
+
+- [Decorators Reference](/docs/common/decorators) - Detailed decorator documentation
+- [Core Module](/docs/core) - Learn about MagnetModule configuration
+- [Adapters](/docs/adapters) - Database adapter setup

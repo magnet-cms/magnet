@@ -1,0 +1,55 @@
+---
+title: SEO Plugin
+description: SEO metadata management for Magnet CMS
+---
+
+The SEO plugin adds search engine optimization capabilities to your Magnet CMS content.
+
+## Status
+
+The SEO plugin is currently in development. This documentation will be updated as features are implemented.
+
+## Planned Features
+
+- **Meta Tags Management**: Title, description, keywords
+- **Open Graph Tags**: Social media sharing metadata
+- **Twitter Cards**: Twitter-specific metadata
+- **Structured Data**: JSON-LD schema.org markup
+- **Sitemap Generation**: Automatic XML sitemap
+- **Robots.txt Management**: Crawler directives
+- **Canonical URLs**: Duplicate content handling
+
+## Installation (Coming Soon)
+
+```bash
+bun add @magnet-cms/plugin-seo
+```
+
+## Configuration (Coming Soon)
+
+```typescript
+import { Module } from '@nestjs/common'
+import { MagnetModule } from '@magnet-cms/core'
+import { SeoPlugin } from '@magnet-cms/plugin-seo'
+
+@Module({
+  imports: [
+    MagnetModule.forRoot({
+      db: { uri: process.env.MONGODB_URI },
+      jwt: { secret: process.env.JWT_SECRET },
+      plugins: [
+        { plugin: SeoPlugin },
+      ],
+    }),
+  ],
+})
+export class AppModule {}
+```
+
+## Contributing
+
+Interested in contributing to the SEO plugin? Check out the [Contributing Guide](https://github.com/magnet-cms/magnet/blob/main/CONTRIBUTING.md).
+
+## Roadmap
+
+The SEO plugin is part of the Magnet CMS roadmap. Track progress on the [Project Board](https://github.com/orgs/magnet-cms/projects/3).

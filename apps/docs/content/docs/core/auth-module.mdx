@@ -1,0 +1,319 @@
+---
+title: Auth Module
+description: Authentication and authorization for Magnet CMS
+---
+
+The Auth Module handles user authentication, session management, and authorization in Magnet CMS. It supports multiple authentication strategies including JWT and Supabase.
+
+## Overview
+
+The Auth Module provides:
+
+- **JWT Authentication**: Default token-based authentication
+- **Supabase Integration**: Use Supabase for auth
+- **User Management**: Registration, login, profile updates
+- **Password Hashing**: Secure password storage with bcrypt
+- **Guards**: Protect routes with authentication
+
+## Configuration
+
+Configure authentication in `MagnetModule.forRoot()`:
+
+```typescript
+import { Module } from '@nestjs/common'
+import { MagnetModule } from '@magnet-cms/core'
+
+@Module({
+  imports: [
+    MagnetModule.forRoot({
+      db: { uri: process.env.MONGODB_URI },
+      jwt: {
+        secret: process.env.JWT_SECRET,
+      },
+      auth: {
+        strategy: 'jwt',  // or 'supabase'
+        jwt: {
+          expiresIn: '7d',
+        },
+      },
+    }),
+  ],
+})
+export class AppModule {}
+```
+
+### JWT Configuration
+
+```typescript
+auth: {
+  strategy: 'jwt',
+  jwt: {
+    secret: process.env.JWT_SECRET,
+    expiresIn: '7d',  // Token expiration
+  },
+  defaultRole: 'admin',
+}
+```
+
+### Supabase Configuration
+
+```typescript
+auth: {
+  strategy: 'supabase',
+  supabaseUrl: process.env.SUPABASE_URL,
+  supabaseKey: process.env.SUPABASE_ANON_KEY,
+  supabaseServiceKey: process.env.SUPABASE_SERVICE_KEY,
+}
+```
+
+## API Endpoints
+
+### Register
+
+```http
+POST /auth/register
+```
+
+**Body:**
+```json
+{
+  "email": "user@example.com",
+  "password": "securepassword",
+  "name": "John Doe"
+}
+```
+
+**Response:**
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIs...",
+  "user": {
+    "id": "user_123",
+    "email": "user@example.com",
+    "name": "John Doe",
+    "role": "admin"
+  }
+}
+```
+
+### Login
+
+```http
+POST /auth/login
+```
+
+**Body:**
+```json
+{
+  "email": "user@example.com",
+  "password": "securepassword"
+}
+```
+
+**Response:**
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIs..."
+}
+```
+
+### Get Current User
+
+```http
+GET /auth/me
+```
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+```
+
+**Response:**
+```json
+{
+  "id": "user_123",
+  "email": "user@example.com",
+  "name": "John Doe",
+  "role": "admin"
+}
+```
+
+### Auth Status
+
+```http
+GET /auth/status
+```
+
+Returns authentication status and whether setup is required:
+
+```json
+{
+  "hasUsers": true,
+  "strategy": "jwt"
+}
+```
+
+### Update Profile
+
+```http
+PUT /auth/account/profile
+```
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+```
+
+**Body:**
+```json
+{
+  "name": "Jane Doe"
+}
+```
+
+### Change Password
+
+```http
+PUT /auth/account/password
+```
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+```
+
+**Body:**
+```json
+{
+  "currentPassword": "oldpassword",
+  "newPassword": "newpassword"
+}
+```
+
+## Protecting Routes
+
+Use the `@RestrictedRoute()` decorator to require authentication:
+
+```typescript
+import { Controller, Get } from '@nestjs/common'
+import { RestrictedRoute } from '@magnet-cms/core'
+
+@Controller('protected')
+export class ProtectedController {
+  @Get()
+  @RestrictedRoute()
+  getProtectedData() {
+    return { message: 'This is protected' }
+  }
+}
+```
+
+## Custom Auth Strategy
+
+Create a custom authentication strategy by extending `AuthStrategy`:
+
+```typescript
+import { Injectable } from '@nestjs/common'
+import {
+  AuthStrategy,
+  AuthUser,
+  AuthResult,
+  LoginCredentials,
+  RegisterData,
+} from '@magnet-cms/common'
+
+@Injectable()
+export class CustomAuthStrategy extends AuthStrategy {
+  readonly name = 'custom'
+
+  async validate(payload: unknown): Promise<AuthUser | null> {
+    // Validate JWT payload and return user
+  }
+
+  async login(credentials: LoginCredentials): Promise<AuthResult> {
+    // Authenticate and return tokens
+  }
+
+  async register(data: RegisterData): Promise<AuthUser> {
+    // Create new user
+  }
+
+  async validateCredentials(
+    email: string,
+    password: string
+  ): Promise<AuthUser | null> {
+    // Validate email/password
+  }
+}
+```
+
+Register your custom strategy:
+
+```typescript
+MagnetModule.forRoot({
+  // ...
+  auth: {
+    strategy: 'custom',
+    // Pass your strategy class
+  },
+})
+```
+
+## AuthService
+
+Inject `AuthService` for programmatic authentication:
+
+```typescript
+import { Injectable } from '@nestjs/common'
+import { AuthService } from '@magnet-cms/core'
+
+@Injectable()
+export class MyService {
+  constructor(private authService: AuthService) {}
+
+  async checkUser(email: string, password: string) {
+    return this.authService.validateUser(email, password)
+  }
+
+  async createUser(userData: RegisterDto) {
+    return this.authService.register(userData)
+  }
+}
+```
+
+## User Types
+
+```typescript
+interface AuthUser {
+  id: string
+  email: string
+  name?: string
+  role: string
+}
+
+interface LoginCredentials {
+  email: string
+  password: string
+}
+
+interface RegisterData {
+  email: string
+  password: string
+  name: string
+  role?: string
+}
+
+interface AuthResult {
+  access_token: string
+  refresh_token?: string
+  expires_in?: number
+}
+```
+
+## Security Best Practices
+
+1. **Use Strong JWT Secret**: Generate a random 256-bit secret
+2. **Set Appropriate Expiration**: Balance security and UX
+3. **Use HTTPS**: Always use HTTPS in production
+4. **Validate Input**: All inputs are validated automatically
+5. **Hash Passwords**: Passwords are hashed with bcrypt (10 rounds)

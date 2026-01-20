@@ -1,0 +1,439 @@
+---
+title: Mongoose Adapter
+description: MongoDB database adapter using Mongoose ODM
+---
+
+# Mongoose Adapter
+
+The `@magnet-cms/adapter-mongoose` package provides MongoDB support for Magnet CMS through Mongoose ODM. It includes schema decorators, a powerful query builder, and full support for internationalization and versioning.
+
+## Installation
+
+```bash
+bun add @magnet-cms/adapter-mongoose mongoose
+```
+
+## Configuration
+
+Configure the Mongoose adapter in your application module:
+
+```typescript
+import { Module } from '@nestjs/common'
+import { MagnetModule } from '@magnet-cms/core'
+
+@Module({
+  imports: [
+    MagnetModule.forRoot({
+      db: {
+        uri: process.env.MONGODB_URI || 'mongodb://localhost:27017/my-cms'
+      },
+      jwt: {
+        secret: process.env.JWT_SECRET || 'your-secret-key'
+      },
+      internationalization: {
+        locales: ['en', 'es', 'pt'],
+        defaultLocale: 'en'
+      }
+    })
+  ]
+})
+export class AppModule {}
+```
+
+## Schema Definition
+
+### Basic Schema
+
+```typescript
+import { Schema, Prop, UI } from '@magnet-cms/common'
+
+@Schema()
+export class Product {
+  @Prop({ required: true })
+  @UI({ label: 'Name', type: 'text' })
+  name: string
+
+  @Prop({ type: Number, default: 0 })
+  @UI({ label: 'Price', type: 'number' })
+  price: number
+
+  @Prop()
+  @UI({ label: 'Description', type: 'textarea' })
+  description: string
+}
+```
+
+### Schema with i18n
+
+Enable field-level internationalization with `intl: true`:
+
+```typescript
+@Schema({ i18n: true })
+export class Article {
+  @Prop({ required: true, intl: true })
+  @UI({ label: 'Title', type: 'text' })
+  title: string  // Stored as { en: 'Title', es: 'Título', pt: 'Título' }
+
+  @Prop({ intl: true })
+  @UI({ label: 'Content', type: 'richText' })
+  content: string
+
+  @Prop({ required: true })  // Not translated
+  @UI({ label: 'Slug', type: 'text' })
+  slug: string
+}
+```
+
+### Schema with Relations
+
+```typescript
+import { Schema, Prop, UI } from '@magnet-cms/common'
+import { SchemaTypes } from 'mongoose'
+
+@Schema()
+export class Cat {
+  @Prop({ unique: true, required: true })
+  tagID: string
+
+  @Prop({ required: true, intl: true })
+  name: string
+
+  // Many-to-One relation
+  @Prop({ type: SchemaTypes.ObjectId, ref: 'Owner', required: true })
+  @UI({ type: 'relationship', label: 'Owner' })
+  owner: string
+
+  // Many-to-Many relation
+  @Prop({ type: [SchemaTypes.ObjectId], ref: 'Veterinarian', default: [] })
+  @UI({ type: 'relationship', label: 'Veterinarians' })
+  veterinarians: string[]
+
+  // One-to-One media relation
+  @Prop({ type: SchemaTypes.ObjectId, ref: 'Media' })
+  @UI({ type: 'upload', label: 'Photo' })
+  photo: string
+}
+```
+
+## Model Operations
+
+### Basic CRUD
+
+```typescript
+import { Injectable } from '@nestjs/common'
+import { InjectModel, Model } from '@magnet-cms/common'
+import { Cat } from './cat.schema'
+
+@Injectable()
+export class CatsService {
+  constructor(@InjectModel(Cat) private model: Model<Cat>) {}
+
+  // Create
+  async create(data: Partial<Cat>) {
+    return this.model.create(data)
+  }
+
+  // Read
+  async findAll() {
+    return this.model.find()
+  }
+
+  async findById(id: string) {
+    return this.model.findById(id)
+  }
+
+  async findOne(query: Partial<Cat>) {
+    return this.model.findOne(query)
+  }
+
+  // Update
+  async update(id: string, data: Partial<Cat>) {
+    return this.model.update({ id }, data)
+  }
+
+  // Delete
+  async delete(id: string) {
+    return this.model.delete({ id })
+  }
+}
+```
+
+### Localized Operations
+
+```typescript
+@Injectable()
+export class ArticleService {
+  constructor(@InjectModel(Article) private model: Model<Article>) {}
+
+  // Find all articles in Spanish
+  async findInSpanish() {
+    return this.model.locale('es').find()
+  }
+
+  // Find specific article in Portuguese
+  async findByIdInPortuguese(id: string) {
+    return this.model.locale('pt').findById(id)
+  }
+
+  // Create with locale
+  async createInLocale(locale: string, data: Partial<Article>) {
+    return this.model.locale(locale).create(data)
+  }
+}
+```
+
+## Query Builder
+
+The query builder provides a fluent API for complex queries with full MongoDB operator support.
+
+### Basic Queries
+
+```typescript
+// Simple filter
+const active = await this.model
+  .query()
+  .where({ status: 'active' })
+  .exec()
+
+// Multiple conditions
+const results = await this.model
+  .query()
+  .where({ status: 'active' })
+  .and({ category: 'electronics' })
+  .exec()
+
+// OR conditions
+const featured = await this.model
+  .query()
+  .or([
+    { featured: true },
+    { price: { $gt: 100 } }
+  ])
+  .exec()
+```
+
+### Sorting and Pagination
+
+```typescript
+// Sort by multiple fields
+const sorted = await this.model
+  .query()
+  .sort({ createdAt: -1, name: 1 })
+  .exec()
+
+// Pagination
+const page = 2
+const limit = 10
+const paginated = await this.model
+  .query()
+  .skip((page - 1) * limit)
+  .limit(limit)
+  .exec()
+
+// Built-in pagination
+const result = await this.model
+  .query()
+  .where({ status: 'published' })
+  .paginate()
+// Returns: { data: [...], total: 100, page: 1, limit: 10 }
+```
+
+### MongoDB Operators
+
+```typescript
+// Comparison operators
+await model.query().where({ price: { $gt: 100 } }).exec()
+await model.query().where({ price: { $gte: 100, $lte: 500 } }).exec()
+await model.query().where({ status: { $ne: 'deleted' } }).exec()
+
+// Array operators
+await model.query().where({ tags: { $in: ['featured', 'sale'] } }).exec()
+await model.query().where({ tags: { $nin: ['archived'] } }).exec()
+
+// Text search with regex
+await model.query()
+  .where({ name: { $regex: 'cat', $options: 'i' } })
+  .exec()
+
+// Existence check
+await model.query().where({ deletedAt: { $exists: false } }).exec()
+```
+
+### Query Execution Methods
+
+```typescript
+// Get all results
+const all = await model.query().where(filter).exec()
+
+// Get single result
+const one = await model.query().where(filter).execOne()
+
+// Count results
+const count = await model.query().where(filter).count()
+
+// Check existence
+const exists = await model.query().where(filter).exists()
+
+// Paginated results
+const paginated = await model.query().where(filter).paginate()
+```
+
+### Complete Example
+
+```typescript
+@Injectable()
+export class CatsService {
+  constructor(@InjectModel(Cat) private model: Model<Cat>) {}
+
+  async searchCats(searchTerm: string) {
+    return this.model
+      .query()
+      .or([
+        { name: { $regex: searchTerm, $options: 'i' } },
+        { tagID: { $regex: searchTerm, $options: 'i' } }
+      ])
+      .exec()
+  }
+
+  async findByCriteria(criteria: {
+    breeds?: string[]
+    minWeight?: number
+    maxWeight?: number
+  }) {
+    const query = this.model.query()
+
+    if (criteria.breeds?.length) {
+      query.where({ breed: { $in: criteria.breeds } })
+    }
+
+    if (criteria.minWeight || criteria.maxWeight) {
+      const weightFilter: Record<string, number> = {}
+      if (criteria.minWeight) weightFilter.$gte = criteria.minWeight
+      if (criteria.maxWeight) weightFilter.$lte = criteria.maxWeight
+      query.and({ weight: weightFilter })
+    }
+
+    return query.sort({ weight: -1 }).exec()
+  }
+
+  async findPaginated(page = 1, limit = 10, sortBy = 'createdAt') {
+    return this.model
+      .query()
+      .sort({ [sortBy]: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .paginate()
+  }
+}
+```
+
+## Versioning
+
+When versioning is enabled, Magnet tracks document history:
+
+```typescript
+@Injectable()
+export class ArticleService {
+  constructor(@InjectModel(Article) private model: Model<Article>) {}
+
+  // Check if versioning is enabled
+  isVersioningEnabled() {
+    return this.model.isVersioningEnabled()
+  }
+
+  // Get all versions of a document
+  async getVersions(documentId: string) {
+    return this.model.findVersions(documentId)
+  }
+
+  // Get specific version
+  async getVersion(versionId: string) {
+    return this.model.findVersionById(versionId)
+  }
+
+  // Restore a previous version
+  async restore(versionId: string) {
+    return this.model.restoreVersion(versionId)
+  }
+}
+```
+
+## Draft/Published System
+
+Documents support draft and published states:
+
+```typescript
+// Find draft version
+const draft = await contentService.findDraft('article', documentId, 'en')
+
+// Find published version
+const published = await contentService.findPublished('article', documentId, 'en')
+
+// Publish a draft
+await contentService.publish('article', documentId, { locale: 'en' })
+
+// Unpublish
+await contentService.unpublish('article', documentId, 'en')
+```
+
+## Native Mongoose Access
+
+For advanced use cases, access the underlying Mongoose model:
+
+```typescript
+@Injectable()
+export class AdvancedService {
+  constructor(@InjectModel(Cat) private model: Model<Cat>) {}
+
+  async aggregation() {
+    // Access native Mongoose model
+    const nativeModel = this.model.native()
+
+    return nativeModel.aggregate([
+      { $match: { status: 'active' } },
+      { $group: { _id: '$category', count: { $sum: 1 } } }
+    ])
+  }
+}
+```
+
+## Error Handling
+
+The adapter automatically converts Mongoose errors:
+
+```typescript
+try {
+  await model.create({ email: 'duplicate@example.com' })
+} catch (error) {
+  if (error instanceof ValidationException) {
+    // Duplicate key error converted to ValidationException
+    console.log(error.errors)
+    // [{ field: 'email', message: 'email already exists' }]
+  }
+}
+```
+
+## Indexes
+
+Unique indexes with i18n are automatically converted to partial unique indexes:
+
+```typescript
+@Schema({ i18n: true })
+export class Product {
+  @Prop({ unique: true })
+  sku: string  // Partial unique index on (locale, status)
+}
+```
+
+This allows:
+- Different locales to share the same SKU
+- Draft and published versions to coexist
+- Uniqueness enforced only within the same locale and status
+
+## Best Practices
+
+1. **Use Query Builder for Complex Queries**: The query builder provides type safety and better readability
+2. **Set Locale Early**: Call `.locale()` before other operations for consistent results
+3. **Use Indexes**: Define indexes on frequently queried fields
+4. **Handle Validation**: Use class-validator decorators with `@Validators()`
+5. **Lean Queries**: For read-only operations, consider using native Mongoose with `.lean()`

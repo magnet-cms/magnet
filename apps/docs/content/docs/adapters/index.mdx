@@ -1,0 +1,147 @@
+---
+title: Database Adapters
+description: Database adapters for Magnet CMS
+---
+
+Magnet CMS uses an adapter pattern to support multiple databases. Choose the adapter that best fits your needs.
+
+## Available Adapters
+
+| Adapter | Package | Databases |
+|---------|---------|-----------|
+| Mongoose | `@magnet-cms/adapter-mongoose` | MongoDB |
+| Drizzle | `@magnet-cms/adapter-drizzle` | PostgreSQL, MySQL, SQLite |
+| Supabase | `@magnet-cms/adapter-supabase` | PostgreSQL (Supabase) |
+
+## Quick Start
+
+### MongoDB (Mongoose)
+
+```bash
+bun add @magnet-cms/adapter-mongoose mongoose
+```
+
+```typescript
+import { Module } from '@nestjs/common'
+import { MagnetModule } from '@magnet-cms/core'
+
+@Module({
+  imports: [
+    MagnetModule.forRoot({
+      db: {
+        uri: 'mongodb://localhost:27017/magnet',
+      },
+      jwt: { secret: process.env.JWT_SECRET },
+    }),
+  ],
+})
+export class AppModule {}
+```
+
+### PostgreSQL (Drizzle)
+
+```bash
+bun add @magnet-cms/adapter-drizzle drizzle-orm @neondatabase/serverless
+```
+
+```typescript
+MagnetModule.forRoot({
+  db: {
+    connectionString: process.env.DATABASE_URL,
+    dialect: 'postgresql',
+    driver: 'neon',
+  },
+  jwt: { secret: process.env.JWT_SECRET },
+})
+```
+
+### Supabase
+
+```bash
+bun add @magnet-cms/adapter-supabase @magnet-cms/adapter-drizzle drizzle-orm
+```
+
+```typescript
+MagnetModule.forRoot({
+  db: {
+    connectionString: process.env.SUPABASE_DATABASE_URL,
+    dialect: 'postgresql',
+  },
+  jwt: { secret: process.env.SUPABASE_JWT_SECRET },
+  auth: {
+    strategy: 'supabase',
+    supabaseUrl: process.env.SUPABASE_URL,
+    supabaseKey: process.env.SUPABASE_ANON_KEY,
+  },
+})
+```
+
+## Auto-Detection
+
+Magnet automatically detects which adapter to use based on your configuration:
+
+- `uri` property → Mongoose adapter
+- `connectionString` + `dialect` → Drizzle adapter
+
+```typescript
+import { detectDatabaseAdapter } from '@magnet-cms/common'
+
+// MongoDB config
+detectDatabaseAdapter({ uri: 'mongodb://...' })
+// Returns: 'mongoose'
+
+// PostgreSQL config
+detectDatabaseAdapter({ connectionString: '...', dialect: 'postgresql' })
+// Returns: 'drizzle'
+```
+
+## Adapter Interface
+
+All adapters implement the `DatabaseAdapter` interface:
+
+```typescript
+abstract class DatabaseAdapter {
+  // Connect to database
+  abstract connect(options: MagnetModuleOptions): DynamicModule
+
+  // Register schemas
+  abstract forFeature(schemas: Type | Type[]): DynamicModule
+
+  // Get model wrapper
+  abstract model<T>(modelInstance: any): any
+
+  // Generate injection token
+  abstract token(schema: string): string
+}
+```
+
+## Creating Custom Adapters
+
+Implement the `DatabaseAdapter` interface:
+
+```typescript
+import { DatabaseAdapter } from '@magnet-cms/common'
+import { DynamicModule, Type } from '@nestjs/common'
+
+export class CustomAdapter implements DatabaseAdapter {
+  connect(options: MagnetModuleOptions): DynamicModule {
+    // Setup database connection
+  }
+
+  forFeature(schemas: Type | Type[]): DynamicModule {
+    // Register schemas with database
+  }
+
+  model<T>(modelInstance: any): any {
+    // Return model wrapper
+  }
+
+  token(schema: string): string {
+    return `Custom${schema}Model`
+  }
+}
+```
+
+## Next Steps
+
+- [Mongoose Adapter](/docs/adapters/mongoose) - MongoDB setup and features

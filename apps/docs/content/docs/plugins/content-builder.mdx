@@ -1,0 +1,222 @@
+---
+title: Content Builder Plugin
+description: Visual schema builder for Magnet CMS
+---
+
+The Content Builder plugin provides a visual interface for creating and managing content schemas without writing code. It generates fully typed TypeScript schemas, controllers, services, and DTOs.
+
+## Installation
+
+```bash
+bun add @magnet-cms/plugin-content-builder
+```
+
+## Configuration
+
+Register the plugin in your application:
+
+```typescript
+import { Module } from '@nestjs/common'
+import { MagnetModule } from '@magnet-cms/core'
+import { ContentBuilderPlugin } from '@magnet-cms/plugin-content-builder'
+
+@Module({
+  imports: [
+    MagnetModule.forRoot({
+      db: { uri: process.env.MONGODB_URI },
+      jwt: { secret: process.env.JWT_SECRET },
+      plugins: [
+        {
+          plugin: ContentBuilderPlugin,
+          options: {
+            modulesPath: './src/modules',
+          },
+        },
+      ],
+    }),
+  ],
+})
+export class AppModule {}
+```
+
+### Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `modulesPath` | `string` | `./src/modules` | Directory for generated modules |
+
+## Using the Playground
+
+Access the Playground from the admin sidebar to create schemas visually.
+
+### Creating a Schema
+
+1. Navigate to **Playground** in the admin sidebar
+2. Click **Create New**
+3. Enter schema name (e.g., "Article")
+4. Add fields by clicking **Add Field**
+5. Configure each field's properties
+6. Click **Save** to generate code
+
+### Field Types
+
+| Type | Description | UI Options |
+|------|-------------|------------|
+| Text | String values | text, textarea, email, phone, richText |
+| Number | Numeric values | number, quantity |
+| Date | Date/time values | date |
+| Boolean | True/false values | switch, checkbox |
+| Select | Predefined options | select, multiSelect, combobox, radio |
+| Relation | Reference to another schema | relationship |
+
+### Field Configuration
+
+Each field supports:
+
+- **Name**: Field identifier (camelCase)
+- **Label**: Display name in the admin UI
+- **Required**: Whether the field is mandatory
+- **Unique**: Enforce uniqueness
+- **Translatable**: Enable i18n for this field
+- **Description**: Help text for users
+- **Default Value**: Initial value for new documents
+- **Validations**: class-validator rules
+
+### Schema Options
+
+- **Versioning**: Enable version history
+- **i18n**: Enable multi-locale support
+
+## Generated Code
+
+The Content Builder generates a complete NestJS module:
+
+```
+src/modules/article/
+├── article.schema.ts      # Schema with decorators
+├── article.module.ts      # NestJS module
+├── article.controller.ts  # REST API controller
+├── article.service.ts     # Business logic
+└── dto/
+    └── create-article.dto.ts  # Data transfer objects
+```
+
+### Example Generated Schema
+
+```typescript
+import { Schema, Prop, UI, Validators } from '@magnet-cms/common'
+import { IsString, IsNotEmpty, Length, IsBoolean } from 'class-validator'
+
+@Schema({ versioning: true, i18n: true })
+export class Article {
+  @Prop({ required: true, intl: true })
+  @Validators(IsString(), IsNotEmpty(), Length(5, 200))
+  @UI({ tab: 'General', type: 'text' })
+  title: string
+
+  @Prop({ required: true, intl: true })
+  @Validators(IsString())
+  @UI({ tab: 'Content', type: 'richText' })
+  content: string
+
+  @Prop({ required: true, default: false })
+  @Validators(IsBoolean())
+  @UI({ tab: 'Settings', type: 'switch' })
+  published: boolean
+}
+```
+
+### Example Generated Controller
+
+```typescript
+import { Controller, Get, Post, Put, Delete, Body, Param } from '@nestjs/common'
+import { RestrictedRoute } from '@magnet-cms/core'
+import { ArticleService } from './article.service'
+import { CreateArticleDto } from './dto/create-article.dto'
+
+@Controller('articles')
+@RestrictedRoute()
+export class ArticleController {
+  constructor(private readonly articleService: ArticleService) {}
+
+  @Get()
+  findAll() {
+    return this.articleService.findAll()
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.articleService.findById(id)
+  }
+
+  @Post()
+  create(@Body() createDto: CreateArticleDto) {
+    return this.articleService.create(createDto)
+  }
+
+  @Put(':id')
+  update(@Param('id') id: string, @Body() updateDto: Partial<CreateArticleDto>) {
+    return this.articleService.update(id, updateDto)
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.articleService.remove(id)
+  }
+}
+```
+
+## API Endpoints
+
+The plugin exposes these backend endpoints:
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/playground/schemas` | GET | List all schemas |
+| `/playground/schemas/:name` | GET | Get schema details |
+| `/playground/schemas` | POST | Create new module |
+| `/playground/schemas/:name` | PUT | Update schema |
+| `/playground/schemas/:name` | DELETE | Delete schema |
+| `/playground/preview` | POST | Preview generated code |
+
+## Code Preview
+
+Before saving, you can preview the generated code:
+
+1. Configure your schema fields
+2. Click the **Preview** tab
+3. View TypeScript or JSON output
+4. Make adjustments as needed
+5. Save when satisfied
+
+## Updating Schemas
+
+When updating existing schemas, the plugin detects potential conflicts:
+
+- Type changes (e.g., string → number)
+- Required → optional changes
+- Field removals
+
+You'll be warned about breaking changes before saving.
+
+## Best Practices
+
+1. **Use Descriptive Names**: Choose clear, meaningful schema and field names
+2. **Group Related Fields**: Use tabs to organize fields logically
+3. **Add Descriptions**: Help content editors understand each field
+4. **Enable Versioning**: Track content changes over time
+5. **Plan Relationships**: Consider how schemas relate before creating
+
+## Troubleshooting
+
+### Module Not Generated
+
+1. Check write permissions on `modulesPath`
+2. Verify the path exists
+3. Check for naming conflicts
+
+### Schema Not Appearing
+
+1. Restart the application after generation
+2. Import the module in your `AppModule`
+3. Check for TypeScript compilation errors

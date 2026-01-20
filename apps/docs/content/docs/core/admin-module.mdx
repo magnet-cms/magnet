@@ -1,0 +1,198 @@
+---
+title: Admin Module
+description: Serving the Admin UI and providing configuration endpoints
+---
+
+The Admin Module serves the Magnet CMS admin interface and provides configuration endpoints for the frontend.
+
+## Overview
+
+The Admin Module handles:
+
+- **Admin UI Serving**: Static file serving in production, dev proxy in development
+- **Initial Configuration**: Provides schema and settings metadata to the frontend
+- **Development Mode**: Proxies to Vite dev server for hot reload
+
+## How It Works
+
+### Production Mode
+
+In production, the Admin Module serves pre-built static files from the `@magnet-cms/admin` package:
+
+```
+GET /admin         → index.html
+GET /admin/*       → Static files or SPA fallback
+```
+
+The module looks for admin files in this order:
+1. Custom path via `MAGNET_ADMIN_PATH` environment variable
+2. Local `dist/admin` or `public/admin` directories
+3. Monorepo path `packages/client/admin/dist/client`
+4. Node modules `node_modules/@magnet-cms/admin/dist/client`
+
+### Development Mode
+
+In development, requests to `/admin/*` are proxied to the Vite dev server at `http://localhost:3001`:
+
+```bash
+# Terminal 1: Start backend
+bun run dev
+
+# Terminal 2: Start admin UI (in packages/client/admin)
+bun run dev
+```
+
+## API Endpoints
+
+### Initial Configuration
+
+```http
+GET /initial-config
+```
+
+Returns configuration for the admin UI:
+
+```json
+{
+  "title": "My CMS",
+  "description": "Content management system",
+  "env": "development",
+  "schemas": [
+    {
+      "name": "Article",
+      "displayName": "Article",
+      "fields": [
+        { "name": "title", "type": "string", "required": true },
+        { "name": "content", "type": "string" }
+      ]
+    }
+  ],
+  "settings": [
+    {
+      "name": "SiteSettings",
+      "displayName": "Site Settings",
+      "fields": [...]
+    }
+  ]
+}
+```
+
+This endpoint is used by the admin UI to:
+- Discover available content schemas
+- Build dynamic forms for content editing
+- Configure navigation and settings pages
+
+## Customizing the Admin UI
+
+### Custom Admin Path
+
+Set a custom path to serve admin files from:
+
+```bash
+MAGNET_ADMIN_PATH=/path/to/custom/admin
+```
+
+### Building Admin for Deployment
+
+The admin UI is built separately:
+
+```bash
+# Build admin for embedding
+cd packages/client/admin
+bun run build
+
+# Files are output to dist/client
+```
+
+### Standalone Admin Build
+
+For standalone deployment with a fixed base path:
+
+```bash
+cd packages/client/admin
+VITE_BASE_PATH=/ bun run build:standalone
+```
+
+## AdminService
+
+The `AdminService` provides methods for admin UI management:
+
+```typescript
+import { Injectable } from '@nestjs/common'
+import { AdminService } from '@magnet-cms/core'
+
+@Injectable()
+export class MyService {
+  constructor(private adminService: AdminService) {}
+
+  checkEnvironment() {
+    if (this.adminService.isDevMode()) {
+      // Development-specific logic
+    }
+  }
+
+  async getConfig() {
+    return this.adminService.getInitialConfig()
+  }
+}
+```
+
+### Methods
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `isDevMode()` | `boolean` | Check if running in development |
+| `hasAdminFiles()` | `boolean` | Check if admin static files exist |
+| `getAdminDistPath()` | `string \| null` | Get path to admin distribution |
+| `getInitialConfig()` | `InitialConfig` | Get admin configuration |
+
+## Configuration Response Types
+
+```typescript
+interface InitialConfig {
+  title?: string
+  description?: string
+  env: 'production' | 'development'
+  schemas: SchemaMetadata[]
+  settings: SchemaMetadata[]
+}
+
+interface SchemaMetadata {
+  name: string
+  displayName: string
+  fields: FieldMetadata[]
+  options?: {
+    versioning?: boolean
+    i18n?: boolean
+  }
+}
+
+interface FieldMetadata {
+  name: string
+  type: string
+  required?: boolean
+  ui?: UIOptions
+  validators?: string[]
+}
+```
+
+## Environment Variables
+
+| Variable | Description |
+|----------|-------------|
+| `MAGNET_ADMIN_PATH` | Custom path to admin static files |
+| `NODE_ENV` | Set to `production` for production mode |
+
+## Troubleshooting
+
+### Admin UI Not Loading
+
+1. Check if admin files are built: `ls node_modules/@magnet-cms/admin/dist/client`
+2. Verify no conflicting routes in your application
+3. Check console for proxy errors in development mode
+
+### Development Proxy Issues
+
+1. Ensure admin dev server is running on port 3001
+2. Check for CORS issues in browser console
+3. Verify `bun run dev` in admin package directory

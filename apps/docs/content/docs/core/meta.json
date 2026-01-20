@@ -1,0 +1,4 @@
+{
+  "title": "Core",
+  "pages": ["index", "content-module", "auth-module", "admin-module", "database-module"]
+}
