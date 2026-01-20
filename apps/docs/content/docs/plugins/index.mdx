@@ -1,0 +1,263 @@
+---
+title: Plugins
+description: Extend Magnet CMS with plugins
+---
+
+The Magnet CMS plugin system allows you to extend functionality with modular, self-contained plugins. Plugins can add backend services, API endpoints, and frontend UI components.
+
+## Overview
+
+Plugins provide:
+
+- **Backend Extensions**: Add NestJS modules, services, and controllers
+- **Frontend Integration**: Add routes and sidebar items to the admin UI
+- **Configuration**: Plugin-specific options and settings
+- **Lifecycle Hooks**: Initialize and cleanup logic
+
+## Available Plugins
+
+| Plugin | Package | Description |
+|--------|---------|-------------|
+| Content Builder | `@magnet-cms/plugin-content-builder` | Visual schema builder |
+| SEO | `@magnet-cms/plugin-seo` | SEO metadata management |
+
+## Installing Plugins
+
+```bash
+# Content Builder
+bun add @magnet-cms/plugin-content-builder
+
+# SEO (when available)
+bun add @magnet-cms/plugin-seo
+```
+
+## Registering Plugins
+
+Add plugins to your `MagnetModule.forRoot()` configuration:
+
+```typescript
+import { Module } from '@nestjs/common'
+import { MagnetModule } from '@magnet-cms/core'
+import { ContentBuilderPlugin } from '@magnet-cms/plugin-content-builder'
+
+@Module({
+  imports: [
+    MagnetModule.forRoot({
+      db: { uri: process.env.MONGODB_URI },
+      jwt: { secret: process.env.JWT_SECRET },
+      plugins: [
+        { plugin: ContentBuilderPlugin },
+      ],
+    }),
+  ],
+})
+export class AppModule {}
+```
+
+### Plugin Configuration
+
+Pass options to plugins:
+
+```typescript
+plugins: [
+  {
+    plugin: ContentBuilderPlugin,
+    options: {
+      modulesPath: './src/modules',
+    },
+  },
+]
+```
+
+### Conditional Registration
+
+Enable or disable plugins:
+
+```typescript
+plugins: [
+  {
+    plugin: ContentBuilderPlugin,
+    enabled: process.env.NODE_ENV === 'development',
+  },
+]
+```
+
+## Creating Custom Plugins
+
+### Basic Plugin Structure
+
+```typescript
+import { Plugin } from '@magnet-cms/common'
+
+@Plugin({
+  name: 'my-plugin',
+  description: 'My custom plugin',
+  version: '1.0.0',
+})
+export class MyPlugin {}
+```
+
+### Plugin with NestJS Module
+
+```typescript
+import { Module } from '@nestjs/common'
+import { Plugin } from '@magnet-cms/common'
+
+@Module({
+  controllers: [MyController],
+  providers: [MyService],
+})
+export class MyPluginModule {}
+
+@Plugin({
+  name: 'my-plugin',
+  description: 'Plugin with backend module',
+  version: '1.0.0',
+  module: MyPluginModule,
+})
+export class MyPlugin {}
+```
+
+### Plugin with Frontend Integration
+
+```typescript
+@Plugin({
+  name: 'my-plugin',
+  description: 'Plugin with frontend',
+  version: '1.0.0',
+  module: MyPluginModule,
+  frontend: {
+    routes: [
+      {
+        path: 'my-feature',
+        componentId: 'MyFeature',
+        requiresAuth: true,
+      },
+    ],
+    sidebar: [
+      {
+        id: 'my-feature',
+        title: 'My Feature',
+        url: '/my-feature',
+        icon: 'Star',
+        order: 30,
+      },
+    ],
+  },
+})
+export class MyPlugin {}
+```
+
+### Plugin Lifecycle Hooks
+
+```typescript
+import { Plugin, PluginLifecycle } from '@magnet-cms/common'
+
+@Plugin({
+  name: 'my-plugin',
+  version: '1.0.0',
+})
+export class MyPlugin implements PluginLifecycle {
+  async onPluginInit() {
+    console.log('Plugin initialized')
+    // Setup logic
+  }
+
+  async onPluginDestroy() {
+    console.log('Plugin destroyed')
+    // Cleanup logic
+  }
+}
+```
+
+## Plugin Types
+
+### PluginMetadata
+
+```typescript
+interface PluginMetadata {
+  name: string              // Unique identifier
+  description?: string      // Human-readable description
+  version?: string          // Semantic version
+  dependencies?: string[]   // Required plugins
+  module?: Type<unknown>    // NestJS module
+  frontend?: PluginFrontendManifest
+}
+```
+
+### PluginFrontendManifest
+
+```typescript
+interface PluginFrontendManifest {
+  routes?: PluginRouteDefinition[]
+  sidebar?: PluginSidebarItem[]
+  settings?: PluginSettingsPage[]
+  permissions?: string[]
+}
+```
+
+### PluginRouteDefinition
+
+```typescript
+interface PluginRouteDefinition {
+  path: string              // Route path
+  componentId: string       // Component identifier
+  requiresAuth?: boolean    // Require authentication
+  permissions?: string[]    // Required permissions
+  children?: PluginRouteDefinition[]
+}
+```
+
+### PluginSidebarItem
+
+```typescript
+interface PluginSidebarItem {
+  id: string                // Unique ID
+  title: string             // Display title
+  url: string               // Route path
+  icon: string              // Lucide icon name
+  order?: number            // Sort order (lower = higher)
+  items?: PluginSidebarItem[]  // Nested items
+  badge?: string | number   // Optional badge
+}
+```
+
+## Plugin API Endpoints
+
+### List Plugins
+
+```http
+GET /plugins
+```
+
+Returns information about registered plugins.
+
+### Get Plugin Manifests
+
+```http
+GET /plugins/manifests
+```
+
+Returns frontend manifests for all plugins with bundle URLs.
+
+## Injecting Plugin Options
+
+Access plugin options in your services:
+
+```typescript
+import { Injectable, Inject } from '@nestjs/common'
+import { getPluginOptionsToken } from '@magnet-cms/common'
+
+@Injectable()
+export class MyPluginService {
+  constructor(
+    @Inject(getPluginOptionsToken('my-plugin'))
+    private options: MyPluginOptions,
+  ) {}
+}
+```
+
+## Next Steps
+
+- [Content Builder Plugin](/docs/plugins/content-builder) - Visual schema builder
+- [SEO Plugin](/docs/plugins/seo) - SEO metadata management

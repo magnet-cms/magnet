@@ -1,0 +1,238 @@
+---
+title: Database Module
+description: Database adapter management and schema registration
+---
+
+The Database Module manages database connections and provides a unified interface for different database adapters in Magnet CMS.
+
+## Overview
+
+The Database Module provides:
+
+- **Adapter Abstraction**: Unified API across different databases
+- **Schema Registration**: Register content schemas with the database
+- **i18n Support**: Multi-locale content storage
+- **Auto-Detection**: Automatically detects installed adapter
+
+## Supported Databases
+
+| Database | Adapter Package | Description |
+|----------|-----------------|-------------|
+| MongoDB | `@magnet-cms/adapter-mongoose` | Full-featured MongoDB adapter |
+| PostgreSQL | `@magnet-cms/adapter-drizzle` | Via Drizzle ORM |
+| MySQL | `@magnet-cms/adapter-drizzle` | Via Drizzle ORM |
+| SQLite | `@magnet-cms/adapter-drizzle` | Via Drizzle ORM |
+| Supabase | `@magnet-cms/adapter-supabase` | PostgreSQL with auth/storage |
+
+## Configuration
+
+### MongoDB (Mongoose)
+
+```typescript
+import { Module } from '@nestjs/common'
+import { MagnetModule } from '@magnet-cms/core'
+
+@Module({
+  imports: [
+    MagnetModule.forRoot({
+      db: {
+        uri: 'mongodb://localhost:27017/magnet',
+      },
+      jwt: { secret: process.env.JWT_SECRET },
+    }),
+  ],
+})
+export class AppModule {}
+```
+
+### PostgreSQL (Drizzle)
+
+```typescript
+MagnetModule.forRoot({
+  db: {
+    connectionString: process.env.DATABASE_URL,
+    dialect: 'postgresql',
+    driver: 'neon',  // or 'pg'
+  },
+  jwt: { secret: process.env.JWT_SECRET },
+})
+```
+
+### MySQL (Drizzle)
+
+```typescript
+MagnetModule.forRoot({
+  db: {
+    connectionString: process.env.DATABASE_URL,
+    dialect: 'mysql',
+    driver: 'mysql2',
+  },
+  jwt: { secret: process.env.JWT_SECRET },
+})
+```
+
+### SQLite (Drizzle)
+
+```typescript
+MagnetModule.forRoot({
+  db: {
+    connectionString: './data/database.sqlite',
+    dialect: 'sqlite',
+    driver: 'better-sqlite3',
+  },
+  jwt: { secret: process.env.JWT_SECRET },
+})
+```
+
+## Registering Schemas
+
+Register your content schemas in your module:
+
+```typescript
+import { Module } from '@nestjs/common'
+import { DatabaseModule } from '@magnet-cms/core'
+import { Cat } from './cat.schema'
+import { CatsService } from './cats.service'
+import { CatsController } from './cats.controller'
+
+@Module({
+  imports: [
+    DatabaseModule.forFeature([Cat]),
+  ],
+  controllers: [CatsController],
+  providers: [CatsService],
+})
+export class CatsModule {}
+```
+
+Multiple schemas can be registered at once:
+
+```typescript
+DatabaseModule.forFeature([Cat, Dog, Bird])
+```
+
+## Database Adapter Interface
+
+All adapters implement the `DatabaseAdapter` interface:
+
+```typescript
+abstract class DatabaseAdapter {
+  // Initialize database connection
+  abstract connect(options: MagnetModuleOptions): DynamicModule
+
+  // Register schemas with the database
+  abstract forFeature(schemas: Type | Type[]): DynamicModule
+
+  // Get model wrapper for a schema
+  abstract model<T>(modelInstance: any): any
+
+  // Generate injection token for a schema
+  abstract token(schema: string): string
+}
+```
+
+## Auto-Detection
+
+The database adapter is auto-detected based on:
+
+1. Configuration type (uri vs connectionString)
+2. Installed packages (`@magnet-cms/adapter-mongoose` or `@magnet-cms/adapter-drizzle`)
+
+```typescript
+import { detectDatabaseAdapter } from '@magnet-cms/common'
+
+// Auto-detect from installed packages
+const adapter = detectDatabaseAdapter()
+
+// Detect from config
+const adapter = detectDatabaseAdapter({
+  connectionString: '...',
+  dialect: 'postgresql'
+})
+// Returns 'drizzle'
+
+const adapter = detectDatabaseAdapter({
+  uri: 'mongodb://...'
+})
+// Returns 'mongoose'
+```
+
+## i18n Configuration
+
+Configure internationalization in `MagnetModule.forRoot()`:
+
+```typescript
+MagnetModule.forRoot({
+  db: { uri: '...' },
+  jwt: { secret: '...' },
+  internationalization: {
+    locales: ['en', 'pt-BR', 'es'],
+    defaultLocale: 'en',
+  },
+})
+```
+
+This enables:
+- Locale-specific content versions
+- Draft/published status per locale
+- Locale fallback queries
+
+## Model Operations
+
+After registering a schema, inject the model in your service:
+
+```typescript
+import { Injectable } from '@nestjs/common'
+import { InjectModel, Model } from '@magnet-cms/common'
+import { Cat } from './cat.schema'
+
+@Injectable()
+export class CatsService {
+  constructor(
+    @InjectModel(Cat)
+    private model: Model<Cat>,
+  ) {}
+
+  // Use the model for database operations
+  async findAll() {
+    return this.model.find()
+  }
+
+  async findByLocale(locale: string) {
+    return this.model.locale(locale).find()
+  }
+}
+```
+
+## Environment Variables
+
+| Variable | Description |
+|----------|-------------|
+| `DB_URI` | MongoDB connection URI (fallback) |
+| `MONGODB_URI` | MongoDB connection URI |
+| `DATABASE_URL` | SQL database connection string |
+
+## Troubleshooting
+
+### Adapter Not Found
+
+```
+Error: Database adapter not found
+```
+
+Install the appropriate adapter:
+
+```bash
+# For MongoDB
+bun add @magnet-cms/adapter-mongoose mongoose
+
+# For PostgreSQL/MySQL/SQLite
+bun add @magnet-cms/adapter-drizzle drizzle-orm
+```
+
+### Connection Errors
+
+1. Verify database is running
+2. Check connection string format
+3. Ensure network access (for cloud databases)
+4. Check authentication credentials

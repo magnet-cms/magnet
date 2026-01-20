@@ -1,0 +1,366 @@
+---
+title: UI Components
+description: Shared UI component library for Magnet CMS
+---
+
+The `@magnet-cms/ui` package provides a comprehensive set of UI components based on shadcn/ui, styled with Tailwind CSS.
+
+## Installation
+
+```bash
+bun add @magnet-cms/ui
+```
+
+## Setup
+
+### Tailwind Configuration
+
+Add the UI package to your Tailwind content paths:
+
+```typescript
+// tailwind.config.ts
+import type { Config } from 'tailwindcss'
+
+const config: Config = {
+  darkMode: 'class',
+  content: [
+    './src/**/*.{ts,tsx}',
+    './node_modules/@magnet-cms/ui/dist/**/*.js',
+  ],
+}
+
+export default config
+```
+
+### Import Styles
+
+Import the base styles in your app:
+
+```typescript
+import '@magnet-cms/ui/styles.css'
+```
+
+## Components
+
+### Button
+
+```tsx
+import { Button } from '@magnet-cms/ui/components'
+
+<Button>Default</Button>
+<Button variant="secondary">Secondary</Button>
+<Button variant="destructive">Destructive</Button>
+<Button variant="outline">Outline</Button>
+<Button variant="ghost">Ghost</Button>
+<Button variant="link">Link</Button>
+
+<Button size="sm">Small</Button>
+<Button size="lg">Large</Button>
+
+<Button disabled>Disabled</Button>
+<Button loading>Loading</Button>
+```
+
+### Input
+
+```tsx
+import { Input, Label } from '@magnet-cms/ui/components'
+
+<div>
+  <Label htmlFor="email">Email</Label>
+  <Input id="email" type="email" placeholder="you@example.com" />
+</div>
+```
+
+### Select
+
+```tsx
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from '@magnet-cms/ui/components'
+
+<Select>
+  <SelectTrigger>
+    <SelectValue placeholder="Select an option" />
+  </SelectTrigger>
+  <SelectContent>
+    <SelectItem value="option1">Option 1</SelectItem>
+    <SelectItem value="option2">Option 2</SelectItem>
+    <SelectItem value="option3">Option 3</SelectItem>
+  </SelectContent>
+</Select>
+```
+
+### Card
+
+```tsx
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from '@magnet-cms/ui/components'
+
+<Card>
+  <CardHeader>
+    <CardTitle>Card Title</CardTitle>
+    <CardDescription>Card description text</CardDescription>
+  </CardHeader>
+  <CardContent>
+    <p>Card content goes here.</p>
+  </CardContent>
+  <CardFooter>
+    <Button>Action</Button>
+  </CardFooter>
+</Card>
+```
+
+### Dialog
+
+```tsx
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@magnet-cms/ui/components'
+
+<Dialog>
+  <DialogTrigger asChild>
+    <Button>Open Dialog</Button>
+  </DialogTrigger>
+  <DialogContent>
+    <DialogHeader>
+      <DialogTitle>Dialog Title</DialogTitle>
+      <DialogDescription>
+        This is the dialog description.
+      </DialogDescription>
+    </DialogHeader>
+    <p>Dialog content</p>
+    <DialogFooter>
+      <Button>Confirm</Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
+```
+
+### Dropdown Menu
+
+```tsx
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from '@magnet-cms/ui/components'
+
+<DropdownMenu>
+  <DropdownMenuTrigger asChild>
+    <Button variant="outline">Open Menu</Button>
+  </DropdownMenuTrigger>
+  <DropdownMenuContent>
+    <DropdownMenuItem>Profile</DropdownMenuItem>
+    <DropdownMenuItem>Settings</DropdownMenuItem>
+    <DropdownMenuSeparator />
+    <DropdownMenuItem>Logout</DropdownMenuItem>
+  </DropdownMenuContent>
+</DropdownMenu>
+```
+
+### Tabs
+
+```tsx
+import {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+} from '@magnet-cms/ui/components'
+
+<Tabs defaultValue="tab1">
+  <TabsList>
+    <TabsTrigger value="tab1">Tab 1</TabsTrigger>
+    <TabsTrigger value="tab2">Tab 2</TabsTrigger>
+  </TabsList>
+  <TabsContent value="tab1">Content for tab 1</TabsContent>
+  <TabsContent value="tab2">Content for tab 2</TabsContent>
+</Tabs>
+```
+
+### Table
+
+```tsx
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '@magnet-cms/ui/components'
+
+<Table>
+  <TableHeader>
+    <TableRow>
+      <TableHead>Name</TableHead>
+      <TableHead>Email</TableHead>
+      <TableHead>Role</TableHead>
+    </TableRow>
+  </TableHeader>
+  <TableBody>
+    <TableRow>
+      <TableCell>John Doe</TableCell>
+      <TableCell>john@example.com</TableCell>
+      <TableCell>Admin</TableCell>
+    </TableRow>
+  </TableBody>
+</Table>
+```
+
+### Toast
+
+```tsx
+import { useToast } from '@magnet-cms/ui/hooks'
+import { Toaster } from '@magnet-cms/ui/components'
+
+function App() {
+  const { toast } = useToast()
+
+  return (
+    <>
+      <Button onClick={() => toast({ title: 'Success!' })}>
+        Show Toast
+      </Button>
+      <Toaster />
+    </>
+  )
+}
+```
+
+### Avatar
+
+```tsx
+import { Avatar, AvatarImage, AvatarFallback } from '@magnet-cms/ui/components'
+
+<Avatar>
+  <AvatarImage src="/avatar.jpg" />
+  <AvatarFallback>JD</AvatarFallback>
+</Avatar>
+```
+
+### Badge
+
+```tsx
+import { Badge } from '@magnet-cms/ui/components'
+
+<Badge>Default</Badge>
+<Badge variant="secondary">Secondary</Badge>
+<Badge variant="destructive">Destructive</Badge>
+<Badge variant="outline">Outline</Badge>
+```
+
+### Switch
+
+```tsx
+import { Switch, Label } from '@magnet-cms/ui/components'
+
+<div className="flex items-center space-x-2">
+  <Switch id="notifications" />
+  <Label htmlFor="notifications">Enable notifications</Label>
+</div>
+```
+
+### Sidebar
+
+```tsx
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+  useSidebar,
+} from '@magnet-cms/ui/components'
+
+<Sidebar>
+  <SidebarContent>
+    <SidebarMenu>
+      <SidebarMenuItem>
+        <SidebarMenuButton>Dashboard</SidebarMenuButton>
+      </SidebarMenuItem>
+      <SidebarMenuItem>
+        <SidebarMenuButton>Settings</SidebarMenuButton>
+      </SidebarMenuItem>
+    </SidebarMenu>
+  </SidebarContent>
+</Sidebar>
+```
+
+## Utilities
+
+### cn() - Class Name Merge
+
+Utility for merging Tailwind classes:
+
+```tsx
+import { cn } from '@magnet-cms/ui/lib/utils'
+
+<div className={cn('base-class', isActive && 'active-class', className)} />
+```
+
+## Dark Mode
+
+Components automatically support dark mode via the `dark` class:
+
+```tsx
+// In your root layout
+<html className="dark">
+  {/* ... */}
+</html>
+```
+
+Or use a theme provider:
+
+```tsx
+import { ThemeProvider } from '@magnet-cms/ui/providers'
+
+<ThemeProvider defaultTheme="system">
+  <App />
+</ThemeProvider>
+```
+
+## Customization
+
+Override component styles with Tailwind classes:
+
+```tsx
+<Button className="bg-purple-600 hover:bg-purple-700">
+  Custom Button
+</Button>
+```
+
+Or create custom variants:
+
+```tsx
+import { Button } from '@magnet-cms/ui/components'
+import { cn } from '@magnet-cms/ui/lib/utils'
+
+function PurpleButton({ className, ...props }) {
+  return (
+    <Button
+      className={cn('bg-purple-600 hover:bg-purple-700', className)}
+      {...props}
+    />
+  )
+}
+```

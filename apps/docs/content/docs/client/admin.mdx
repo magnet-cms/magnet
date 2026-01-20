@@ -1,0 +1,200 @@
+---
+title: Admin UI
+description: The Magnet CMS admin interface
+---
+
+The `@magnet-cms/admin` package provides a complete admin interface for managing content, media, and settings in Magnet CMS.
+
+## Overview
+
+The admin UI includes:
+
+- **Content Manager**: Create, edit, publish, and delete content
+- **Media Library**: Upload and manage files
+- **Settings**: Configure system settings
+- **User Account**: Manage profile and security
+- **Plugin Pages**: Extended functionality from plugins
+
+## Accessing the Admin
+
+The admin UI is available at `/admin` when running your Magnet CMS application:
+
+```
+http://localhost:3000/admin
+```
+
+### First-Time Setup
+
+On first access, you'll be prompted to create an admin account:
+
+1. Navigate to `/admin`
+2. Enter your email, name, and password
+3. Click "Create Account"
+4. You'll be logged in automatically
+
+## Content Manager
+
+### Viewing Content
+
+1. Click a content type in the sidebar (e.g., "Articles")
+2. View the list of all documents
+3. Use filters to narrow results by:
+   - Locale (if i18n enabled)
+   - Status (draft/published)
+
+### Creating Content
+
+1. Click **Create New** button
+2. Fill in the form fields
+3. Click **Save** to create as draft
+4. Click **Publish** to make it public
+
+### Editing Content
+
+1. Click on a document in the list
+2. Modify fields as needed
+3. Changes are saved to the draft
+4. Click **Publish** to update the public version
+
+### Managing Locales
+
+For schemas with i18n enabled:
+
+1. Open a document
+2. Click the locale selector
+3. Add new locales or switch between existing ones
+4. Each locale has independent draft/published states
+
+### Version History
+
+1. Open a document
+2. Click **History** tab
+3. View previous versions
+4. Click **Restore** to revert to a previous version
+
+## Media Library
+
+### Uploading Files
+
+1. Click **Media** in the sidebar
+2. Click **Upload** or drag files to the upload area
+3. Files are uploaded and available immediately
+
+### Using Media in Content
+
+1. In a content form, click the upload field
+2. Select an existing file or upload new
+3. The file reference is saved with the content
+
+### Organizing Media
+
+- Use folders to organize files
+- Add alt text for images
+- Tag files for easy searching
+
+## Settings
+
+Access system settings via **Settings** in the sidebar:
+
+1. Select a settings group
+2. Modify values as needed
+3. Click **Save**
+
+Settings are defined by schemas decorated with `@Setting()`.
+
+## User Account
+
+### Profile
+
+1. Click your avatar in the sidebar
+2. Select **Account**
+3. Update your name or other profile fields
+
+### Change Password
+
+1. Go to Account settings
+2. Click **Security** tab
+3. Enter current password
+4. Enter and confirm new password
+
+### Notifications
+
+1. Click the bell icon in the sidebar
+2. View recent notifications
+3. Mark as read or dismiss
+
+## Keyboard Shortcuts
+
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl/Cmd + S` | Save document |
+| `Ctrl/Cmd + Shift + P` | Publish document |
+| `Escape` | Close modal/dialog |
+
+## Customization
+
+### Custom Admin Path
+
+Set a custom path for admin files:
+
+```bash
+MAGNET_ADMIN_PATH=/custom/path/to/admin
+```
+
+### Embedding Admin
+
+The admin can be embedded in your application:
+
+```typescript
+import { AdminPanel } from '@magnet-cms/admin'
+
+function App() {
+  return (
+    <AdminPanel
+      apiUrl="http://localhost:3000"
+      basePath="/admin"
+    />
+  )
+}
+```
+
+## Development
+
+### Running Locally
+
+```bash
+# In packages/client/admin
+bun run dev
+```
+
+The admin dev server runs on port 3001 with hot reload.
+
+### Building
+
+```bash
+# Standard build
+bun run build
+
+# Standalone build with custom base path
+VITE_BASE_PATH=/custom-path bun run build:standalone
+```
+
+## Troubleshooting
+
+### Blank Page
+
+1. Check browser console for errors
+2. Verify the backend is running
+3. Check network tab for failed API calls
+
+### Login Issues
+
+1. Verify credentials
+2. Check if user exists: `GET /auth/status`
+3. Clear browser cookies/storage
+
+### Content Not Saving
+
+1. Check form validation errors
+2. Verify network requests in dev tools
+3. Check backend logs for errors

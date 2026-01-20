@@ -1,0 +1,293 @@
+---
+title: Content Module
+description: Manage content with draft/publish workflow and multi-locale support
+---
+
+The Content Module handles all content management operations in Magnet CMS, including CRUD operations, draft/publish workflow, versioning, and multi-locale support.
+
+## Overview
+
+The Content Module provides:
+
+- **CRUD Operations**: Create, read, update, and delete content
+- **Draft/Publish Workflow**: Manage content lifecycle with drafts and published versions
+- **Multi-Locale Support**: Create and manage content in multiple languages
+- **Version History**: Track changes and restore previous versions
+- **Automatic Validation**: Validate content on publish
+
+## API Endpoints
+
+All content endpoints are protected and require authentication.
+
+### List Documents
+
+```http
+GET /content/:schema
+```
+
+**Query Parameters:**
+- `locale` - Filter by locale (e.g., `en`, `pt-BR`)
+- `status` - Filter by status (`draft` or `published`)
+
+**Example:**
+```bash
+curl -X GET "http://localhost:3000/content/articles?locale=en&status=published" \
+  -H "Authorization: Bearer <token>"
+```
+
+### Get Document
+
+```http
+GET /content/:schema/:documentId
+```
+
+**Query Parameters:**
+- `locale` - Specific locale to retrieve
+- `status` - Specific status to retrieve
+
+### Create Document
+
+```http
+POST /content/:schema
+```
+
+**Body:**
+```json
+{
+  "title": "My Article",
+  "content": "Article content...",
+  "locale": "en"
+}
+```
+
+Creates a new document in draft status.
+
+### Update Document
+
+```http
+PUT /content/:schema/:documentId
+```
+
+**Body:**
+```json
+{
+  "title": "Updated Title",
+  "locale": "en"
+}
+```
+
+Updates the draft version. If no draft exists, creates one from the published version.
+
+### Delete Document
+
+```http
+DELETE /content/:schema/:documentId
+```
+
+Deletes all versions (draft and published) across all locales.
+
+### Publish Document
+
+```http
+POST /content/:schema/:documentId/publish
+```
+
+**Body:**
+```json
+{
+  "locale": "en"
+}
+```
+
+Publishes the draft version, making it publicly available.
+
+### Unpublish Document
+
+```http
+POST /content/:schema/:documentId/unpublish
+```
+
+**Body:**
+```json
+{
+  "locale": "en"
+}
+```
+
+Removes the published version while keeping the draft.
+
+### Add Locale
+
+```http
+POST /content/:schema/:documentId/locale
+```
+
+**Body:**
+```json
+{
+  "locale": "pt-BR",
+  "title": "Meu Artigo",
+  "content": "Conteúdo do artigo..."
+}
+```
+
+Adds a new locale version to an existing document.
+
+### Delete Locale
+
+```http
+DELETE /content/:schema/:documentId/locale/:locale
+```
+
+Removes a specific locale from the document.
+
+### Get Locale Statuses
+
+```http
+GET /content/:schema/:documentId/locales
+```
+
+Returns the draft/published status for each locale:
+
+```json
+{
+  "en": { "draft": true, "published": true },
+  "pt-BR": { "draft": true, "published": false }
+}
+```
+
+### Get Version History
+
+```http
+GET /content/:schema/:documentId/versions
+```
+
+**Query Parameters:**
+- `locale` - Filter versions by locale
+
+Returns version history for the document.
+
+### Restore Version
+
+```http
+POST /content/:schema/:documentId/restore
+```
+
+**Body:**
+```json
+{
+  "locale": "en",
+  "versionNumber": 3
+}
+```
+
+Restores a previous version as the current draft.
+
+## Using ContentService
+
+Inject the `ContentService` in your custom services or controllers:
+
+```typescript
+import { Injectable } from '@nestjs/common'
+import { ContentService } from '@magnet-cms/core'
+
+@Injectable()
+export class MyService {
+  constructor(private contentService: ContentService) {}
+
+  async getPublishedArticles() {
+    return this.contentService.list('Article', {
+      status: 'published',
+      locale: 'en'
+    })
+  }
+
+  async publishArticle(documentId: string) {
+    return this.contentService.publish('Article', documentId, {
+      locale: 'en'
+    })
+  }
+}
+```
+
+## Document Structure
+
+Every document has the following system fields:
+
+```typescript
+interface Document {
+  id: string           // Internal database ID
+  documentId: string   // User-facing document ID
+  locale: string       // Locale code (e.g., 'en', 'pt-BR')
+  status: 'draft' | 'published'
+  publishedAt: Date | null
+  createdAt: Date
+  updatedAt: Date
+  createdBy?: string   // User ID
+  updatedBy?: string   // User ID
+  // ... your schema fields
+}
+```
+
+## Draft/Publish Workflow
+
+1. **Create**: New documents are created as drafts
+2. **Edit**: Updates modify the draft version
+3. **Publish**: Draft is copied to published status
+4. **Continue Editing**: Further edits update the draft only
+5. **Republish**: Publish again to update the public version
+
+```
+┌─────────┐     ┌─────────┐     ┌───────────┐
+│ Create  │ ──▶ │  Draft  │ ──▶ │ Published │
+└─────────┘     └─────────┘     └───────────┘
+                    │                 │
+                    │    ┌────────────┘
+                    │    │
+                    ▼    ▼
+              ┌─────────────┐
+              │   Update    │
+              │  (Draft)    │
+              └─────────────┘
+```
+
+## Multi-Locale Content
+
+Documents support multiple locales. Each locale has independent draft and published versions:
+
+```typescript
+// Create English version
+await contentService.create('Article', {
+  title: 'Hello World',
+  locale: 'en'
+})
+
+// Add Portuguese version
+await contentService.addLocale('Article', documentId, 'pt-BR', {
+  title: 'Olá Mundo'
+})
+
+// Publish English only
+await contentService.publish('Article', documentId, { locale: 'en' })
+
+// Get locale statuses
+const statuses = await contentService.getLocaleStatuses('Article', documentId)
+// { en: { draft: true, published: true }, 'pt-BR': { draft: true, published: false } }
+```
+
+## Version History
+
+When publishing, a version snapshot is created:
+
+```typescript
+// Get all versions
+const versions = await contentService.getVersions('Article', documentId, 'en')
+
+// Restore a previous version
+await contentService.restoreVersion('Article', documentId, 'en', 3)
+```
+
+Version snapshots include:
+- Complete document data at time of publish
+- Timestamp
+- User who published (if available)

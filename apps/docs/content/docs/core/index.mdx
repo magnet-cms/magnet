@@ -1,0 +1,50 @@
+---
+title: Core
+description: Learn about Magnet's core module
+---
+
+# Core Module
+
+The `@magnet/core` package provides the main functionality for building a headless CMS with NestJS.
+
+## Overview
+
+The core module includes:
+
+- **MagnetModule** - The main module that bootstraps the CMS
+- **Content Module** - Manages content types and entries
+- **Auth Module** - Authentication and authorization
+- **Admin Module** - Admin API endpoints
+- **Database Module** - Database abstraction layer
+
+## Configuration
+
+```typescript
+import { MagnetModule } from '@magnet/core'
+
+@Module({
+  imports: [
+    MagnetModule.forRoot({
+      adapter: yourDatabaseAdapter,
+      auth: {
+        secret: process.env.JWT_SECRET,
+      },
+    }),
+  ],
+})
+export class AppModule {}
+```
+
+## Modules
+
+### Content Module
+
+Handles content type definitions and CRUD operations for content entries.
+
+### Auth Module
+
+Provides JWT-based authentication and role-based access control.
+
+### Admin Module
+
+Exposes REST API endpoints for the admin interface.

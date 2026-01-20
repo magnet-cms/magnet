@@ -1,0 +1,454 @@
+---
+title: Decorators Reference
+description: Complete reference for all decorators in @magnet-cms/common
+---
+
+This page provides detailed documentation for all decorators available in the `@magnet-cms/common` package.
+
+## Schema Decorators
+
+### @Schema()
+
+Marks a class as a Magnet CMS schema entity with versioning and i18n support.
+
+```typescript
+import { Schema } from '@magnet-cms/common'
+
+@Schema({ versioning: true, i18n: true })
+export class Article {
+  // properties
+}
+```
+
+**Parameters:**
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `versioning` | `boolean` | `true` | Enable version history tracking |
+| `i18n` | `boolean` | `true` | Enable multi-locale content support |
+
+### @Prop()
+
+Defines a schema property with database mapping and validation options.
+
+```typescript
+import { Prop } from '@magnet-cms/common'
+
+// Basic required field
+@Prop({ required: true })
+name: string
+
+// Unique field
+@Prop({ required: true, unique: true })
+email: string
+
+// Translatable field (i18n)
+@Prop({ required: true, intl: true })
+title: string
+
+// Array field with default
+@Prop({ type: [String], default: [] })
+tags: string[]
+
+// Reference to another schema
+@Prop({ type: String, ref: 'User' })
+authorId: string
+
+// Hidden field (excluded from API)
+@Prop({ hidden: true })
+internalId: string
+
+// Read-only field
+@Prop({ readonly: true })
+createdAt: Date
+```
+
+**Parameters:**
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `type` | `Type \| [Type]` | Property type (auto-detected if not specified) |
+| `required` | `boolean` | Whether the field is required |
+| `unique` | `boolean` | Enforce uniqueness constraint |
+| `default` | `any` | Default value for the field |
+| `nullable` | `boolean` | Allow null values |
+| `intl` | `boolean` | Mark as translatable for i18n |
+| `hidden` | `boolean` | Hide from API responses |
+| `readonly` | `boolean` | Prevent updates after creation |
+| `ref` | `string` | Reference to another schema name |
+| `description` | `string` | Field description for documentation |
+
+### @UI()
+
+Configures how a property is rendered in the admin UI.
+
+```typescript
+import { UI } from '@magnet-cms/common'
+
+// Basic text field with tab grouping
+@UI({ tab: 'General', type: 'text', row: true })
+name: string
+
+// Rich text editor
+@UI({ tab: 'Content', type: 'richText' })
+body: string
+
+// Date picker
+@UI({ tab: 'General', type: 'date' })
+publishedAt: Date
+
+// Select dropdown with options
+@UI({
+  tab: 'Settings',
+  type: 'select',
+  options: [
+    { key: 'draft', value: 'Draft' },
+    { key: 'published', value: 'Published' },
+    { key: 'archived', value: 'Archived' }
+  ]
+})
+status: string
+
+// File upload
+@UI({ tab: 'Media', type: 'upload' })
+featuredImage: string
+
+// Relationship field
+@UI({ tab: 'Relations', type: 'relationship' })
+categoryId: string
+
+// Side panel field
+@UI({ side: true, label: 'Metadata' })
+metadata: object
+
+// Collapsible section
+@UI({ tab: 'Advanced', collapsible: true })
+advancedSettings: object
+```
+
+**UI Types:**
+
+| Type | Description |
+|------|-------------|
+| `text` | Single-line text input |
+| `textarea` | Multi-line text input |
+| `email` | Email input with validation |
+| `phone` | Phone number input |
+| `richText` | Rich text editor (WYSIWYG) |
+| `number` | Numeric input |
+| `quantity` | Numeric input with stepper |
+| `date` | Date picker |
+| `switch` | Toggle switch (boolean) |
+| `checkbox` | Checkbox (boolean) |
+| `select` | Single-select dropdown |
+| `multiSelect` | Multi-select dropdown |
+| `combobox` | Searchable select |
+| `radio` | Radio button group |
+| `upload` | File upload |
+| `relationship` | Reference to another entity |
+| `json` | JSON editor |
+| `code` | Code editor |
+| `table` | Table/array editor |
+| `group` | Field grouping |
+| `blocks` | Block editor |
+
+**Parameters:**
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `tab` | `string` | Tab name for field grouping |
+| `side` | `boolean` | Place in sidebar panel |
+| `type` | `UITypes` | UI component type |
+| `label` | `string` | Custom field label |
+| `description` | `string` | Help text below field |
+| `row` | `boolean` | Display in row layout |
+| `collapsible` | `boolean` | Show as collapsible section |
+| `options` | `UISelectItem[]` | Options for select fields |
+
+### @Validators()
+
+Applies validation decorators from `class-validator`.
+
+```typescript
+import { Validators } from '@magnet-cms/common'
+import {
+  IsString, IsEmail, IsNotEmpty, Length,
+  IsNumber, Min, Max, IsOptional, IsBoolean,
+  IsDate, IsUrl, IsIn
+} from 'class-validator'
+import { Type } from 'class-transformer'
+
+// String validation
+@Validators(IsString(), Length(2, 100), IsNotEmpty())
+name: string
+
+// Email validation
+@Validators(IsEmail(), IsNotEmpty())
+email: string
+
+// Number with range
+@Validators(IsNumber(), Min(0), Max(100))
+age: number
+
+// Optional field
+@Validators(IsString(), IsOptional())
+bio?: string
+
+// Boolean
+@Validators(IsBoolean())
+active: boolean
+
+// Date (requires @Type decorator)
+@Type(() => Date)
+@Validators(IsDate(), IsNotEmpty())
+birthDate: Date
+
+// URL validation
+@Validators(IsUrl(), IsOptional())
+website?: string
+
+// Enum validation
+@Validators(IsString(), IsIn(['draft', 'published', 'archived']))
+status: string
+```
+
+### @Setting()
+
+Marks a class as a system settings entity (distinct from content schemas).
+
+```typescript
+import { Setting, Prop, UI, Validators } from '@magnet-cms/common'
+import { IsString, IsNotEmpty, IsUrl } from 'class-validator'
+
+@Setting()
+export class SiteSettings {
+  @Prop({ required: true })
+  @Validators(IsString(), IsNotEmpty())
+  @UI({ tab: 'General' })
+  siteName: string
+
+  @Prop({ required: true })
+  @UI({ tab: 'General', type: 'textarea' })
+  siteDescription: string
+
+  @Prop()
+  @Validators(IsUrl(), IsOptional())
+  @UI({ tab: 'General', type: 'text' })
+  siteUrl?: string
+}
+```
+
+### @Version()
+
+Configures versioning behavior for a schema.
+
+```typescript
+import { Version, Schema } from '@magnet-cms/common'
+
+// Basic versioning with max versions
+@Schema()
+@Version({ max: 20 })
+export class Article {
+  // ...
+}
+
+// With draft support
+@Schema()
+@Version({
+  max: 50,
+  drafts: true
+})
+export class Page {
+  // ...
+}
+
+// With approval workflow
+@Schema()
+@Version({
+  max: 30,
+  drafts: {
+    autoPublish: false,
+    requireApproval: true
+  }
+})
+export class LegalDocument {
+  // ...
+}
+```
+
+**Parameters:**
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `max` | `number` | Maximum versions to keep per document |
+| `drafts` | `boolean \| DraftConfig` | Enable draft mode |
+| `drafts.autoPublish` | `boolean` | Auto-publish drafts |
+| `drafts.requireApproval` | `boolean` | Require approval before publishing |
+
+## Injection Decorators
+
+### @InjectModel()
+
+Injects a Model instance for a schema into NestJS services.
+
+```typescript
+import { Injectable } from '@nestjs/common'
+import { InjectModel, Model } from '@magnet-cms/common'
+import { Cat } from './cat.schema'
+
+@Injectable()
+export class CatsService {
+  constructor(
+    @InjectModel(Cat)
+    private model: Model<Cat>,
+  ) {}
+
+  async findAll() {
+    return this.model.find()
+  }
+
+  async findById(id: string) {
+    return this.model.findById(id)
+  }
+
+  async create(data: Partial<Cat>) {
+    return this.model.create(data)
+  }
+
+  async update(id: string, data: Partial<Cat>) {
+    return this.model.update({ id }, data)
+  }
+
+  async delete(id: string) {
+    return this.model.delete({ id })
+  }
+}
+```
+
+## Resolver Decorators
+
+### @Resolver()
+
+Marks a class as a resolver for a specific schema (used for GraphQL integration).
+
+```typescript
+import { Resolver } from '@magnet-cms/common'
+import { Cat } from './cat.schema'
+
+// Function-based (lazy loading)
+@Resolver(() => Cat)
+export class CatResolver {
+  // resolver methods
+}
+
+// Object-based
+@Resolver({ schema: Cat })
+export class CatResolver {
+  // resolver methods
+}
+```
+
+### @Resolve()
+
+Decorates resolver methods to define their return type.
+
+```typescript
+import { Resolver, Resolve } from '@magnet-cms/common'
+import { Cat } from './cat.schema'
+
+@Resolver(() => Cat)
+export class CatResolver {
+  // Single entity return
+  @Resolve(() => Cat)
+  getCat(id: string): Promise<Cat> {
+    // implementation
+  }
+
+  // Array return
+  @Resolve(() => [Cat])
+  getAllCats(): Promise<Cat[]> {
+    // implementation
+  }
+
+  // With description
+  @Resolve({
+    type: Cat,
+    description: 'Find a cat by ID'
+  })
+  findCat(id: string): Promise<Cat> {
+    // implementation
+  }
+}
+```
+
+## Complete Example
+
+Here's a complete example combining all decorators:
+
+```typescript
+import { Schema, Prop, UI, Validators, Version } from '@magnet-cms/common'
+import { Type } from 'class-transformer'
+import {
+  IsString, IsNotEmpty, IsEmail, IsDate,
+  IsNumber, Min, Max, IsBoolean, IsOptional, Length
+} from 'class-validator'
+
+@Schema({ versioning: true, i18n: true })
+@Version({ max: 30, drafts: true })
+export class BlogPost {
+  // Unique identifier
+  @Prop({ unique: true, required: true })
+  @Validators(IsString(), Length(5, 50), IsNotEmpty())
+  @UI({ tab: 'General', row: true })
+  slug: string
+
+  // Translatable title
+  @Prop({ required: true, intl: true })
+  @Validators(IsString(), Length(5, 200), IsNotEmpty())
+  @UI({ tab: 'General', row: true })
+  title: string
+
+  // Rich text content
+  @Prop({ required: true, intl: true })
+  @Validators(IsString())
+  @UI({ tab: 'Content', type: 'richText' })
+  body: string
+
+  // Featured image
+  @Prop({ type: String })
+  @Validators(IsString(), IsOptional())
+  @UI({ tab: 'Media', type: 'upload' })
+  featuredImage?: string
+
+  // Author relationship
+  @Prop({ type: String, required: true })
+  @Validators(IsString(), IsNotEmpty())
+  @UI({ tab: 'Relations', type: 'relationship' })
+  authorId: string
+
+  // Tags array
+  @Prop({ type: [String], default: [] })
+  @Validators(IsOptional())
+  @UI({ tab: 'General', type: 'multiSelect' })
+  tags?: string[]
+
+  // Publish date
+  @Type(() => Date)
+  @Prop({ required: true })
+  @Validators(IsDate(), IsNotEmpty())
+  @UI({ tab: 'General', type: 'date' })
+  publishedAt: Date
+
+  // Reading time
+  @Prop({ required: true })
+  @Validators(IsNumber(), Min(1), Max(60))
+  @UI({ tab: 'General', type: 'number', description: 'Estimated reading time in minutes' })
+  readingTime: number
+
+  // Featured toggle
+  @Prop({ required: true, default: false })
+  @Validators(IsBoolean())
+  @UI({ side: true, type: 'switch', description: 'Show on homepage' })
+  featured: boolean
+}
+```

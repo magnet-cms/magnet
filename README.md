@@ -60,7 +60,7 @@ To contribute to Magnet CMS:
 
 ```bash
 # Clone the repository
-git clone https://github.com/magnetcms/magnet.git
+git clone https://github.com/magnet-cms/magnet.git
 cd magnet
 
 # Install dependencies

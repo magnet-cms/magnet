@@ -1,0 +1,188 @@
+---
+title: Client Packages
+description: Admin UI and UI component library for Magnet CMS
+---
+
+Magnet CMS provides two client packages for building the admin interface:
+
+- **@magnet-cms/admin**: The complete admin UI application
+- **@magnet-cms/ui**: Shared UI component library based on shadcn/ui
+
+## Admin UI
+
+The admin UI is a React application that provides:
+
+- **Content Management**: Create, edit, and manage content across all schemas
+- **Media Library**: Upload and manage files and images
+- **Settings Management**: Configure system settings
+- **User Account**: Profile and password management
+- **Plugin Integration**: Extensible with plugin routes and components
+
+### Running the Admin UI
+
+The admin UI is automatically served by `@magnet-cms/core`:
+
+- **Production**: Static files served from `/admin`
+- **Development**: Proxied to Vite dev server on port 3001
+
+```bash
+# Development - start backend
+cd your-project
+bun run dev
+
+# Development - start admin UI (in separate terminal)
+cd packages/client/admin  # or in your project's admin directory
+bun run dev
+```
+
+Access the admin UI at `http://localhost:3000/admin`
+
+### Features
+
+| Feature | Description |
+|---------|-------------|
+| Dashboard | Overview and quick actions |
+| Content Manager | CRUD for all content schemas |
+| Media Library | File upload and management |
+| Settings | System configuration |
+| Account | User profile and security |
+
+## UI Component Library
+
+The `@magnet-cms/ui` package provides reusable UI components based on shadcn/ui:
+
+### Installation
+
+```bash
+bun add @magnet-cms/ui
+```
+
+### Available Components
+
+The UI library includes these component categories:
+
+**Layout**
+- Sidebar, SidebarMenu, SidebarMenuItem
+- Card, CardHeader, CardContent, CardFooter
+
+**Forms**
+- Input, Textarea, Select, Checkbox, Switch
+- Form, FormField, FormItem, FormLabel, FormMessage
+- DatePicker, TimePicker
+
+**Feedback**
+- Alert, AlertDialog
+- Toast, Toaster
+- Progress, Skeleton
+
+**Navigation**
+- Tabs, TabsList, TabsTrigger, TabsContent
+- Breadcrumb
+- Pagination
+
+**Data Display**
+- Table, TableHeader, TableBody, TableRow, TableCell
+- Badge
+- Avatar
+
+**Overlays**
+- Dialog, DialogTrigger, DialogContent
+- DropdownMenu, DropdownMenuItem
+- ContextMenu
+- Popover, Tooltip
+
+### Usage Example
+
+```typescript
+import {
+  Button,
+  Card,
+  CardHeader,
+  CardContent,
+  Input,
+  Label,
+} from '@magnet-cms/ui/components'
+
+function MyComponent() {
+  return (
+    <Card>
+      <CardHeader>
+        <h2>Create Item</h2>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="name">Name</Label>
+            <Input id="name" placeholder="Enter name" />
+          </div>
+          <Button>Submit</Button>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+```
+
+## Styling
+
+Both packages use Tailwind CSS v4 for styling:
+
+```typescript
+// tailwind.config.ts
+import type { Config } from 'tailwindcss'
+
+const config: Config = {
+  darkMode: 'class',
+  content: [
+    './src/**/*.{ts,tsx}',
+    './node_modules/@magnet-cms/ui/dist/**/*.js',
+  ],
+}
+
+export default config
+```
+
+## Customization
+
+### Theming
+
+The UI supports light and dark modes via CSS variables:
+
+```css
+:root {
+  --background: 0 0% 100%;
+  --foreground: 240 10% 3.9%;
+  --primary: 240 5.9% 10%;
+  --primary-foreground: 0 0% 98%;
+  /* ... more variables */
+}
+
+.dark {
+  --background: 240 10% 3.9%;
+  --foreground: 0 0% 98%;
+  /* ... more variables */
+}
+```
+
+### Custom Components
+
+Extend or override components:
+
+```typescript
+import { Button, type ButtonProps } from '@magnet-cms/ui/components'
+import { cn } from '@magnet-cms/ui/lib/utils'
+
+function MyButton({ className, ...props }: ButtonProps) {
+  return (
+    <Button
+      className={cn('my-custom-styles', className)}
+      {...props}
+    />
+  )
+}
+```
+
+## Next Steps
+
+- [Admin UI Documentation](/docs/client/admin) - Detailed admin features
+- [UI Components](/docs/client/ui) - Component reference
