@@ -6,8 +6,12 @@ export const SCHEMA_OPTIONS_METADATA_KEY = 'magnet:schema:options'
 export const BASE_SCHEMA_METADATA_KEY = 'magnet:schema:base'
 export const PROP_METADATA_KEY = 'magnet:schema:prop'
 export const UI_METADATA_KEY = 'magnet:schema:ui'
+export const FIELD_METADATA_KEY = 'magnet:schema:field'
 
 export const SETTING_METADATA_KEY = 'magnet:setting'
+export const SETTINGS_OPTIONS_METADATA_KEY = 'magnet:settings:options'
+export const SETTING_FIELD_METADATA_KEY = 'magnet:settings:field'
+export const EXTEND_USER_METADATA_KEY = 'magnet:extend:user'
 
 export const INJECT_MODEL = 'magnet:inject:model'
 

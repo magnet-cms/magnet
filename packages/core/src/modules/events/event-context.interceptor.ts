@@ -1,6 +1,5 @@
 import { AsyncLocalStorage } from 'node:async_hooks'
 import { randomUUID } from 'node:crypto'
-import type { BaseEventPayload } from '@magnet/common'
 import {
 	type CallHandler,
 	type ExecutionContext,
@@ -12,8 +11,15 @@ import { Observable } from 'rxjs'
 /**
  * Event context containing request-scoped information
  */
-export interface EventContext extends Partial<BaseEventPayload> {
+export interface EventContext {
+	/** Request ID for tracing */
 	requestId: string
+	/** User who triggered the event (if applicable) */
+	userId?: string
+	/** IP address of the request (if applicable) */
+	ipAddress?: string
+	/** Timestamp when context was created */
+	timestamp?: Date
 }
 
 /**

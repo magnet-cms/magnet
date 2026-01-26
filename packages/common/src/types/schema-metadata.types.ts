@@ -29,7 +29,7 @@ export type ControllerMetadata = {
 export type SchemaPropertyValidation = {
 	type: string
 	name: string
-	constraints: number[]
+	constraints?: unknown[]
 }
 
 export type SchemaProperty = {
@@ -39,7 +39,7 @@ export type SchemaProperty = {
 	unique: boolean
 	required: boolean
 	validations: SchemaPropertyValidation[]
-	ui: UIDecoratorOptions
+	ui?: UIDecoratorOptions
 	ref?: string
 }
 

@@ -1,4 +1,4 @@
 {
   "title": "Common",
-  "pages": ["index", "decorators"]
+  "pages": ["index", "decorators", "field-decorators"]
 }

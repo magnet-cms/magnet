@@ -2,7 +2,7 @@ import {
 	EVENT_HANDLER_METADATA,
 	type EventHandlerMetadata,
 	type EventName,
-} from '@magnet/common'
+} from '@magnet-cms/common'
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
 import { DiscoveryService, MetadataScanner, Reflector } from '@nestjs/core'
 import { InstanceWrapper } from '@nestjs/core/injector/instance-wrapper'

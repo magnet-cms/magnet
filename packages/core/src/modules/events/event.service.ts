@@ -7,7 +7,7 @@ import type {
 	EventPayload,
 	RegisteredHandler,
 	RequiredEventHandlerOptions,
-} from '@magnet/common'
+} from '@magnet-cms/common'
 import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common'
 
 /**
@@ -100,10 +100,12 @@ export class EventService implements OnModuleDestroy {
 
 		const index = handlers.findIndex((h) => h.handler === handler)
 		if (index !== -1) {
-			const removed = handlers.splice(index, 1)[0]
-			this.logger.debug(
-				`Unregistered handler '${removed.options.name}' from event '${event}'`,
-			)
+			const [removed] = handlers.splice(index, 1)
+			if (removed) {
+				this.logger.debug(
+					`Unregistered handler '${removed.options.name}' from event '${event}'`,
+				)
+			}
 		}
 	}
 

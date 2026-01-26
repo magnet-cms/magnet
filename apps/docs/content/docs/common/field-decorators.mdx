@@ -1,0 +1,452 @@
+---
+title: Field Decorators
+description: Unified field decorators that combine @Prop and @UI into semantic, type-safe decorators
+---
+
+The Field decorator system provides a unified, semantic approach to defining schema fields. Each `@Field.*` decorator combines the functionality of `@Prop` and `@UI` into a single decorator, reducing verbosity while maintaining full type safety.
+
+## Overview
+
+### Before (Verbose Pattern)
+
+```typescript
+@Schema()
+export class Cat {
+  @Prop({ required: true, unique: true })
+  @Validators(IsString(), Length(1, 200), IsNotEmpty())
+  @UI({ tab: 'General', type: 'text', description: 'Cat name' })
+  name: string
+}
+```
+
+### After (Unified Pattern)
+
+```typescript
+import { Schema, Field } from '@magnet-cms/common'
+import { IsString, Length, IsNotEmpty } from 'class-validator'
+
+@Schema()
+export class Cat {
+  @Field.Text({ required: true, unique: true, tab: 'General' })
+  @Field.Validators(IsString(), Length(1, 200), IsNotEmpty())
+  name: string
+}
+```
+
+## Basic Usage
+
+```typescript
+import { Schema, Field } from '@magnet-cms/common'
+import { IsString, IsEmail, IsOptional } from 'class-validator'
+
+@Schema()
+export class Post {
+  @Field.Text({ required: true, tab: 'General' })
+  @Field.Validators(IsString())
+  title: string
+
+  @Field.Slug({ from: 'title', unique: true })
+  slug: string
+
+  @Field.RichText({ toolbar: 'full', tab: 'Content' })
+  @Field.Validators(IsOptional())
+  content?: string
+
+  @Field.Email({ required: true })
+  @Field.Validators(IsEmail())
+  authorEmail: string
+
+  @Field.Relationship({ ref: 'users', multiple: false, side: true })
+  author: string
+
+  @Field.Boolean({ default: false, side: true })
+  isPublished: boolean
+}
+```
+
+## Field Types
+
+### Primitives
+
+#### @Field.Text
+
+Single-line text input.
+
+```typescript
+@Field.Text({ required: true, maxLength: 200 })
+title: string
+
+@Field.Text({ transform: 'lowercase', tab: 'SEO' })
+slug: string
+```
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `minLength` | `number` | Minimum character length |
+| `maxLength` | `number` | Maximum character length |
+| `pattern` | `string` | Regex pattern for validation |
+| `transform` | `'none' \| 'lowercase' \| 'uppercase' \| 'trim'` | Text transformation |
+
+#### @Field.Number
+
+Numeric input.
+
+```typescript
+@Field.Number({ min: 0, max: 100, integer: true })
+quantity: number
+
+@Field.Number({ step: 0.01 })
+price: number
+```
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `min` | `number` | Minimum value |
+| `max` | `number` | Maximum value |
+| `integer` | `boolean` | Restrict to whole numbers |
+| `step` | `number` | Increment step |
+
+#### @Field.Boolean
+
+True/false toggle.
+
+```typescript
+@Field.Boolean({ default: false, style: 'switch' })
+isActive: boolean
+
+@Field.Boolean({ style: 'checkbox' })
+acceptTerms: boolean
+```
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `default` | `boolean` | Default value |
+| `style` | `'switch' \| 'checkbox'` | UI presentation style |
+
+#### @Field.Date / @Field.DateTime
+
+Date and datetime pickers.
+
+```typescript
+@Field.Date({ min: '2024-01-01' })
+publishDate: Date
+
+@Field.DateTime({ timezone: 'UTC' })
+scheduledAt: Date
+```
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `min` | `Date \| string` | Minimum date |
+| `max` | `Date \| string` | Maximum date |
+| `default` | `Date \| string \| 'now'` | Default value |
+| `timezone` | `string` | Timezone (DateTime only) |
+
+### Rich Content
+
+#### @Field.RichText
+
+WYSIWYG editor.
+
+```typescript
+@Field.RichText({ toolbar: 'full' })
+content: string
+
+@Field.RichText({ toolbar: 'minimal', maxLength: 5000 })
+excerpt: string
+```
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `toolbar` | `'minimal' \| 'standard' \| 'full'` | Toolbar configuration |
+| `maxLength` | `number` | Maximum content length |
+
+#### @Field.Markdown
+
+Markdown editor with preview.
+
+```typescript
+@Field.Markdown({ preview: true })
+description: string
+```
+
+#### @Field.Code
+
+Code editor with syntax highlighting.
+
+```typescript
+@Field.Code({ language: 'typescript' })
+snippet: string
+```
+
+#### @Field.JSON
+
+JSON editor.
+
+```typescript
+@Field.JSON()
+metadata: Record<string, unknown>
+```
+
+#### @Field.Textarea
+
+Multi-line text input.
+
+```typescript
+@Field.Textarea({ rows: 5 })
+summary: string
+```
+
+### Selection
+
+#### @Field.Select
+
+Dropdown selection.
+
+```typescript
+@Field.Select({
+  options: [
+    { label: 'Draft', value: 'draft' },
+    { label: 'Published', value: 'published' }
+  ],
+  default: 'draft'
+})
+status: string
+
+// Simple string options
+@Field.Select({
+  options: ['small', 'medium', 'large'],
+  default: 'medium'
+})
+size: string
+```
+
+#### @Field.Enum
+
+Dropdown from TypeScript enum.
+
+```typescript
+enum Status {
+  Draft = 'draft',
+  Published = 'published',
+  Archived = 'archived'
+}
+
+@Field.Enum({ enum: Status, default: Status.Draft })
+status: Status
+```
+
+#### @Field.Tags
+
+Multi-value tag input.
+
+```typescript
+@Field.Tags({ suggestions: ['tech', 'news', 'tutorial'], maxTags: 5 })
+tags: string[]
+```
+
+### Media
+
+#### @Field.Image
+
+Single image upload.
+
+```typescript
+@Field.Image({ folder: 'covers', formats: ['jpg', 'png', 'webp'] })
+coverImage: string
+```
+
+#### @Field.File
+
+File upload.
+
+```typescript
+@Field.File({ folder: 'documents', accept: ['application/pdf'] })
+attachment: string
+```
+
+#### @Field.Gallery
+
+Multiple image upload.
+
+```typescript
+@Field.Gallery({ maxItems: 10 })
+images: string[]
+```
+
+### Special Fields
+
+#### @Field.Slug
+
+Auto-generated URL-friendly string.
+
+```typescript
+@Field.Slug({ from: 'title', unique: true })
+slug: string
+```
+
+#### @Field.Email
+
+Email input with validation pattern.
+
+```typescript
+@Field.Email({ required: true })
+@Field.Validators(IsEmail())
+email: string
+```
+
+#### @Field.URL
+
+URL input.
+
+```typescript
+@Field.URL({ protocols: ['https'] })
+website: string
+```
+
+#### @Field.Phone
+
+Phone number input.
+
+```typescript
+@Field.Phone({ defaultCountry: 'US' })
+phone: string
+```
+
+#### @Field.Color
+
+Color picker.
+
+```typescript
+@Field.Color({ format: 'hex', presets: ['#ff0000', '#00ff00', '#0000ff'] })
+brandColor: string
+```
+
+### Composition
+
+#### @Field.Relationship
+
+Reference to another schema.
+
+```typescript
+// Single reference
+@Field.Relationship({ ref: 'users', multiple: false })
+author: string
+
+// Multiple references
+@Field.Relationship({ ref: 'categories', multiple: true, displayFields: ['name'] })
+categories: string[]
+```
+
+#### @Field.Array
+
+Array of items.
+
+```typescript
+@Field.Array({ of: { type: 'text' }, maxItems: 10 })
+items: string[]
+```
+
+#### @Field.Blocks
+
+Flexible content blocks.
+
+```typescript
+@Field.Blocks({ types: ['paragraph', 'image', 'quote'] })
+content: Block[]
+```
+
+## Common Options
+
+All field decorators accept these common options:
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `required` | `boolean` | Field is required |
+| `unique` | `boolean` | Field must be unique |
+| `default` | `unknown` | Default value |
+| `tab` | `string` | Admin UI tab placement |
+| `group` | `string` | Admin UI group within tab |
+| `label` | `string` | Field label in admin UI |
+| `description` | `string` | Help text |
+| `placeholder` | `string` | Placeholder text |
+| `hidden` | `boolean` | Hide from admin UI |
+| `readonly` | `boolean` | Make read-only |
+| `order` | `number` | Display order |
+| `side` | `boolean` | Show in sidebar |
+
+## Validation
+
+Validation is explicit using `@Field.Validators()` with class-validator decorators:
+
+```typescript
+import { IsString, Length, IsNotEmpty, IsEmail, IsUrl, Min, Max } from 'class-validator'
+
+@Schema()
+export class User {
+  @Field.Text({ required: true })
+  @Field.Validators(IsString(), Length(1, 50), IsNotEmpty())
+  firstName: string
+
+  @Field.Email({ required: true })
+  @Field.Validators(IsEmail())
+  email: string
+
+  @Field.URL()
+  @Field.Validators(IsUrl())
+  website?: string
+
+  @Field.Number({ min: 0, max: 120 })
+  @Field.Validators(Min(0), Max(120))
+  age?: number
+}
+```
+
+## Backwards Compatibility
+
+The Field system is fully backwards compatible:
+
+- Existing `@Prop` decorators continue to work
+- Existing `@UI` decorators continue to work
+- You can mix legacy and new decorators in the same schema
+- The metadata extractor supports both formats
+
+## Migration Guide
+
+### Step 1: Import Field
+
+```typescript
+// Before
+import { Prop, UI, Validators } from '@magnet-cms/common'
+
+// After
+import { Field } from '@magnet-cms/common'
+```
+
+### Step 2: Replace Decorators
+
+```typescript
+// Before
+@Prop({ required: true })
+@Validators(IsString())
+@UI({ tab: 'General', type: 'text' })
+title: string
+
+// After
+@Field.Text({ required: true, tab: 'General' })
+@Field.Validators(IsString())
+title: string
+```
+
+### Step 3: Use Semantic Types
+
+```typescript
+// Before (generic)
+@Prop({ required: true })
+@UI({ type: 'email' })
+email: string
+
+// After (semantic)
+@Field.Email({ required: true })
+email: string
+```
