@@ -17,7 +17,7 @@ import { Check, Copy, Globe } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { ContentHeader } from '~/components/ContentHeader'
-import { useAdapter } from '~/core/provider/MagnetProvider'
+import { useAdapter, useMagnetConfig } from '~/core/provider/MagnetProvider'
 import { useContentManager } from '~/hooks/useContentManager'
 
 interface LocaleOption {
@@ -28,6 +28,7 @@ interface LocaleOption {
 const ContentManagerViewerAPI = () => {
 	const { id, schema: _schemaName } = useParams()
 	const adapter = useAdapter()
+	const config = useMagnetConfig()
 	const [activeEndpoint, setActiveEndpoint] = useState('get-all')
 	const [selectedLocale, setSelectedLocale] = useState<string>('')
 	const [copied, setCopied] = useState<Record<string, boolean>>({})
@@ -63,7 +64,7 @@ const ContentManagerViewerAPI = () => {
 	const properties =
 		'properties' in schemaMetadata ? schemaMetadata.properties : []
 
-	const apiBaseUrl = 'http://localhost:3000'
+	const apiBaseUrl = config.apiBaseUrl || 'http://localhost:3000'
 
 	const getMethodColor = (method: string) => {
 		switch (method) {

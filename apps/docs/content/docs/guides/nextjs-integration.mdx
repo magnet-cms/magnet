@@ -1,0 +1,264 @@
+---
+title: Next.js Integration
+description: Learn how to embed the Magnet admin UI in your Next.js application
+---
+
+import { Callout } from 'fumadocs-ui/components/callout'
+
+# Next.js Integration
+
+The Magnet admin UI can be embedded directly into your Next.js application using the `MagnetAdmin` component. This guide will show you how to set up the admin panel in both App Router and Pages Router.
+
+## Installation
+
+First, install the admin package:
+
+```bash
+bun add @magnet-cms/admin
+```
+
+## App Router Integration
+
+### 1. Create an Admin Route
+
+Create a catch-all route to handle all admin pages:
+
+```tsx title="app/admin/[[...slug]]/page.tsx"
+'use client'
+
+import { MagnetAdmin, createCookieStorage } from '@magnet-cms/admin'
+import '@magnet-cms/admin/styles'
+
+export default function AdminPage() {
+  return (
+    <MagnetAdmin
+      apiBaseUrl={process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}
+      basePath="/admin"
+      router="memory"
+      tokenStorage={createCookieStorage({
+        get: (name) => {
+          const match = document.cookie.match(`${name}=([^;]*)`)
+          return match?.[1] || null
+        },
+        set: (name, value, options) => {
+          const maxAge = options?.maxAge || 86400
+          document.cookie = `${name}=${value}; path=/; max-age=${maxAge}`
+        },
+        delete: (name) => {
+          document.cookie = `${name}=; path=/; max-age=0`
+        },
+      })}
+    />
+  )
+}
+```
+
+### 2. Add Environment Variables
+
+Create or update your `.env.local` file:
+
+```bash title=".env.local"
+NEXT_PUBLIC_API_URL=http://localhost:3000
+```
+
+### 3. That's It!
+
+Navigate to `/admin` in your Next.js app to access the admin panel.
+
+## Pages Router Integration
+
+### 1. Create an Admin Page
+
+Create a catch-all page to handle all admin routes:
+
+```tsx title="pages/admin/[[...slug]].tsx"
+import { MagnetAdmin, createCookieStorage } from '@magnet-cms/admin'
+import '@magnet-cms/admin/styles'
+
+export default function AdminPage() {
+  return (
+    <MagnetAdmin
+      apiBaseUrl={process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}
+      basePath="/admin"
+      router="memory"
+      tokenStorage={createCookieStorage({
+        get: (name) => {
+          const match = document.cookie.match(`${name}=([^;]*)`)
+          return match?.[1] || null
+        },
+        set: (name, value, options) => {
+          const maxAge = options?.maxAge || 86400
+          document.cookie = `${name}=${value}; path=/; max-age=${maxAge}`
+        },
+        delete: (name) => {
+          document.cookie = `${name}=; path=/; max-age=0`
+        },
+      })}
+    />
+  )
+}
+```
+
+### 2. Add Environment Variables
+
+Same as App Router - add your API URL to `.env.local`:
+
+```bash title=".env.local"
+NEXT_PUBLIC_API_URL=http://localhost:3000
+```
+
+## Configuration Options
+
+### Router Mode
+
+The admin UI supports two router modes:
+
+- **`"memory"`** (recommended for embedding): Uses memory-based routing that doesn't affect the browser URL
+- **`"browser"`**: Uses browser history API (use this only for standalone deployment)
+
+```tsx
+<MagnetAdmin
+  router="memory" // or "browser"
+  // ... other props
+/>
+```
+
+### Token Storage
+
+The admin UI provides three token storage options:
+
+#### Cookie Storage (Recommended for SSR)
+
+Best for Next.js applications with server-side rendering:
+
+```tsx
+import { createCookieStorage } from '@magnet-cms/admin'
+
+<MagnetAdmin
+  tokenStorage={createCookieStorage({
+    get: (name) => {
+      const match = document.cookie.match(`${name}=([^;]*)`)
+      return match?.[1] || null
+    },
+    set: (name, value, options) => {
+      const maxAge = options?.maxAge || 86400
+      document.cookie = `${name}=${value}; path=/; max-age=${maxAge}`
+    },
+    delete: (name) => {
+      document.cookie = `${name}=; path=/; max-age=0`
+    },
+  })}
+/>
+```
+
+#### Local Storage
+
+Simple storage using browser localStorage:
+
+```tsx
+import { createLocalStorage } from '@magnet-cms/admin'
+
+<MagnetAdmin tokenStorage={createLocalStorage()} />
+```
+
+#### Memory Storage
+
+Temporary storage that doesn't persist across page reloads:
+
+```tsx
+import { createMemoryStorage } from '@magnet-cms/admin'
+
+<MagnetAdmin tokenStorage={createMemoryStorage()} />
+```
+
+## Advanced Configuration
+
+### Custom Base Path
+
+You can customize the base path where the admin is mounted:
+
+```tsx
+<MagnetAdmin
+  basePath="/dashboard"
+  apiBaseUrl={process.env.NEXT_PUBLIC_API_URL}
+/>
+```
+
+Then access it at `/dashboard` instead of `/admin`.
+
+### Error Handling
+
+Add custom error handlers:
+
+```tsx
+<MagnetAdmin
+  apiBaseUrl={process.env.NEXT_PUBLIC_API_URL}
+  onUnauthorized={() => {
+    // Handle unauthorized access
+    console.log('User is not authorized')
+  }}
+  onError={(error) => {
+    // Handle API errors
+    console.error('API Error:', error)
+  }}
+/>
+```
+
+## Standalone vs Embedded
+
+You can choose between two deployment approaches:
+
+### Standalone (Served by NestJS)
+
+Enable admin serving in your Magnet backend:
+
+```typescript title="apps/api/src/main.ts"
+import { MagnetModule } from '@magnet-cms/core'
+
+MagnetModule.forRoot({
+  db: { uri: process.env.DB_URI },
+  jwt: { secret: process.env.JWT_SECRET },
+  admin: true, // Enable admin at /admin
+})
+```
+
+### Embedded (In Next.js)
+
+Use the component approach shown in this guide. This gives you more control over:
+- Authentication flow
+- Layout and styling
+- Integration with your existing app
+- Custom routing logic
+
+<Callout type="info">
+Both approaches can work together! You can serve the admin from your backend for quick access, while also embedding it in your Next.js app for a customized experience.
+</Callout>
+
+## Troubleshooting
+
+### Admin UI Not Loading
+
+Make sure:
+1. The API URL is correct and accessible
+2. CORS is configured correctly on your backend
+3. You've imported the styles: `import '@magnet-cms/admin/styles'`
+
+### Authentication Issues
+
+If users are being logged out:
+1. Check that token storage is configured correctly
+2. Verify JWT secret matches between frontend and backend
+3. Ensure cookies are allowed in your browser
+
+### Routing Conflicts
+
+If admin routes conflict with your app routes:
+1. Use `router="memory"` mode (recommended)
+2. Or change the `basePath` to something unique
+3. Ensure catch-all route pattern is correct: `[[...slug]]`
+
+## Next Steps
+
+- [Configure Authentication](/docs/core/auth)
+- [Create Custom Schemas](/docs/common/decorators)
+- [Build Plugins](/docs/plugins/overview)

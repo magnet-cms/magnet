@@ -18,4 +18,5 @@ export const initOptions = (
 	},
 	plugins: options?.plugins || [],
 	storage: options?.storage,
+	admin: options?.admin,
 })

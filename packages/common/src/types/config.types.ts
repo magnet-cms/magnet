@@ -22,6 +22,15 @@ export interface PlaygroundOptions {
 	schemasPath?: string
 }
 
+export interface AdminConfig {
+	/** Enable static admin serving (default: false) */
+	enabled?: boolean
+	/** Path to serve admin UI (default: '/admin') */
+	path?: string
+	/** Custom path to admin dist folder */
+	distPath?: string
+}
+
 export class MagnetModuleOptions {
 	db: DBConfig
 	jwt: {
@@ -38,6 +47,19 @@ export class MagnetModuleOptions {
 	 * Plugins to load with the Magnet module
 	 */
 	plugins?: PluginConfig[]
+	/**
+	 * Admin panel configuration
+	 * @example
+	 * // Enable with defaults
+	 * admin: true
+	 *
+	 * // Custom path
+	 * admin: { enabled: true, path: '/dashboard' }
+	 *
+	 * // Disable (for API-only mode)
+	 * admin: false
+	 */
+	admin?: boolean | AdminConfig
 
 	constructor({
 		db,
@@ -47,6 +69,7 @@ export class MagnetModuleOptions {
 		playground,
 		storage,
 		plugins,
+		admin,
 	}: MagnetModuleOptions) {
 		this.db = db
 		this.jwt = jwt
@@ -55,6 +78,7 @@ export class MagnetModuleOptions {
 		this.playground = playground
 		this.storage = storage
 		this.plugins = plugins
+		this.admin = admin
 	}
 }
 
