@@ -3,7 +3,6 @@ import { DynamicModule, Module, forwardRef } from '@nestjs/common'
 import { DatabaseModule } from '~/modules/database'
 import { DiscoveryModule } from '~/modules/discovery'
 import { EventsModule } from '~/modules/events'
-import { PluginModule } from '~/modules/plugin'
 import { SettingsModule } from '~/modules/settings'
 import { UserModule } from '~/modules/user'
 import { PermissionGuard } from './guards/permission.guard'
@@ -51,7 +50,7 @@ export class RBACModule {
 				forwardRef(() => UserModule),
 				EventsModule,
 				DiscoveryModule,
-				forwardRef(() => PluginModule),
+				// PluginModule is globally available from MagnetModule.forRoot()
 				SettingsModule.forFeature(RBACSettings),
 			],
 			controllers: [RBACController],

@@ -1,5 +1,5 @@
 import type { Type } from '@nestjs/common'
-import { Inject, Injectable, OnModuleInit } from '@nestjs/common'
+import { Inject, Injectable, OnModuleInit, Optional } from '@nestjs/common'
 import { DiscoveryService, ModulesContainer } from '@nestjs/core'
 import { PLUGIN_METADATA } from './constants'
 import type { PluginHook, PluginMetadata } from './types'
@@ -19,7 +19,9 @@ export class PluginService implements OnModuleInit {
 	constructor(
 		private readonly discovery: DiscoveryService,
 		private readonly modulesContainer: ModulesContainer,
-		@Inject('PLUGIN_OPTIONS') private readonly options: PluginOptions,
+		@Optional()
+		@Inject('PLUGIN_OPTIONS')
+		private readonly options: PluginOptions = { plugins: [] },
 	) {}
 
 	onModuleInit() {
