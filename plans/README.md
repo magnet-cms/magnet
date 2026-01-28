@@ -43,7 +43,7 @@ Implement authentication and authorization features.
 |------|-------|--------|--------|--------------|
 | [007](./007-authentication-enhancements.md) | Auth Enhancements | 2 weeks | ✅ Completed | 000, 000b, 003 |
 | [008](./008-role-based-access-control.md) | RBAC | 3 weeks | ✅ Completed | 000, 000b, 007 |
-| [006](./006-api-keys.md) | API Keys | 1.5 weeks | Proposed | 000, 007, 008 |
+| [006](./006-api-keys.md) | API Keys | 1.5 weeks | ✅ Completed | 000, 007, 008 |
 
 **Total Phase 2:** ~6.5 weeks (sequential due to dependencies)
 
@@ -153,7 +153,7 @@ Advanced database features for SQL adapters.
 | 003 | [Users & Settings](./003-users-and-settings.md) | High | 3 weeks | ✅ Completed |
 | 004 | [History & Activity](./004-history-and-activity.md) | High | 2 weeks | Proposed |
 | 005 | [Webhooks](./005-webhooks.md) | Medium | 2 weeks | Proposed |
-| 006 | [API Keys](./006-api-keys.md) | Medium | 1.5 weeks | Proposed |
+| 006 | [API Keys](./006-api-keys.md) | Medium | 1.5 weeks | ✅ Completed |
 | 007 | [Auth Enhancements](./007-authentication-enhancements.md) | High | 2 weeks | ✅ Completed |
 | 008 | [RBAC](./008-role-based-access-control.md) | High | 3 weeks | ✅ Completed |
 | 009 | [Admin Layout Migration](./009-admin-layout-migration.md) | High | 4 weeks | Proposed |

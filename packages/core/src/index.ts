@@ -1,4 +1,5 @@
 export * from './magnet.module'
+export * from './modules/api-keys'
 export * from './modules/auth'
 export * from './modules/events'
 export * from './modules/rbac'

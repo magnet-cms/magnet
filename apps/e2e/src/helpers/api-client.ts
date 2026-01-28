@@ -80,6 +80,58 @@ export interface AuthStatus {
 	}
 }
 
+export interface ApiKeyResponse {
+	id: string
+	name: string
+	description?: string
+	keyPrefix: string
+	permissions: string[]
+	allowedSchemas?: string[]
+	allowedOrigins?: string[]
+	allowedIps?: string[]
+	expiresAt?: string
+	enabled: boolean
+	rateLimit: number
+	createdAt: string
+	lastUsedAt?: string
+	usageCount: number
+}
+
+export interface CreatedApiKeyResponse extends ApiKeyResponse {
+	plainKey: string
+}
+
+export interface CreateApiKeyData {
+	name: string
+	description?: string
+	permissions?: string[]
+	allowedSchemas?: string[]
+	allowedOrigins?: string[]
+	allowedIps?: string[]
+	expiresAt?: string
+	rateLimit?: number
+}
+
+export interface UpdateApiKeyData {
+	name?: string
+	description?: string
+	permissions?: string[]
+	allowedSchemas?: string[]
+	allowedOrigins?: string[]
+	allowedIps?: string[]
+	expiresAt?: string
+	enabled?: boolean
+	rateLimit?: number
+}
+
+export interface ApiKeyStats {
+	totalRequests: number
+	successCount: number
+	errorCount: number
+	successRate: number
+	avgResponseTime: number
+}
+
 export class ApiClient {
 	private token?: string
 
@@ -523,5 +575,113 @@ export class ApiClient {
 				headers: this.getHeaders(),
 			},
 		)
+	}
+
+	// API Key endpoints
+	async createApiKey(data: CreateApiKeyData): Promise<CreatedApiKeyResponse> {
+		const response = await this.request.post(`${this.baseURL}/api/api-keys`, {
+			headers: this.getHeaders(),
+			data,
+		})
+		return response.json()
+	}
+
+	async getApiKeys(includeDisabled = false) {
+		const url = includeDisabled
+			? `${this.baseURL}/api/api-keys?includeDisabled=true`
+			: `${this.baseURL}/api/api-keys`
+		return this.request.get(url, {
+			headers: this.getHeaders(),
+		})
+	}
+
+	async getApiKey(id: string) {
+		return this.request.get(`${this.baseURL}/api/api-keys/${id}`, {
+			headers: this.getHeaders(),
+		})
+	}
+
+	async updateApiKey(id: string, data: UpdateApiKeyData) {
+		return this.request.put(`${this.baseURL}/api/api-keys/${id}`, {
+			headers: this.getHeaders(),
+			data,
+		})
+	}
+
+	async deleteApiKey(id: string) {
+		return this.request.delete(`${this.baseURL}/api/api-keys/${id}`, {
+			headers: this.getHeaders(),
+		})
+	}
+
+	async rotateApiKey(id: string): Promise<CreatedApiKeyResponse> {
+		const response = await this.request.post(
+			`${this.baseURL}/api/api-keys/${id}/rotate`,
+			{
+				headers: this.getHeaders(),
+			},
+		)
+		return response.json()
+	}
+
+	async revokeApiKey(id: string, reason?: string) {
+		return this.request.post(`${this.baseURL}/api/api-keys/${id}/revoke`, {
+			headers: this.getHeaders(),
+			data: { reason },
+		})
+	}
+
+	async getApiKeyUsageStats(id: string, days?: number): Promise<ApiKeyStats> {
+		const url = days
+			? `${this.baseURL}/api/api-keys/${id}/usage?days=${days}`
+			: `${this.baseURL}/api/api-keys/${id}/usage`
+		const response = await this.request.get(url, {
+			headers: this.getHeaders(),
+		})
+		return response.json()
+	}
+
+	async getApiKeyUsageHistory(id: string, limit?: number, offset?: number) {
+		const params = new URLSearchParams()
+		if (limit) params.set('limit', String(limit))
+		if (offset) params.set('offset', String(offset))
+
+		const queryString = params.toString()
+		const url = `${this.baseURL}/api/api-keys/${id}/usage/history${queryString ? `?${queryString}` : ''}`
+
+		return this.request.get(url, {
+			headers: this.getHeaders(),
+		})
+	}
+
+	// Helper to make requests with API key authentication (instead of JWT)
+	async makeApiKeyRequest(
+		method: 'GET' | 'POST' | 'PUT' | 'DELETE',
+		path: string,
+		apiKey: string,
+		data?: Record<string, unknown>,
+	) {
+		const headers: Record<string, string> = {
+			'Content-Type': 'application/json',
+			'X-API-Key': apiKey,
+		}
+
+		const options: {
+			headers: Record<string, string>
+			data?: Record<string, unknown>
+		} = { headers }
+		if (data) options.data = data
+
+		const url = `${this.baseURL}${path}`
+		switch (method) {
+			case 'GET':
+				return this.request.get(url, { headers })
+			case 'POST':
+				return this.request.post(url, options)
+			case 'PUT':
+				return this.request.put(url, options)
+			case 'DELETE':
+				return this.request.delete(url, { headers })
+		}
 	}
 }

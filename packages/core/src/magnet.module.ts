@@ -8,6 +8,7 @@ import {
 	type AdminServeOptions,
 } from './modules/admin-serve/admin-serve.module'
 import { AdminModule } from './modules/admin/admin.module'
+import { ApiKeysModule } from './modules/api-keys/api-keys.module'
 import { AuthModule } from './modules/auth/auth.module'
 import { ContentModule } from './modules/content/content.module'
 import { DatabaseModule } from './modules/database/database.module'
@@ -56,6 +57,7 @@ export class MagnetModule {
 		const adminConfig = normalizeAdminConfig(defaultOptions.admin)
 		const imports: Array<DynamicModule | Type> = [
 			AdminModule,
+			ApiKeysModule,
 			AuthModuleConfig,
 			ContentModule,
 			DBModule,
@@ -91,6 +93,7 @@ export class MagnetModule {
 			],
 			exports: [
 				MagnetModuleOptions,
+				ApiKeysModule,
 				ContentModule,
 				DiscoveryModule,
 				DBModule,

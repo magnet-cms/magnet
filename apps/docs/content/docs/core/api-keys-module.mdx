@@ -1,0 +1,405 @@
+---
+title: API Keys Module
+description: Programmatic API access with scoped permissions and rate limiting
+---
+
+The API Keys Module provides secure, scoped access for external integrations and programmatic API usage in Magnet CMS. It supports permission-based access control, rate limiting, IP whitelisting, and usage tracking.
+
+## Overview
+
+The API Keys Module provides:
+
+- **Secure Key Generation**: Cryptographically secure keys with SHA-256 hashing
+- **Scoped Permissions**: Fine-grained access control per key
+- **Rate Limiting**: Configurable request limits per hour
+- **IP Whitelisting**: Restrict key usage to specific IP addresses
+- **Expiration Support**: Set optional expiration dates for keys
+- **Usage Tracking**: Track API usage with detailed analytics
+- **Key Rotation**: Safely rotate keys without downtime
+
+## Key Format
+
+API keys follow the format `mgnt_<random>`:
+
+```
+mgnt_abc123def456ghi789jkl012mno345pqr678stu901
+```
+
+The `mgnt_` prefix makes keys easily identifiable. Only the first 12 characters (the key prefix) are stored in plain text for identification purposes.
+
+## API Endpoints
+
+All management endpoints require JWT authentication. The API key itself is used for authenticating API requests.
+
+### Create API Key
+
+```http
+POST /api/api-keys
+```
+
+**Headers:**
+```
+Authorization: Bearer <jwt_token>
+Content-Type: application/json
+```
+
+**Body:**
+```json
+{
+  "name": "My Integration",
+  "description": "Production API access",
+  "permissions": ["content.read", "content.write"],
+  "allowedSchemas": ["posts", "categories"],
+  "allowedIps": ["192.168.1.1"],
+  "rateLimit": 500,
+  "expiresAt": "2025-12-31T23:59:59Z"
+}
+```
+
+**Response:**
+```json
+{
+  "id": "key_123",
+  "name": "My Integration",
+  "keyPrefix": "mgnt_abc123...",
+  "plainKey": "mgnt_abc123def456ghi789...",
+  "permissions": ["content.read", "content.write"],
+  "allowedSchemas": ["posts", "categories"],
+  "rateLimit": 500,
+  "enabled": true,
+  "createdAt": "2024-01-15T10:30:00Z"
+}
+```
+
+{/* Important warning */}
+<Callout type="warn">
+  The `plainKey` is only shown once upon creation. Save it securely - it cannot be retrieved again.
+</Callout>
+
+### List API Keys
+
+```http
+GET /api/api-keys
+```
+
+Returns all API keys for the authenticated user:
+
+```json
+[
+  {
+    "id": "key_123",
+    "name": "My Integration",
+    "keyPrefix": "mgnt_abc123...",
+    "permissions": ["content.read"],
+    "enabled": true,
+    "usageCount": 1542,
+    "lastUsedAt": "2024-01-15T14:22:00Z"
+  }
+]
+```
+
+### Get API Key
+
+```http
+GET /api/api-keys/:id
+```
+
+### Update API Key
+
+```http
+PUT /api/api-keys/:id
+```
+
+**Body:**
+```json
+{
+  "name": "Updated Name",
+  "permissions": ["content.read"],
+  "rateLimit": 1000
+}
+```
+
+### Delete API Key
+
+```http
+DELETE /api/api-keys/:id
+```
+
+### Rotate API Key
+
+Creates a new key with the same settings and disables the old one:
+
+```http
+POST /api/api-keys/:id/rotate
+```
+
+**Response:**
+```json
+{
+  "id": "key_456",
+  "name": "My Integration (rotated)",
+  "plainKey": "mgnt_xyz789...",
+  "permissions": ["content.read", "content.write"]
+}
+```
+
+### Revoke API Key
+
+Disables a key without deleting it:
+
+```http
+POST /api/api-keys/:id/revoke
+```
+
+**Body:**
+```json
+{
+  "reason": "Security incident"
+}
+```
+
+### Get Usage Statistics
+
+```http
+GET /api/api-keys/:id/usage?days=7
+```
+
+**Response:**
+```json
+{
+  "totalRequests": 1542,
+  "successCount": 1520,
+  "errorCount": 22,
+  "successRate": 98.57,
+  "avgResponseTime": 45.2
+}
+```
+
+### Get Usage History
+
+```http
+GET /api/api-keys/:id/usage/history?limit=100&offset=0
+```
+
+## Using API Keys
+
+### Authentication Headers
+
+API keys can be provided in two ways:
+
+**Authorization Header:**
+```bash
+curl -H "Authorization: Bearer mgnt_abc123..." https://api.example.com/content/posts
+```
+
+**X-API-Key Header:**
+```bash
+curl -H "X-API-Key: mgnt_abc123..." https://api.example.com/content/posts
+```
+
+### Rate Limit Headers
+
+Responses include rate limit information:
+
+```
+X-RateLimit-Limit: 1000
+X-RateLimit-Remaining: 856
+X-RateLimit-Reset: 2024-01-15T15:00:00Z
+```
+
+## Permissions
+
+### Available Permission Scopes
+
+| Permission | Description |
+|------------|-------------|
+| `*` | Full access to all resources |
+| `content.*` | Full content access |
+| `content.read` | Read content from any schema |
+| `content.write` | Create and update content |
+| `content.delete` | Delete content |
+| `content.publish` | Publish/unpublish content |
+| `media.*` | Full media access |
+| `media.read` | Read media files |
+| `media.upload` | Upload media files |
+| `media.delete` | Delete media files |
+| `users.read` | Read user list (admin) |
+| `users.write` | Create/update users (admin) |
+| `settings.read` | Read settings (admin) |
+| `settings.write` | Update settings (admin) |
+
+### Permission Wildcards
+
+Permissions support wildcards:
+- `*` matches all permissions
+- `content.*` matches `content.read`, `content.write`, etc.
+
+## Protecting Routes with API Keys
+
+Use `ApiKeyGuard` and decorators to protect your endpoints:
+
+```typescript
+import { Controller, Get, UseGuards } from '@nestjs/common'
+import {
+  ApiKeyGuard,
+  RequireApiKeyPermission,
+  RequireApiKeySchema,
+  CurrentApiKey,
+} from '@magnet-cms/core'
+import type { ApiKey } from '@magnet-cms/core'
+
+@Controller('api/content')
+@UseGuards(ApiKeyGuard)
+export class ContentApiController {
+  @Get('posts')
+  @RequireApiKeyPermission('content.read')
+  @RequireApiKeySchema('posts')
+  async listPosts(@CurrentApiKey() apiKey: ApiKey) {
+    console.log(`Request from: ${apiKey.name}`)
+    // ...
+  }
+
+  @Post('posts')
+  @RequireApiKeyPermission('content.write')
+  async createPost() {
+    // ...
+  }
+}
+```
+
+## Settings
+
+Configure API key behavior in the Admin UI under Settings → API Keys, or programmatically:
+
+```typescript
+import { Injectable } from '@nestjs/common'
+import { SettingsService, ApiKeySettings } from '@magnet-cms/core'
+
+@Injectable()
+export class MyService {
+  constructor(private settingsService: SettingsService) {}
+
+  async configure() {
+    const settings = await this.settingsService.get(ApiKeySettings)
+    console.log(`Max keys per user: ${settings.maxKeysPerUser}`)
+  }
+}
+```
+
+### Available Settings
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `enabled` | `true` | Enable API key authentication |
+| `defaultRateLimit` | `1000` | Default requests per hour |
+| `maxKeysPerUser` | `10` | Maximum keys per user |
+| `usageRetentionDays` | `30` | Usage log retention period |
+| `requireIpWhitelist` | `false` | Require IP restrictions |
+| `allowWildcardPermissions` | `true` | Allow `*` permission |
+| `maxRateLimit` | `10000` | Maximum rate limit allowed |
+
+## Service API
+
+Inject `ApiKeyService` for programmatic key management:
+
+```typescript
+import { Injectable } from '@nestjs/common'
+import { ApiKeyService } from '@magnet-cms/core'
+
+@Injectable()
+export class IntegrationService {
+  constructor(private apiKeyService: ApiKeyService) {}
+
+  async createIntegrationKey(userId: string) {
+    const { key, plainKey } = await this.apiKeyService.create(userId, {
+      name: 'Automated Integration',
+      permissions: ['content.read'],
+      rateLimit: 100,
+    })
+
+    return { keyId: key.id, apiKey: plainKey }
+  }
+
+  async validateKey(providedKey: string) {
+    const key = await this.apiKeyService.validate(providedKey)
+    if (!key) {
+      throw new Error('Invalid API key')
+    }
+
+    if (!this.apiKeyService.hasPermission(key, 'content.read')) {
+      throw new Error('Insufficient permissions')
+    }
+
+    return key
+  }
+}
+```
+
+## Events
+
+The API Keys module emits events for key lifecycle:
+
+| Event | Payload | Description |
+|-------|---------|-------------|
+| `api_key.created` | `{ apiKeyId, name }` | Key was created |
+| `api_key.revoked` | `{ apiKeyId, name, reason? }` | Key was revoked |
+| `api_key.used` | `{ apiKeyId, name, endpoint }` | Key was used (async) |
+
+Subscribe to events:
+
+```typescript
+import { Injectable } from '@nestjs/common'
+import { EventService, OnEvent } from '@magnet-cms/core'
+
+@Injectable()
+export class ApiKeyLogger {
+  @OnEvent('api_key.created')
+  async onKeyCreated(payload: { apiKeyId: string; name: string }) {
+    console.log(`New API key created: ${payload.name}`)
+  }
+
+  @OnEvent('api_key.revoked')
+  async onKeyRevoked(payload: { apiKeyId: string; reason?: string }) {
+    console.log(`API key revoked: ${payload.reason}`)
+  }
+}
+```
+
+## Security Best Practices
+
+1. **Never log plain keys**: Only the key prefix should appear in logs
+2. **Use specific permissions**: Avoid `*` permission when possible
+3. **Set expiration dates**: Rotate keys periodically
+4. **Enable IP whitelisting**: Restrict access to known IPs
+5. **Monitor usage**: Review usage statistics regularly
+6. **Revoke unused keys**: Delete or revoke keys that are no longer needed
+7. **Use rate limits**: Protect against abuse
+
+## Example: Complete Integration
+
+```typescript
+// Create a key via API
+const response = await fetch('/api/api-keys', {
+  method: 'POST',
+  headers: {
+    'Authorization': `Bearer ${jwtToken}`,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    name: 'Production API',
+    permissions: ['content.read', 'content.write'],
+    allowedSchemas: ['posts', 'pages'],
+    rateLimit: 1000,
+  }),
+})
+
+const { plainKey } = await response.json()
+// Save plainKey securely!
+
+// Use the key for API requests
+const posts = await fetch('/content/posts', {
+  headers: {
+    'X-API-Key': plainKey,
+  },
+})
+```
