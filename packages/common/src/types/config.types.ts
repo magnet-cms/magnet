@@ -2,6 +2,7 @@ import { Type } from '@nestjs/common'
 import type { AuthConfig } from './auth.types'
 import { DBConfig } from './database.types'
 import type { PluginConfig } from './plugin.types'
+import type { RBACModuleOptions } from './rbac.types'
 import { StorageConfig } from './storage.types'
 
 export interface InternationalizationOptions {
@@ -60,6 +61,12 @@ export class MagnetModuleOptions {
 	 * admin: false
 	 */
 	admin?: boolean | AdminConfig
+	/**
+	 * RBAC (Role-Based Access Control) configuration
+	 * @example
+	 * rbac: { enabled: true, defaultRole: 'authenticated' }
+	 */
+	rbac?: RBACModuleOptions
 
 	constructor({
 		db,
@@ -70,6 +77,7 @@ export class MagnetModuleOptions {
 		storage,
 		plugins,
 		admin,
+		rbac,
 	}: MagnetModuleOptions) {
 		this.db = db
 		this.jwt = jwt
@@ -79,6 +87,7 @@ export class MagnetModuleOptions {
 		this.storage = storage
 		this.plugins = plugins
 		this.admin = admin
+		this.rbac = rbac
 	}
 }
 

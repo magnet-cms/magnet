@@ -1,4 +1,4 @@
-import { ValidationException } from '@magnet-cms/common'
+import { RequirePermission, ValidationException } from '@magnet-cms/common'
 import {
 	Body,
 	Controller,
@@ -10,12 +10,19 @@ import {
 	Post,
 	Put,
 	Query,
+	UseGuards,
+	UseInterceptors,
 } from '@nestjs/common'
 import { RestrictedRoute } from '~/decorators/restricted.route'
+import { JwtAuthGuard } from '~/modules/auth/guards/jwt-auth.guard'
+import { PermissionGuard } from '~/modules/rbac/guards/permission.guard'
+import { DynamicPermissionInterceptor } from '~/modules/rbac/interceptors/dynamic-permission.interceptor'
 import { ContentService } from './content.service'
 
 @Controller('content')
 @RestrictedRoute()
+@UseGuards(JwtAuthGuard, PermissionGuard)
+@UseInterceptors(DynamicPermissionInterceptor)
 export class ContentController {
 	constructor(private readonly contentService: ContentService) {}
 
@@ -25,6 +32,11 @@ export class ContentController {
 	 * Query params: locale, status
 	 */
 	@Get(':schema')
+	@RequirePermission({
+		id: 'content.{schema}.find',
+		name: 'List',
+		description: 'List documents',
+	})
 	async list(
 		@Param('schema') schema: string,
 		@Query('locale') locale?: string,
@@ -46,6 +58,11 @@ export class ContentController {
 	 * Query params: locale, status
 	 */
 	@Get(':schema/:documentId')
+	@RequirePermission({
+		id: 'content.{schema}.findOne',
+		name: 'View',
+		description: 'View a document',
+	})
 	async get(
 		@Param('schema') schema: string,
 		@Param('documentId') documentId: string,
@@ -78,6 +95,11 @@ export class ContentController {
 	 * Returns: { documentId: string }
 	 */
 	@Post(':schema/new')
+	@RequirePermission({
+		id: 'content.{schema}.create',
+		name: 'Create',
+		description: 'Create a document',
+	})
 	async createEmpty(
 		@Param('schema') schema: string,
 		@Body() body?: {
@@ -111,6 +133,11 @@ export class ContentController {
 	 * Body: { data, locale?, createdBy? }
 	 */
 	@Post(':schema')
+	@RequirePermission({
+		id: 'content.{schema}.create',
+		name: 'Create',
+		description: 'Create a document',
+	})
 	async create(
 		@Param('schema') schema: string,
 		@Body() body: {
@@ -141,6 +168,11 @@ export class ContentController {
 	 * Body: { data, updatedBy? }
 	 */
 	@Put(':schema/:documentId')
+	@RequirePermission({
+		id: 'content.{schema}.update',
+		name: 'Update',
+		description: 'Update a document',
+	})
 	async update(
 		@Param('schema') schema: string,
 		@Param('documentId') documentId: string,
@@ -179,6 +211,11 @@ export class ContentController {
 	 * DELETE /content/:schema/:documentId
 	 */
 	@Delete(':schema/:documentId')
+	@RequirePermission({
+		id: 'content.{schema}.delete',
+		name: 'Delete',
+		description: 'Delete a document',
+	})
 	async delete(
 		@Param('schema') schema: string,
 		@Param('documentId') documentId: string,
@@ -204,6 +241,11 @@ export class ContentController {
 	 * Query params: locale
 	 */
 	@Post(':schema/:documentId/publish')
+	@RequirePermission({
+		id: 'content.{schema}.publish',
+		name: 'Publish',
+		description: 'Publish a document',
+	})
 	async publish(
 		@Param('schema') schema: string,
 		@Param('documentId') documentId: string,
@@ -238,6 +280,11 @@ export class ContentController {
 	 * Query params: locale
 	 */
 	@Post(':schema/:documentId/unpublish')
+	@RequirePermission({
+		id: 'content.{schema}.publish',
+		name: 'Unpublish',
+		description: 'Unpublish a document',
+	})
 	async unpublish(
 		@Param('schema') schema: string,
 		@Param('documentId') documentId: string,
@@ -264,6 +311,11 @@ export class ContentController {
 	 * Body: { locale, data, createdBy? }
 	 */
 	@Post(':schema/:documentId/locale')
+	@RequirePermission({
+		id: 'content.{schema}.update',
+		name: 'Add Locale',
+		description: 'Add a locale to a document',
+	})
 	async addLocale(
 		@Param('schema') schema: string,
 		@Param('documentId') documentId: string,
@@ -298,6 +350,11 @@ export class ContentController {
 	 * DELETE /content/:schema/:documentId/locale/:locale
 	 */
 	@Delete(':schema/:documentId/locale/:locale')
+	@RequirePermission({
+		id: 'content.{schema}.delete',
+		name: 'Delete Locale',
+		description: 'Delete a document locale',
+	})
 	async deleteLocale(
 		@Param('schema') schema: string,
 		@Param('documentId') documentId: string,
@@ -323,6 +380,11 @@ export class ContentController {
 	 * GET /content/:schema/:documentId/locales
 	 */
 	@Get(':schema/:documentId/locales')
+	@RequirePermission({
+		id: 'content.{schema}.findOne',
+		name: 'View Locales',
+		description: 'View document locale statuses',
+	})
 	async getLocaleStatuses(
 		@Param('schema') schema: string,
 		@Param('documentId') documentId: string,
@@ -345,6 +407,11 @@ export class ContentController {
 	 * Query params: locale
 	 */
 	@Get(':schema/:documentId/versions')
+	@RequirePermission({
+		id: 'content.{schema}.findOne',
+		name: 'View Versions',
+		description: 'View document version history',
+	})
 	async getVersions(
 		@Param('schema') schema: string,
 		@Param('documentId') documentId: string,
@@ -366,6 +433,11 @@ export class ContentController {
 	 * Query params: locale, version
 	 */
 	@Post(':schema/:documentId/restore')
+	@RequirePermission({
+		id: 'content.{schema}.update',
+		name: 'Restore Version',
+		description: 'Restore a document to a previous version',
+	})
 	async restoreVersion(
 		@Param('schema') schema: string,
 		@Param('documentId') documentId: string,

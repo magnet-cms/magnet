@@ -42,7 +42,7 @@ Implement authentication and authorization features.
 | Plan | Title | Effort | Status | Dependencies |
 |------|-------|--------|--------|--------------|
 | [007](./007-authentication-enhancements.md) | Auth Enhancements | 2 weeks | ✅ Completed | 000, 000b, 003 |
-| [008](./008-role-based-access-control.md) | RBAC | 3 weeks | Proposed | 000, 000b, 007 |
+| [008](./008-role-based-access-control.md) | RBAC | 3 weeks | ✅ Completed | 000, 000b, 007 |
 | [006](./006-api-keys.md) | API Keys | 1.5 weeks | Proposed | 000, 007, 008 |
 
 **Total Phase 2:** ~6.5 weeks (sequential due to dependencies)
@@ -155,7 +155,7 @@ Advanced database features for SQL adapters.
 | 005 | [Webhooks](./005-webhooks.md) | Medium | 2 weeks | Proposed |
 | 006 | [API Keys](./006-api-keys.md) | Medium | 1.5 weeks | Proposed |
 | 007 | [Auth Enhancements](./007-authentication-enhancements.md) | High | 2 weeks | ✅ Completed |
-| 008 | [RBAC](./008-role-based-access-control.md) | High | 3 weeks | Proposed |
+| 008 | [RBAC](./008-role-based-access-control.md) | High | 3 weeks | ✅ Completed |
 | 009 | [Admin Layout Migration](./009-admin-layout-migration.md) | High | 4 weeks | Proposed |
 | 010 | [Logging Infrastructure](./010-logging-infrastructure.md) | Medium | 1 week | Proposed |
 | 011 | [Database Migrations](./011-database-migrations.md) | High | 3 weeks | Proposed |

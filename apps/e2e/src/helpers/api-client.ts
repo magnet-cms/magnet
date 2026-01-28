@@ -354,6 +354,86 @@ export class ApiClient {
 		})
 	}
 
+	// RBAC endpoints
+	async getRoles() {
+		return this.request.get(`${this.baseURL}/rbac/roles`, {
+			headers: this.getHeaders(),
+		})
+	}
+
+	async getRole(id: string) {
+		return this.request.get(`${this.baseURL}/rbac/roles/${id}`, {
+			headers: this.getHeaders(),
+		})
+	}
+
+	async createRole(data: {
+		name: string
+		displayName: string
+		description?: string
+		permissions?: string[]
+	}) {
+		return this.request.post(`${this.baseURL}/rbac/roles`, {
+			headers: this.getHeaders(),
+			data,
+		})
+	}
+
+	async updateRole(
+		id: string,
+		data: { displayName?: string; description?: string },
+	) {
+		return this.request.put(`${this.baseURL}/rbac/roles/${id}`, {
+			headers: this.getHeaders(),
+			data,
+		})
+	}
+
+	async deleteRole(id: string) {
+		return this.request.delete(`${this.baseURL}/rbac/roles/${id}`, {
+			headers: this.getHeaders(),
+		})
+	}
+
+	async duplicateRole(id: string, data: { name: string; displayName: string }) {
+		return this.request.post(`${this.baseURL}/rbac/roles/${id}/duplicate`, {
+			headers: this.getHeaders(),
+			data,
+		})
+	}
+
+	async updateRolePermissions(id: string, permissions: string[]) {
+		return this.request.put(`${this.baseURL}/rbac/roles/${id}/permissions`, {
+			headers: this.getHeaders(),
+			data: { permissions },
+		})
+	}
+
+	async getPermissions() {
+		return this.request.get(`${this.baseURL}/rbac/permissions`, {
+			headers: this.getHeaders(),
+		})
+	}
+
+	async getMyPermissions() {
+		return this.request.get(`${this.baseURL}/rbac/my-permissions`, {
+			headers: this.getHeaders(),
+		})
+	}
+
+	async checkPermission(permission: string) {
+		return this.request.get(`${this.baseURL}/rbac/check/${permission}`, {
+			headers: this.getHeaders(),
+		})
+	}
+
+	async assignUserRole(userId: string, roleName: string) {
+		return this.request.put(`${this.baseURL}/rbac/users/${userId}/role`, {
+			headers: this.getHeaders(),
+			data: { roleName },
+		})
+	}
+
 	// Content CRUD endpoints
 	async listContent(
 		schema: string,

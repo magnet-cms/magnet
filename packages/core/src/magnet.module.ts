@@ -17,6 +17,7 @@ import { EventsModule } from './modules/events/events.module'
 import { HealthModule } from './modules/health/health.module'
 import { HistoryModule } from './modules/history/history.module'
 import { PluginModule } from './modules/plugin/plugin.module'
+import { RBACModule } from './modules/rbac/rbac.module'
 import { SettingsModule } from './modules/settings/settings.module'
 import { StorageModule } from './modules/storage/storage.module'
 import { initOptions } from './utils'
@@ -65,6 +66,7 @@ export class MagnetModule {
 			HistoryModule,
 			HealthModule,
 			PluginModule.forRoot({ plugins }),
+			RBACModule.forRoot(defaultOptions.rbac),
 			SettingsModule,
 			StorageModuleConfig,
 		]

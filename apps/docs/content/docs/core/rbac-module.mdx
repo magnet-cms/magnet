@@ -1,0 +1,495 @@
+---
+title: RBAC Module
+description: Role-Based Access Control for Magnet CMS
+---
+
+The RBAC (Role-Based Access Control) Module provides comprehensive permission management for Magnet CMS. It enables fine-grained access control through roles and permissions.
+
+## Overview
+
+The RBAC Module provides:
+
+- **Role Management**: Create, update, delete, and duplicate roles
+- **Permission Discovery**: Auto-discovers permissions from schemas, controllers, and plugins
+- **Permission Guards**: Protect routes with required permissions
+- **Wildcard Support**: Use wildcards like `content.*` for broader permissions
+- **Settings Integration**: Configurable via the Settings system
+
+## Configuration
+
+Configure RBAC in `MagnetModule.forRoot()`:
+
+```typescript
+import { Module } from '@nestjs/common'
+import { MagnetModule } from '@magnet-cms/core'
+
+@Module({
+  imports: [
+    MagnetModule.forRoot({
+      db: { uri: process.env.MONGODB_URI },
+      jwt: { secret: process.env.JWT_SECRET },
+      rbac: {
+        enabled: true,
+        defaultRole: 'authenticated',
+        allowPublicAccess: false,
+        cachePermissions: true,
+        cacheTTL: 300, // seconds
+      },
+    }),
+  ],
+})
+export class AppModule {}
+```
+
+### Configuration Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `enabled` | boolean | `true` | Enable/disable RBAC |
+| `defaultRole` | string | `'authenticated'` | Default role for new users |
+| `allowPublicAccess` | boolean | `false` | Allow unauthenticated access with public role |
+| `cachePermissions` | boolean | `true` | Cache permission checks |
+| `cacheTTL` | number | `300` | Cache TTL in seconds |
+
+## Default Roles
+
+Three system roles are created automatically:
+
+| Role | Description | Permissions |
+|------|-------------|-------------|
+| `admin` | Full access | `*` (all permissions) |
+| `authenticated` | Default for logged-in users | None (configure as needed) |
+| `public` | For unauthenticated requests | None (configure as needed) |
+
+System roles cannot be deleted.
+
+## API Endpoints
+
+### Roles
+
+#### List Roles
+
+```http
+GET /rbac/roles
+Authorization: Bearer <token>
+```
+
+**Response:**
+```json
+[
+  {
+    "id": "role_123",
+    "name": "admin",
+    "displayName": "Admin",
+    "description": "Full access to all features",
+    "permissions": ["*"],
+    "isSystem": true,
+    "userCount": 1,
+    "createdAt": "2024-01-01T00:00:00Z"
+  }
+]
+```
+
+#### Get Role
+
+```http
+GET /rbac/roles/:id
+Authorization: Bearer <token>
+```
+
+Returns the role with all permissions organized by category:
+
+```json
+{
+  "id": "role_123",
+  "name": "editor",
+  "displayName": "Editor",
+  "permissions": ["content.*"],
+  "collectionTypes": [
+    {
+      "id": "api::posts",
+      "name": "Posts",
+      "permissions": [
+        { "id": "content.posts.find", "name": "List", "checked": true },
+        { "id": "content.posts.create", "name": "Create", "checked": true }
+      ]
+    }
+  ],
+  "plugins": [],
+  "system": []
+}
+```
+
+#### Create Role
+
+```http
+POST /rbac/roles
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "name": "editor",
+  "displayName": "Editor",
+  "description": "Can manage content",
+  "permissions": ["content.*"]
+}
+```
+
+#### Update Role
+
+```http
+PUT /rbac/roles/:id
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "displayName": "Content Editor",
+  "description": "Can manage all content types"
+}
+```
+
+#### Delete Role
+
+```http
+DELETE /rbac/roles/:id
+Authorization: Bearer <token>
+```
+
+Note: System roles and roles with assigned users cannot be deleted.
+
+#### Duplicate Role
+
+```http
+POST /rbac/roles/:id/duplicate
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "name": "senior-editor",
+  "displayName": "Senior Editor"
+}
+```
+
+#### Update Permissions
+
+```http
+PUT /rbac/roles/:id/permissions
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "permissions": [
+    "content.posts.find",
+    "content.posts.create",
+    "content.posts.update"
+  ]
+}
+```
+
+### Permissions
+
+#### List All Permissions
+
+```http
+GET /rbac/permissions
+Authorization: Bearer <token>
+```
+
+Returns permissions organized by category:
+
+```json
+{
+  "collectionTypes": [
+    {
+      "id": "api::posts",
+      "name": "Posts",
+      "permissions": [
+        { "id": "content.posts.find", "name": "List", "description": "List Posts entries" }
+      ]
+    }
+  ],
+  "plugins": [],
+  "system": [
+    {
+      "id": "system::users",
+      "name": "Users",
+      "permissions": [
+        { "id": "users.find", "name": "List Users", "description": "View list of users" }
+      ]
+    }
+  ]
+}
+```
+
+### User Role Assignment
+
+#### Assign Role
+
+```http
+PUT /rbac/users/:userId/role
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "roleName": "editor"
+}
+```
+
+#### Get My Permissions
+
+```http
+GET /rbac/my-permissions
+Authorization: Bearer <token>
+```
+
+Returns the current user's permissions:
+
+```json
+{
+  "permissions": ["content.posts.find", "content.posts.create"]
+}
+```
+
+#### Check Permission
+
+```http
+GET /rbac/check/:permission
+Authorization: Bearer <token>
+```
+
+Example: `GET /rbac/check/content.posts.create`
+
+```json
+{
+  "hasPermission": true
+}
+```
+
+## Permission ID Format
+
+Permissions follow the format: `{category}.{resource}.{action}`
+
+```
+content.posts.create      # Create posts
+content.posts.find        # List posts
+content.posts.findOne     # View single post
+content.posts.update      # Update posts
+content.posts.delete      # Delete posts
+content.posts.publish     # Publish posts
+
+users.find                # List users
+users.create              # Create users
+roles.update              # Update roles
+
+media.upload              # Upload media
+settings.write            # Modify settings
+
+plugin.content-builder.access  # Plugin permission
+```
+
+### Wildcards
+
+Use wildcards for broader permissions:
+
+```typescript
+'*'           // All permissions (admin)
+'content.*'   // All content permissions
+'users.*'     // All user permissions
+```
+
+## Protecting Routes
+
+### Using @RequirePermission
+
+```typescript
+import { Controller, Get, Post, UseGuards } from '@nestjs/common'
+import { JwtAuthGuard, PermissionGuard, RequirePermission } from '@magnet-cms/core'
+
+@Controller('posts')
+@UseGuards(JwtAuthGuard, PermissionGuard)
+export class PostsController {
+  @Get()
+  @RequirePermission({
+    id: 'content.posts.find',
+    name: 'List Posts',
+    description: 'View list of posts',
+  })
+  findAll() {
+    return this.postsService.findAll()
+  }
+
+  @Post()
+  @RequirePermission({
+    id: 'content.posts.create',
+    name: 'Create Post',
+    description: 'Create a new post',
+  })
+  create(@Body() data: CreatePostDto) {
+    return this.postsService.create(data)
+  }
+}
+```
+
+### Dynamic Permissions
+
+For dynamic routes (e.g., `/content/:schema`), use placeholders:
+
+```typescript
+@Controller('content')
+@UseGuards(JwtAuthGuard, PermissionGuard)
+@UseInterceptors(DynamicPermissionInterceptor)
+export class ContentController {
+  @Get(':schema')
+  @RequirePermission({
+    id: 'content.{schema}.find',
+    name: 'List',
+    description: 'List documents',
+  })
+  list(@Param('schema') schema: string) {
+    return this.contentService.list(schema)
+  }
+}
+```
+
+The `{schema}` placeholder is replaced with the actual schema name at runtime.
+
+## Using RoleService
+
+Inject `RoleService` for programmatic permission checks:
+
+```typescript
+import { Injectable } from '@nestjs/common'
+import { RoleService } from '@magnet-cms/core'
+
+@Injectable()
+export class MyService {
+  constructor(private roleService: RoleService) {}
+
+  async checkAccess(userId: string, permission: string): Promise<boolean> {
+    return this.roleService.hasPermission(userId, permission)
+  }
+
+  async getUserPermissions(userId: string): Promise<string[]> {
+    return this.roleService.getUserPermissions(userId)
+  }
+
+  async createRole(name: string, permissions: string[]) {
+    return this.roleService.create({
+      name,
+      displayName: name,
+      permissions,
+    })
+  }
+}
+```
+
+## Permission Discovery
+
+Permissions are automatically discovered from:
+
+1. **Schemas**: CRUD permissions for each `@Schema()` decorated class
+2. **Controllers**: Methods with `@RequirePermission()` decorator
+3. **Plugins**: Permissions defined in plugin manifests
+
+### Discovering Schema Permissions
+
+For each schema, these permissions are auto-generated:
+
+| Permission | Description |
+|------------|-------------|
+| `content.{schema}.find` | List entries |
+| `content.{schema}.findOne` | View single entry |
+| `content.{schema}.create` | Create entry |
+| `content.{schema}.update` | Update entry |
+| `content.{schema}.delete` | Delete entry |
+| `content.{schema}.publish` | Publish entry |
+
+### Adding Plugin Permissions
+
+Define permissions in your plugin manifest:
+
+```typescript
+@Plugin({
+  name: 'my-plugin',
+  module: MyPluginModule,
+})
+@PluginFrontend({
+  permissions: ['access', 'configure'],
+})
+export class MyPlugin {}
+```
+
+This creates permissions: `plugin.my-plugin.access` and `plugin.my-plugin.configure`
+
+## Types
+
+```typescript
+interface Role {
+  id: string
+  name: string
+  displayName: string
+  description?: string
+  permissions: string[]
+  isSystem: boolean
+  createdAt: Date
+  updatedAt?: Date
+}
+
+interface PermissionOptions {
+  id: string
+  name: string
+  description?: string
+  group?: string
+}
+
+interface PermissionGroup {
+  id: string
+  name: string
+  apiId?: string
+  permissions: PermissionItem[]
+}
+
+interface PermissionItem {
+  id: string
+  name: string
+  description: string
+  checked?: boolean
+}
+```
+
+## Events
+
+RBAC emits these events via the Event System:
+
+| Event | Payload | Description |
+|-------|---------|-------------|
+| `role.created` | `{ roleId, roleName }` | Role was created |
+| `role.updated` | `{ roleId, roleName }` | Role was updated |
+| `role.deleted` | `{ roleId, roleName }` | Role was deleted |
+| `role.permissions_updated` | `{ roleId, roleName, permissions }` | Permissions changed |
+| `role.user_assigned` | `{ roleId, roleName, assignedUserId }` | User assigned to role |
+
+### Listening to Events
+
+```typescript
+import { Injectable } from '@nestjs/common'
+import { OnEvent, EventPayload } from '@magnet-cms/common'
+
+@Injectable()
+export class AuditService {
+  @OnEvent('role.permissions_updated')
+  async logPermissionChange(
+    payload: EventPayload<'role.permissions_updated'>
+  ): Promise<void> {
+    console.log(`Role ${payload.roleName} permissions updated:`, payload.permissions)
+  }
+}
+```
+
+## Security Best Practices
+
+1. **Principle of Least Privilege**: Grant only necessary permissions
+2. **Use Specific Permissions**: Prefer `content.posts.create` over `content.*`
+3. **Regular Audits**: Review role permissions periodically
+4. **Protect Admin Role**: Never modify the admin role's permissions
+5. **Test Permissions**: Verify permission checks work as expected
