@@ -278,8 +278,9 @@ function resolveRoute(
  */
 function resolveSidebarItem(item: PluginSidebarItem): ResolvedSidebarItem {
 	// Resolve icon from lucide-react
-	const Icon =
-		(LucideIcons as Record<string, LucideIcon>)[item.icon] || LucideIcons.Puzzle
+	// Cast through unknown since LucideIcons contains both icons and helper utilities
+	const iconMap = LucideIcons as unknown as Record<string, LucideIcon | undefined>
+	const Icon = iconMap[item.icon] ?? LucideIcons.Puzzle
 
 	return {
 		id: item.id,

@@ -13,9 +13,6 @@ export interface PluginRegistration {
 declare global {
 	interface Window {
 		__MAGNET_PLUGINS__?: PluginRegistration[]
-		React?: typeof import('react')
-		ReactDOM?: typeof import('react-dom')
-		ReactRouterDOM?: typeof import('react-router-dom')
 	}
 }
 
@@ -42,7 +39,7 @@ export async function loadPluginBundle(bundleUrl: string): Promise<void> {
 			resolve()
 		}
 
-		script.onerror = (event) => {
+		script.onerror = () => {
 			console.error(`[Magnet] Failed to load plugin bundle: ${bundleUrl}`)
 			reject(new Error(`Failed to load plugin bundle: ${bundleUrl}`))
 		}

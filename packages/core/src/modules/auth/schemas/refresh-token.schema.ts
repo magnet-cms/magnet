@@ -15,7 +15,7 @@ import {
  * - Session tracking (deviceInfo, ipAddress, userAgent)
  * - Revocation management (revoked, revokedAt, revokedReason)
  */
-@Schema({ versioning: false, i18n: false })
+@Schema({ versioning: false, i18n: false, visible: false })
 export class RefreshToken {
 	/**
 	 * Hashed refresh token (never store plain tokens)

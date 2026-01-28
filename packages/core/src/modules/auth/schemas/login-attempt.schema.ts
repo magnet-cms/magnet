@@ -25,7 +25,7 @@ export type LoginFailureReason =
  * - Security monitoring
  * - Audit logging
  */
-@Schema({ versioning: false, i18n: false })
+@Schema({ versioning: false, i18n: false, visible: false })
 export class LoginAttempt {
 	/**
 	 * Email address used in the attempt

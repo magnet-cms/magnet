@@ -29,6 +29,7 @@ export type UITypes =
 export type UIBase = {
 	label?: string
 	description?: string
+	placeholder?: string
 	type?: UITypes
 	row?: boolean
 	collapsible?: boolean

@@ -8,7 +8,7 @@ interface UseAutoSaveOptions {
 	locale?: string
 	debounceMs?: number
 	enabled?: boolean
-	trigger?: UseFormTrigger<any>
+	trigger?: UseFormTrigger<Record<string, unknown>>
 	onSuccess?: () => void
 }
 

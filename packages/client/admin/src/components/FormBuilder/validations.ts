@@ -1,9 +1,4 @@
-import {
-	SchemaMetadata,
-	SchemaProperty,
-	UISelect,
-	Validations,
-} from '@magnet-cms/common'
+import { SchemaMetadata, SchemaProperty, UISelect } from '@magnet-cms/common'
 import { ZodObject, ZodType, z } from 'zod'
 
 export const buildFormSchema = (
@@ -21,7 +16,7 @@ export const buildFormSchema = (
 		email: () => z.string().email(),
 		text: () => z.string(),
 		switch: () => z.boolean(),
-		table: () => z.array(z.record(z.unknown())),
+		table: () => z.array(z.record(z.string(), z.unknown())),
 		array: () => z.array(z.unknown()),
 	}
 
@@ -84,11 +79,14 @@ export const buildFormSchema = (
 			}
 
 			if (prop.validations) {
-				prop.validations.forEach((validation: Validations[number]) => {
+				prop.validations.forEach((validation) => {
 					if (validationMappings[validation.name]) {
 						const validationFn = validationMappings[validation.name]
 						if (validationFn) {
-							field = validationFn(field, validation.constraints || [])
+							field = validationFn(
+								field,
+								(validation.constraints as unknown[]) || [],
+							)
 						}
 					}
 				})

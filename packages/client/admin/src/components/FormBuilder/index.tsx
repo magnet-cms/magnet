@@ -20,6 +20,17 @@ import { z } from 'zod'
 import { fieldRenderer } from './Fields'
 import { buildFormSchema } from './validations'
 
+export type SidebarRenderProps = {
+	relationshipFields: SchemaProperty[]
+	sidePanelFields: SchemaProperty[]
+	renderField: (prop: SchemaProperty) => ReactElement
+	metadata?: {
+		createdAt?: Date | string
+		updatedAt?: Date | string
+		publishedAt?: Date | string
+	}
+}
+
 type FormBuilderProps<T> = {
 	schema: SchemaMetadata
 	onSubmit?: (data: T) => void
@@ -30,6 +41,11 @@ type FormBuilderProps<T> = {
 		updatedAt?: Date | string
 		publishedAt?: Date | string
 	}
+	/**
+	 * When provided, renders custom sidebar content inside the FormProvider.
+	 * The internal sidebar will not be rendered.
+	 */
+	renderSidebar?: (props: SidebarRenderProps) => ReactElement
 }
 
 /**
@@ -103,6 +119,7 @@ export const FormBuilder = <T extends Record<string, unknown>>({
 	onChange,
 	initialValues,
 	metadata,
+	renderSidebar,
 }: FormBuilderProps<T>) => {
 	const formSchema = buildFormSchema(schema)
 	type FormValues = z.infer<typeof formSchema>
@@ -276,68 +293,95 @@ export const FormBuilder = <T extends Record<string, unknown>>({
 	const hasSidebar =
 		sidePanelFields.length > 0 || relationshipFields.length > 0 || metadata
 
+	// Main form content (used in both layouts)
+	const mainFormContent = (
+		<div className="space-y-10">
+			{/* Fields without tabs */}
+			{fieldsWithoutTabs.length > 0 && (
+				<div>
+					<h3 className="text-base font-semibold mb-6">
+						General Information
+					</h3>
+					<div className="space-y-4">
+						{renderMainRows(fieldsWithoutTabs)}
+					</div>
+				</div>
+			)}
+
+			{/* Single tab - show as section */}
+			{tabs.length === 1 && (
+				<div
+					className={
+						fieldsWithoutTabs.length > 0
+							? 'border-t border-border pt-8'
+							: ''
+					}
+				>
+					<h3 className="text-base font-semibold mb-6">{tabs[0]}</h3>
+					<div className="space-y-4">
+						{tabs[0] && renderMainRows(groupedProperties[tabs[0]] || [])}
+					</div>
+				</div>
+			)}
+
+			{/* Multiple tabs */}
+			{tabs.length > 1 && (
+				<div
+					className={
+						fieldsWithoutTabs.length > 0
+							? 'border-t border-border pt-8'
+							: ''
+					}
+				>
+					<Tabs value={activeTab} onValueChange={setActiveTab}>
+						<TabsList>
+							{tabs.map((tab) => (
+								<TabsTrigger key={tab} value={tab}>
+									{tab}
+								</TabsTrigger>
+							))}
+						</TabsList>
+						{tabs.map((tab) => (
+							<TabsContent key={tab} value={tab}>
+								<div className="space-y-4 pt-6">
+									{renderMainRows(groupedProperties[tab] || [])}
+								</div>
+							</TabsContent>
+						))}
+					</Tabs>
+				</div>
+			)}
+		</div>
+	)
+
+	// When renderSidebar is provided, use flex layout and call the render prop
+	if (renderSidebar) {
+		return (
+			<FormProvider
+				onSubmit={submitHandler}
+				className="flex-1 flex w-full overflow-hidden"
+				{...methods}
+			>
+				<div className="flex-1 min-w-0 overflow-y-auto p-8">
+					{mainFormContent}
+				</div>
+				{renderSidebar({
+					relationshipFields,
+					sidePanelFields,
+					renderField,
+					metadata,
+				})}
+			</FormProvider>
+		)
+	}
+
+	// Default grid layout with internal sidebar
 	return (
 		<FormProvider onSubmit={submitHandler} {...methods}>
 			<div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
 				{/* Main Form Column */}
 				<div className={hasSidebar ? 'lg:col-span-8' : 'lg:col-span-12'}>
-					<div className="space-y-10">
-						{/* Fields without tabs */}
-						{fieldsWithoutTabs.length > 0 && (
-							<div>
-								<h3 className="text-base font-semibold mb-6">
-									General Information
-								</h3>
-								<div className="space-y-4">
-									{renderMainRows(fieldsWithoutTabs)}
-								</div>
-							</div>
-						)}
-
-						{/* Single tab - show as section */}
-						{tabs.length === 1 && (
-							<div
-								className={
-									fieldsWithoutTabs.length > 0
-										? 'border-t border-border pt-8'
-										: ''
-								}
-							>
-								<h3 className="text-base font-semibold mb-6">{tabs[0]}</h3>
-								<div className="space-y-4">
-									{tabs[0] && renderMainRows(groupedProperties[tabs[0]] || [])}
-								</div>
-							</div>
-						)}
-
-						{/* Multiple tabs */}
-						{tabs.length > 1 && (
-							<div
-								className={
-									fieldsWithoutTabs.length > 0
-										? 'border-t border-border pt-8'
-										: ''
-								}
-							>
-								<Tabs value={activeTab} onValueChange={setActiveTab}>
-									<TabsList>
-										{tabs.map((tab) => (
-											<TabsTrigger key={tab} value={tab}>
-												{tab}
-											</TabsTrigger>
-										))}
-									</TabsList>
-									{tabs.map((tab) => (
-										<TabsContent key={tab} value={tab}>
-											<div className="space-y-4 pt-6">
-												{renderMainRows(groupedProperties[tab] || [])}
-											</div>
-										</TabsContent>
-									))}
-								</Tabs>
-							</div>
-						)}
-					</div>
+					{mainFormContent}
 				</div>
 
 				{/* Sidebar Column */}

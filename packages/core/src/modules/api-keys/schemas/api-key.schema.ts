@@ -48,7 +48,7 @@ export type ApiKeyPermissionScope =
  * curl -H "Authorization: Bearer mgnt_..." https://api.example.com/content/posts
  * ```
  */
-@Schema({ versioning: false, i18n: false })
+@Schema({ versioning: false, i18n: false, visible: false })
 export class ApiKey {
 	/**
 	 * Document ID (assigned by database)

@@ -32,13 +32,14 @@ export class DiscoveryService implements OnModuleInit {
 	getDiscoveredSchemas(): string[] {
 		return this.schemas
 			.filter((schema) => !EXCLUDED_SCHEMAS.includes(schema.name.toLowerCase()))
+			.filter((schema) => schema.options?.visible !== false) // Filter out hidden schemas
 			.map((schema) => schema.apiName || schema.name) // Use apiName (kebab-case) for routes, fallback to name
 	}
 
 	getAllDiscoveredSchemas(): SchemaMetadata[] {
-		return this.schemas.filter(
-			(schema) => !EXCLUDED_SCHEMAS.includes(schema.name.toLowerCase()),
-		)
+		return this.schemas
+			.filter((schema) => !EXCLUDED_SCHEMAS.includes(schema.name.toLowerCase()))
+			.filter((schema) => schema.options?.visible !== false) // Filter out hidden schemas
 	}
 
 	getDiscoveredSchema(name: string): SchemaMetadata | { error: string } {

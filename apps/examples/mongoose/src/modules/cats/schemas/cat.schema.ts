@@ -1,4 +1,5 @@
 import { Field, Prop, Schema } from '@magnet-cms/common'
+import { Prop as MgProp } from '@nestjs/mongoose'
 import { Type } from 'class-transformer'
 import {
 	IsBoolean,
@@ -15,6 +16,24 @@ import { SchemaTypes } from 'mongoose'
 
 @Schema()
 export class Cat {
+	// Versioning/i18n fields - required for content management
+	@MgProp({ type: String, required: true, index: true })
+	documentId: string
+
+	@MgProp({ type: String, required: true, default: 'en' })
+	locale: string
+
+	@MgProp({
+		type: String,
+		required: true,
+		default: 'draft',
+		enum: ['draft', 'published', 'archived'],
+	})
+	status: 'draft' | 'published' | 'archived'
+
+	@MgProp({ type: Date, default: null })
+	publishedAt: Date | null
+
 	@Field.Text({ unique: true, required: true, tab: 'General', row: true })
 	@Field.Validators(IsString(), Length(10, 20), IsNotEmpty())
 	tagID: string

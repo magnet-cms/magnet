@@ -4,7 +4,7 @@ import { Field, Mixed, Prop, Schema } from '@magnet-cms/common'
  * Media schema for storing file metadata.
  * This entity has a custom UI (Media Library) and doesn't use the standard content manager.
  */
-@Schema({ versioning: false, i18n: false })
+@Schema({ versioning: false, i18n: false, visible: false })
 export class Media {
 	@Field.Text({ required: true, unique: true })
 	filename!: string

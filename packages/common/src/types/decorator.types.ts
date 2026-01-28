@@ -49,4 +49,10 @@ export type BaseSchemaOptions = {
 export type SchemaOptions = {
 	versioning?: boolean
 	i18n?: boolean
+	/**
+	 * Whether the schema is visible in the Content Manager.
+	 * Set to false for system schemas that have dedicated admin pages.
+	 * @default true
+	 */
+	visible?: boolean
 }

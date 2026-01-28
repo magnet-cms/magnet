@@ -1,10 +1,10 @@
 import {
-	Breadcrumbs,
 	Separator,
 	SidebarInset,
 	SidebarProvider,
 	SidebarTrigger,
 } from '@magnet-cms/ui/components'
+import { Breadcrumbs } from '~/components/Breadcrumbs'
 import { Outlet } from 'react-router-dom'
 import { NotificationsDrawer } from '~/components/Notifications'
 import { EnvironmentProvider } from '~/contexts/EnvironmentContext'

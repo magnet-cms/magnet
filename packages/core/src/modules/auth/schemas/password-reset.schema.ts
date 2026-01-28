@@ -7,7 +7,7 @@ import { IsBoolean, IsDate, IsNotEmpty, IsString } from 'class-validator'
  * Tokens are hashed before storage for security.
  * Each token can only be used once.
  */
-@Schema({ versioning: false, i18n: false })
+@Schema({ versioning: false, i18n: false, visible: false })
 export class PasswordReset {
 	/**
 	 * User ID requesting the reset

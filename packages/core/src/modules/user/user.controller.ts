@@ -1,5 +1,14 @@
 import { Resolve } from '@magnet-cms/common'
-import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common'
+import {
+	Body,
+	Controller,
+	Delete,
+	Get,
+	Param,
+	Post,
+	Put,
+	Query,
+} from '@nestjs/common'
 import { CreateUserDto } from './dto/create-user.dto'
 import { User } from './schemas/user.schema'
 import { UserService } from './user.service'
@@ -15,9 +24,11 @@ export class UserController {
 	}
 
 	@Get()
-	@Resolve(() => [User])
-	async findAll(): Promise<User[]> {
-		return this.userService.findAll() as Promise<User[]>
+	async findAll(@Query('page') page = '1', @Query('limit') limit = '20') {
+		return this.userService.findAllPaginated(
+			Number.parseInt(page, 10),
+			Number.parseInt(limit, 10),
+		)
 	}
 
 	@Get(':id')
@@ -40,5 +51,13 @@ export class UserController {
 	@Resolve(() => Boolean)
 	async remove(@Param('id') id: string): Promise<boolean> {
 		return this.userService.remove(id)
+	}
+
+	@Post(':id/reset-password')
+	async resetPassword(
+		@Param('id') id: string,
+		@Body() body: { newPassword: string },
+	): Promise<{ message: string }> {
+		return this.userService.resetPassword(id, body.newPassword)
 	}
 }

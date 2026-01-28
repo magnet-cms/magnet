@@ -8,7 +8,7 @@ import {
 	Length,
 } from 'class-validator'
 
-@Schema({ versioning: false, i18n: false })
+@Schema({ versioning: false, i18n: false, visible: false })
 export class User {
 	@Field.Email({ required: true, unique: true, tab: 'General' })
 	@Field.Validators(IsEmail(), IsNotEmpty())
@@ -32,6 +32,12 @@ export class User {
 	})
 	@Field.Validators(IsString(), IsOptional())
 	role?: string
+
+	@Field.Boolean({ default: true })
+	isActive?: boolean
+
+	@Field.Date({ hidden: true })
+	lastLogin?: Date
 
 	async hashPassword() {
 		this.password = await hash(this.password, 10)

@@ -1,4 +1,5 @@
-import { Field, Prop, Schema } from '@magnet-cms/common'
+import { Field, Schema } from '@magnet-cms/common'
+import { Prop as MgProp } from '@nestjs/mongoose'
 import { Type } from 'class-transformer'
 import {
 	IsDate,
@@ -13,8 +14,26 @@ import { SchemaTypes } from 'mongoose'
 
 @Schema()
 export class MedicalRecord {
+	// Versioning/i18n fields - required for content management
+	@MgProp({ type: String, required: true, index: true })
+	documentId: string
+
+	@MgProp({ type: String, required: true, default: 'en' })
+	locale: string
+
+	@MgProp({
+		type: String,
+		required: true,
+		default: 'draft',
+		enum: ['draft', 'published', 'archived'],
+	})
+	status: 'draft' | 'published' | 'archived'
+
+	@MgProp({ type: Date, default: null })
+	publishedAt: Date | null
+
 	// Many-to-One relation with Cat
-	@Prop({
+	@MgProp({
 		type: SchemaTypes.ObjectId,
 		ref: 'Cat',
 		required: true,
@@ -28,7 +47,7 @@ export class MedicalRecord {
 	cat!: string
 
 	// Many-to-One relation with Veterinarian
-	@Prop({
+	@MgProp({
 		type: SchemaTypes.ObjectId,
 		ref: 'Veterinarian',
 		required: false,

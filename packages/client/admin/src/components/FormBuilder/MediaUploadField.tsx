@@ -129,7 +129,10 @@ export function MediaUploadField(prop: SchemaProperty): ReactElement {
 					setValue(name, [...currentIds, ...newIds], { shouldValidate: true })
 				} else {
 					// Single upload - use the first uploaded file
-					setValue(name, uploadedMedia[0].id, { shouldValidate: true })
+					const firstItem = uploadedMedia[0]
+					if (firstItem) {
+						setValue(name, firstItem.id, { shouldValidate: true })
+					}
 				}
 
 				toast.success(`Uploaded ${uploadedMedia.length} file(s)`)
@@ -191,7 +194,8 @@ export function MediaUploadField(prop: SchemaProperty): ReactElement {
 	)
 
 	const availableMedia =
-		mediaData?.data?.filter((item) => !mediaIds.includes(item.id)) || []
+		mediaData?.items?.filter((item: MediaItem) => !mediaIds.includes(item.id)) ||
+		[]
 
 	return (
 		<FormField

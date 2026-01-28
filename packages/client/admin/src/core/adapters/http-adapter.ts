@@ -103,6 +103,17 @@ export function createHttpAdapter(config: HttpAdapterConfig): MagnetApiAdapter {
 			return undefined as T
 		}
 
+		// Check content type before parsing JSON
+		const contentType = res.headers.get('content-type')
+		if (!contentType?.includes('application/json')) {
+			const text = await res.text()
+			const preview = text.substring(0, 200).replace(/\n/g, ' ')
+			throw new HttpError(
+				`Expected JSON but received ${contentType || 'unknown content type'}. This usually means the API server is not running or the endpoint doesn't exist. Response preview: ${preview}...`,
+				res.status,
+			)
+		}
+
 		return res.json()
 	}
 

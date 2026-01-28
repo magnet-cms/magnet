@@ -1,11 +1,15 @@
 {
   "extends": "@repo/typescript-config/react-library.json",
   "compilerOptions": {
+    "baseUrl": ".",
     "paths": {
       "~/*": ["./src/*"],
-      "@magnet-cms/ui": ["../ui/src"]
+      "@magnet-cms/ui": ["../ui/src"],
+      "@magnet-cms/ui/*": ["../ui/src/*"],
+      "@magnet-cms/utils": ["../../utils/src"],
+      "@magnet-cms/utils/*": ["../../utils/src/*"]
     }
   },
   "include": ["src"],
   "references": [{ "path": "./tsconfig.node.json" }]
-} 
+}

@@ -22,7 +22,7 @@ export type DeviceType = 'desktop' | 'mobile' | 'tablet' | 'unknown'
  * - Activity timestamps
  * - Session management (view/revoke)
  */
-@Schema({ versioning: false, i18n: false })
+@Schema({ versioning: false, i18n: false, visible: false })
 export class Session {
 	/**
 	 * User ID this session belongs to

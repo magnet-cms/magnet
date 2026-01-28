@@ -804,10 +804,10 @@ export function createModel<T>(
 				)
 			}
 			// Try to get schema class from schema options if stored
-			const schemaOptions = this._model.schema.options as Record<
-				string,
-				unknown
-			>
+			// Access options through type assertion since mongoose types don't expose it directly
+			const schemaOptions = (
+				this._model.schema as unknown as { options?: Record<string, unknown> }
+			).options
 			const schemaClass = schemaOptions?.schemaClass as
 				| (new () => unknown)
 				| undefined

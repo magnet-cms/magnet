@@ -5,6 +5,7 @@ import { detectDatabaseAdapter } from '~/utils'
 const defaultSchemaOptions: SchemaOptions = {
 	versioning: true,
 	i18n: true,
+	visible: true,
 }
 
 export function Schema(options: SchemaOptions = {}): ClassDecorator {

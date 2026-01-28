@@ -3,9 +3,20 @@ import { defineConfig } from 'tsup'
 
 export default defineConfig({
 	entry: {
+		index: 'src/index.ts',
 		'components/index': 'src/components/index.ts',
+		'components/atoms/index': 'src/components/atoms/index.ts',
+		'components/molecules/index': 'src/components/molecules/index.ts',
+		'components/molecules/hook-form/index':
+			'src/components/molecules/hook-form/index.ts',
+		'components/organisms/index': 'src/components/organisms/index.ts',
+		'components/organisms/app-layout/index':
+			'src/components/organisms/app-layout/index.ts',
+		'components/organisms/data-table/index':
+			'src/components/organisms/data-table/index.ts',
 		'hooks/index': 'src/hooks/index.ts',
 		'lib/index': 'src/lib/index.ts',
+		'services/index': 'src/services/index.ts',
 	},
 	format: ['cjs', 'esm'],
 	dts: true,
@@ -44,6 +55,10 @@ export default defineConfig({
 		'@radix-ui/react-toggle-group',
 		'@radix-ui/react-tooltip',
 		'@tanstack/react-table',
+		'@dnd-kit/core',
+		'@dnd-kit/modifiers',
+		'@dnd-kit/sortable',
+		'@dnd-kit/utilities',
 		'class-variance-authority',
 		'clsx',
 		'cmdk',
@@ -60,9 +75,19 @@ export default defineConfig({
 		'recharts',
 		'sonner',
 		'tailwind-merge',
-		'tailwindcss-animate',
 		'vaul',
 		'zod',
+		'lexical',
+		'@lexical/code',
+		'@lexical/link',
+		'@lexical/list',
+		'@lexical/markdown',
+		'@lexical/react',
+		'@lexical/rich-text',
+		'@lexical/selection',
+		'@lexical/utils',
+		'@monaco-editor/react',
+		'@hookform/resolvers',
 	],
 	esbuildOptions(options) {
 		options.jsx = 'automatic'

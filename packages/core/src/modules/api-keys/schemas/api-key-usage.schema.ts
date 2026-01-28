@@ -28,7 +28,7 @@ export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
  * console.log(`Success rate: ${stats.successRate}%`)
  * ```
  */
-@Schema({ versioning: false, i18n: false })
+@Schema({ versioning: false, i18n: false, visible: false })
 export class ApiKeyUsage {
 	/**
 	 * Document ID (assigned by database)

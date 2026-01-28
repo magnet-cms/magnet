@@ -21,7 +21,7 @@ import {
  * - An array of permission IDs
  * - System flag for protecting default roles
  */
-@Schema({ versioning: false, i18n: false })
+@Schema({ versioning: false, i18n: false, visible: false })
 export class Role {
 	/**
 	 * Unique role identifier (slug)
