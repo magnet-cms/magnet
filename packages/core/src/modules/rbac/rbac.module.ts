@@ -10,8 +10,10 @@ import { DynamicPermissionInterceptor } from './interceptors/dynamic-permission.
 import { RBAC_CONFIG } from './rbac.constants'
 import { RBACController } from './rbac.controller'
 import { RBACSettings } from './rbac.settings'
+import { Permission } from './schemas/permission.schema'
 import { Role } from './schemas/role.schema'
 import { PermissionDiscoveryService } from './services/permission-discovery.service'
+import { PermissionService } from './services/permission.service'
 import { RoleService } from './services/role.service'
 
 /**
@@ -47,6 +49,7 @@ export class RBACModule {
 			imports: [
 				DatabaseModule,
 				DatabaseModule.forFeature(Role),
+				DatabaseModule.forFeature(Permission),
 				forwardRef(() => UserModule),
 				EventsModule,
 				DiscoveryModule,
@@ -60,6 +63,7 @@ export class RBACModule {
 					useValue: options ?? {},
 				},
 				PermissionDiscoveryService,
+				PermissionService,
 				RoleService,
 				PermissionGuard,
 				DynamicPermissionInterceptor,
@@ -67,6 +71,7 @@ export class RBACModule {
 			exports: [
 				RoleService,
 				PermissionDiscoveryService,
+				PermissionService,
 				PermissionGuard,
 				DynamicPermissionInterceptor,
 			],

@@ -11,6 +11,7 @@ import type { InstanceWrapper } from '@nestjs/core/injector/instance-wrapper'
 import { DiscoveryService } from '../../discovery/discovery.service'
 import { PluginRegistryService } from '../../plugin/plugin-registry.service'
 import { CRUD_ACTIONS } from '../rbac.constants'
+import { PermissionService } from './permission.service'
 
 /**
  * Service for discovering all permissions in the system.
@@ -29,6 +30,7 @@ export class PermissionDiscoveryService implements OnModuleInit {
 		private readonly discoveryService: DiscoveryService,
 		private readonly modulesContainer: ModulesContainer,
 		private readonly pluginRegistry: PluginRegistryService,
+		private readonly permissionService: PermissionService,
 	) {}
 
 	async onModuleInit(): Promise<void> {
@@ -45,6 +47,11 @@ export class PermissionDiscoveryService implements OnModuleInit {
 		this.discoverControllerPermissions()
 		this.discoverPluginPermissions()
 		this.discoverSystemPermissions()
+
+		// Sync discovered permissions to database for validation and audit
+		await this.permissionService.upsertMany(
+			Array.from(this.permissions.values()),
+		)
 
 		this.initialized = true
 	}
@@ -343,17 +350,58 @@ export class PermissionDiscoveryService implements OnModuleInit {
 
 	/**
 	 * Get permissions categorized by type (for admin UI)
+	 * - collectionTypes: schema-based (api::*), each schema = one accordion
+	 * - controllers: from @RequirePermission, each controller = one accordion
+	 * - plugins: plugin::*
+	 * - system: system::*
 	 */
 	getCategorized(): CategorizedPermissions {
 		const all = this.getGrouped()
+		const allPerms = this.getAll()
+
+		// Controller permissions: group by controller name (each controller = accordion)
+		const controllerPerms = allPerms.filter((p) => p.source === 'controller')
+		const controllerGroups = this.groupByController(controllerPerms)
 
 		return {
 			collectionTypes: all.filter((g) => g.apiId?.startsWith('api::')),
+			controllers: controllerGroups,
 			plugins: all.filter((g) => g.apiId?.startsWith('plugin::')),
-			system: all.filter(
-				(g) => g.apiId?.startsWith('system::') || !g.apiId?.includes('::'),
-			),
+			system: all.filter((g) => g.apiId?.startsWith('system::')),
 		}
+	}
+
+	/**
+	 * Group controller permissions by controller (each = one accordion)
+	 */
+	private groupByController(perms: PermissionDefinition[]): PermissionGroup[] {
+		const byController = new Map<string, PermissionDefinition[]>()
+
+		for (const perm of perms) {
+			const controllerName = perm.controller ?? 'Other'
+			let list = byController.get(controllerName)
+			if (!list) {
+				list = []
+				byController.set(controllerName, list)
+			}
+			list.push(perm)
+		}
+
+		return Array.from(byController.entries()).map(
+			([controllerName, controllerPerms]) => {
+				const displayName = controllerName.replace(/Controller$/, '')
+				return {
+					id: `controller::${controllerName}`,
+					name: displayName || controllerName,
+					apiId: `controller::${controllerName}`,
+					permissions: controllerPerms.map((p) => ({
+						id: p.id,
+						name: p.name,
+						description: p.description ?? '',
+					})),
+				}
+			},
+		)
 	}
 
 	/**

@@ -48,7 +48,7 @@ export const fieldRenderer: Record<
 			name={prop.name}
 			label={capitalize(prop.ui?.label || prop.name)}
 			description={prop.ui?.description}
-			options={(prop.ui as UICombobox).options.map((option) => ({
+			options={((prop.ui as UICombobox).options ?? []).map((option) => ({
 				value: option.value,
 				label: option.key,
 			}))}
@@ -87,7 +87,7 @@ export const fieldRenderer: Record<
 			name={prop.name}
 			label={capitalize(prop.ui?.label || prop.name)}
 			description={prop.ui?.description}
-			options={(prop.ui as UIMultiSelect).options.map((option) => ({
+			options={((prop.ui as UIMultiSelect).options ?? []).map((option) => ({
 				value: option.value,
 				label: option.key,
 			}))}
@@ -125,7 +125,7 @@ export const fieldRenderer: Record<
 			name={prop.name}
 			label={capitalize(prop.ui?.label || prop.name)}
 			description={prop.ui?.description}
-			options={(prop.ui as UISelect).options.map((option) => ({
+			options={((prop.ui as UISelect).options ?? []).map((option) => ({
 				value: option.value,
 				label: option.key,
 			}))}
@@ -166,6 +166,10 @@ export const fieldRenderer: Record<
 	),
 	select: (prop) => {
 		const ui = prop.ui as UISelect
+		const opts = (ui.options ?? []).map((option) => ({
+			value: option.value,
+			label: option.key,
+		}))
 		if (ui.multi) {
 			return (
 				<RHFMultiSelect
@@ -177,10 +181,7 @@ export const fieldRenderer: Record<
 						ui.placeholder ||
 						`Select ${capitalize(ui.label || prop.name).toLowerCase()}`
 					}
-					options={ui.options.map((option) => ({
-						value: option.value,
-						label: option.key,
-					}))}
+					options={opts}
 				/>
 			)
 		}
@@ -194,10 +195,7 @@ export const fieldRenderer: Record<
 					ui.placeholder ||
 					`Select ${capitalize(ui.label || prop.name).toLowerCase()}`
 				}
-				options={ui.options.map((option) => ({
-					value: option.value,
-					label: option.key,
-				}))}
+				options={opts}
 			/>
 		)
 	},

@@ -27,6 +27,7 @@ export {
 	PermissionDeniedError,
 	InsufficientPermissionsError,
 	RoleNotFoundError,
+	PermissionNotFoundError,
 } from './auth.error'
 
 // Resource errors

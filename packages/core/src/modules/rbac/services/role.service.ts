@@ -2,6 +2,7 @@ import {
 	type CategorizedPermissions,
 	InjectModel,
 	Model,
+	PermissionNotFoundError,
 	RoleNotFoundError,
 	type RoleWithPermissions,
 	type SystemRoleConfig,
@@ -15,6 +16,7 @@ import { UpdateRoleDto } from '../dto/update-role.dto'
 import { DEFAULT_ROLES, WILDCARD_PERMISSION } from '../rbac.constants'
 import { Role } from '../schemas/role.schema'
 import { PermissionDiscoveryService } from './permission-discovery.service'
+import { PermissionService } from './permission.service'
 
 /**
  * Default system roles configuration
@@ -53,6 +55,7 @@ export class RoleService implements OnModuleInit {
 	constructor(
 		@InjectModel(Role) private readonly roleModel: Model<Role>,
 		private readonly permissionDiscovery: PermissionDiscoveryService,
+		private readonly permissionService: PermissionService,
 		private readonly eventService: EventService,
 		private readonly userService: UserService,
 	) {}
@@ -207,6 +210,16 @@ export class RoleService implements OnModuleInit {
 		const existing = await this.findById(id)
 		if (!existing) {
 			throw new RoleNotFoundError(id)
+		}
+
+		// Validate permission IDs against discovered permissions
+		const discoveredIds = this.permissionDiscovery.getAll().map((p) => p.id)
+		const { invalid } = await this.permissionService.validatePermissionIds(
+			permissions,
+			discoveredIds,
+		)
+		if (invalid.length > 0) {
+			throw new PermissionNotFoundError(invalid)
 		}
 
 		await this.roleModel.update(
@@ -492,6 +505,10 @@ export class RoleService implements OnModuleInit {
 			updatedAt: role.updatedAt,
 			collectionTypes: this.permissionDiscovery.markPermissions(
 				categorized.collectionTypes,
+				role.permissions,
+			),
+			controllers: this.permissionDiscovery.markPermissions(
+				categorized.controllers,
 				role.permissions,
 			),
 			plugins: this.permissionDiscovery.markPermissions(

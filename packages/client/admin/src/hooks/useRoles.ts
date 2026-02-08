@@ -5,31 +5,68 @@ import { useAdapter } from '~/core/provider/MagnetProvider'
 // Types
 // ============================================================================
 
-export interface Permission {
-	resource: string
-	actions: string[]
-}
-
-export interface Role {
+export interface PermissionItem {
 	id: string
 	name: string
+	description: string
+	checked?: boolean
+}
+
+export interface PermissionGroup {
+	id: string
+	name: string
+	apiId?: string
+	permissions: PermissionItem[]
+	isOpen?: boolean
+}
+
+export interface RoleListItem {
+	id: string
+	name: string
+	displayName: string
 	description?: string
-	permissions: Permission[]
-	isSystem?: boolean
-	createdAt?: string
+	permissions: string[]
+	isSystem: boolean
+	createdAt: string
 	updatedAt?: string
+	userCount: number
+}
+
+export interface RoleWithPermissions {
+	id: string
+	name: string
+	displayName: string
+	description?: string
+	permissions: string[]
+	isSystem: boolean
+	createdAt: string
+	updatedAt?: string
+	collectionTypes: PermissionGroup[]
+	plugins: PermissionGroup[]
+	system: PermissionGroup[]
+}
+
+export interface CategorizedPermissions {
+	collectionTypes: PermissionGroup[]
+	plugins: PermissionGroup[]
+	system: PermissionGroup[]
 }
 
 export interface CreateRoleData {
 	name: string
+	displayName: string
 	description?: string
-	permissions: Permission[]
+	permissions?: string[]
 }
 
 export interface UpdateRoleData {
-	name?: string
+	displayName?: string
 	description?: string
-	permissions?: Permission[]
+}
+
+export interface DuplicateRoleData {
+	name: string
+	displayName?: string
 }
 
 // ============================================================================
@@ -50,42 +87,39 @@ export const ROLE_KEYS = {
 // ============================================================================
 
 /**
- * Hook to fetch list of roles
+ * Hook to fetch list of roles with user counts
  */
 export const useRoleList = () => {
 	const adapter = useAdapter()
 
-	return useQuery<Role[], Error>({
+	return useQuery<RoleListItem[], Error>({
 		queryKey: ROLE_KEYS.list(),
-		queryFn: () => adapter.request<Role[]>('/rbac/roles'),
+		queryFn: () => adapter.request<RoleListItem[]>('/rbac/roles'),
 	})
 }
 
 /**
- * Hook to fetch a single role by ID
+ * Hook to fetch a single role by ID with resolved permissions
  */
 export const useRole = (id: string) => {
 	const adapter = useAdapter()
 
-	return useQuery<Role, Error>({
+	return useQuery<RoleWithPermissions, Error>({
 		queryKey: ROLE_KEYS.detail(id),
-		queryFn: () => adapter.request<Role>(`/rbac/roles/${id}`),
+		queryFn: () => adapter.request<RoleWithPermissions>(`/rbac/roles/${id}`),
 		enabled: !!id,
 	})
 }
 
 /**
- * Hook to fetch available permissions (resources and actions)
+ * Hook to fetch all available permissions categorized
  */
 export const useAvailablePermissions = () => {
 	const adapter = useAdapter()
 
-	return useQuery<{ resources: string[]; actions: string[] }, Error>({
+	return useQuery<CategorizedPermissions, Error>({
 		queryKey: ROLE_KEYS.permissions(),
-		queryFn: () =>
-			adapter.request<{ resources: string[]; actions: string[] }>(
-				'/rbac/permissions',
-			),
+		queryFn: () => adapter.request<CategorizedPermissions>('/rbac/permissions'),
 	})
 }
 
@@ -100,9 +134,9 @@ export const useRoleCreate = () => {
 	const adapter = useAdapter()
 	const queryClient = useQueryClient()
 
-	return useMutation<Role, Error, CreateRoleData>({
+	return useMutation<RoleListItem, Error, CreateRoleData>({
 		mutationFn: (data) =>
-			adapter.request<Role>('/rbac/roles', {
+			adapter.request<RoleListItem>('/rbac/roles', {
 				method: 'POST',
 				body: data,
 			}),
@@ -119,17 +153,21 @@ export const useRoleUpdate = () => {
 	const adapter = useAdapter()
 	const queryClient = useQueryClient()
 
-	return useMutation<Role, Error, { id: string; data: UpdateRoleData }>({
-		mutationFn: ({ id, data }) =>
-			adapter.request<Role>(`/rbac/roles/${id}`, {
-				method: 'PUT',
-				body: data,
-			}),
-		onSuccess: (_, { id }) => {
-			queryClient.invalidateQueries({ queryKey: ROLE_KEYS.detail(id) })
-			queryClient.invalidateQueries({ queryKey: ROLE_KEYS.lists() })
+	return useMutation<RoleListItem, Error, { id: string; data: UpdateRoleData }>(
+		{
+			mutationFn: ({ id, data }) =>
+				adapter.request<RoleListItem>(`/rbac/roles/${id}`, {
+					method: 'PUT',
+					body: data,
+				}),
+			onSuccess: (_, { id }) => {
+				queryClient.invalidateQueries({
+					queryKey: ROLE_KEYS.detail(id),
+				})
+				queryClient.invalidateQueries({ queryKey: ROLE_KEYS.lists() })
+			},
 		},
-	})
+	)
 }
 
 /**
@@ -139,10 +177,33 @@ export const useRoleDelete = () => {
 	const adapter = useAdapter()
 	const queryClient = useQueryClient()
 
-	return useMutation<{ success: boolean }, Error, string>({
+	return useMutation<{ deleted: boolean }, Error, string>({
 		mutationFn: (id) =>
-			adapter.request<{ success: boolean }>(`/rbac/roles/${id}`, {
+			adapter.request<{ deleted: boolean }>(`/rbac/roles/${id}`, {
 				method: 'DELETE',
+			}),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ROLE_KEYS.lists() })
+		},
+	})
+}
+
+/**
+ * Hook to duplicate a role
+ */
+export const useRoleDuplicate = () => {
+	const adapter = useAdapter()
+	const queryClient = useQueryClient()
+
+	return useMutation<
+		RoleListItem,
+		Error,
+		{ id: string; data: DuplicateRoleData }
+	>({
+		mutationFn: ({ id, data }) =>
+			adapter.request<RoleListItem>(`/rbac/roles/${id}/duplicate`, {
+				method: 'POST',
+				body: data,
 			}),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ROLE_KEYS.lists() })
@@ -157,14 +218,20 @@ export const useUpdateRolePermissions = () => {
 	const adapter = useAdapter()
 	const queryClient = useQueryClient()
 
-	return useMutation<Role, Error, { id: string; permissions: Permission[] }>({
+	return useMutation<
+		RoleListItem,
+		Error,
+		{ id: string; permissions: string[] }
+	>({
 		mutationFn: ({ id, permissions }) =>
-			adapter.request<Role>(`/rbac/roles/${id}/permissions`, {
+			adapter.request<RoleListItem>(`/rbac/roles/${id}/permissions`, {
 				method: 'PUT',
 				body: { permissions },
 			}),
 		onSuccess: (_, { id }) => {
-			queryClient.invalidateQueries({ queryKey: ROLE_KEYS.detail(id) })
+			queryClient.invalidateQueries({
+				queryKey: ROLE_KEYS.detail(id),
+			})
 			queryClient.invalidateQueries({ queryKey: ROLE_KEYS.lists() })
 		},
 	})

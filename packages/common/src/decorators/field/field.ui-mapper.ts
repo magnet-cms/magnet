@@ -198,7 +198,7 @@ export function mapFieldTypeToUI(
 			return toUIDecoratorOptions({
 				...internal,
 				type: 'multiSelect',
-				options: tagsOpts.suggestions?.map((s) => ({ key: s, value: s })),
+				options: tagsOpts.suggestions?.map((s) => ({ key: s, value: s })) ?? [],
 			})
 		}
 

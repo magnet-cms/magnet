@@ -74,6 +74,8 @@ export interface PermissionGroup {
 export interface CategorizedPermissions {
 	/** Permissions for collection types (schemas) */
 	collectionTypes: PermissionGroup[]
+	/** Permissions from controllers (@RequirePermission) - grouped by controller */
+	controllers: PermissionGroup[]
 	/** Permissions from plugins */
 	plugins: PermissionGroup[]
 	/** System permissions (users, settings, etc.) */
@@ -112,6 +114,8 @@ export interface Role {
 export interface RoleWithPermissions extends Role {
 	/** Collection type permissions */
 	collectionTypes: PermissionGroup[]
+	/** Controller permissions (grouped by controller) */
+	controllers: PermissionGroup[]
 	/** Plugin permissions */
 	plugins: PermissionGroup[]
 	/** System permissions */

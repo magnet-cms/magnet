@@ -135,3 +135,27 @@ export class RoleNotFoundError extends MagnetError {
 		super(`Role '${roleName}' not found`, metadata)
 	}
 }
+
+/**
+ * Permission not found error
+ * Thrown when assigning invalid permission IDs to a role
+ */
+export class PermissionNotFoundError extends MagnetError {
+	readonly code = ErrorCode.PERMISSION_NOT_FOUND
+	readonly httpStatus = 400
+	readonly invalidPermissionIds: string[]
+
+	constructor(invalidPermissionIds: string[], metadata?: ErrorMetadata) {
+		super(
+			`Invalid permission(s): ${invalidPermissionIds.join(', ')}. These permissions are not registered in the system.`,
+			{
+				...metadata,
+				context: {
+					...metadata?.context,
+					invalidPermissionIds,
+				},
+			},
+		)
+		this.invalidPermissionIds = invalidPermissionIds
+	}
+}

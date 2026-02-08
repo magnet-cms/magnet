@@ -1,7 +1,14 @@
 import { Toaster } from '@magnet-cms/ui/components/atoms'
 import { names } from '@magnet-cms/utils'
 import React, { Suspense } from 'react'
-import { Outlet, Route, Routes, useParams, useNavigate } from 'react-router-dom'
+import {
+	Navigate,
+	Outlet,
+	Route,
+	Routes,
+	useNavigate,
+	useParams,
+} from 'react-router-dom'
 import type { RouteObject } from 'react-router-dom'
 import { toast } from 'sonner'
 
@@ -11,26 +18,31 @@ import {
 	PluginRegistryProvider,
 	usePluginRegistry,
 } from '~/core/plugins/PluginRegistry'
+import { useLogin, useRegister } from '~/hooks/useAuth'
 import { PrivateRoute } from './PrivateRoute'
 import { PublicRoute } from './PublicRoute'
-import { useLogin, useRegister } from '~/hooks/useAuth'
 
+import { AuthLayout } from '~/features/auth/shared'
 // Import layouts
 import { AuthedLayout } from '~/layouts/AuthedLayout'
-import { AuthLayout } from '~/features/auth/shared'
 
+import {
+	AccessControlListingPage,
+	AccessControlPage,
+} from '~/features/access-control'
+import { ApiKeysListingPage } from '~/features/api-keys'
+import { LoginForm } from '~/features/auth/login'
+import { ProfileSetupForm } from '~/features/auth/profile-setup'
+import { SignupForm } from '~/features/auth/register'
+import {
+	ContentManagerListingPage,
+	SchemaFormPage,
+} from '~/features/content-manager'
 // Import feature pages
 import { DashboardHome } from '~/features/dashboard'
-import { ContentManagerListingPage, SchemaFormPage } from '~/features/content-manager'
 import { MediaLibraryPage } from '~/features/media-library'
+import { ProfilePage, SettingsPage } from '~/features/settings'
 import { UsersListingPage } from '~/features/users'
-import { AccessControlListingPage, AccessControlPage } from '~/features/access-control'
-import { ApiKeysListingPage } from '~/features/api-keys'
-import { SettingsPage, ProfilePage } from '~/features/settings'
-import { PlaygroundPage } from '~/features/playground'
-import { LoginForm } from '~/features/auth/login'
-import { SignupForm } from '~/features/auth/register'
-import { ProfileSetupForm } from '~/features/auth/profile-setup'
 
 // ============================================================================
 // Auth Page Wrappers
@@ -58,9 +70,12 @@ function LoginPage() {
 					navigate('/')
 				},
 				onError: (error) => {
-					toast.error(error.message || 'Failed to sign in. Please check your credentials.')
+					toast.error(
+						error.message ||
+							'Failed to sign in. Please check your credentials.',
+					)
 				},
-			}
+			},
 		)
 	}
 
@@ -95,9 +110,11 @@ function SignupPage() {
 					navigate('/profile-setup')
 				},
 				onError: (error) => {
-					toast.error(error.message || 'Failed to create account. Please try again.')
+					toast.error(
+						error.message || 'Failed to create account. Please try again.',
+					)
 				},
-			}
+			},
 		)
 	}
 
@@ -135,7 +152,12 @@ function ProfileSetupPage() {
 function ContentManagerListingPageWrapper() {
 	const { schema = '' } = useParams<{ schema: string }>()
 	const schemaNames = names(schema)
-	return <ContentManagerListingPage schema={schema} schemaDisplayName={schemaNames.title} />
+	return (
+		<ContentManagerListingPage
+			schema={schema}
+			schemaDisplayName={schemaNames.title}
+		/>
+	)
 }
 
 /**
@@ -144,7 +166,13 @@ function ContentManagerListingPageWrapper() {
 function SchemaFormPageWrapper() {
 	const { schema = '', id = '' } = useParams<{ schema: string; id: string }>()
 	const schemaNames = names(schema)
-	return <SchemaFormPage schema={schema} schemaDisplayName={schemaNames.title} entryId={id} />
+	return (
+		<SchemaFormPage
+			schema={schema}
+			schemaDisplayName={schemaNames.title}
+			entryId={id}
+		/>
+	)
 }
 
 const withSuspense = (Component: React.ComponentType) => (
@@ -175,7 +203,11 @@ function DashboardContent() {
 		return <Loader />
 	}
 
-	return <AuthedLayout><Outlet /></AuthedLayout>
+	return (
+		<AuthedLayout>
+			<Outlet />
+		</AuthedLayout>
+	)
 }
 
 /**
@@ -248,10 +280,6 @@ const coreDashboardRoutes: RouteObject[] = [
 				element: withSuspense(SettingsPage),
 			},
 		],
-	},
-	{
-		path: 'playground',
-		element: withSuspense(PlaygroundPage),
 	},
 ]
 
@@ -338,6 +366,10 @@ export const routes: RouteObject[] = [
 						],
 					},
 				],
+			},
+			{
+				path: '/auth',
+				element: <Navigate to="/login" replace />,
 			},
 			{
 				path: '/login',
