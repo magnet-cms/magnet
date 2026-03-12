@@ -345,7 +345,7 @@ export class ContentService {
 		await this.historyService.createVersion(
 			documentId,
 			schemaName,
-			version.data,
+			version.data as Record<string, unknown>,
 			'draft',
 			undefined,
 			`Restored from version ${versionNumber}`,

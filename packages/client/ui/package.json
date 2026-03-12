@@ -66,7 +66,7 @@
   ],
   "scripts": {
     "ui": "bunx shadcn@canary",
-    "build": "tsup",
+    "build": "tsup && tsc -p tsconfig.build.json",
     "build:dev": "tsup --watch",
     "typecheck": "tsc --noEmit",
     "lint": "biome check .",

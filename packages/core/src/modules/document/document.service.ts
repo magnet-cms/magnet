@@ -347,7 +347,7 @@ export class DocumentService {
 		await this.historyService.createVersion(
 			documentId,
 			collection,
-			draft,
+			draft as Record<string, unknown>,
 			'published',
 			options.publishedBy,
 			`Published ${locale} locale`,
