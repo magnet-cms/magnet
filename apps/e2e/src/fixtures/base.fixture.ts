@@ -1,10 +1,12 @@
 import { test as base } from '@playwright/test'
 import { ApiClient } from '../helpers/api-client'
+import { CleanupManager } from './cleanup.fixture'
 
 export const test = base.extend<{
 	apiClient: ApiClient
 	apiBaseURL: string
 	uiBaseURL: string
+	cleanup: CleanupManager
 }>({
 	apiBaseURL: async (_, use) => {
 		await use(process.env.API_BASE_URL || 'http://localhost:3000')
@@ -12,6 +14,12 @@ export const test = base.extend<{
 
 	uiBaseURL: async (_, use) => {
 		await use(process.env.UI_BASE_URL || 'http://localhost:3001')
+	},
+
+	cleanup: async (_, use) => {
+		const manager = new CleanupManager()
+		await use(manager)
+		await manager.cleanup()
 	},
 
 	apiClient: async ({ request, apiBaseURL }, use) => {

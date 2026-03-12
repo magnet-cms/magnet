@@ -17,7 +17,7 @@ export class CreateVersionDto {
 
 	@IsObject()
 	@IsNotEmpty()
-	data!: any
+	data!: Record<string, unknown>
 
 	@IsEnum(['draft', 'published', 'archived'])
 	@IsOptional()

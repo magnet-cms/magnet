@@ -174,6 +174,10 @@ export class ApiClient {
 			headers: this.getHeaders(),
 			data,
 		})
+		if (!response.ok()) {
+			const body = await response.text()
+			throw new Error(`register failed: ${response.status()} ${body}`)
+		}
 		return response.json()
 	}
 
@@ -182,6 +186,10 @@ export class ApiClient {
 			headers: this.getHeaders(),
 			data: { email, password },
 		})
+		if (!response.ok()) {
+			const body = await response.text()
+			throw new Error(`login failed: ${response.status()} ${body}`)
+		}
 		return response.json()
 	}
 
@@ -288,6 +296,37 @@ export class ApiClient {
 		})
 	}
 
+	async getSchema(name: string) {
+		return this.request.get(`${this.baseURL}/discovery/schemas/${name}`, {
+			headers: this.getHeaders(),
+		})
+	}
+
+	async getSettingsSchemas() {
+		return this.request.get(`${this.baseURL}/discovery/settings`, {
+			headers: this.getHeaders(),
+		})
+	}
+
+	async getControllers() {
+		return this.request.get(`${this.baseURL}/discovery/controllers`, {
+			headers: this.getHeaders(),
+		})
+	}
+
+	async getController(name: string) {
+		return this.request.get(`${this.baseURL}/discovery/controllers/${name}`, {
+			headers: this.getHeaders(),
+		})
+	}
+
+	async getMethodDetails(path: string, methodName: string) {
+		return this.request.get(
+			`${this.baseURL}/discovery/method/${encodeURIComponent(path)}/${methodName}`,
+			{ headers: this.getHeaders() },
+		)
+	}
+
 	// Media endpoints
 	async getMediaList(options?: MediaQueryOptions) {
 		const params = new URLSearchParams()
@@ -319,12 +358,6 @@ export class ApiClient {
 		mimeType: string,
 		options?: { folder?: string; tags?: string[]; alt?: string },
 	) {
-		const formData = new FormData()
-		formData.append('file', new Blob([file], { type: mimeType }), filename)
-		if (options?.folder) formData.append('folder', options.folder)
-		if (options?.tags) formData.append('tags', JSON.stringify(options.tags))
-		if (options?.alt) formData.append('alt', options.alt)
-
 		return this.request.post(`${this.baseURL}/media/upload`, {
 			headers: {
 				...(this.token ? { Authorization: `Bearer ${this.token}` } : {}),
@@ -393,8 +426,20 @@ export class ApiClient {
 	}
 
 	// Settings endpoints
+	async getAllSettings() {
+		return this.request.get(`${this.baseURL}/settings`, {
+			headers: this.getHeaders(),
+		})
+	}
+
 	async getSettings(group: string) {
 		return this.request.get(`${this.baseURL}/settings/${group}`, {
+			headers: this.getHeaders(),
+		})
+	}
+
+	async getSetting(group: string, key: string) {
+		return this.request.get(`${this.baseURL}/settings/${group}/${key}`, {
 			headers: this.getHeaders(),
 		})
 	}
@@ -403,6 +448,13 @@ export class ApiClient {
 		return this.request.put(`${this.baseURL}/settings/${group}`, {
 			headers: this.getHeaders(),
 			data,
+		})
+	}
+
+	async updateSetting(group: string, key: string, value: unknown) {
+		return this.request.put(`${this.baseURL}/settings/${group}/${key}`, {
+			headers: this.getHeaders(),
+			data: { value },
 		})
 	}
 
@@ -538,13 +590,106 @@ export class ApiClient {
 		schema: string,
 		options?: { locale?: string; createdBy?: string },
 	) {
-		return this.request.post(`${this.baseURL}/content/${schema}/empty`, {
+		return this.request.post(`${this.baseURL}/content/${schema}/new`, {
 			headers: this.getHeaders(),
 			data: {
 				locale: options?.locale,
 				createdBy: options?.createdBy,
 			},
 		})
+	}
+
+	async publishContent(
+		schema: string,
+		documentId: string,
+		options?: { locale?: string; publishedBy?: string },
+	) {
+		const params = new URLSearchParams()
+		if (options?.locale) params.set('locale', options.locale)
+
+		const queryString = params.toString()
+		const url = `${this.baseURL}/content/${schema}/${documentId}/publish${queryString ? `?${queryString}` : ''}`
+
+		return this.request.post(url, {
+			headers: this.getHeaders(),
+			data: { publishedBy: options?.publishedBy },
+		})
+	}
+
+	async unpublishContent(
+		schema: string,
+		documentId: string,
+		options?: { locale?: string },
+	) {
+		const params = new URLSearchParams()
+		if (options?.locale) params.set('locale', options.locale)
+
+		const queryString = params.toString()
+		const url = `${this.baseURL}/content/${schema}/${documentId}/unpublish${queryString ? `?${queryString}` : ''}`
+
+		return this.request.post(url, {
+			headers: this.getHeaders(),
+		})
+	}
+
+	async addContentLocale(
+		schema: string,
+		documentId: string,
+		locale: string,
+		data: Record<string, unknown>,
+		options?: { createdBy?: string },
+	) {
+		return this.request.post(
+			`${this.baseURL}/content/${schema}/${documentId}/locale`,
+			{
+				headers: this.getHeaders(),
+				data: { locale, data, createdBy: options?.createdBy },
+			},
+		)
+	}
+
+	async deleteContentLocale(
+		schema: string,
+		documentId: string,
+		locale: string,
+	) {
+		return this.request.delete(
+			`${this.baseURL}/content/${schema}/${documentId}/locale/${locale}`,
+			{ headers: this.getHeaders() },
+		)
+	}
+
+	async getContentLocaleStatuses(schema: string, documentId: string) {
+		return this.request.get(
+			`${this.baseURL}/content/${schema}/${documentId}/locales`,
+			{ headers: this.getHeaders() },
+		)
+	}
+
+	async getContentVersions(
+		schema: string,
+		documentId: string,
+		options?: { locale?: string },
+	) {
+		const params = new URLSearchParams()
+		if (options?.locale) params.set('locale', options.locale)
+
+		const queryString = params.toString()
+		const url = `${this.baseURL}/content/${schema}/${documentId}/versions${queryString ? `?${queryString}` : ''}`
+
+		return this.request.get(url, { headers: this.getHeaders() })
+	}
+
+	async restoreContentVersion(
+		schema: string,
+		documentId: string,
+		locale: string,
+		version: number,
+	) {
+		return this.request.post(
+			`${this.baseURL}/content/${schema}/${documentId}/restore?locale=${locale}&version=${version}`,
+			{ headers: this.getHeaders() },
+		)
 	}
 
 	async updateContent(
@@ -651,6 +796,277 @@ export class ApiClient {
 
 		return this.request.get(url, {
 			headers: this.getHeaders(),
+		})
+	}
+
+	// History endpoints
+	async getVersions(documentId: string, collection: string) {
+		return this.request.get(
+			`${this.baseURL}/history/versions/${documentId}?collection=${encodeURIComponent(collection)}`,
+			{ headers: this.getHeaders() },
+		)
+	}
+
+	async getLatestVersion(
+		documentId: string,
+		collection: string,
+		status?: 'draft' | 'published' | 'archived',
+	) {
+		const params = new URLSearchParams({ collection })
+		if (status) params.set('status', status)
+		return this.request.get(
+			`${this.baseURL}/history/versions/${documentId}/latest?${params.toString()}`,
+			{ headers: this.getHeaders() },
+		)
+	}
+
+	async getVersionById(versionId: string) {
+		return this.request.get(`${this.baseURL}/history/version/${versionId}`, {
+			headers: this.getHeaders(),
+		})
+	}
+
+	async createVersion(data: {
+		documentId: string
+		collection: string
+		data: Record<string, unknown>
+		status?: 'draft' | 'published' | 'archived'
+		createdBy?: string
+		notes?: string
+	}) {
+		return this.request.post(`${this.baseURL}/history/version`, {
+			headers: this.getHeaders(),
+			data,
+		})
+	}
+
+	async publishVersion(versionId: string) {
+		return this.request.put(
+			`${this.baseURL}/history/version/${versionId}/publish`,
+			{ headers: this.getHeaders() },
+		)
+	}
+
+	async archiveVersion(versionId: string) {
+		return this.request.put(
+			`${this.baseURL}/history/version/${versionId}/archive`,
+			{ headers: this.getHeaders() },
+		)
+	}
+
+	async deleteVersion(versionId: string) {
+		return this.request.delete(`${this.baseURL}/history/version/${versionId}`, {
+			headers: this.getHeaders(),
+		})
+	}
+
+	async getVersioningSettings() {
+		return this.request.get(`${this.baseURL}/history/settings`, {
+			headers: this.getHeaders(),
+		})
+	}
+
+	// Environment endpoints
+	async getEnvironments() {
+		return this.request.get(`${this.baseURL}/environments`, {
+			headers: this.getHeaders(),
+		})
+	}
+
+	async getLocalEnvironment() {
+		return this.request.get(`${this.baseURL}/environments/local`, {
+			headers: this.getHeaders(),
+		})
+	}
+
+	// User management endpoints
+	async createUser(data: {
+		email: string
+		password: string
+		name: string
+		role?: string
+	}) {
+		return this.request.post(`${this.baseURL}/users`, {
+			headers: this.getHeaders(),
+			data,
+		})
+	}
+
+	async getUsers(options?: { page?: number; limit?: number }) {
+		const params = new URLSearchParams()
+		if (options?.page) params.set('page', String(options.page))
+		if (options?.limit) params.set('limit', String(options.limit))
+
+		const queryString = params.toString()
+		const url = `${this.baseURL}/users${queryString ? `?${queryString}` : ''}`
+		return this.request.get(url, { headers: this.getHeaders() })
+	}
+
+	async getUser(id: string) {
+		return this.request.get(`${this.baseURL}/users/${id}`, {
+			headers: this.getHeaders(),
+		})
+	}
+
+	async updateUser(
+		id: string,
+		data: { email?: string; password?: string; name?: string; role?: string },
+	) {
+		return this.request.put(`${this.baseURL}/users/${id}`, {
+			headers: this.getHeaders(),
+			data,
+		})
+	}
+
+	async deleteUser(id: string) {
+		return this.request.delete(`${this.baseURL}/users/${id}`, {
+			headers: this.getHeaders(),
+		})
+	}
+
+	async resetUserPassword(id: string, newPassword: string) {
+		return this.request.post(`${this.baseURL}/users/${id}/reset-password`, {
+			headers: this.getHeaders(),
+			data: { newPassword },
+		})
+	}
+
+	// Playground (Content Builder plugin) endpoints
+	async listPlaygroundSchemas() {
+		return this.request.get(`${this.baseURL}/playground/schemas`, {
+			headers: this.getHeaders(),
+		})
+	}
+
+	async getPlaygroundSchema(name: string) {
+		return this.request.get(`${this.baseURL}/playground/schemas/${name}`, {
+			headers: this.getHeaders(),
+		})
+	}
+
+	async createPlaygroundSchema(data: {
+		name: string
+		options?: { versioning?: boolean; i18n?: boolean }
+		fields: Array<{
+			name: string
+			displayName: string
+			type: 'text' | 'number' | 'date' | 'boolean' | 'select' | 'relation'
+			tsType: string
+			prop: {
+				required?: boolean
+				unique?: boolean
+				default?: unknown
+				intl?: boolean
+				hidden?: boolean
+				readonly?: boolean
+			}
+			ui: {
+				type?: string
+				label?: string
+				description?: string
+				placeholder?: string
+				tab?: string
+				side?: boolean
+				row?: boolean
+				options?: { key: string; value: string }[]
+			}
+			validations: Array<{
+				type: string
+				constraints?: (string | number)[]
+				message?: string
+			}>
+		}>
+	}) {
+		return this.request.post(`${this.baseURL}/playground/schemas`, {
+			headers: this.getHeaders(),
+			data,
+		})
+	}
+
+	async updatePlaygroundSchema(
+		name: string,
+		data: {
+			name: string
+			options?: { versioning?: boolean; i18n?: boolean }
+			fields: Array<{
+				name: string
+				displayName: string
+				type: 'text' | 'number' | 'date' | 'boolean' | 'select' | 'relation'
+				tsType: string
+				prop: {
+					required?: boolean
+					unique?: boolean
+					default?: unknown
+					intl?: boolean
+					hidden?: boolean
+					readonly?: boolean
+				}
+				ui: {
+					type?: string
+					label?: string
+					description?: string
+					placeholder?: string
+					tab?: string
+					side?: boolean
+					row?: boolean
+					options?: { key: string; value: string }[]
+				}
+				validations: Array<{
+					type: string
+					constraints?: (string | number)[]
+					message?: string
+				}>
+			}>
+		},
+	) {
+		return this.request.put(`${this.baseURL}/playground/schemas/${name}`, {
+			headers: this.getHeaders(),
+			data,
+		})
+	}
+
+	async deletePlaygroundSchema(name: string) {
+		return this.request.delete(`${this.baseURL}/playground/schemas/${name}`, {
+			headers: this.getHeaders(),
+		})
+	}
+
+	async previewPlaygroundCode(data: {
+		name: string
+		options?: { versioning?: boolean; i18n?: boolean }
+		fields: Array<{
+			name: string
+			displayName: string
+			type: 'text' | 'number' | 'date' | 'boolean' | 'select' | 'relation'
+			tsType: string
+			prop: {
+				required?: boolean
+				unique?: boolean
+				default?: unknown
+				intl?: boolean
+				hidden?: boolean
+				readonly?: boolean
+			}
+			ui: {
+				type?: string
+				label?: string
+				description?: string
+				placeholder?: string
+				tab?: string
+				side?: boolean
+				row?: boolean
+				options?: { key: string; value: string }[]
+			}
+			validations: Array<{
+				type: string
+				constraints?: (string | number)[]
+				message?: string
+			}>
+		}>
+	}) {
+		return this.request.post(`${this.baseURL}/playground/preview`, {
+			headers: this.getHeaders(),
+			data,
 		})
 	}
 

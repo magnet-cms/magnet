@@ -2,6 +2,7 @@ import { resolve } from 'node:path'
 import { URL, fileURLToPath } from 'node:url'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
+import { visualizer } from 'rollup-plugin-visualizer'
 import { defineConfig } from 'vite'
 
 // Base path for assets - defaults to /admin/ for NestJS embedding
@@ -11,7 +12,20 @@ const basePath = process.env.VITE_BASE_PATH || '/admin/'
 // https://vitejs.dev/config/
 export default defineConfig({
 	base: basePath,
-	plugins: [react(), tailwindcss()],
+	plugins: [
+		react(),
+		tailwindcss(),
+		...(process.env.ANALYZE === 'true'
+			? [
+					visualizer({
+						filename: 'dist/stats.html',
+						open: false,
+						gzipSize: true,
+						brotliSize: true,
+					}),
+				]
+			: []),
+	],
 	resolve: {
 		alias: [
 			{

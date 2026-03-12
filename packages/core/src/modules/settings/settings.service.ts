@@ -13,7 +13,7 @@ import {
 	getSettingsOptions,
 } from '@magnet-cms/common'
 import type { Type } from '@nestjs/common'
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
+import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common'
 import { ModuleRef } from '@nestjs/core'
 import { plainToInstance } from 'class-transformer'
 import { validate } from 'class-validator'
@@ -28,7 +28,7 @@ interface CacheEntry<T> {
 }
 
 @Injectable()
-export class SettingsService implements OnModuleInit {
+export class SettingsService implements OnApplicationBootstrap {
 	private readonly logger = new Logger(SettingsService.name)
 	private registeredSchemas: Map<string, Type> = new Map()
 	/** Maps schema class name (lowercase) to actual group name */
@@ -45,24 +45,17 @@ export class SettingsService implements OnModuleInit {
 		private readonly moduleRef: ModuleRef,
 	) {}
 
-	async onModuleInit() {
-		// TODO: Fix the DatabaseModule async factory timing issue
-		// The model is not ready during onModuleInit due to the async factory pattern
-		// For now, skip automatic schema registration - schemas will be registered on first use
-		// await this.waitForModel()
-		// await this.discoverAndInitializeSchemas()
-		this.logger.warn(
-			'Automatic settings schema registration disabled due to model initialization timing',
-		)
+	async onApplicationBootstrap() {
+		await this.waitForModel()
 	}
 
 	private async waitForModel(): Promise<boolean> {
-		// TODO: Fix DatabaseModule async factory timing issue
-		// For now, just return false to indicate model is not ready
+		if (this.modelReady) return true
 		if (!this.settingModel) {
 			this.logger.warn('Settings model not available')
 			return false
 		}
+		this.modelReady = true
 		return true
 	}
 

@@ -2,7 +2,6 @@ import { defineConfig, devices } from '@playwright/test'
 
 const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:3000'
 const UI_BASE_URL = process.env.UI_BASE_URL || 'http://localhost:3001'
-const DOCS_BASE_URL = process.env.DOCS_BASE_URL || 'http://localhost:3002'
 const CI = !!process.env.CI
 
 export default defineConfig({
@@ -44,7 +43,7 @@ export default defineConfig({
 			},
 		},
 		{
-			name: 'chromium',
+			name: 'ui',
 			testDir: './tests/ui',
 			use: {
 				...devices['Desktop Chrome'],
@@ -52,27 +51,11 @@ export default defineConfig({
 			},
 		},
 		{
-			name: 'firefox',
-			testDir: './tests/ui',
-			use: {
-				...devices['Desktop Firefox'],
-				baseURL: UI_BASE_URL,
-			},
-		},
-		{
-			name: 'webkit',
-			testDir: './tests/ui',
-			use: {
-				...devices['Desktop Safari'],
-				baseURL: UI_BASE_URL,
-			},
-		},
-		{
-			name: 'docs',
-			testDir: './tests/docs',
+			name: 'admin-serve',
+			testDir: './tests/admin-serve',
 			use: {
 				...devices['Desktop Chrome'],
-				baseURL: DOCS_BASE_URL,
+				baseURL: API_BASE_URL,
 			},
 		},
 	],

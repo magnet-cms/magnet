@@ -1,0 +1,210 @@
+---
+title: Supabase Adapter
+description: Supabase authentication strategy and storage adapter for Magnet CMS
+---
+
+# Supabase Adapter
+
+The `@magnet-cms/adapter-supabase` package provides Supabase integration for Magnet CMS. It is **not a database adapter** — it provides two distinct capabilities:
+
+1. **Auth Strategy** — Replace Magnet's built-in JWT auth with Supabase Auth
+2. **Storage Adapter** — Use Supabase Storage for media uploads
+
+For database connectivity with a Supabase PostgreSQL database, use the [Drizzle adapter](/docs/adapters/drizzle) with a Supabase connection string.
+
+## Installation
+
+```bash
+bun add @magnet-cms/adapter-supabase @supabase/supabase-js
+```
+
+## Supabase Auth Strategy
+
+The `SupabaseAuthStrategy` delegates user authentication to Supabase Auth. This lets you use Supabase's built-in features: social login providers, magic links, multi-factor authentication, and row-level security.
+
+### Configuration
+
+```typescript
+import { setDatabaseAdapter } from '@magnet-cms/common'
+setDatabaseAdapter('drizzle')  // Still need a database adapter for content
+
+import { AuthStrategyFactory, MagnetModule } from '@magnet-cms/core'
+import { SupabaseAuthStrategy } from '@magnet-cms/adapter-supabase'
+import { Module } from '@nestjs/common'
+
+// Register the strategy before module initialization
+AuthStrategyFactory.registerStrategy('supabase', SupabaseAuthStrategy)
+
+@Module({
+  imports: [
+    MagnetModule.forRoot({
+      db: {
+        // Drizzle connects to Supabase PostgreSQL
+        connectionString: process.env.DATABASE_URL || '',
+        dialect: 'postgresql',
+      },
+      auth: {
+        strategy: 'supabase',
+        supabaseUrl: process.env.SUPABASE_URL || '',
+        supabaseKey: process.env.SUPABASE_ANON_KEY || '',
+        supabaseServiceKey: process.env.SUPABASE_SERVICE_ROLE_KEY,  // Optional: enables listUsers
+        defaultRole: 'user',
+        jwt: {
+          secret: process.env.SUPABASE_JWT_SECRET || '',
+        },
+      },
+    }),
+  ],
+})
+export class AppModule {}
+```
+
+### Auth Configuration Options
+
+| Option | Type | Required | Description |
+|--------|------|----------|-------------|
+| `strategy` | `'supabase'` | Yes | Activates Supabase auth strategy |
+| `supabaseUrl` | `string` | Yes | Your Supabase project URL (`https://xxx.supabase.co`) |
+| `supabaseKey` | `string` | Yes | Supabase anon/public key |
+| `supabaseServiceKey` | `string` | No | Service role key — required for `listUsers()` and user management |
+| `defaultRole` | `string` | No | Default role assigned to new users (default: `'user'`) |
+| `jwt.secret` | `string` | Yes | Supabase JWT secret (from your Supabase dashboard → Settings → API) |
+
+### How Auth Works
+
+The Supabase auth strategy integrates with Magnet's auth module:
+
+| Operation | Behavior |
+|-----------|----------|
+| `POST /auth/login` | Calls `supabase.auth.signInWithPassword()` |
+| `POST /auth/register` | Calls `supabase.auth.signUp()` |
+| `GET /auth/me` | Validates JWT against Supabase, returns user data |
+| Token refresh | Calls `supabase.auth.refreshSession()` |
+| Logout | Calls `supabase.auth.signOut()` |
+
+### Environment Variables
+
+```bash
+# Supabase project settings (Dashboard → Settings → API)
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key  # Optional
+SUPABASE_JWT_SECRET=your-jwt-secret
+
+# Database connection (Supabase PostgreSQL via Drizzle)
+DATABASE_URL=postgresql://postgres:password@db.your-project.supabase.co:5432/postgres
+```
+
+## Supabase Storage Adapter
+
+The `SupabaseStorageAdapter` stores media uploads in Supabase Storage buckets.
+
+### Configuration
+
+```typescript
+import { SupabaseStorageAdapter } from '@magnet-cms/adapter-supabase'
+
+MagnetModule.forRoot({
+  // ...
+  storage: {
+    adapter: new SupabaseStorageAdapter({
+      supabaseUrl: process.env.SUPABASE_URL || '',
+      supabaseKey: process.env.SUPABASE_SERVICE_ROLE_KEY || '',  // Service key for storage operations
+      bucket: 'media',       // Supabase Storage bucket name
+      publicUrl: process.env.SUPABASE_STORAGE_URL,  // Optional custom CDN URL
+    }),
+  },
+})
+```
+
+### Storage Adapter Options
+
+| Option | Type | Required | Description |
+|--------|------|----------|-------------|
+| `supabaseUrl` | `string` | Yes | Your Supabase project URL |
+| `supabaseKey` | `string` | Yes | Service role key (needed for write operations) |
+| `bucket` | `string` | Yes | Storage bucket name (create it in Supabase dashboard) |
+| `publicUrl` | `string` | No | Custom CDN URL for serving files |
+
+### Creating the Storage Bucket
+
+Before using the storage adapter, create a bucket in your Supabase dashboard:
+
+1. Go to **Storage** in your Supabase project
+2. Click **New bucket**
+3. Name it `media` (or match your `bucket` config)
+4. Set **Public** if you want files to be publicly accessible
+
+Or use the Supabase CLI:
+
+```bash
+supabase storage create-bucket media --public
+```
+
+## Combined Setup: Drizzle + Supabase
+
+The most common setup uses Drizzle for the database (connecting to Supabase PostgreSQL) and Supabase for auth and storage:
+
+```typescript
+import { setDatabaseAdapter } from '@magnet-cms/common'
+setDatabaseAdapter('drizzle')
+
+import { AuthStrategyFactory, MagnetModule } from '@magnet-cms/core'
+import { SupabaseAuthStrategy, SupabaseStorageAdapter } from '@magnet-cms/adapter-supabase'
+import { Module } from '@nestjs/common'
+
+AuthStrategyFactory.registerStrategy('supabase', SupabaseAuthStrategy)
+
+@Module({
+  imports: [
+    MagnetModule.forRoot({
+      db: {
+        connectionString: process.env.DATABASE_URL || '',
+        dialect: 'postgresql',
+      },
+      auth: {
+        strategy: 'supabase',
+        supabaseUrl: process.env.SUPABASE_URL || '',
+        supabaseKey: process.env.SUPABASE_ANON_KEY || '',
+        supabaseServiceKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
+        jwt: { secret: process.env.SUPABASE_JWT_SECRET || '' },
+      },
+      storage: {
+        adapter: new SupabaseStorageAdapter({
+          supabaseUrl: process.env.SUPABASE_URL || '',
+          supabaseKey: process.env.SUPABASE_SERVICE_ROLE_KEY || '',
+          bucket: 'media',
+        }),
+      },
+    }),
+  ],
+})
+export class AppModule {}
+```
+
+## Local Development with Docker
+
+For local development, you can run a self-hosted Supabase stack using Docker. A ready-to-use configuration is in [`apps/examples/drizzle-supabase/docker`](https://github.com/magnet-cms/magnet/tree/main/apps/examples/drizzle-supabase/docker):
+
+```bash
+cd apps/examples/drizzle-supabase
+cp .env.example .env
+docker compose up -d
+```
+
+The local Supabase stack starts:
+- PostgreSQL on port 5432
+- Supabase API on port 8000
+- Supabase Studio on port 3000
+- Storage on port 5000
+
+## Example Application
+
+A complete working example using Drizzle + Supabase is available in [`apps/examples/drizzle-supabase`](https://github.com/magnet-cms/magnet/tree/main/apps/examples/drizzle-supabase).
+
+## What This Adapter Does NOT Provide
+
+- **Database adapter** — Use `@magnet-cms/adapter-drizzle` for database connectivity
+- **Row-level security (RLS)** — Configure RLS policies directly in Supabase dashboard
+- **Realtime subscriptions** — Use the Supabase JS client directly in your frontend
+- **Edge functions** — Deploy separately via Supabase CLI

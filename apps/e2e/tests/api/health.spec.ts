@@ -10,4 +10,13 @@ test.describe('Health API', () => {
 		const body = await response.json()
 		expect(body.status).toBe('ok')
 	})
+
+	test('GET /health responds within 500ms', async ({ apiClient }) => {
+		const start = Date.now()
+		const response = await apiClient.getHealth()
+		const elapsed = Date.now() - start
+
+		expect(response.ok()).toBeTruthy()
+		expect(elapsed).toBeLessThan(500)
+	})
 })

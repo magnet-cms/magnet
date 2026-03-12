@@ -54,7 +54,7 @@ export class HistoryController {
 		}: {
 			documentId: string
 			collection: string
-			data: any
+			data: Record<string, unknown>
 			status?: 'draft' | 'published' | 'archived'
 			createdBy?: string
 			notes?: string

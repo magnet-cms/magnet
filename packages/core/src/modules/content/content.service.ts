@@ -132,12 +132,16 @@ export class ContentService {
 			this.authStrategy?.name === 'supabase'
 		) {
 			// Check if the strategy has listUsers method (SupabaseAuthStrategy)
-			const supabaseStrategy = this.authStrategy as any
-			if (typeof supabaseStrategy.listUsers === 'function') {
+			const strategyWithListUsers = this.authStrategy as {
+				listUsers?: () => Promise<
+					Array<{ id: string; email: string; name?: string; role?: string }>
+				>
+			}
+			if (typeof strategyWithListUsers.listUsers === 'function') {
 				try {
-					const users = await supabaseStrategy.listUsers()
+					const users = await strategyWithListUsers.listUsers()
 					// Transform to match Document<T>[] format (array of documents)
-					return users.map((user: any) => ({
+					return users.map((user) => ({
 						id: user.id,
 						email: user.email,
 						name: user.name,

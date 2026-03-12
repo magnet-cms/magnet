@@ -30,7 +30,9 @@ import { requestMethodMap } from '../constants'
 
 @Injectable()
 export class MetadataExtractorService {
-	extractControllerMetadata(wrapper: InstanceWrapper<any>): ControllerMetadata {
+	extractControllerMetadata(
+		wrapper: InstanceWrapper<object>,
+	): ControllerMetadata {
 		const { instance, metatype } = wrapper
 		if (!metatype || typeof metatype !== 'function')
 			return { name: 'UnknownController', basePath: '', methods: [] }
@@ -51,8 +53,12 @@ export class MetadataExtractorService {
 		}
 	}
 
-	extractMethodMetadata(instance: any, method: string): MethodMetadata | null {
-		const methodRef = instance[method]
+	extractMethodMetadata(
+		instance: object,
+		method: string,
+	): MethodMetadata | null {
+		const instanceRecord = instance as Record<string, unknown>
+		const methodRef = instanceRecord[method] as object | undefined
 		if (!methodRef) return null
 
 		const httpMethodNumber = Reflect.getMetadata('method', methodRef)
@@ -576,10 +582,10 @@ export class MetadataExtractorService {
 	}
 
 	getParamDetails(controller: Function, methodName: string) {
-		const routeArgsMetadata: Record<string, any> =
+		const routeArgsMetadata: Record<string, unknown> =
 			Reflect.getMetadata(ROUTE_ARGS_METADATA, controller, methodName) || {}
 
-		const paramTypes: Type<any>[] =
+		const paramTypes: Type<unknown>[] =
 			Reflect.getMetadata(
 				PARAMTYPES_METADATA,
 				controller.prototype,
@@ -594,11 +600,15 @@ export class MetadataExtractorService {
 			const keyIndex = Number.parseInt(key, 10)
 			const location = RouteParamtypes[keyIndex] || 'unknown'
 			const type = paramTypes[index]?.name || 'unknown'
+			const argData =
+				metadata !== null && typeof metadata === 'object' && 'data' in metadata
+					? (metadata as { data: unknown }).data
+					: undefined
 
 			paramDetails.push({
 				arg: location,
 				type: type,
-				name: metadata.data || `param${index}`,
+				name: argData != null ? String(argData) : `param${index}`,
 			})
 		}
 
@@ -608,7 +618,7 @@ export class MetadataExtractorService {
 	private getValidationMetadata(
 		entity: Function,
 		propertyKey: string,
-	): Array<{ type: string; name: string; constraints?: any[] }> {
+	): Array<{ type: string; name: string; constraints?: unknown[] }> {
 		const uniqueValidations = []
 		const metadataStorage = getMetadataStorage()
 		const validationMetadatas = metadataStorage.getTargetValidationMetadatas(

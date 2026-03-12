@@ -18,6 +18,10 @@ import {
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express'
 import type { Request } from 'express'
 import { RestrictedRoute } from '~/decorators/restricted.route'
+
+interface AuthenticatedRequest extends Request {
+	user?: { id: string }
+}
 import { StorageService } from './storage.service'
 
 // DTO for update operations
@@ -55,7 +59,7 @@ export class StorageController {
 		@Body('folder') folder?: string,
 		@Body('tags') tagsJson?: string,
 		@Body('alt') alt?: string,
-		@Req() req?: Request,
+		@Req() req?: AuthenticatedRequest,
 	) {
 		if (!file) {
 			throw new HttpException('No file provided', HttpStatus.BAD_REQUEST)
@@ -63,7 +67,7 @@ export class StorageController {
 
 		try {
 			const tags = tagsJson ? JSON.parse(tagsJson) : undefined
-			const userId = (req as any)?.user?.id
+			const userId = req?.user?.id
 
 			const result = await this.storageService.upload(
 				file.buffer,
@@ -101,14 +105,14 @@ export class StorageController {
 	async uploadMultiple(
 		@UploadedFiles() files: Express.Multer.File[],
 		@Body('folder') folder?: string,
-		@Req() req?: Request,
+		@Req() req?: AuthenticatedRequest,
 	) {
 		if (!files || files.length === 0) {
 			throw new HttpException('No files provided', HttpStatus.BAD_REQUEST)
 		}
 
 		try {
-			const userId = (req as any)?.user?.id
+			const userId = req?.user?.id
 
 			const results = await this.storageService.uploadMany(
 				files.map((file) => ({

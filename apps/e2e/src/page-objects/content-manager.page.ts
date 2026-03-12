@@ -19,7 +19,7 @@ export class ContentManagerPage {
 	}
 
 	async goto() {
-		await this.page.goto('content-manager')
+		await this.page.goto('/content-manager')
 	}
 
 	async gotoSchema(schemaName: string) {

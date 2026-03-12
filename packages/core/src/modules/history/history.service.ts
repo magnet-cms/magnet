@@ -1,4 +1,9 @@
-import { InjectModel, Model } from '@magnet-cms/common'
+import {
+	type FilterQuery,
+	InjectModel,
+	Model,
+	type SortQuery,
+} from '@magnet-cms/common'
 import { Injectable } from '@nestjs/common'
 import { SettingsService } from '~/modules/settings/settings.service'
 import { History } from './schemas/history.schema'
@@ -25,7 +30,7 @@ export class HistoryService {
 	async createVersion(
 		documentId: string,
 		collection: string,
-		data: any,
+		data: Record<string, unknown>,
 		status: 'draft' | 'published' | 'archived' = 'draft',
 		createdBy?: string,
 		notes?: string,
@@ -76,8 +81,8 @@ export class HistoryService {
 				documentId,
 				schemaName: collection,
 				locale,
-			} as any)
-			.sort({ versionNumber: -1 } as any)
+			} satisfies FilterQuery<History>)
+			.sort({ versionNumber: -1 } satisfies SortQuery<History>)
 			.limit(1)
 			.execOne()
 
@@ -166,7 +171,7 @@ export class HistoryService {
 		locale: string,
 		status?: 'draft' | 'published' | 'archived',
 	): Promise<History | null> {
-		const filter: Record<string, any> = {
+		const filter: FilterQuery<History> = {
 			documentId,
 			schemaName: collection,
 			locale,
@@ -178,8 +183,8 @@ export class HistoryService {
 
 		return this.historyModel
 			.query()
-			.where(filter as any)
-			.sort({ versionNumber: -1 } as any)
+			.where(filter)
+			.sort({ versionNumber: -1 } satisfies SortQuery<History>)
 			.limit(1)
 			.execOne()
 	}
@@ -198,9 +203,8 @@ export class HistoryService {
 				{ versionId } as Partial<History>,
 				{ status } as Partial<History>,
 			)
-			// Handle the case where update might return undefined
 			if (!updated) return null
-			return updated as unknown as History
+			return updated
 		} catch (error) {
 			console.error(`Failed to update version status: ${error}`)
 			return null
@@ -267,15 +271,12 @@ export class HistoryService {
 		const settings = await this.settingsService.getSettingsByGroup(
 			Versioning.name,
 		)
-		return settings.reduce(
-			(acc, setting) => {
-				return {
-					...acc,
-					[setting.key]: setting.value,
-				}
-			},
-			{} as unknown as Versioning,
+		const result = new Versioning()
+		const updates = settings.reduce<Record<string, unknown>>(
+			(acc, setting) => ({ ...acc, [setting.key]: setting.value }),
+			{},
 		)
+		return Object.assign(result, updates)
 	}
 
 	/**
@@ -331,7 +332,7 @@ export class HistoryService {
 				documentId,
 				schemaName: collection,
 				locale,
-			} as any)
+			} satisfies FilterQuery<History>)
 			.count()
 
 		// If we have more versions than the maximum, delete the oldest ones
@@ -345,8 +346,8 @@ export class HistoryService {
 					documentId,
 					schemaName: collection,
 					locale,
-				} as any)
-				.sort({ versionNumber: 1 } as any)
+				} satisfies FilterQuery<History>)
+				.sort({ versionNumber: 1 } satisfies SortQuery<History>)
 				.limit(countToDelete)
 				.exec()
 

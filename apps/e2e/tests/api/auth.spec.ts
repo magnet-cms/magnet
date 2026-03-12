@@ -11,6 +11,42 @@ test.describe('Auth API', () => {
 		expect(typeof status.authenticated).toBe('boolean')
 	})
 
+	test('POST /auth/login responds within 3000ms', async ({
+		apiClient,
+		request,
+		apiBaseURL,
+	}) => {
+		// Register a fresh user to guarantee valid credentials
+		const { randomUUID } = await import('node:crypto')
+		const email = `timing-${randomUUID().slice(0, 8)}@example.com`
+		const password = 'TestPassword123!'
+
+		const status = await apiClient.getAuthStatus()
+		if (status.requiresSetup) {
+			// Cannot perform login-timing test without an existing user; skip gracefully
+			test.skip(true, 'Setup required — cannot test login timing')
+			return
+		}
+
+		await request
+			.post(`${apiBaseURL}/auth/register`, {
+				data: { email, password, name: 'Timing User', role: 'admin' },
+			})
+			.catch(() => {})
+
+		const start = Date.now()
+		const response = await request.post(`${apiBaseURL}/auth/login`, {
+			data: { email, password },
+			headers: { 'Content-Type': 'application/json' },
+		})
+		const elapsed = Date.now() - start
+
+		// Login should complete within 3 seconds even if credentials fail
+		expect(elapsed).toBeLessThan(3000)
+		// Either succeeds (200) or rejects (401) — both are valid timing test outcomes
+		expect([200, 401]).toContain(response.status())
+	})
+
 	test('POST /auth/register creates a new user', async ({ apiClient }) => {
 		const status = await apiClient.getAuthStatus()
 		test.skip(

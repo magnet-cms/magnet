@@ -3,7 +3,7 @@ import {
 	DynamicModule,
 	Logger,
 	Module,
-	OnModuleInit,
+	OnApplicationBootstrap,
 	Type,
 } from '@nestjs/common'
 import { DatabaseModule } from '~/modules/database'
@@ -14,7 +14,7 @@ import { SettingsService } from './settings.service'
 /**
  * Settings initializer service that registers settings with defaults on module init
  */
-class SettingsInitializer implements OnModuleInit {
+class SettingsInitializer implements OnApplicationBootstrap {
 	private readonly logger = new Logger('SettingsInitializer')
 
 	constructor(
@@ -22,7 +22,7 @@ class SettingsInitializer implements OnModuleInit {
 		private readonly schemas: Type[],
 	) {}
 
-	async onModuleInit() {
+	async onApplicationBootstrap() {
 		for (const schema of this.schemas) {
 			const options = getSettingsOptions(schema)
 			if (options) {

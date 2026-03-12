@@ -8,12 +8,17 @@ import {
 	Post,
 	Put,
 	Query,
+	UseGuards,
 } from '@nestjs/common'
+import { RestrictedRoute } from '~/decorators/restricted.route'
+import { JwtAuthGuard } from '~/modules/auth/guards/jwt-auth.guard'
 import { CreateUserDto } from './dto/create-user.dto'
 import { User } from './schemas/user.schema'
 import { UserService } from './user.service'
 
 @Controller('users')
+@RestrictedRoute()
+@UseGuards(JwtAuthGuard)
 export class UserController {
 	constructor(private readonly userService: UserService) {}
 

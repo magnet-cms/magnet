@@ -20,7 +20,7 @@ export interface DocumentMetadata {
 /**
  * A complete document with content and metadata
  */
-export type Document<T = Record<string, any>> = T &
+export type Document<T = Record<string, unknown>> = T &
 	DocumentMetadata & { id: string }
 
 /**
@@ -68,7 +68,7 @@ export interface PublishDocumentOptions {
 /**
  * Result of listing documents grouped by documentId
  */
-export interface DocumentGroup<T = Record<string, any>> {
+export interface DocumentGroup<T = Record<string, unknown>> {
 	documentId: string
 	locales: {
 		[locale: string]: {

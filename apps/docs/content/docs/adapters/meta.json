@@ -1,4 +1,4 @@
 {
   "title": "Adapters",
-  "pages": ["index", "mongoose"]
+  "pages": ["index", "mongoose", "drizzle", "supabase"]
 }
