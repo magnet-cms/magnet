@@ -12,18 +12,18 @@ import * as __fd_glob_16 from '../content/docs/common/decorators.mdx?collection=
 import * as __fd_glob_17 from '../content/docs/common/field-decorators.mdx?collection=docs'
 import * as __fd_glob_18 from '../content/docs/common/index.mdx?collection=docs'
 import { default as __fd_glob_3 } from '../content/docs/common/meta.json?collection=docs'
-import * as __fd_glob_22 from '../content/docs/core/admin-module.mdx?collection=docs'
-import * as __fd_glob_23 from '../content/docs/core/api-keys-module.mdx?collection=docs'
-import * as __fd_glob_24 from '../content/docs/core/auth-module.mdx?collection=docs'
-import * as __fd_glob_25 from '../content/docs/core/content-module.mdx?collection=docs'
-import * as __fd_glob_26 from '../content/docs/core/database-module.mdx?collection=docs'
-import * as __fd_glob_27 from '../content/docs/core/index.mdx?collection=docs'
+import * as __fd_glob_19 from '../content/docs/core/admin-module.mdx?collection=docs'
+import * as __fd_glob_20 from '../content/docs/core/api-keys-module.mdx?collection=docs'
+import * as __fd_glob_21 from '../content/docs/core/auth-module.mdx?collection=docs'
+import * as __fd_glob_22 from '../content/docs/core/content-module.mdx?collection=docs'
+import * as __fd_glob_23 from '../content/docs/core/database-module.mdx?collection=docs'
+import * as __fd_glob_24 from '../content/docs/core/index.mdx?collection=docs'
 import { default as __fd_glob_4 } from '../content/docs/core/meta.json?collection=docs'
-import * as __fd_glob_28 from '../content/docs/core/rbac-module.mdx?collection=docs'
-import * as __fd_glob_19 from '../content/docs/getting-started/index.mdx?collection=docs'
-import * as __fd_glob_20 from '../content/docs/getting-started/installation.mdx?collection=docs'
+import * as __fd_glob_25 from '../content/docs/core/rbac-module.mdx?collection=docs'
+import * as __fd_glob_26 from '../content/docs/getting-started/index.mdx?collection=docs'
+import * as __fd_glob_27 from '../content/docs/getting-started/installation.mdx?collection=docs'
 import { default as __fd_glob_5 } from '../content/docs/getting-started/meta.json?collection=docs'
-import * as __fd_glob_21 from '../content/docs/getting-started/quick-start.mdx?collection=docs'
+import * as __fd_glob_28 from '../content/docs/getting-started/quick-start.mdx?collection=docs'
 import { default as __fd_glob_6 } from '../content/docs/guides/meta.json?collection=docs'
 import * as __fd_glob_29 from '../content/docs/guides/nextjs-integration.mdx?collection=docs'
 import * as __fd_glob_8 from '../content/docs/index.mdx?collection=docs'
@@ -67,16 +67,16 @@ export const docs = await create.docs(
 		'common/decorators.mdx': __fd_glob_16,
 		'common/field-decorators.mdx': __fd_glob_17,
 		'common/index.mdx': __fd_glob_18,
-		'getting-started/index.mdx': __fd_glob_19,
-		'getting-started/installation.mdx': __fd_glob_20,
-		'getting-started/quick-start.mdx': __fd_glob_21,
-		'core/admin-module.mdx': __fd_glob_22,
-		'core/api-keys-module.mdx': __fd_glob_23,
-		'core/auth-module.mdx': __fd_glob_24,
-		'core/content-module.mdx': __fd_glob_25,
-		'core/database-module.mdx': __fd_glob_26,
-		'core/index.mdx': __fd_glob_27,
-		'core/rbac-module.mdx': __fd_glob_28,
+		'core/admin-module.mdx': __fd_glob_19,
+		'core/api-keys-module.mdx': __fd_glob_20,
+		'core/auth-module.mdx': __fd_glob_21,
+		'core/content-module.mdx': __fd_glob_22,
+		'core/database-module.mdx': __fd_glob_23,
+		'core/index.mdx': __fd_glob_24,
+		'core/rbac-module.mdx': __fd_glob_25,
+		'getting-started/index.mdx': __fd_glob_26,
+		'getting-started/installation.mdx': __fd_glob_27,
+		'getting-started/quick-start.mdx': __fd_glob_28,
 		'guides/nextjs-integration.mdx': __fd_glob_29,
 		'plugins/content-builder.mdx': __fd_glob_30,
 		'plugins/index.mdx': __fd_glob_31,
