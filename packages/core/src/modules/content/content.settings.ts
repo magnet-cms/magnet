@@ -1,4 +1,5 @@
 import { SettingField, Settings } from '@magnet-cms/common'
+import { locales } from '~/modules/database/modules/internationalization/setting/internationalization.setting'
 
 /**
  * Content settings schema.
@@ -140,12 +141,24 @@ export class ContentSettings {
 	})
 	enableI18n = true
 
-	@SettingField.Text({
-		label: 'Default Locale',
-		description: 'Default language for content',
-		default: 'en',
+	@SettingField.Select({
+		label: 'Available Languages',
+		description: 'Select which languages are available for content',
+		options: locales,
+		default: ['en'],
+		multiple: true,
 		section: 'i18n',
 		order: 2,
+	})
+	locales: string[] = ['en']
+
+	@SettingField.Select({
+		label: 'Default Locale',
+		description: 'Default language for content',
+		options: locales,
+		default: 'en',
+		section: 'i18n',
+		order: 3,
 	})
 	defaultLocale = 'en'
 
@@ -154,7 +167,7 @@ export class ContentSettings {
 		description: 'Require content to be translated to all enabled locales',
 		default: false,
 		section: 'i18n',
-		order: 3,
+		order: 4,
 	})
 	requireAllLocales = false
 

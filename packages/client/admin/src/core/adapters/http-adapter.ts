@@ -427,10 +427,11 @@ export function createHttpAdapter(config: HttpAdapterConfig): MagnetApiAdapter {
 					{ key: 'Arabic', value: 'ar' },
 				]
 
-				// Fetch from internationalization settings group
-				const settings = await request<Array<{ key: string; value: unknown }>>(
-					'/settings/internationalization',
-				)
+				// Fetch from content settings group
+				const settings =
+					await request<Array<{ key: string; value: unknown }>>(
+						'/settings/content',
+					)
 				const localesSetting = settings.find((s) => s.key === 'locales')
 				const defaultLocaleSetting = settings.find(
 					(s) => s.key === 'defaultLocale',
