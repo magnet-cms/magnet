@@ -105,11 +105,15 @@ export class AuthService {
 			throw new InvalidCredentialsError(validation.errors.join(', '))
 		}
 
+		// First user always gets admin role regardless of requested role
+		const isFirstUser = !(await this.exists())
+		const role = isFirstUser ? 'admin' : registerDto.role
+
 		const user = await this.authStrategy.register({
 			email: registerDto.email,
 			password: registerDto.password,
 			name: registerDto.name,
-			role: registerDto.role,
+			role,
 		})
 
 		await this.emitEvent('user.registered', { userId: user.id })

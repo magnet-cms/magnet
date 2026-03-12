@@ -1,17 +1,18 @@
 import React from 'react'
 import { Navigate, Outlet } from 'react-router-dom'
-import { useAuth } from '../hooks/useAuth'
+import { useAuth, useStatus } from '../hooks/useAuth'
 
 type PrivateRouteProps = {
 	redirectTo?: string
 }
 
 export const PrivateRoute: React.FC<PrivateRouteProps> = ({
-	redirectTo = '/auth',
+	redirectTo = '/login',
 }) => {
-	const { isAuthenticated, isLoading, error } = useAuth()
+	const { isAuthenticated, isLoading } = useAuth()
+	const { data: status, isLoading: isStatusLoading } = useStatus()
 
-	if (isLoading) {
+	if (isLoading || isStatusLoading) {
 		return (
 			<div className="flex items-center justify-center h-screen">
 				<div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary" />
@@ -19,10 +20,14 @@ export const PrivateRoute: React.FC<PrivateRouteProps> = ({
 		)
 	}
 
-	// Redirect to auth if not authenticated or if there's an auth error (e.g., 401)
-	if (!isAuthenticated || error) {
-		return <Navigate to={redirectTo} replace />
+	if (isAuthenticated) {
+		return <Outlet />
 	}
 
-	return <Outlet />
+	// On fresh install (no users), redirect to signup instead of login
+	if (status?.requiresSetup) {
+		return <Navigate to="/signup" replace />
+	}
+
+	return <Navigate to={redirectTo} replace />
 }

@@ -86,4 +86,26 @@ test.describe('Auth API', () => {
 
 		expect(response.status()).toBe(401)
 	})
+
+	test('first registered user gets admin role automatically', async ({
+		apiClient,
+	}) => {
+		const status = await apiClient.getAuthStatus()
+		test.skip(
+			status.requiresSetup !== true,
+			'Users already exist — first-user test only runs on fresh database',
+		)
+
+		// Register with a non-admin role to verify backend overrides it
+		const userData = testData.user.create({ role: 'authenticated' })
+		const auth = await apiClient.register(userData)
+
+		apiClient.setToken(auth.access_token)
+
+		const response = await apiClient.getMe()
+		expect(response.ok()).toBeTruthy()
+
+		const user = await response.json()
+		expect(user.role).toBe('admin')
+	})
 })
