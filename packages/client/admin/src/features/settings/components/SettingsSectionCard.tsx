@@ -57,7 +57,7 @@ export function SettingsSectionCard({
 			</div>
 
 			{/* Section Content */}
-			<CardContent className="px-6 pb-6 pt-6">
+			<CardContent className="px-6 pb-6">
 				{section.description && (
 					<p className="text-xs text-gray-500 mb-6">{section.description}</p>
 				)}

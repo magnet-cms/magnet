@@ -44,6 +44,8 @@ export function SettingsDocumentationPanel({
 		documentationItems.find((item) => item.id === activeSection) ??
 		documentationItems[0]
 
+	if (!activeItem) return null
+
 	return (
 		<aside className="w-80 bg-white border-l border-gray-200 hidden md:flex flex-col sticky top-0 h-screen">
 			<div className="flex items-center justify-between p-4 border-b border-gray-100 shrink-0">

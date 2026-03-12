@@ -42,6 +42,7 @@ export interface RoleWithPermissions {
 	createdAt: string
 	updatedAt?: string
 	collectionTypes: PermissionGroup[]
+	controllers: PermissionGroup[]
 	plugins: PermissionGroup[]
 	system: PermissionGroup[]
 }

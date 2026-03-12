@@ -1,4 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import {
+	keepPreviousData,
+	useMutation,
+	useQuery,
+	useQueryClient,
+} from '@tanstack/react-query'
 import type {
 	ContentCreateOptions,
 	ContentPublishOptions,
@@ -17,10 +22,21 @@ export const CONTENT_KEYS = {
 	all: ['content'] as const,
 	lists: () => [...CONTENT_KEYS.all, 'list'] as const,
 	list: (schema: string, options?: ContentQueryOptions) =>
-		[...CONTENT_KEYS.lists(), schema, options?.status, options?.locale] as const,
+		[
+			...CONTENT_KEYS.lists(),
+			schema,
+			options?.status,
+			options?.locale,
+		] as const,
 	items: () => [...CONTENT_KEYS.all, 'item'] as const,
 	item: (schema: string, documentId: string, options?: ContentQueryOptions) =>
-		[...CONTENT_KEYS.items(), schema, documentId, options?.status, options?.locale] as const,
+		[
+			...CONTENT_KEYS.items(),
+			schema,
+			documentId,
+			options?.status,
+			options?.locale,
+		] as const,
 	versions: (schema: string, documentId: string, locale?: string) =>
 		[...CONTENT_KEYS.all, 'versions', schema, documentId, locale] as const,
 	localeStatuses: (schema: string, documentId: string) =>
@@ -62,6 +78,7 @@ export const useContentItem = <T extends Record<string, unknown>>(
 		queryKey: CONTENT_KEYS.item(schema, documentId, options),
 		queryFn: () => adapter.content.get<T>(schema, documentId, options),
 		enabled: !!schema && !!documentId,
+		placeholderData: keepPreviousData,
 	})
 }
 
@@ -85,10 +102,7 @@ export const useContentVersions = (
 /**
  * Hook to fetch locale statuses for a content item
  */
-export const useLocaleStatuses = (
-	schema: string,
-	documentId: string,
-) => {
+export const useLocaleStatuses = (schema: string, documentId: string) => {
 	const adapter = useAdapter()
 
 	return useQuery<Record<string, LocaleStatus>, Error>({
@@ -178,11 +192,7 @@ export const useContentDelete = () => {
 	const adapter = useAdapter()
 	const queryClient = useQueryClient()
 
-	return useMutation<
-		void,
-		Error,
-		{ schema: string; documentId: string }
-	>({
+	return useMutation<void, Error, { schema: string; documentId: string }>({
 		mutationFn: ({ schema, documentId }) =>
 			adapter.content.delete(schema, documentId),
 		onSuccess: (_, { schema }) => {
@@ -258,7 +268,9 @@ export const useContentUnpublish = () => {
 /**
  * Hook to restore a content version
  */
-export const useContentRestoreVersion = <T extends Record<string, unknown>>() => {
+export const useContentRestoreVersion = <
+	T extends Record<string, unknown>,
+>() => {
 	const adapter = useAdapter()
 	const queryClient = useQueryClient()
 

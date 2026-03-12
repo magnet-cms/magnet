@@ -199,10 +199,25 @@ export class DocumentService {
 			query.status = options.status
 		}
 
-		const docs = await model.findMany(
+		const docs = (await model.findMany(
 			query as unknown as Partial<T & { id: string }>,
-		)
-		return docs as unknown as Document<T>[]
+		)) as unknown as Document<T>[]
+
+		// When no specific status is requested, deduplicate by (documentId, locale):
+		// show published version; show draft only if no published version exists
+		if (!options.status) {
+			const grouped = new Map<string, Document<T>>()
+			for (const doc of docs) {
+				const key = `${doc.documentId}:${doc.locale}`
+				const existing = grouped.get(key)
+				if (!existing || doc.status === 'published') {
+					grouped.set(key, doc)
+				}
+			}
+			return Array.from(grouped.values())
+		}
+
+		return docs
 	}
 
 	/**
@@ -253,9 +268,9 @@ export class DocumentService {
 					...data,
 					status: 'draft' as const,
 					publishedAt: null,
+					createdAt: _createdAt ?? now,
 					updatedAt: now,
 					updatedBy: options.updatedBy,
-					// Don't set createdAt - let database use default
 				}
 				// Skip validation for drafts - validation happens on publish
 				const created = await model.create(

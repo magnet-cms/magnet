@@ -27,6 +27,7 @@ import { useAdapter, useMagnetConfig } from '~/core/provider/MagnetProvider'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import { useSchema } from '~/hooks/useDiscovery'
 import {
+	CONTENT_KEYS,
 	useContentAddLocale,
 	useContentItem,
 	useContentPublish,
@@ -63,17 +64,6 @@ interface VersionWithData {
 }
 
 // Helper functions for versions
-const getInitials = (name?: string): string => {
-	if (!name) return '?'
-	const parts = name.trim().split(/\s+/)
-	if (parts.length === 1) {
-		return (parts[0] ?? '').substring(0, 2).toUpperCase()
-	}
-	const first = parts[0]?.[0] ?? ''
-	const last = parts[parts.length - 1]?.[0] ?? ''
-	return (first + last).toUpperCase()
-}
-
 const getChangedFields = (
 	currentData: Record<string, unknown>,
 	previousData?: Record<string, unknown>,
@@ -128,8 +118,10 @@ export function SchemaFormPage({
 		schemaMetadata && 'options' in schemaMetadata
 			? schemaMetadata.options
 			: undefined
-	const hasI18n = schemaOptions?.i18n !== false
-	const hasVersioning = schemaOptions?.versioning !== false
+	const hasI18n = schemaOptions ? schemaOptions.i18n !== false : false
+	const hasVersioning = schemaOptions
+		? schemaOptions.versioning !== false
+		: false
 
 	// Fetch available locales from settings
 	const { data: localesConfig } = useQuery({
@@ -235,19 +227,6 @@ export function SchemaFormPage({
 		},
 	})
 
-	const deleteVersionMutation = useMutation({
-		mutationFn: (versionId: string) => adapter.history.deleteVersion(versionId),
-		onSuccess: () => {
-			toast.success('Version deleted', {
-				description: 'The version has been deleted successfully',
-			})
-			queryClient.invalidateQueries({ queryKey: ['versions', schema, entryId] })
-		},
-		onError: (error: Error) => {
-			toast.error(`Failed to delete version: ${error.message}`)
-		},
-	})
-
 	// Normalize content data (handle array response)
 	const normalizedData = Array.isArray(contentData)
 		? contentData[0]
@@ -277,6 +256,8 @@ export function SchemaFormPage({
 					)
 				},
 			})
+			// Invalidate the content list so listing page reflects updated draft data
+			queryClient.invalidateQueries({ queryKey: CONTENT_KEYS.lists() })
 		},
 	})
 
@@ -551,7 +532,7 @@ export function SchemaFormPage({
 					</div>
 				)}
 
-				{/* Content Body */}
+			{/* Content Body */}
 			<div className="flex-1 flex overflow-hidden bg-gray-50/50">
 				{/* VIEW: EDIT */}
 				{currentView === 'edit' && (
@@ -588,8 +569,12 @@ export function SchemaFormPage({
 								<Card className="gap-0">
 									{/* Card Header */}
 									<div className="px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
-										<h2 className="text-sm font-semibold text-gray-900">Version History</h2>
-										<span className="text-xs text-gray-500">{versions?.length ?? 0} versions found</span>
+										<h2 className="text-sm font-semibold text-gray-900">
+											Version History
+										</h2>
+										<span className="text-xs text-gray-500">
+											{versions?.length ?? 0} versions found
+										</span>
 									</div>
 
 									{/* Version Items - Divided List */}
@@ -662,7 +647,10 @@ export function SchemaFormPage({
 																				'bg-gray-50 text-gray-600 border-gray-300',
 																		)}
 																	>
-																		{isDraft ? 'Draft' : version.status.charAt(0).toUpperCase() + version.status.slice(1)}
+																		{isDraft
+																			? 'Draft'
+																			: version.status.charAt(0).toUpperCase() +
+																				version.status.slice(1)}
 																	</Badge>
 																</div>
 																<p className="text-sm text-gray-500 mb-3">
@@ -681,8 +669,13 @@ export function SchemaFormPage({
 																</p>
 																{changedFields.length > 0 && (
 																	<div className="text-xs text-gray-400 font-mono bg-gray-50 inline-block px-2 py-1 rounded border border-gray-200">
-																		Changes: {changedFields.slice(0, 3).map(c => c.split(':')[0]).join(', ')}
-																		{changedFields.length > 3 && ` +${changedFields.length - 3} more`}
+																		Changes:{' '}
+																		{changedFields
+																			.slice(0, 3)
+																			.map((c) => c.split(':')[0])
+																			.join(', ')}
+																		{changedFields.length > 3 &&
+																			` +${changedFields.length - 3} more`}
 																	</div>
 																)}
 															</div>
@@ -954,7 +947,9 @@ fetch('${apiBaseUrl}/content/${schema}/${entryId}${selectedApiLocale && selected
 																				getMethodBadgeClass(endpoint.method),
 																			)}
 																		>
-																			{endpoint.method === 'DELETE' ? 'DEL' : endpoint.method}
+																			{endpoint.method === 'DELETE'
+																				? 'DEL'
+																				: endpoint.method}
 																		</span>
 																		<span className="text-xs font-mono text-gray-600">
 																			{endpoint.path}
@@ -978,8 +973,7 @@ fetch('${apiBaseUrl}/content/${schema}/${entryId}${selectedApiLocale && selected
 																Authentication Required
 															</p>
 															<p className="text-xs text-blue-700 mt-1 leading-relaxed">
-																Include your API token in the header:{' '}
-																<br />
+																Include your API token in the header: <br />
 																<code className="bg-blue-100 px-1 py-0.5 rounded text-blue-800">
 																	Authorization: Bearer YOUR_TOKEN
 																</code>
