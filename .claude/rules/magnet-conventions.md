@@ -41,7 +41,9 @@ When creating a new feature, module, or significant change:
 |------|----------|
 | API endpoints | `apps/e2e/tests/api/{feature}.spec.ts` |
 | UI features | `apps/e2e/tests/ui/{feature}.spec.ts` |
-| Doc pages | `apps/e2e/tests/docs/{feature}.spec.ts` |
+| Admin serving | `apps/e2e/tests/admin-serve/{feature}.spec.ts` |
+
+Playwright projects: `api`, `ui`, `admin-serve` — run specific with `--project=<name>`.
 
 Create/update page objects in `apps/e2e/src/page-objects/` for new UI components.
 

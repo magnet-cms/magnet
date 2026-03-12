@@ -15,6 +15,7 @@ Bun-based Turbo monorepo — headless CMS framework built on NestJS.
 - **Build:** Turborepo, tsup
 - **Lint/Format:** Biome
 - **Testing:** Playwright (E2E)
+- **Git Hooks:** Husky, commitlint (conventional commits), lint-staged
 - **Versioning:** Changesets
 - **Package Manager:** Bun (workspaces)
 
@@ -55,7 +56,7 @@ magnet/
 ├── apps/
 │   ├── docs/                    # Fumadocs (Next.js)
 │   │   └── content/docs/        # MDX documentation (no i18n subdirs currently)
-│   ├── e2e/tests/{api,ui,docs}/ # Playwright E2E tests
+│   ├── e2e/tests/{api,ui,admin-serve}/ # Playwright E2E tests
 │   └── examples/{mongoose,drizzle-neon,drizzle-supabase}/
 ├── packages/
 │   ├── adapters/{mongoose,drizzle,supabase}/
@@ -85,6 +86,7 @@ magnet/
 | E2E tests | `bun run test:e2e` |
 | E2E (API only) | `bun run test:e2e --project=api` |
 | E2E (UI only) | `bun run test:e2e --project=ui` |
+| E2E (Admin serve) | `bun run test:e2e --project=admin-serve` |
 | Add changeset | `bun changeset` |
 | Release | `bun run build && changeset publish` |
 

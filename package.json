@@ -34,7 +34,7 @@
     "packages/**/*"
   ],
   "lint-staged": {
-    "*.{js,jsx,ts,tsx,json,css,md}": [
+    "*.{js,jsx,ts,tsx,json,css}": [
       "biome check --write"
     ]
   },
