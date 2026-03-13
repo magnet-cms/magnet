@@ -1,10 +1,16 @@
 import { All, Controller, Get, Next, Req, Res } from '@nestjs/common'
 import type { NextFunction, Request, Response } from 'express'
+import { MagnetLogger } from '~/modules/logging/logger.service'
 import { AdminService } from './admin.service'
 
 @Controller()
 export class AdminController {
-	constructor(private readonly adminService: AdminService) {}
+	constructor(
+		private readonly adminService: AdminService,
+		private readonly logger: MagnetLogger,
+	) {
+		this.logger.setContext(AdminController.name)
+	}
 
 	@All('admin/*path')
 	async handleAllRequests(
@@ -30,7 +36,7 @@ export class AdminController {
 			try {
 				await this.adminService.createProxyServer(req, res, next)
 			} catch (error) {
-				console.error('Admin proxy error:', error)
+				this.logger.error('Admin proxy error', error)
 				return res
 					.status(502)
 					.send(

@@ -3,9 +3,10 @@ import {
 	type EventHandlerMetadata,
 	type EventName,
 } from '@magnet-cms/common'
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
+import { Injectable, OnModuleInit } from '@nestjs/common'
 import { DiscoveryService, MetadataScanner, Reflector } from '@nestjs/core'
 import { InstanceWrapper } from '@nestjs/core/injector/instance-wrapper'
+import { MagnetLogger } from '~/modules/logging/logger.service'
 import { EventService } from './event.service'
 
 /**
@@ -28,14 +29,15 @@ import { EventService } from './event.service'
  */
 @Injectable()
 export class EventHandlerDiscoveryService implements OnModuleInit {
-	private readonly logger = new Logger(EventHandlerDiscoveryService.name)
-
 	constructor(
 		private readonly discoveryService: DiscoveryService,
 		private readonly metadataScanner: MetadataScanner,
 		private readonly reflector: Reflector,
 		private readonly eventService: EventService,
-	) {}
+		private readonly logger: MagnetLogger,
+	) {
+		this.logger.setContext(EventHandlerDiscoveryService.name)
+	}
 
 	onModuleInit(): void {
 		this.discoverEventHandlers()

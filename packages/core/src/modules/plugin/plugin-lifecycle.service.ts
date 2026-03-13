@@ -6,12 +6,12 @@ import type {
 import {
 	Inject,
 	Injectable,
-	Logger,
 	OnApplicationShutdown,
 	OnModuleInit,
 	Optional,
 } from '@nestjs/common'
 import { ModulesContainer } from '@nestjs/core'
+import { MagnetLogger } from '~/modules/logging/logger.service'
 import { PLUGIN_METADATA } from './constants'
 
 /**
@@ -22,15 +22,17 @@ import { PLUGIN_METADATA } from './constants'
 export class PluginLifecycleService
 	implements OnModuleInit, OnApplicationShutdown
 {
-	private readonly logger = new Logger(PluginLifecycleService.name)
 	private pluginInstances: Map<string, PluginLifecycle> = new Map()
 
 	constructor(
 		private readonly modulesContainer: ModulesContainer,
+		private readonly logger: MagnetLogger,
 		@Optional()
 		@Inject('MAGNET_PLUGINS_CONFIG')
 		private readonly pluginsConfig: PluginConfig[] = [],
-	) {}
+	) {
+		this.logger.setContext(PluginLifecycleService.name)
+	}
 
 	async onModuleInit() {
 		// Collect plugin instances

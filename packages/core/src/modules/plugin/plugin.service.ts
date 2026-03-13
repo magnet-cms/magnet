@@ -1,6 +1,7 @@
 import type { Type } from '@nestjs/common'
 import { Inject, Injectable, OnModuleInit, Optional } from '@nestjs/common'
 import { DiscoveryService, ModulesContainer } from '@nestjs/core'
+import { MagnetLogger } from '~/modules/logging/logger.service'
 import { PLUGIN_METADATA } from './constants'
 import type { PluginHook, PluginMetadata } from './types'
 
@@ -19,10 +20,13 @@ export class PluginService implements OnModuleInit {
 	constructor(
 		private readonly discovery: DiscoveryService,
 		private readonly modulesContainer: ModulesContainer,
+		private readonly logger: MagnetLogger,
 		@Optional()
 		@Inject('PLUGIN_OPTIONS')
 		private readonly options: PluginOptions = { plugins: [] },
-	) {}
+	) {
+		this.logger.setContext(PluginService.name)
+	}
 
 	onModuleInit() {
 		this.discoverPlugins()
@@ -120,7 +124,7 @@ export class PluginService implements OnModuleInit {
 					results.push(result)
 				}
 			} catch (error) {
-				console.error(`Error executing hook ${hookName}:`, error)
+				this.logger.error(`Error executing hook ${hookName}`, error)
 			}
 		}
 

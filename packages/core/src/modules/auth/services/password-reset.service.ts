@@ -1,6 +1,7 @@
 import { createHash, randomBytes } from 'node:crypto'
 import { InjectModel, Model } from '@magnet-cms/common'
-import { BadRequestException, Injectable, Logger } from '@nestjs/common'
+import { BadRequestException, Injectable } from '@nestjs/common'
+import { MagnetLogger } from '~/modules/logging/logger.service'
 import { PasswordReset } from '../schemas/password-reset.schema'
 
 /**
@@ -29,13 +30,15 @@ export interface PasswordResetRequestResult {
  */
 @Injectable()
 export class PasswordResetService {
-	private readonly logger = new Logger(PasswordResetService.name)
 	private readonly TOKEN_EXPIRY_MS = 60 * 60 * 1000 // 1 hour
 
 	constructor(
 		@InjectModel(PasswordReset)
 		private readonly passwordResetModel: Model<PasswordReset>,
-	) {}
+		private readonly logger: MagnetLogger,
+	) {
+		this.logger.setContext(PasswordResetService.name)
+	}
 
 	/**
 	 * Create a password reset request.

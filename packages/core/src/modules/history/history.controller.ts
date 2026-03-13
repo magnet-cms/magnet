@@ -9,6 +9,7 @@ import {
 	Query,
 } from '@nestjs/common'
 import { RestrictedRoute } from '~/decorators/restricted.route'
+import type { VersionDiff } from './dto/version-diff.dto'
 import { HistoryService } from './history.service'
 import { History } from './schemas/history.schema'
 
@@ -87,6 +88,14 @@ export class HistoryController {
 	@Delete('version/:versionId')
 	async deleteVersion(@Param('versionId') versionId: string): Promise<boolean> {
 		return this.historyService.deleteVersion(versionId)
+	}
+
+	@Get('compare/:versionId1/:versionId2')
+	async compareVersions(
+		@Param('versionId1') versionId1: string,
+		@Param('versionId2') versionId2: string,
+	): Promise<VersionDiff> {
+		return this.historyService.compareVersions(versionId1, versionId2)
 	}
 
 	@Get('settings')

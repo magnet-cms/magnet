@@ -36,6 +36,7 @@ import {
 	useLocaleStatuses,
 } from '~/hooks/useSchema'
 import { RelationsAndMetadataPanel } from './RelationsAndMetadataPanel'
+import { VersionDiffDrawer } from './VersionDiffDrawer'
 
 interface SchemaFormPageProps {
 	schema: string
@@ -101,6 +102,7 @@ export function SchemaFormPage({
 	const [activeEndpoint, setActiveEndpoint] = useState('get-all')
 	const [selectedApiLocale, setSelectedApiLocale] = useState<string>('')
 	const [copied, setCopied] = useState<Record<string, boolean>>({})
+	const [compareVersionId, setCompareVersionId] = useState<string | undefined>()
 
 	// Determine current view from URL path
 	const currentView = useMemo(() => {
@@ -682,6 +684,15 @@ export function SchemaFormPage({
 
 															{/* Actions */}
 															<div className="flex gap-2 shrink-0">
+																<Button
+																	variant="ghost"
+																	size="sm"
+																	onClick={() =>
+																		setCompareVersionId(version.versionId)
+																	}
+																>
+																	Compare
+																</Button>
 																{isDraft && (
 																	<Button
 																		variant="ghost"
@@ -752,6 +763,27 @@ export function SchemaFormPage({
 								publishedAt: normalizedData?.publishedAt,
 							}}
 						/>
+						{compareVersionId &&
+							versions &&
+							versions.length > 0 &&
+							(() => {
+								const sortedVersions = [...versions].sort(
+									(a, b) =>
+										new Date(b.createdAt).getTime() -
+										new Date(a.createdAt).getTime(),
+								)
+								const latestVersionId = sortedVersions[0]?.versionId
+								if (!latestVersionId) return null
+								// Guard: comparing latest version to itself shows an empty diff
+								if (compareVersionId === latestVersionId) return null
+								return (
+									<VersionDiffDrawer
+										versionId1={compareVersionId}
+										versionId2={latestVersionId}
+										onClose={() => setCompareVersionId(undefined)}
+									/>
+								)
+							})()}
 					</>
 				)}
 

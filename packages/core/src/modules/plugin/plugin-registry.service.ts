@@ -7,6 +7,7 @@ import type {
 } from '@magnet-cms/common'
 import { Inject, Injectable, OnModuleInit, Optional } from '@nestjs/common'
 import { ModulesContainer } from '@nestjs/core'
+import { MagnetLogger } from '~/modules/logging/logger.service'
 import { PLUGIN_FRONTEND_MANIFEST, PLUGIN_METADATA } from './constants'
 
 interface RegisteredPlugin {
@@ -22,10 +23,13 @@ export class PluginRegistryService implements OnModuleInit {
 
 	constructor(
 		private readonly modulesContainer: ModulesContainer,
+		private readonly logger: MagnetLogger,
 		@Optional()
 		@Inject('MAGNET_PLUGINS_CONFIG')
 		private readonly pluginsConfig: PluginConfig[] = [],
-	) {}
+	) {
+		this.logger.setContext(PluginRegistryService.name)
+	}
 
 	onModuleInit() {
 		this.discoverPlugins()
@@ -42,7 +46,7 @@ export class PluginRegistryService implements OnModuleInit {
 			) as PluginMetadata
 
 			if (!metadata) {
-				console.warn(
+				this.logger.warn(
 					`Plugin ${PluginClass.name} is missing @Plugin() decorator, skipping`,
 				)
 				continue

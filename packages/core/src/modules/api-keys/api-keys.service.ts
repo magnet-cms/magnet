@@ -1,7 +1,8 @@
 import { createHash, randomBytes } from 'node:crypto'
 import { InjectModel, Model, ResourceNotFoundError } from '@magnet-cms/common'
-import { Injectable, Logger } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import { EventService } from '~/modules/events'
+import { MagnetLogger } from '~/modules/logging/logger.service'
 import { SettingsService } from '~/modules/settings'
 import { ApiKeySettings } from './api-keys.settings'
 import { CreateApiKeyDto } from './dto/create-api-key.dto'
@@ -72,7 +73,6 @@ export interface ApiKeyStats {
  */
 @Injectable()
 export class ApiKeyService {
-	private readonly logger = new Logger(ApiKeyService.name)
 	private readonly KEY_PREFIX = 'mgnt_'
 
 	constructor(
@@ -81,7 +81,10 @@ export class ApiKeyService {
 		private readonly usageModel: Model<ApiKeyUsage>,
 		private readonly eventService: EventService,
 		private readonly settingsService: SettingsService,
-	) {}
+		private readonly logger: MagnetLogger,
+	) {
+		this.logger.setContext(ApiKeyService.name)
+	}
 
 	// ============================================================================
 	// Core Operations
@@ -581,7 +584,9 @@ export class ApiKeyService {
 			await this.eventService.emit(event, payload)
 		} catch (error) {
 			// Don't fail operations due to event emission errors
-			this.logger.warn(`Failed to emit event ${event}:`, error)
+			this.logger.warn(
+				`Failed to emit event ${event}: ${error instanceof Error ? error.message : String(error)}`,
+			)
 		}
 	}
 }

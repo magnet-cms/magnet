@@ -2,22 +2,24 @@ import { existsSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { InitialConfig } from '@magnet-cms/common'
 import { findPathInParentDirectories } from '@magnet-cms/utils/node'
-import { Injectable, Logger } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import type { NextFunction, Request, Response } from 'express'
 import { createProxyMiddleware } from 'http-proxy-middleware'
+import { MagnetLogger } from '~/modules/logging/logger.service'
 import { DiscoveryService } from '../discovery/discovery.service'
 import { SettingsService } from '../settings/settings.service'
 
 @Injectable()
 export class AdminService {
-	private readonly logger = new Logger(AdminService.name)
 	private readonly isDevelopment = process.env.NODE_ENV !== 'production'
 	private readonly adminDistPath: string
 
 	constructor(
 		private readonly discoveryService: DiscoveryService,
 		private readonly settingsService: SettingsService,
+		private readonly logger: MagnetLogger,
 	) {
+		this.logger.setContext(AdminService.name)
 		// Try to find the admin dist folder
 		// In production, it should be in node_modules/@magnet-cms/admin/dist/client
 		// Or copied to a custom location via MAGNET_ADMIN_PATH env var

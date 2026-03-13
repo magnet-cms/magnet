@@ -30,6 +30,7 @@ import {
 	AccessControlListingPage,
 	AccessControlPage,
 } from '~/features/access-control'
+import { ActivityPage } from '~/features/activity'
 import { ApiKeysListingPage } from '~/features/api-keys'
 import { LoginForm } from '~/features/auth/login'
 import { ProfileSetupForm } from '~/features/auth/profile-setup'
@@ -258,6 +259,10 @@ const coreDashboardRoutes: RouteObject[] = [
 				element: withSuspense(AccessControlPage),
 			},
 		],
+	},
+	{
+		path: 'activity',
+		element: withSuspense(ActivityPage),
 	},
 	{
 		path: 'api-keys',

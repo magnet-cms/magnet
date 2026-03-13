@@ -8,7 +8,8 @@ import type {
 	RegisteredHandler,
 	RequiredEventHandlerOptions,
 } from '@magnet-cms/common'
-import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common'
+import { Injectable, OnModuleDestroy } from '@nestjs/common'
+import { MagnetLogger } from '~/modules/logging/logger.service'
 
 /**
  * Type-safe event service for decoupled communication between modules.
@@ -42,13 +43,16 @@ import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common'
  */
 @Injectable()
 export class EventService implements OnModuleDestroy {
-	private readonly logger = new Logger(EventService.name)
 	private readonly handlers = new Map<
 		EventName,
 		RegisteredHandler<EventName>[]
 	>()
 	private readonly eventHistory: EventHistoryEntry[] = []
 	private readonly maxHistorySize = 1000
+
+	constructor(private readonly logger: MagnetLogger) {
+		this.logger.setContext(EventService.name)
+	}
 
 	/**
 	 * Register an event handler

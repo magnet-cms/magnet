@@ -1,6 +1,7 @@
 import type { PermissionDefinition } from '@magnet-cms/common'
 import { InjectModel, Model } from '@magnet-cms/common'
-import { Injectable, Logger } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
+import { MagnetLogger } from '~/modules/logging/logger.service'
 import { Permission } from '../schemas/permission.schema'
 
 export interface ValidatePermissionIdsResult {
@@ -16,12 +17,13 @@ export interface ValidatePermissionIdsResult {
  */
 @Injectable()
 export class PermissionService {
-	private readonly logger = new Logger(PermissionService.name)
-
 	constructor(
 		@InjectModel(Permission)
 		private readonly permissionModel: Model<Permission>,
-	) {}
+		private readonly logger: MagnetLogger,
+	) {
+		this.logger.setContext(PermissionService.name)
+	}
 
 	/**
 	 * Upsert a single permission from a definition

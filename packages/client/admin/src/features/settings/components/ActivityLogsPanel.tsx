@@ -1,63 +1,27 @@
 'use client'
 
-import { ScrollArea, Switch } from '@magnet-cms/ui'
+import { ScrollArea, Skeleton, Switch } from '@magnet-cms/ui'
 import { cn } from '@magnet-cms/ui/lib/utils'
-import { Clock, Key, Shield, Smartphone, User } from 'lucide-react'
+import { formatDistanceToNow } from 'date-fns'
+import { Clock, Key, Settings, Shield, Smartphone, User } from 'lucide-react'
 import { useState } from 'react'
+import type { ActivityRecord } from '~/core/adapters/types'
+import { useUserActivity } from '~/hooks/useActivity'
+import { useAuth } from '~/hooks/useAuth'
 
-interface ActivityLog {
-	id: string
-	action: string
-	description: string
-	timestamp: string
-	icon:
-		| typeof Clock
-		| typeof Shield
-		| typeof Key
-		| typeof User
-		| typeof Smartphone
+function getActivityIcon(action: string) {
+	if (action.includes('password') || action.includes('api_key')) return Key
+	if (action.includes('role') || action.includes('auth')) return Shield
+	if (action.includes('session')) return Smartphone
+	if (action.includes('settings')) return Settings
+	if (action.includes('user')) return User
+	return Clock
 }
-
-const mockActivityLogs: ActivityLog[] = [
-	{
-		id: '1',
-		action: 'Password Changed',
-		description: 'Password was successfully updated',
-		timestamp: '2 hours ago',
-		icon: Key,
-	},
-	{
-		id: '2',
-		action: 'Profile Updated',
-		description: 'Name and profile photo were updated',
-		timestamp: '1 day ago',
-		icon: User,
-	},
-	{
-		id: '3',
-		action: 'Two-Factor Enabled',
-		description: 'Two-factor authentication was enabled',
-		timestamp: '3 days ago',
-		icon: Shield,
-	},
-	{
-		id: '4',
-		action: 'Session Revoked',
-		description: 'Active session on iPhone 14 Pro was revoked',
-		timestamp: '5 days ago',
-		icon: Smartphone,
-	},
-	{
-		id: '5',
-		action: 'Login',
-		description: 'Successful login from MacBook Pro 16"',
-		timestamp: '1 week ago',
-		icon: Clock,
-	},
-]
 
 export function ActivityLogsPanel() {
 	const [isCompact, setIsCompact] = useState(false)
+	const { user } = useAuth()
+	const { data: activities, isLoading } = useUserActivity(user?.id ?? '', 20)
 
 	return (
 		<aside className="w-80 bg-white border-l border-gray-200 hidden md:flex flex-col sticky top-0 h-screen">
@@ -75,8 +39,21 @@ export function ActivityLogsPanel() {
 			</div>
 			<ScrollArea className="flex-1">
 				<div className={cn('p-4', isCompact ? 'space-y-2' : 'space-y-4')}>
-					{mockActivityLogs.map((log) => {
-						const IconComponent = log.icon
+					{isLoading && (
+						<>
+							{Array.from({ length: 5 }).map((_, i) => (
+								// biome-ignore lint/suspicious/noArrayIndexKey: skeleton
+								<Skeleton key={i} className="h-14 rounded-lg" />
+							))}
+						</>
+					)}
+					{!isLoading && (!activities || activities.length === 0) && (
+						<p className="text-xs text-gray-400 text-center py-4">
+							No recent activity
+						</p>
+					)}
+					{activities?.map((log: ActivityRecord) => {
+						const IconComponent = getActivityIcon(log.action)
 						return (
 							<div
 								key={log.id}
@@ -107,11 +84,13 @@ export function ActivityLogsPanel() {
 											isCompact ? 'text-xs' : 'text-sm',
 										)}
 									>
-										{log.action}
+										{log.action
+											.replace(/\./g, ' ')
+											.replace(/\b\w/g, (c) => c.toUpperCase())}
 									</p>
-									{!isCompact && (
+									{!isCompact && log.entityName && (
 										<p className="text-xs text-gray-500 mt-0.5 line-clamp-2">
-											{log.description}
+											{log.entityName}
 										</p>
 									)}
 									<p
@@ -120,7 +99,9 @@ export function ActivityLogsPanel() {
 											isCompact ? 'text-[10px] mt-0.5' : 'text-xs mt-1.5',
 										)}
 									>
-										{log.timestamp}
+										{formatDistanceToNow(new Date(log.timestamp), {
+											addSuffix: true,
+										})}
 									</p>
 								</div>
 							</div>

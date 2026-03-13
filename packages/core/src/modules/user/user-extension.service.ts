@@ -10,7 +10,8 @@ import {
 	isUserExtension,
 } from '@magnet-cms/common'
 import type { Type } from '@nestjs/common'
-import { Inject, Injectable, Logger, Optional } from '@nestjs/common'
+import { Inject, Injectable, Optional } from '@nestjs/common'
+import { MagnetLogger } from '~/modules/logging/logger.service'
 import { User } from './schemas/user.schema'
 
 /**
@@ -53,14 +54,15 @@ export const USER_EXTENSION_TOKEN = 'MAGNET_USER_EXTENSION'
  */
 @Injectable()
 export class UserExtensionService {
-	private readonly logger = new Logger(UserExtensionService.name)
 	private mergedSchema: Type | null = null
 
 	constructor(
+		private readonly logger: MagnetLogger,
 		@Optional()
 		@Inject(USER_EXTENSION_TOKEN)
 		private readonly extensionClass: Type | null = null,
 	) {
+		this.logger.setContext(UserExtensionService.name)
 		if (this.extensionClass) {
 			this.initializeExtension()
 		}

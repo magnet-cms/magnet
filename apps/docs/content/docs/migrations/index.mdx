@@ -1,0 +1,121 @@
+---
+title: Database Migrations
+description: Manage database schema changes with Magnet CMS's built-in migration system
+---
+
+# Database Migrations
+
+Magnet CMS includes a first-class migration system for projects using the Drizzle adapter. It handles schema changes automatically in development and provides CLI commands for controlled deployments in production.
+
+## Why Migrations?
+
+Magnet uses decorator-based schema definitions. When you add a field, rename a column, or change a type, the database schema needs to match. Migrations track these changes as versioned files, so every environment (dev, staging, production) can be updated consistently.
+
+## How It Works
+
+The migration system has two modes:
+
+- **Auto mode** (development): On startup, Magnet detects schema changes, generates a migration file, and applies it automatically.
+- **Manual mode** (production): Schema changes are detected but not applied automatically. Use the CLI to generate and apply migrations on your schedule.
+
+## Quick Start
+
+### 1. Add migrations config to your app module
+
+```typescript
+// app.module.ts
+MagnetModule.forRoot({
+  db: {
+    connectionString: process.env.DATABASE_URL || '',
+    dialect: 'postgresql',
+    driver: 'neon',
+    migrations: {
+      mode: process.env.NODE_ENV === 'production' ? 'manual' : 'auto',
+      directory: './migrations',
+    },
+  },
+  jwt: { secret: process.env.JWT_SECRET || 'dev-secret' },
+})
+```
+
+### 2. Install the CLI (for manual/production use)
+
+```bash
+bun add -D @magnet-cms/cli
+```
+
+### 3. Add scripts to package.json
+
+```json
+{
+  "scripts": {
+    "migrate:up": "magnet migrate:up",
+    "migrate:down": "magnet migrate:down",
+    "migrate:status": "magnet migrate:status",
+    "migrate:generate": "magnet migrate:generate",
+    "migrate:create": "magnet migrate:create"
+  }
+}
+```
+
+### 4. Run your first migration
+
+In development with `mode: 'auto'`, migrations run on startup. In production:
+
+```bash
+# Check pending migrations
+bun run migrate:status
+
+# Apply all pending migrations
+bun run migrate:up
+```
+
+## Migration Files
+
+Migration files are TypeScript files stored in your `migrations/` directory. Each file has `up` and `down` functions:
+
+```typescript
+// migrations/0001_initial.ts
+import type { Migration, MigrationDb } from '@magnet-cms/adapter-drizzle'
+
+export const migration: Migration = {
+  id: '0001_initial',
+  timestamp: 1710000000000,
+  async up(db: MigrationDb) {
+    await db.execute(`
+      CREATE TABLE IF NOT EXISTS "users" (
+        "id" UUID PRIMARY KEY,
+        "email" TEXT NOT NULL UNIQUE,
+        "created_at" TIMESTAMP NOT NULL
+      )
+    `)
+  },
+  async down(db: MigrationDb) {
+    await db.execute(`DROP TABLE "users"`)
+  },
+}
+```
+
+Migration files are committed to version control — they are part of your codebase.
+
+## Migration History
+
+Applied migrations are tracked in the `_magnet_migrations` table. The system validates checksums on each run to detect file tampering.
+
+## Supported Databases
+
+The migration system works with all Drizzle-supported databases:
+
+| Database | Driver | Dialect |
+|----------|--------|---------|
+| PostgreSQL (Neon) | `neon` | `postgresql` |
+| PostgreSQL (Standard) | `pg` | `postgresql` |
+| MySQL | `mysql2` | `mysql` |
+| SQLite | `better-sqlite3` | `sqlite` |
+
+## Next Steps
+
+- [Configuration](/docs/migrations/configuration) — All config options
+- [CLI Commands](/docs/migrations/cli-commands) — Complete command reference
+- [Migration Files](/docs/migrations/migration-files) — File format and patterns
+- [Best Practices](/docs/migrations/best-practices) — Team workflow and CI/CD

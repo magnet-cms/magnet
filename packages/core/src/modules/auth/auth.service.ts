@@ -7,14 +7,10 @@ import {
 	Model,
 	UserNotFoundError,
 } from '@magnet-cms/common'
-import {
-	Inject,
-	Injectable,
-	Logger,
-	UnauthorizedException,
-} from '@nestjs/common'
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common'
 import { compare, hash } from 'bcryptjs'
 import { EventService } from '~/modules/events'
+import { MagnetLogger } from '~/modules/logging/logger.service'
 import { SettingsService } from '~/modules/settings'
 import { UserService } from '~/modules/user'
 import { AUTH_STRATEGY } from './auth.constants'
@@ -76,8 +72,6 @@ export interface SessionInfo {
  */
 @Injectable()
 export class AuthService {
-	private readonly logger = new Logger(AuthService.name)
-
 	constructor(
 		private userService: UserService,
 		private settingsService: SettingsService,
@@ -89,7 +83,10 @@ export class AuthService {
 		@InjectModel(Session) private readonly sessionModel: Model<Session>,
 		@InjectModel(LoginAttempt)
 		private readonly loginAttemptModel: Model<LoginAttempt>,
-	) {}
+		private readonly logger: MagnetLogger,
+	) {
+		this.logger.setContext(AuthService.name)
+	}
 
 	// ============================================================================
 	// Core Authentication
@@ -518,8 +515,7 @@ export class AuthService {
 				return await strategy.hasUsers()
 			} catch (error) {
 				this.logger.warn(
-					'Failed to check users from auth strategy, falling back to database:',
-					error,
+					`Failed to check users from auth strategy, falling back to database: ${error instanceof Error ? error.message : String(error)}`,
 				)
 			}
 		}
@@ -789,7 +785,9 @@ export class AuthService {
 			)
 		} catch (error) {
 			// Don't fail auth operations due to event emission errors
-			this.logger.warn(`Failed to emit event ${event}:`, error)
+			this.logger.warn(
+				`Failed to emit event ${event}: ${error instanceof Error ? error.message : String(error)}`,
+			)
 		}
 	}
 }

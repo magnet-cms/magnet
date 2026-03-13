@@ -155,6 +155,76 @@ export interface VersionDetails extends VersionInfo {
 }
 
 // ============================================================================
+// Activity Types
+// ============================================================================
+
+export interface ActivityRecord {
+	id: string
+	action: string
+	entityType: string
+	entityId?: string
+	entityName?: string
+	userId: string
+	userName?: string
+	metadata?: Record<string, unknown>
+	changes?: {
+		before?: Record<string, unknown>
+		after?: Record<string, unknown>
+		fields?: string[]
+	}
+	ipAddress?: string
+	userAgent?: string
+	timestamp: string
+}
+
+export interface ActivitySearchParams {
+	action?: string
+	entityType?: string
+	entityId?: string
+	userId?: string
+	from?: string
+	to?: string
+	limit?: number
+	offset?: number
+}
+
+export interface PaginatedActivities {
+	items: ActivityRecord[]
+	total: number
+	limit: number
+	offset: number
+}
+
+// ============================================================================
+// Version Diff Types
+// ============================================================================
+
+export interface VersionFieldChange {
+	field: string
+	before: unknown
+	after: unknown
+	type: 'added' | 'removed' | 'modified'
+}
+
+export interface VersionSummary {
+	versionId: string
+	versionNumber: number
+	documentId: string
+	schemaName: string
+	locale: string
+	status: 'draft' | 'published' | 'archived'
+	createdAt: string
+	createdBy?: string
+	notes?: string
+}
+
+export interface VersionDiff {
+	version1: VersionSummary
+	version2: VersionSummary
+	changes: VersionFieldChange[]
+}
+
+// ============================================================================
 // Token Storage Interface
 // ============================================================================
 
@@ -288,6 +358,25 @@ export interface MagnetApiAdapter {
 		publishVersion(versionId: string): Promise<void>
 		archiveVersion(versionId: string): Promise<void>
 		deleteVersion(versionId: string): Promise<void>
+		compareVersions(
+			versionId1: string,
+			versionId2: string,
+		): Promise<VersionDiff>
+	}
+
+	/**
+	 * Activity log operations
+	 */
+	activity: {
+		getRecent(limit?: number): Promise<ActivityRecord[]>
+		getByEntity(
+			entityType: string,
+			entityId: string,
+			limit?: number,
+		): Promise<ActivityRecord[]>
+		getByUser(userId: string, limit?: number): Promise<ActivityRecord[]>
+		search(params: ActivitySearchParams): Promise<PaginatedActivities>
+		cleanup(retentionDays?: number): Promise<{ deleted: number }>
 	}
 
 	/**

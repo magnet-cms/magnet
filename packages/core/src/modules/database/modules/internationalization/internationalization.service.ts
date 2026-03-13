@@ -1,4 +1,5 @@
 import { Injectable, OnModuleInit } from '@nestjs/common'
+import { MagnetLogger } from '~/modules/logging/logger.service'
 import { SettingsService } from '~/modules/settings'
 
 @Injectable()
@@ -6,7 +7,12 @@ export class InternationalizationService implements OnModuleInit {
 	private locales: string[] = ['en']
 	private defaultLocale = 'en'
 
-	constructor(private readonly settingsService: SettingsService) {}
+	constructor(
+		private readonly settingsService: SettingsService,
+		private readonly logger: MagnetLogger,
+	) {
+		this.logger.setContext(InternationalizationService.name)
+	}
 
 	async onModuleInit() {
 		await this.loadSettings()
@@ -39,7 +45,7 @@ export class InternationalizationService implements OnModuleInit {
 				this.defaultLocale = defaultLocaleSetting.value
 			}
 		} catch (error) {
-			console.error('Failed to load internationalization settings:', error)
+			this.logger.error('Failed to load internationalization settings', error)
 		}
 	}
 

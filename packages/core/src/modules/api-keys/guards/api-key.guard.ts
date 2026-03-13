@@ -4,11 +4,11 @@ import {
 	ForbiddenException,
 	HttpException,
 	Injectable,
-	Logger,
 	UnauthorizedException,
 } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
 import type { Request, Response } from 'express'
+import { MagnetLogger } from '~/modules/logging/logger.service'
 import { ApiKeyService } from '../api-keys.service'
 import {
 	API_KEY_PERMISSION_KEY,
@@ -45,12 +45,13 @@ export interface ApiKeyRequest extends Request {
  */
 @Injectable()
 export class ApiKeyGuard implements CanActivate {
-	private readonly logger = new Logger(ApiKeyGuard.name)
-
 	constructor(
 		private readonly apiKeyService: ApiKeyService,
 		private readonly reflector: Reflector,
-	) {}
+		private readonly logger: MagnetLogger,
+	) {
+		this.logger.setContext(ApiKeyGuard.name)
+	}
 
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const request = context.switchToHttp().getRequest<ApiKeyRequest>()

@@ -10,7 +10,9 @@ import type {
 	PublishDocumentOptions,
 	UpdateDocumentOptions,
 } from '~/modules/document/document.types'
+import { EventService, getEventContext } from '~/modules/events'
 import { HistoryService } from '~/modules/history/history.service'
+import { MagnetLogger } from '~/modules/logging/logger.service'
 import { AUTH_STRATEGY } from '../auth/auth.constants'
 import { DiscoveryService } from '../discovery/discovery.service'
 
@@ -21,10 +23,31 @@ export class ContentService {
 		private readonly documentService: DocumentService,
 		private readonly historyService: HistoryService,
 		private readonly discoveryService: DiscoveryService,
+		private readonly eventService: EventService,
+		private readonly logger: MagnetLogger,
 		@Optional()
 		@Inject(AUTH_STRATEGY)
 		private readonly authStrategy?: AuthStrategy,
-	) {}
+	) {
+		this.logger.setContext(ContentService.name)
+	}
+
+	/**
+	 * Emit a content event, failing silently on error.
+	 */
+	private async emitEvent(
+		event: Parameters<EventService['emit']>[0],
+		payload: Parameters<EventService['emit']>[1],
+	): Promise<void> {
+		try {
+			const context = getEventContext()
+			await this.eventService.emit(event, payload, context)
+		} catch (error) {
+			this.logger.warn(
+				`Failed to emit event ${event}: ${error instanceof Error ? error.message : String(error)}`,
+			)
+		}
+	}
 
 	/**
 	 * Convert schema name (kebab-case or lowercase) to PascalCase
@@ -151,9 +174,8 @@ export class ContentService {
 					})) as unknown as T[]
 				} catch (error) {
 					// If listUsers fails, fall back to database query
-					console.warn(
-						'Failed to list users from Supabase Auth, falling back to database:',
-						error,
+					this.logger.warn(
+						'Failed to list users from Supabase Auth, falling back to database',
 					)
 				}
 			}
@@ -204,7 +226,13 @@ export class ContentService {
 		options: CreateDocumentOptions = {},
 	) {
 		const model = this.getModel<T>(schemaName)
-		return this.documentService.create(model, data, options)
+		const result = await this.documentService.create(model, data, options)
+		await this.emitEvent('content.created', {
+			schema: schemaName,
+			documentId: result.documentId,
+			locale: result.locale,
+		})
+		return result
 	}
 
 	/**
@@ -217,7 +245,19 @@ export class ContentService {
 		options: UpdateDocumentOptions = {},
 	) {
 		const model = this.getModel<T>(schemaName)
-		return this.documentService.update(model, documentId, data, options)
+		const result = await this.documentService.update(
+			model,
+			documentId,
+			data,
+			options,
+		)
+		await this.emitEvent('content.updated', {
+			schema: schemaName,
+			documentId,
+			locale: options.locale,
+			changes: [],
+		})
+		return result
 	}
 
 	/**
@@ -229,7 +269,18 @@ export class ContentService {
 		options: PublishDocumentOptions = {},
 	) {
 		const model = this.getModel<T>(schemaName)
-		return this.documentService.publish(model, documentId, schemaName, options)
+		const result = await this.documentService.publish(
+			model,
+			documentId,
+			schemaName,
+			options,
+		)
+		await this.emitEvent('content.published', {
+			schema: schemaName,
+			documentId,
+			locale: options.locale,
+		})
+		return result
 	}
 
 	/**
@@ -237,7 +288,17 @@ export class ContentService {
 	 */
 	async unpublish<T>(schemaName: string, documentId: string, locale?: string) {
 		const model = this.getModel<T>(schemaName)
-		return this.documentService.unpublish(model, documentId, locale)
+		const result = await this.documentService.unpublish(
+			model,
+			documentId,
+			locale,
+		)
+		await this.emitEvent('content.unpublished', {
+			schema: schemaName,
+			documentId,
+			locale,
+		})
+		return result
 	}
 
 	/**
@@ -245,7 +306,12 @@ export class ContentService {
 	 */
 	async delete<T>(schemaName: string, documentId: string) {
 		const model = this.getModel<T>(schemaName)
-		return this.documentService.delete(model, documentId)
+		const result = await this.documentService.delete(model, documentId)
+		await this.emitEvent('content.deleted', {
+			schema: schemaName,
+			documentId,
+		})
+		return result
 	}
 
 	/**
@@ -351,6 +417,13 @@ export class ContentService {
 			`Restored from version ${versionNumber}`,
 			locale,
 		)
+
+		await this.emitEvent('content.version.restored', {
+			schema: schemaName,
+			documentId,
+			locale,
+			version: versionNumber,
+		})
 
 		return restored
 	}

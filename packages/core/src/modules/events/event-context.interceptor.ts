@@ -31,6 +31,10 @@ interface RequestWithUser {
 	ip?: string
 }
 
+interface ResponseWithHeader {
+	setHeader(name: string, value: string): void
+}
+
 /**
  * Async local storage for request context
  *
@@ -67,10 +71,14 @@ export const eventContextStorage = new AsyncLocalStorage<EventContext>()
 export class EventContextInterceptor implements NestInterceptor {
 	intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
 		const request = context.switchToHttp().getRequest<RequestWithUser>()
+		const response = context.switchToHttp().getResponse<ResponseWithHeader>()
 
 		const requestIdHeader = request.headers['x-request-id']
 		const requestId =
 			typeof requestIdHeader === 'string' ? requestIdHeader : randomUUID()
+
+		// Echo the request ID back in the response for client-side correlation
+		response.setHeader('x-request-id', requestId)
 
 		const eventContext: EventContext = {
 			requestId,

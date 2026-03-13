@@ -4,8 +4,14 @@ import {
 	Model,
 	type SortQuery,
 } from '@magnet-cms/common'
-import { Injectable } from '@nestjs/common'
+import { Injectable, NotFoundException } from '@nestjs/common'
+import { MagnetLogger } from '~/modules/logging/logger.service'
 import { SettingsService } from '~/modules/settings/settings.service'
+import type {
+	VersionDiff,
+	VersionFieldChange,
+	VersionSummary,
+} from './dto/version-diff.dto'
 import { History } from './schemas/history.schema'
 import { Versioning } from './setting/history.setting'
 
@@ -15,7 +21,10 @@ export class HistoryService {
 		@InjectModel(History)
 		private historyModel: Model<History>,
 		private settingsService: SettingsService,
-	) {}
+		private readonly logger: MagnetLogger,
+	) {
+		this.logger.setContext(HistoryService.name)
+	}
 
 	/**
 	 * Create a new version of a document for a specific locale
@@ -206,7 +215,7 @@ export class HistoryService {
 			if (!updated) return null
 			return updated
 		} catch (error) {
-			console.error(`Failed to update version status: ${error}`)
+			this.logger.error(`Failed to update version status: ${error}`)
 			return null
 		}
 	}
@@ -309,6 +318,95 @@ export class HistoryService {
 	async getMaxVersions(): Promise<number> {
 		const settings = await this.getVersioningSettings()
 		return settings.maxVersions
+	}
+
+	/**
+	 * Compare two versions and return a flat field-level diff.
+	 * @param versionId1 The ID of the first (older) version
+	 * @param versionId2 The ID of the second (newer) version
+	 */
+	async compareVersions(
+		versionId1: string,
+		versionId2: string,
+	): Promise<VersionDiff> {
+		const [v1, v2] = await Promise.all([
+			this.findVersionById(versionId1),
+			this.findVersionById(versionId2),
+		])
+
+		if (!v1) {
+			throw new NotFoundException(`Version '${versionId1}' not found`)
+		}
+		if (!v2) {
+			throw new NotFoundException(`Version '${versionId2}' not found`)
+		}
+
+		const before = (v1.data ?? {}) as Record<string, unknown>
+		const after = (v2.data ?? {}) as Record<string, unknown>
+
+		return {
+			version1: this.toVersionSummary(v1),
+			version2: this.toVersionSummary(v2),
+			changes: this.computeDiff(before, after),
+		}
+	}
+
+	/**
+	 * Compute a flat field-level diff between two data objects.
+	 * Compares top-level fields using JSON.stringify for deep equality.
+	 */
+	private computeDiff(
+		before: Record<string, unknown>,
+		after: Record<string, unknown>,
+	): VersionFieldChange[] {
+		const changes: VersionFieldChange[] = []
+		const allFields = new Set([...Object.keys(before), ...Object.keys(after)])
+
+		for (const field of allFields) {
+			const hadField = Object.prototype.hasOwnProperty.call(before, field)
+			const hasField = Object.prototype.hasOwnProperty.call(after, field)
+
+			if (!hadField && hasField) {
+				changes.push({
+					field,
+					before: undefined,
+					after: after[field],
+					type: 'added',
+				})
+			} else if (hadField && !hasField) {
+				changes.push({
+					field,
+					before: before[field],
+					after: undefined,
+					type: 'removed',
+				})
+			} else if (
+				JSON.stringify(before[field]) !== JSON.stringify(after[field])
+			) {
+				changes.push({
+					field,
+					before: before[field],
+					after: after[field],
+					type: 'modified',
+				})
+			}
+		}
+
+		return changes
+	}
+
+	private toVersionSummary(version: History): VersionSummary {
+		return {
+			versionId: version.versionId,
+			versionNumber: version.versionNumber,
+			documentId: version.documentId,
+			schemaName: version.schemaName,
+			locale: version.locale,
+			status: version.status,
+			createdAt: version.createdAt,
+			createdBy: version.createdBy,
+			notes: version.notes,
+		}
 	}
 
 	/**

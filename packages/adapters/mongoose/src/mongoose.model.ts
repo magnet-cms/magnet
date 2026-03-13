@@ -13,6 +13,7 @@ import {
 	isCastError,
 	isVersionDocument,
 } from '@magnet-cms/common'
+import { Logger } from '@nestjs/common'
 import { Document, Model as MongooseModel } from 'mongoose'
 import { MongooseQueryBuilder } from '~/mongoose.query-builder'
 import { mapDocumentId, mapQueryId } from '~/utils'
@@ -171,7 +172,7 @@ export function createModel<T>(
 				this.versionModel = model.db.model<Document>('History')
 				return this.versionModel
 			} catch (error) {
-				console.error('Error getting Version model:', error)
+				new Logger('MongooseModel').error('Error getting Version model:', error)
 				return undefined
 			}
 		}

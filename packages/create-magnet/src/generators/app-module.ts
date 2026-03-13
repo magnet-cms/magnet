@@ -85,12 +85,24 @@ function generateMagnetConfig(config: ProjectConfig): string {
 		lines.push(`\t\t\t\tconnectionString: process.env.DATABASE_URL || '',`)
 		lines.push(`\t\t\t\tdialect: 'postgresql',`)
 		lines.push(`\t\t\t\tdriver: 'neon',`)
+		lines.push('\t\t\t\tmigrations: {')
+		lines.push(
+			`\t\t\t\t\tmode: process.env.NODE_ENV === 'production' ? 'manual' : 'auto',`,
+		)
+		lines.push(`\t\t\t\t\tdirectory: './migrations',`)
+		lines.push('\t\t\t\t},')
 		lines.push('\t\t\t},')
 	} else if (database === 'drizzle-supabase') {
 		lines.push('\t\t\tdb: {')
 		lines.push(`\t\t\t\tconnectionString: process.env.DATABASE_URL || '',`)
 		lines.push(`\t\t\t\tdialect: 'postgresql',`)
 		lines.push(`\t\t\t\tdriver: 'pg',`)
+		lines.push('\t\t\t\tmigrations: {')
+		lines.push(
+			`\t\t\t\t\tmode: process.env.NODE_ENV === 'production' ? 'manual' : 'auto',`,
+		)
+		lines.push(`\t\t\t\t\tdirectory: './migrations',`)
+		lines.push('\t\t\t\t},')
 		lines.push('\t\t\t},')
 	}
 

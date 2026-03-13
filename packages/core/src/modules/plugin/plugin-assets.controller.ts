@@ -1,8 +1,9 @@
 import { existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { findPathInParentDirectories } from '@magnet-cms/utils/node'
-import { Controller, Get, Logger, Param, Res } from '@nestjs/common'
+import { Controller, Get, Param, Res } from '@nestjs/common'
 import type { Response } from 'express'
+import { MagnetLogger } from '~/modules/logging/logger.service'
 
 /**
  * Controller for serving plugin frontend assets
@@ -12,7 +13,9 @@ import type { Response } from 'express'
  */
 @Controller('plugins/assets')
 export class PluginAssetsController {
-	private readonly logger = new Logger(PluginAssetsController.name)
+	constructor(private readonly logger: MagnetLogger) {
+		this.logger.setContext(PluginAssetsController.name)
+	}
 
 	/**
 	 * Serve a plugin frontend asset

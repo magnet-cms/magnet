@@ -1,8 +1,15 @@
 import { MagnetModuleOptions } from '@magnet-cms/common'
 import { DynamicModule, Module, Type, ValidationPipe } from '@nestjs/common'
-import { APP_FILTER, APP_GUARD, APP_PIPE, DiscoveryModule } from '@nestjs/core'
+import {
+	APP_FILTER,
+	APP_GUARD,
+	APP_INTERCEPTOR,
+	APP_PIPE,
+	DiscoveryModule,
+} from '@nestjs/core'
 import { RestrictedGuard } from './guards/restricted.guard'
 import { GlobalExceptionFilter } from './handlers'
+import { ActivityModule } from './modules/activity/activity.module'
 import {
 	AdminServeModule,
 	type AdminServeOptions,
@@ -17,6 +24,8 @@ import { EnvironmentModule } from './modules/environment/environment.module'
 import { EventsModule } from './modules/events/events.module'
 import { HealthModule } from './modules/health/health.module'
 import { HistoryModule } from './modules/history/history.module'
+import { LoggingInterceptor } from './modules/logging/logging.interceptor'
+import { LoggingModule } from './modules/logging/logging.module'
 import { PluginModule } from './modules/plugin/plugin.module'
 import { RBACModule } from './modules/rbac/rbac.module'
 import { SettingsModule } from './modules/settings/settings.module'
@@ -56,6 +65,8 @@ export class MagnetModule {
 		// Normalize admin config and conditionally add AdminServeModule
 		const adminConfig = normalizeAdminConfig(defaultOptions.admin)
 		const imports: Array<DynamicModule | Type> = [
+			LoggingModule,
+			ActivityModule,
 			AdminModule,
 			ApiKeysModule,
 			AuthModuleConfig,
@@ -88,6 +99,7 @@ export class MagnetModule {
 			providers: [
 				{ provide: APP_PIPE, useClass: ValidationPipe },
 				{ provide: APP_FILTER, useClass: GlobalExceptionFilter },
+				{ provide: APP_INTERCEPTOR, useClass: LoggingInterceptor },
 				{ provide: MagnetModuleOptions, useValue: defaultOptions },
 				{ provide: APP_GUARD, useClass: RestrictedGuard },
 			],

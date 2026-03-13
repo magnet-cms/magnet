@@ -866,6 +866,54 @@ export class ApiClient {
 		})
 	}
 
+	// Activity endpoints
+	async getRecentActivity(limit?: number) {
+		const params = limit ? `?limit=${limit}` : ''
+		return this.request.get(`${this.baseURL}/activity${params}`, {
+			headers: this.getHeaders(),
+		})
+	}
+
+	async getActivityByEntity(entityType: string, entityId: string) {
+		return this.request.get(
+			`${this.baseURL}/activity/entity/${entityType}/${entityId}`,
+			{ headers: this.getHeaders() },
+		)
+	}
+
+	async getActivityByUser(userId: string) {
+		return this.request.get(`${this.baseURL}/activity/user/${userId}`, {
+			headers: this.getHeaders(),
+		})
+	}
+
+	async searchActivity(params: {
+		action?: string
+		entityType?: string
+		userId?: string
+		limit?: number
+		offset?: number
+	}) {
+		const query = new URLSearchParams()
+		if (params.action) query.set('action', params.action)
+		if (params.entityType) query.set('entityType', params.entityType)
+		if (params.userId) query.set('userId', params.userId)
+		if (params.limit !== undefined) query.set('limit', String(params.limit))
+		if (params.offset !== undefined) query.set('offset', String(params.offset))
+		const qs = query.toString()
+		return this.request.get(
+			`${this.baseURL}/activity/search${qs ? `?${qs}` : ''}`,
+			{ headers: this.getHeaders() },
+		)
+	}
+
+	async compareVersions(versionId1: string, versionId2: string) {
+		return this.request.get(
+			`${this.baseURL}/history/compare/${versionId1}/${versionId2}`,
+			{ headers: this.getHeaders() },
+		)
+	}
+
 	// Environment endpoints
 	async getEnvironments() {
 		return this.request.get(`${this.baseURL}/environments`, {

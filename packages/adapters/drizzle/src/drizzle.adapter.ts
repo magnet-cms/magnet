@@ -6,7 +6,7 @@ import {
 	MagnetModuleOptions,
 	getModelToken,
 } from '@magnet-cms/common'
-import { DynamicModule, Injectable, Module, Type } from '@nestjs/common'
+import { DynamicModule, Injectable, Logger, Module, Type } from '@nestjs/common'
 import { sql } from 'drizzle-orm'
 import { drizzle } from 'drizzle-orm/node-postgres'
 import { type PgTable, getTableConfig } from 'drizzle-orm/pg-core'
@@ -14,6 +14,13 @@ import { Pool } from 'pg'
 
 import { createNeonWebSocketConnection } from './dialects/neon'
 import { createModel } from './drizzle.model'
+import { AutoMigration } from './migrations/auto-migration'
+import { MigrationGenerator } from './migrations/migration-generator'
+import { MigrationRunner } from './migrations/migration-runner'
+import { SchemaBridge } from './migrations/schema-bridge'
+import { SchemaDiff } from './migrations/schema-diff'
+import { DEFAULT_MIGRATION_CONFIG } from './migrations/types'
+import type { MigrationDb } from './migrations/types'
 import { getOrGenerateSchema } from './schema/schema.generator'
 import type { DrizzleConfig, DrizzleDB } from './types'
 
@@ -70,8 +77,56 @@ class DrizzleAdapter extends DatabaseAdapter {
 		// Small delay to allow all schemas to be registered
 		await new Promise((resolve) => setTimeout(resolve, 200))
 
-		await this.createTables()
+		const drizzleConfig = this.options?.db as DrizzleConfig | undefined
+
+		if (drizzleConfig?.migrations) {
+			// Migration-aware mode: delegate to AutoMigration
+			await this.runAutoMigration(drizzleConfig)
+		} else {
+			// Backward-compatible mode: CREATE TABLE IF NOT EXISTS
+			await this.createTables()
+		}
+
 		this.tablesInitialized = true
+	}
+
+	/**
+	 * Run the auto-migration system when `config.migrations` is configured.
+	 */
+	private async runAutoMigration(config: DrizzleConfig): Promise<void> {
+		const migrationConfig = {
+			...DEFAULT_MIGRATION_CONFIG,
+			...config.migrations,
+		}
+		const migrationDb: MigrationDb = {
+			execute: async (sql: string) =>
+				(
+					this.db as unknown as { execute: (s: unknown) => Promise<unknown> }
+				).execute(sql),
+		}
+		const bridge = new SchemaBridge()
+		const diff = new SchemaDiff(bridge)
+		const gen = new MigrationGenerator()
+		const runner = new MigrationRunner(migrationDb, migrationConfig)
+		const auto = new AutoMigration(bridge, diff, gen, runner)
+
+		const mode = migrationConfig.mode
+		try {
+			await auto.run(
+				config.dialect ?? 'postgresql',
+				migrationConfig,
+				migrationConfig.directory,
+			)
+		} catch (err) {
+			const msg = err instanceof Error ? err.message : JSON.stringify(err)
+			const stack = err instanceof Error ? err.stack : undefined
+			new Logger('DrizzleAdapter').error(
+				`Auto-migration failed: ${msg}${stack ? `\n${stack}` : ''}`,
+			)
+			if (mode === 'auto') {
+				throw err
+			}
+		}
 	}
 
 	/**
@@ -90,7 +145,10 @@ class DrizzleAdapter extends DatabaseAdapter {
 			}
 		} catch (error) {
 			// Log error but don't fail startup - tables might already exist
-			console.warn('Error creating tables automatically:', error)
+			new Logger('DrizzleAdapter').warn(
+				'Error creating tables automatically:',
+				JSON.stringify(error),
+			)
 		}
 	}
 

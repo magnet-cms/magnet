@@ -192,6 +192,19 @@ function generateColumn(columnName: string, options: PropOptions): any {
 }
 
 /**
+ * Get all registered schemas (read-only view of the registry)
+ */
+export function getRegisteredSchemas(): ReadonlyMap<
+	string,
+	{ table: ReturnType<typeof pgTable>; tableName: string }
+> {
+	return schemaRegistry as ReadonlyMap<
+		string,
+		{ table: ReturnType<typeof pgTable>; tableName: string }
+	>
+}
+
+/**
  * Clear the schema registry (useful for testing)
  */
 export function clearSchemaRegistry(): void {

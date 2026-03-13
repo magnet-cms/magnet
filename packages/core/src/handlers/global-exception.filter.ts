@@ -6,9 +6,9 @@ import {
 	ExceptionFilter,
 	HttpException,
 	HttpStatus,
-	Logger,
 } from '@nestjs/common'
 import { ValidationError } from 'class-validator'
+import { MagnetLogger } from '~/modules/logging/logger.service'
 import { formatValidationErrors } from '~/utils'
 
 /**
@@ -35,7 +35,9 @@ interface LegacyExceptionResponse {
  */
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
-	private readonly logger = new Logger(GlobalExceptionFilter.name)
+	constructor(private readonly logger: MagnetLogger) {
+		this.logger.setContext(GlobalExceptionFilter.name)
+	}
 
 	catch(exception: unknown, host: ArgumentsHost): void {
 		const ctx = host.switchToHttp()
@@ -109,7 +111,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 	 * Log MagnetError with structured context
 	 */
 	private logError(exception: MagnetError, request: RequestWithUser): void {
-		this.logger.error({
+		this.logger.error(exception.message, undefined, {
 			...exception.toJSON(),
 			path: request.url,
 			method: request.method,
@@ -129,13 +131,11 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 			exception instanceof Error ? exception.message : 'Unknown error'
 		const stack = exception instanceof Error ? exception.stack : undefined
 
-		this.logger.error({
-			message: errorMessage,
+		this.logger.error(errorMessage, stack, {
 			statusCode,
 			path: request.url,
 			method: request.method,
 			userId: request.user?.id,
-			stack,
 		})
 	}
 }

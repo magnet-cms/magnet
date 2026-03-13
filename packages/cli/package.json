@@ -1,0 +1,53 @@
+{
+  "name": "@magnet-cms/cli",
+  "version": "0.1.0",
+  "description": "CLI for Magnet CMS — database migrations and project management",
+  "type": "module",
+  "main": "./dist/index.js",
+  "bin": {
+    "magnet": "./bin/magnet.js"
+  },
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    }
+  },
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "bin"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "build:dev": "tsup --watch",
+    "dev": "bun run src/index.ts",
+    "lint": "biome check .",
+    "check-types": "tsc --noEmit",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@inquirer/prompts": "^7.5.0",
+    "@magnet-cms/adapter-drizzle": "workspace:*",
+    "ansis": "^3.17.0",
+    "commander": "^13.1.0"
+  },
+  "devDependencies": {
+    "@repo/biome": "workspace:*",
+    "@repo/tsup": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@types/node": "^22.13.1"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "magnet",
+    "cms",
+    "migrations",
+    "cli"
+  ],
+  "license": "MIT"
+}

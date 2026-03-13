@@ -1,5 +1,7 @@
 import type { ControllerMetadata, SchemaMetadata } from '@magnet-cms/common'
 import type {
+	ActivityRecord,
+	ActivitySearchParams,
 	ApiRequestConfig,
 	AuthStatus,
 	AuthTokens,
@@ -16,6 +18,7 @@ import type {
 	MediaQueryOptions,
 	MediaStats,
 	MediaUploadOptions,
+	PaginatedActivities,
 	PaginatedMedia,
 	PlaygroundCodePreview,
 	PlaygroundCreateModuleResponse,
@@ -27,6 +30,7 @@ import type {
 	TokenStorage,
 	TransformOptions,
 	VersionDetails,
+	VersionDiff,
 	VersionInfo,
 } from './types'
 
@@ -485,6 +489,68 @@ export function createHttpAdapter(config: HttpAdapterConfig): MagnetApiAdapter {
 				await request(`/history/version/${versionId}`, {
 					method: 'DELETE',
 				})
+			},
+
+			async compareVersions(
+				versionId1: string,
+				versionId2: string,
+			): Promise<VersionDiff> {
+				return request<VersionDiff>(
+					`/history/compare/${versionId1}/${versionId2}`,
+				)
+			},
+		},
+
+		activity: {
+			async getRecent(limit?: number): Promise<ActivityRecord[]> {
+				const url = buildUrl('/activity', {
+					limit: limit !== undefined ? String(limit) : undefined,
+				})
+				return request<ActivityRecord[]>(url)
+			},
+
+			async getByEntity(
+				entityType: string,
+				entityId: string,
+				limit?: number,
+			): Promise<ActivityRecord[]> {
+				const url = buildUrl(`/activity/entity/${entityType}/${entityId}`, {
+					limit: limit !== undefined ? String(limit) : undefined,
+				})
+				return request<ActivityRecord[]>(url)
+			},
+
+			async getByUser(
+				userId: string,
+				limit?: number,
+			): Promise<ActivityRecord[]> {
+				const url = buildUrl(`/activity/user/${userId}`, {
+					limit: limit !== undefined ? String(limit) : undefined,
+				})
+				return request<ActivityRecord[]>(url)
+			},
+
+			async search(params: ActivitySearchParams): Promise<PaginatedActivities> {
+				const url = buildUrl('/activity/search', {
+					action: params.action,
+					entityType: params.entityType,
+					entityId: params.entityId,
+					userId: params.userId,
+					from: params.from,
+					to: params.to,
+					limit: params.limit !== undefined ? String(params.limit) : undefined,
+					offset:
+						params.offset !== undefined ? String(params.offset) : undefined,
+				})
+				return request<PaginatedActivities>(url)
+			},
+
+			async cleanup(retentionDays?: number): Promise<{ deleted: number }> {
+				const url = buildUrl('/activity/cleanup', {
+					retentionDays:
+						retentionDays !== undefined ? String(retentionDays) : undefined,
+				})
+				return request<{ deleted: number }>(url, { method: 'DELETE' })
 			},
 		},
 

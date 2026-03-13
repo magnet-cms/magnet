@@ -13,10 +13,11 @@ import {
 	getSettingsOptions,
 } from '@magnet-cms/common'
 import type { Type } from '@nestjs/common'
-import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common'
+import { Injectable, OnApplicationBootstrap } from '@nestjs/common'
 import { ModuleRef } from '@nestjs/core'
 import { plainToInstance } from 'class-transformer'
 import { validate } from 'class-validator'
+import { MagnetLogger } from '~/modules/logging/logger.service'
 import { Setting } from './schemas/setting.schema'
 
 /**
@@ -29,7 +30,6 @@ interface CacheEntry<T> {
 
 @Injectable()
 export class SettingsService implements OnApplicationBootstrap {
-	private readonly logger = new Logger(SettingsService.name)
 	private registeredSchemas: Map<string, Type> = new Map()
 	/** Maps schema class name (lowercase) to actual group name */
 	private schemaNameToGroup: Map<string, string> = new Map()
@@ -43,7 +43,10 @@ export class SettingsService implements OnApplicationBootstrap {
 	constructor(
 		@InjectModel(Setting) private readonly settingModel: Model<Setting>,
 		private readonly moduleRef: ModuleRef,
-	) {}
+		private readonly logger: MagnetLogger,
+	) {
+		this.logger.setContext(SettingsService.name)
+	}
 
 	async onApplicationBootstrap() {
 		await this.waitForModel()

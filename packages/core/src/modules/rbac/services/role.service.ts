@@ -7,7 +7,8 @@ import {
 	type RoleWithPermissions,
 	type SystemRoleConfig,
 } from '@magnet-cms/common'
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
+import { Injectable, OnModuleInit } from '@nestjs/common'
+import { MagnetLogger } from '~/modules/logging/logger.service'
 import { EventService } from '../../events/event.service'
 import { UserService } from '../../user/user.service'
 import { CreateRoleDto } from '../dto/create-role.dto'
@@ -47,7 +48,6 @@ const SYSTEM_ROLES: SystemRoleConfig[] = [
  */
 @Injectable()
 export class RoleService implements OnModuleInit {
-	private readonly logger = new Logger(RoleService.name)
 	private permissionCache = new Map<string, Map<string, boolean>>()
 	private cacheEnabled = true
 	private cacheTTL = 300000 // 5 minutes
@@ -58,7 +58,10 @@ export class RoleService implements OnModuleInit {
 		private readonly permissionService: PermissionService,
 		private readonly eventService: EventService,
 		private readonly userService: UserService,
-	) {}
+		private readonly logger: MagnetLogger,
+	) {
+		this.logger.setContext(RoleService.name)
+	}
 
 	async onModuleInit(): Promise<void> {
 		await this.ensureDefaultRoles()

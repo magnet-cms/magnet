@@ -5,7 +5,7 @@ import {
 	SidebarHeader,
 } from '@magnet-cms/ui/components'
 import { names } from '@magnet-cms/utils'
-import { Database, ImageIcon, Settings2 } from 'lucide-react'
+import { Activity, Database, ImageIcon, Settings2 } from 'lucide-react'
 import type * as React from 'react'
 import { useAdmin } from '~/contexts/useAdmin'
 import { usePluginSidebarItems } from '~/core/plugins/PluginRegistry'
@@ -57,6 +57,12 @@ export const AppSidebar = ({
 			url: '/media',
 			icon: ImageIcon,
 			order: 30,
+		},
+		{
+			title: 'Activity',
+			url: '/activity',
+			icon: Activity,
+			order: 70,
 		},
 		{
 			title: 'Settings',

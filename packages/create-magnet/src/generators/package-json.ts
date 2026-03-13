@@ -50,7 +50,28 @@ export function generatePackageJson(config: ProjectConfig): string {
 	// Storage adapters are part of core, no extra deps needed for local
 	// S3, R2, Supabase storage would need additional config but not extra packages
 
+	// Add migrate scripts and CLI for Drizzle projects
+	const scripts: Record<string, string> = {
+		build: 'nest build',
+		start: 'nest start',
+		'start:prod': 'cross-env NODE_ENV=production nest start',
+		dev: 'nest start --watch',
+		'dev:debug': 'nest start --debug --watch',
+		'docker:up': 'docker compose -f docker/docker-compose.yml up -d',
+		'docker:down': 'docker compose -f docker/docker-compose.yml down',
+		'docker:logs': 'docker compose -f docker/docker-compose.yml logs -f',
+	}
+
+	if (database !== 'mongoose') {
+		scripts['migrate:up'] = 'magnet migrate:up'
+		scripts['migrate:down'] = 'magnet migrate:down'
+		scripts['migrate:status'] = 'magnet migrate:status'
+		scripts['migrate:generate'] = 'magnet migrate:generate'
+		scripts['migrate:create'] = 'magnet migrate:create'
+	}
+
 	const devDependencies: Record<string, string> = {
+		...(database !== 'mongoose' ? { '@magnet-cms/cli': '^0.1.0' } : {}),
 		'@nestjs/cli': PACKAGE_VERSIONS['@nestjs/cli'],
 		'@nestjs/schematics': PACKAGE_VERSIONS['@nestjs/schematics'],
 		'@types/express': PACKAGE_VERSIONS['@types/express'],
@@ -69,16 +90,7 @@ export function generatePackageJson(config: ProjectConfig): string {
 		description: 'A Magnet CMS project',
 		private: true,
 		license: 'UNLICENSED',
-		scripts: {
-			build: 'nest build',
-			start: 'nest start',
-			'start:prod': 'cross-env NODE_ENV=production nest start',
-			dev: 'nest start --watch',
-			'dev:debug': 'nest start --debug --watch',
-			'docker:up': 'docker compose -f docker/docker-compose.yml up -d',
-			'docker:down': 'docker compose -f docker/docker-compose.yml down',
-			'docker:logs': 'docker compose -f docker/docker-compose.yml logs -f',
-		},
+		scripts,
 		dependencies,
 		devDependencies,
 	}

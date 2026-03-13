@@ -8,21 +8,24 @@ import {
 	type UploadOptions,
 	getModelToken,
 } from '@magnet-cms/common'
-import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common'
+import { Inject, Injectable, OnModuleInit } from '@nestjs/common'
 import { ModuleRef } from '@nestjs/core'
+import { MagnetLogger } from '~/modules/logging/logger.service'
 import { Media } from './schemas/media.schema'
 import { STORAGE_ADAPTER } from './storage.constants'
 
 @Injectable()
 export class StorageService implements OnModuleInit {
-	private readonly logger = new Logger(StorageService.name)
 	private mediaModel: Model<Media> | null = null
 
 	constructor(
 		@Inject(STORAGE_ADAPTER)
 		private readonly adapter: StorageAdapter,
 		private readonly moduleRef: ModuleRef,
-	) {}
+		private readonly logger: MagnetLogger,
+	) {
+		this.logger.setContext(StorageService.name)
+	}
 
 	async onModuleInit() {
 		await this.adapter.initialize()

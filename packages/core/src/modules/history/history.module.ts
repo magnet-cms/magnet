@@ -1,7 +1,8 @@
 import { Model, getModelToken } from '@magnet-cms/common'
-import { Module, forwardRef } from '@nestjs/common'
+import { Logger, Module, forwardRef } from '@nestjs/common'
 import { ModuleRef } from '@nestjs/core'
 import { DatabaseModule } from '~/modules/database'
+import { MagnetLogger } from '~/modules/logging/logger.service'
 import { SettingsModule } from '~/modules/settings'
 import { SettingsService } from '../settings/settings.service'
 import { HistoryController } from './history.controller'
@@ -33,7 +34,10 @@ import { Versioning } from './setting/history.setting'
 
 					return historyModel
 				} catch (error) {
-					console.error('Error getting History model:', error)
+					new Logger('HistoryModule').error(
+						'Error getting History model:',
+						error,
+					)
 					throw error
 				}
 			},
@@ -44,10 +48,11 @@ import { Versioning } from './setting/history.setting'
 			useFactory: (
 				historyModel: Model<History>,
 				settingsService: SettingsService,
+				logger: MagnetLogger,
 			) => {
-				return new HistoryService(historyModel, settingsService)
+				return new HistoryService(historyModel, settingsService, logger)
 			},
-			inject: ['HISTORY_MODEL', SettingsService],
+			inject: ['HISTORY_MODEL', SettingsService, MagnetLogger],
 		},
 	],
 	exports: [

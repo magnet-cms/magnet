@@ -1,5 +1,6 @@
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres'
 import type { PgDatabase } from 'drizzle-orm/pg-core'
+import type { MigrationConfig } from './migrations/types'
 
 /**
  * Drizzle configuration for MagnetModuleOptions
@@ -13,6 +14,10 @@ export interface DrizzleConfig {
 	driver?: 'pg' | 'neon' | 'mysql2' | 'better-sqlite3'
 	/** Enable debug logging */
 	debug?: boolean
+	/**
+	 * Migration configuration. If omitted, falls back to legacy CREATE TABLE IF NOT EXISTS behavior.
+	 */
+	migrations?: Partial<MigrationConfig>
 }
 
 /**

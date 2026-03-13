@@ -6,14 +6,10 @@ import {
 	RESOLVED_PERMISSION_KEY,
 	type ResolvedPermission,
 } from '@magnet-cms/common'
-import {
-	CanActivate,
-	ExecutionContext,
-	Injectable,
-	Logger,
-} from '@nestjs/common'
+import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
 import type { Request } from 'express'
+import { MagnetLogger } from '~/modules/logging/logger.service'
 import { RoleService } from '../services/role.service'
 
 /**
@@ -50,12 +46,13 @@ interface AuthenticatedRequest extends Request {
  */
 @Injectable()
 export class PermissionGuard implements CanActivate {
-	private readonly logger = new Logger(PermissionGuard.name)
-
 	constructor(
 		private readonly reflector: Reflector,
 		private readonly roleService: RoleService,
-	) {}
+		private readonly logger: MagnetLogger,
+	) {
+		this.logger.setContext(PermissionGuard.name)
+	}
 
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const request = context.switchToHttp().getRequest<AuthenticatedRequest>()

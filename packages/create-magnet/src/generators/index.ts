@@ -77,6 +77,11 @@ export async function generateProject(config: ProjectConfig): Promise<void> {
 		)
 	}
 
+	// Add migrations directory for Drizzle projects
+	if (config.database !== 'mongoose') {
+		files.push({ path: 'migrations/.gitkeep', content: '' })
+	}
+
 	// Write all files
 	for (const file of files) {
 		const filePath = path.join(projectPath, file.path)
