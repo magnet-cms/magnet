@@ -5,7 +5,6 @@ import {
 	Module,
 	OnApplicationBootstrap,
 	Type,
-	forwardRef,
 } from '@nestjs/common'
 import { DatabaseModule } from '~/modules/database'
 import { Setting } from './schemas/setting.schema'
@@ -43,24 +42,14 @@ class SettingsInitializer implements OnApplicationBootstrap {
 	}
 }
 
-@Module({
-	imports: [
-		forwardRef(() => DatabaseModule),
-		forwardRef(() => DatabaseModule.forFeature(Setting)),
-	],
-	controllers: [SettingsController],
-	providers: [SettingsService],
-	exports: [
-		forwardRef(() => DatabaseModule.forFeature(Setting)),
-		SettingsService,
-	],
-})
+@Module({})
 export class SettingsModule {
 	static forRoot(): DynamicModule {
 		return {
 			module: SettingsModule,
 			global: true,
 			imports: [DatabaseModule, DatabaseModule.forFeature(Setting)],
+			controllers: [SettingsController],
 			providers: [SettingsService],
 			exports: [SettingsService],
 		}

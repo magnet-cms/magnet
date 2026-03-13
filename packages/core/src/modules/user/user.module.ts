@@ -1,5 +1,5 @@
 import { isUserExtension } from '@magnet-cms/common'
-import { DynamicModule, Logger, Module, Type, forwardRef } from '@nestjs/common'
+import { DynamicModule, Logger, Module, Type } from '@nestjs/common'
 import { DatabaseModule } from '~/modules/database'
 import { User } from './schemas/user.schema'
 import {
@@ -10,7 +10,7 @@ import { UserController } from './user.controller'
 import { UserService } from './user.service'
 
 @Module({
-	imports: [forwardRef(() => DatabaseModule.forFeature(User))],
+	imports: [DatabaseModule.forFeature(User)],
 	controllers: [UserController],
 	providers: [UserService, UserExtensionService],
 	exports: [UserService, UserExtensionService],

@@ -80,7 +80,7 @@ export class MagnetModule {
 			HealthModule,
 			PluginModule.forRoot({ plugins }),
 			RBACModule.forRoot(defaultOptions.rbac),
-			SettingsModule,
+			SettingsModule.forRoot(),
 			StorageModuleConfig,
 		]
 
