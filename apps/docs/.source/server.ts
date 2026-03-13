@@ -22,9 +22,9 @@ import { default as __fd_glob_4 } from '../content/docs/core/meta.json?collectio
 import * as __fd_glob_26 from '../content/docs/core/rbac-module.mdx?collection=docs'
 import * as __fd_glob_27 from '../content/docs/getting-started/index.mdx?collection=docs'
 import * as __fd_glob_28 from '../content/docs/getting-started/installation.mdx?collection=docs'
-import { default as __fd_glob_6 } from '../content/docs/getting-started/meta.json?collection=docs'
+import { default as __fd_glob_5 } from '../content/docs/getting-started/meta.json?collection=docs'
 import * as __fd_glob_29 from '../content/docs/getting-started/quick-start.mdx?collection=docs'
-import { default as __fd_glob_5 } from '../content/docs/guides/meta.json?collection=docs'
+import { default as __fd_glob_6 } from '../content/docs/guides/meta.json?collection=docs'
 import * as __fd_glob_30 from '../content/docs/guides/nextjs-integration.mdx?collection=docs'
 import * as __fd_glob_9 from '../content/docs/index.mdx?collection=docs'
 import { default as __fd_glob_0 } from '../content/docs/meta.json?collection=docs'
@@ -57,8 +57,8 @@ export const docs = await create.docs(
 		'client/meta.json': __fd_glob_2,
 		'common/meta.json': __fd_glob_3,
 		'core/meta.json': __fd_glob_4,
-		'guides/meta.json': __fd_glob_5,
-		'getting-started/meta.json': __fd_glob_6,
+		'getting-started/meta.json': __fd_glob_5,
+		'guides/meta.json': __fd_glob_6,
 		'migrations/meta.json': __fd_glob_7,
 		'plugins/meta.json': __fd_glob_8,
 	},
