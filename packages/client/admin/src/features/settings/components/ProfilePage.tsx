@@ -29,6 +29,7 @@ import { toast } from 'sonner'
 
 import { useChangePassword, useUpdateProfile } from '~/hooks/useAccount'
 import { useAuth } from '~/hooks/useAuth'
+import { useAppIntl } from '~/i18n'
 
 import { PageHeader } from '../../shared'
 
@@ -58,6 +59,7 @@ const mockSessions: ActiveSession[] = [
 type ProfileTab = 'personal' | 'security'
 
 export function ProfilePage() {
+	const intl = useAppIntl()
 	const { user, isLoading: isUserLoading } = useAuth()
 	const { mutate: updateProfile, isPending: isUpdatingProfile } =
 		useUpdateProfile()
@@ -93,10 +95,21 @@ export function ProfilePage() {
 			{ name: profileForm.name },
 			{
 				onSuccess: () => {
-					toast.success('Profile updated successfully')
+					toast.success(
+						intl.formatMessage({
+							id: 'profile.updateSuccess',
+							defaultMessage: 'Profile updated successfully',
+						}),
+					)
 				},
 				onError: (error) => {
-					toast.error(error.message || 'Failed to update profile')
+					toast.error(
+						error.message ||
+							intl.formatMessage({
+								id: 'profile.updateError',
+								defaultMessage: 'Failed to update profile',
+							}),
+					)
 				},
 			},
 		)
@@ -104,19 +117,34 @@ export function ProfilePage() {
 
 	const handleAvatarUpload = () => {
 		// Avatar upload would need media integration
-		toast.info('Avatar upload coming soon')
+		toast.info(
+			intl.formatMessage({
+				id: 'profile.avatarComingSoon',
+				defaultMessage: 'Avatar upload coming soon',
+			}),
+		)
 	}
 
 	const handlePasswordChange = useCallback(() => {
 		// Validate passwords match
 		if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-			toast.error('New passwords do not match')
+			toast.error(
+				intl.formatMessage({
+					id: 'profile.passwordMismatch',
+					defaultMessage: 'New passwords do not match',
+				}),
+			)
 			return
 		}
 
 		// Validate password length
 		if (passwordForm.newPassword.length < 8) {
-			toast.error('Password must be at least 8 characters')
+			toast.error(
+				intl.formatMessage({
+					id: 'profile.passwordTooShort',
+					defaultMessage: 'Password must be at least 8 characters',
+				}),
+			)
 			return
 		}
 
@@ -127,7 +155,12 @@ export function ProfilePage() {
 			},
 			{
 				onSuccess: () => {
-					toast.success('Password changed successfully')
+					toast.success(
+						intl.formatMessage({
+							id: 'profile.passwordChanged',
+							defaultMessage: 'Password changed successfully',
+						}),
+					)
 					setPasswordForm({
 						currentPassword: '',
 						newPassword: '',
@@ -135,7 +168,13 @@ export function ProfilePage() {
 					})
 				},
 				onError: (error) => {
-					toast.error(error.message || 'Failed to change password')
+					toast.error(
+						error.message ||
+							intl.formatMessage({
+								id: 'profile.passwordChangeError',
+								defaultMessage: 'Failed to change password',
+							}),
+					)
 				},
 			},
 		)
@@ -143,7 +182,12 @@ export function ProfilePage() {
 
 	const handleRevokeSession = (sessionId: string) => {
 		// Session management would need dedicated API
-		toast.info('Session management coming soon')
+		toast.info(
+			intl.formatMessage({
+				id: 'profile.sessionManagementComingSoon',
+				defaultMessage: 'Session management coming soon',
+			}),
+		)
 		console.log('Revoking session:', sessionId)
 	}
 
@@ -172,10 +216,17 @@ export function ProfilePage() {
 				<div className="h-16 flex items-center justify-between px-6">
 					<div>
 						<h1 className="text-lg font-semibold text-gray-900 tracking-tight">
-							Profile
+							{intl.formatMessage({
+								id: 'profile.title',
+								defaultMessage: 'Profile',
+							})}
 						</h1>
 						<p className="text-xs text-gray-500">
-							Manage your account settings and security preferences.
+							{intl.formatMessage({
+								id: 'profile.subtitle',
+								defaultMessage:
+									'Manage your account settings and security preferences.',
+							})}
 						</p>
 					</div>
 				</div>
@@ -194,7 +245,10 @@ export function ProfilePage() {
 								: 'text-gray-500 hover:text-gray-900 border-transparent hover:border-gray-200',
 						)}
 					>
-						Personal
+						{intl.formatMessage({
+							id: 'profile.personalTab',
+							defaultMessage: 'Personal',
+						})}
 					</button>
 					<button
 						type="button"
@@ -206,7 +260,10 @@ export function ProfilePage() {
 								: 'text-gray-500 hover:text-gray-900 border-transparent hover:border-gray-200',
 						)}
 					>
-						Security
+						{intl.formatMessage({
+							id: 'profile.securityTab',
+							defaultMessage: 'Security',
+						})}
 					</button>
 				</div>
 			</header>
@@ -227,11 +284,17 @@ export function ProfilePage() {
 											</div>
 											<div>
 												<h3 className="text-base font-semibold text-gray-900">
-													Personal Information
+													{intl.formatMessage({
+														id: 'profile.personalInfo',
+														defaultMessage: 'Personal Information',
+													})}
 												</h3>
 												<p className="text-sm text-gray-500 mt-1">
-													Update your profile photo, name, and view your email
-													address.
+													{intl.formatMessage({
+														id: 'profile.personalInfoDescription',
+														defaultMessage:
+															'Update your profile photo, name, and view your email address.',
+													})}
 												</p>
 											</div>
 										</div>
@@ -262,18 +325,27 @@ export function ProfilePage() {
 											</button>
 											<div>
 												<h3 className="text-sm font-medium text-gray-900">
-													Profile Photo
+													{intl.formatMessage({
+														id: 'profile.profilePhoto',
+														defaultMessage: 'Profile Photo',
+													})}
 												</h3>
 												<p className="text-xs text-gray-500 mt-1">
-													This photo will be displayed on your profile and in
-													your account.
+													{intl.formatMessage({
+														id: 'profile.profilePhotoDescription',
+														defaultMessage:
+															'This photo will be displayed on your profile and in your account.',
+													})}
 												</p>
 												<button
 													type="button"
 													onClick={handleAvatarUpload}
 													className="mt-2 text-xs font-medium text-gray-600 hover:text-gray-900 transition-colors"
 												>
-													Upload New Photo
+													{intl.formatMessage({
+														id: 'profile.uploadNewPhoto',
+														defaultMessage: 'Upload New Photo',
+													})}
 												</button>
 											</div>
 										</div>
@@ -285,7 +357,10 @@ export function ProfilePage() {
 													htmlFor="profile-name"
 													className="text-xs font-medium text-gray-700"
 												>
-													Full Name
+													{intl.formatMessage({
+														id: 'profile.fullName',
+														defaultMessage: 'Full Name',
+													})}
 												</Label>
 												<Input
 													id="profile-name"
@@ -305,7 +380,10 @@ export function ProfilePage() {
 													htmlFor="profile-email"
 													className="text-xs font-medium text-gray-700"
 												>
-													Email Address
+													{intl.formatMessage({
+														id: 'profile.emailAddress',
+														defaultMessage: 'Email Address',
+													})}
 												</Label>
 												<Input
 													id="profile-email"
@@ -315,7 +393,11 @@ export function ProfilePage() {
 													className="rounded-lg border-gray-200 bg-gray-50/50 cursor-not-allowed"
 												/>
 												<p className="text-[11px] text-gray-500">
-													Your email address cannot be changed.
+													{intl.formatMessage({
+														id: 'profile.emailCannotChange',
+														defaultMessage:
+															'Your email address cannot be changed.',
+													})}
 												</p>
 											</div>
 										</div>
@@ -335,7 +417,10 @@ export function ProfilePage() {
 												}
 											}}
 										>
-											Cancel
+											{intl.formatMessage({
+												id: 'common.actions.cancel',
+												defaultMessage: 'Cancel',
+											})}
 										</Button>
 										<Button
 											type="button"
@@ -346,7 +431,10 @@ export function ProfilePage() {
 											{isUpdatingProfile ? (
 												<Loader2 className="w-3.5 h-3.5 animate-spin" />
 											) : null}
-											Save Changes
+											{intl.formatMessage({
+												id: 'common.actions.saveChanges',
+												defaultMessage: 'Save Changes',
+											})}
 										</Button>
 									</CardFooter>
 								</Card>
@@ -365,17 +453,29 @@ export function ProfilePage() {
 											</div>
 											<div>
 												<h3 className="text-base font-semibold text-gray-900">
-													Password
+													{intl.formatMessage({
+														id: 'profile.password',
+														defaultMessage: 'Password',
+													})}
 												</h3>
 												<p className="text-sm text-gray-500 mt-1">
-													Update your password associated with your account.
+													{intl.formatMessage({
+														id: 'profile.passwordDescription',
+														defaultMessage:
+															'Update your password associated with your account.',
+													})}
 												</p>
 											</div>
 										</div>
 									</CardHeader>
 									<CardContent className="space-y-4">
 										<div>
-											<Label htmlFor="current-password">Current Password</Label>
+											<Label htmlFor="current-password">
+												{intl.formatMessage({
+													id: 'profile.currentPassword',
+													defaultMessage: 'Current Password',
+												})}
+											</Label>
 											<Input
 												id="current-password"
 												type="password"
@@ -393,7 +493,12 @@ export function ProfilePage() {
 
 										<div className="grid grid-cols-2 gap-4">
 											<div>
-												<Label htmlFor="new-password">New Password</Label>
+												<Label htmlFor="new-password">
+													{intl.formatMessage({
+														id: 'profile.newPassword',
+														defaultMessage: 'New Password',
+													})}
+												</Label>
 												<Input
 													id="new-password"
 													type="password"
@@ -410,7 +515,10 @@ export function ProfilePage() {
 											</div>
 											<div>
 												<Label htmlFor="confirm-password">
-													Confirm Password
+													{intl.formatMessage({
+														id: 'profile.confirmPassword',
+														defaultMessage: 'Confirm Password',
+													})}
 												</Label>
 												<Input
 													id="confirm-password"
@@ -430,12 +538,30 @@ export function ProfilePage() {
 
 										<div className="pt-2">
 											<h4 className="text-xs font-medium text-gray-900 mb-2">
-												Password requirements:
+												{intl.formatMessage({
+													id: 'profile.passwordRequirements',
+													defaultMessage: 'Password requirements:',
+												})}
 											</h4>
 											<ul className="text-xs text-gray-500 space-y-1 list-disc pl-4">
-												<li>Minimum 8 characters long</li>
-												<li>At least one special character</li>
-												<li>No common passwords</li>
+												<li>
+													{intl.formatMessage({
+														id: 'profile.passwordMin8',
+														defaultMessage: 'Minimum 8 characters long',
+													})}
+												</li>
+												<li>
+													{intl.formatMessage({
+														id: 'profile.passwordSpecialChar',
+														defaultMessage: 'At least one special character',
+													})}
+												</li>
+												<li>
+													{intl.formatMessage({
+														id: 'profile.passwordNoCommon',
+														defaultMessage: 'No common passwords',
+													})}
+												</li>
 											</ul>
 										</div>
 									</CardContent>
@@ -452,7 +578,10 @@ export function ProfilePage() {
 												})
 											}
 										>
-											Cancel
+											{intl.formatMessage({
+												id: 'common.actions.cancel',
+												defaultMessage: 'Cancel',
+											})}
 										</Button>
 										<Button
 											type="button"
@@ -463,7 +592,10 @@ export function ProfilePage() {
 											{isChangingPassword ? (
 												<Loader2 className="w-3.5 h-3.5 animate-spin" />
 											) : null}
-											Update Password
+											{intl.formatMessage({
+												id: 'profile.updatePassword',
+												defaultMessage: 'Update Password',
+											})}
 										</Button>
 									</CardFooter>
 								</Card>
@@ -478,11 +610,17 @@ export function ProfilePage() {
 												</div>
 												<div>
 													<h3 className="text-base font-semibold text-gray-900">
-														Two-factor Authentication
+														{intl.formatMessage({
+															id: 'profile.twoFactor',
+															defaultMessage: 'Two-factor Authentication',
+														})}
 													</h3>
 													<p className="text-sm text-gray-500 mt-1 max-w-md">
-														Add an extra layer of security to your account by
-														requiring a code from your authenticator app.
+														{intl.formatMessage({
+															id: 'profile.twoFactorDescription',
+															defaultMessage:
+																'Add an extra layer of security to your account by requiring a code from your authenticator app.',
+														})}
 													</p>
 												</div>
 											</div>
@@ -503,10 +641,17 @@ export function ProfilePage() {
 											</div>
 											<div>
 												<h3 className="text-base font-semibold text-gray-900">
-													Active Sessions
+													{intl.formatMessage({
+														id: 'profile.activeSessions',
+														defaultMessage: 'Active Sessions',
+													})}
 												</h3>
 												<p className="text-sm text-gray-500 mt-1">
-													Manage devices where you&apos;re currently logged in.
+													{intl.formatMessage({
+														id: 'profile.activeSessionsDescription',
+														defaultMessage:
+															"Manage devices where you're currently logged in.",
+													})}
 												</p>
 											</div>
 										</div>
@@ -530,7 +675,10 @@ export function ProfilePage() {
 																	{session.location} •{' '}
 																	{session.isCurrent ? (
 																		<span className="text-green-600 font-medium">
-																			Current Session
+																			{intl.formatMessage({
+																				id: 'profile.currentSession',
+																				defaultMessage: 'Current Session',
+																			})}
 																		</span>
 																	) : (
 																		<span>{session.lastActive}</span>
@@ -544,7 +692,10 @@ export function ProfilePage() {
 																onClick={() => handleRevokeSession(session.id)}
 																className="text-xs font-medium text-red-600 opacity-0 group-hover:opacity-100 transition-opacity hover:text-red-700"
 															>
-																Revoke
+																{intl.formatMessage({
+																	id: 'profile.revoke',
+																	defaultMessage: 'Revoke',
+																})}
 															</button>
 														)}
 													</div>

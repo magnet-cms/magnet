@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTokenStorage } from '~/core/provider/MagnetProvider'
+import { useAppIntl } from '~/i18n'
 
 /**
  * OAuthCallbackPage
@@ -19,6 +20,7 @@ import { useTokenStorage } from '~/core/provider/MagnetProvider'
  * On failure (no token, or `error` param present) it redirects to /login.
  */
 export function OAuthCallbackPage() {
+	const intl = useAppIntl()
 	const tokenStorage = useTokenStorage()
 	const navigate = useNavigate()
 	const handled = useRef(false)
@@ -54,7 +56,12 @@ export function OAuthCallbackPage() {
 
 	return (
 		<div className="flex min-h-screen items-center justify-center">
-			<p className="text-muted-foreground text-sm">Signing you in…</p>
+			<p className="text-muted-foreground text-sm">
+				{intl.formatMessage({
+					id: 'auth.oauthCallback.signingIn',
+					defaultMessage: 'Signing you in…',
+				})}
+			</p>
 		</div>
 	)
 }

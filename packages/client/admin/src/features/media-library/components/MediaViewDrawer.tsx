@@ -12,6 +12,7 @@ import {
 import { cn } from '@magnet-cms/ui/lib/utils'
 import { Crop, Download, Link2, Maximize2, Minimize2, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { useAppIntl } from '~/i18n'
 import { getDocumentIcon } from './AssetCard'
 
 interface Asset {
@@ -67,6 +68,7 @@ export function MediaViewDrawer({
 	onMove,
 	onCreateSubfolder,
 }: MediaViewDrawerProps) {
+	const intl = useAppIntl()
 	const [filename, setFilename] = useState('')
 	const [altText, setAltText] = useState('')
 	const [isExpanded, setIsExpanded] = useState(false)
@@ -104,7 +106,15 @@ export function MediaViewDrawer({
 	}
 
 	const handleDelete = () => {
-		if (onDelete && confirm('Are you sure you want to delete this asset?')) {
+		if (
+			onDelete &&
+			confirm(
+				intl.formatMessage({
+					id: 'media.viewDrawer.deleteConfirm',
+					defaultMessage: 'Are you sure you want to delete this asset?',
+				}),
+			)
+		) {
 			onDelete(asset.id)
 			onOpenChange(false)
 		}
@@ -129,7 +139,12 @@ export function MediaViewDrawer({
 				<SheetHeader className="px-5 py-4 border-b border-gray-200 bg-white sticky top-0 z-10">
 					<div className="flex items-start justify-between">
 						<div>
-							<SheetTitle className="text-base">File Details</SheetTitle>
+							<SheetTitle className="text-base">
+								{intl.formatMessage({
+									id: 'media.viewDrawer.fileDetails',
+									defaultMessage: 'File Details',
+								})}
+							</SheetTitle>
 							<SheetDescription className="text-xs mt-0.5">
 								View and edit asset properties.
 							</SheetDescription>
@@ -139,7 +154,17 @@ export function MediaViewDrawer({
 								type="button"
 								className="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
 								onClick={() => setIsExpanded(!isExpanded)}
-								title={isExpanded ? 'Collapse' : 'Expand'}
+								title={
+									isExpanded
+										? intl.formatMessage({
+												id: 'media.viewDrawer.collapse',
+												defaultMessage: 'Collapse',
+											})
+										: intl.formatMessage({
+												id: 'media.viewDrawer.expand',
+												defaultMessage: 'Expand',
+											})
+								}
 							>
 								{isExpanded ? (
 									<Minimize2 className="w-5 h-5" />
@@ -178,7 +203,12 @@ export function MediaViewDrawer({
 								/>
 							) : asset.type === 'video' ? (
 								<div className="w-full h-full bg-gray-800 flex items-center justify-center">
-									<div className="text-white opacity-50">Video Preview</div>
+									<div className="text-white opacity-50">
+										{intl.formatMessage({
+											id: 'media.viewDrawer.videoPreview',
+											defaultMessage: 'Video Preview',
+										})}
+									</div>
 									{asset.duration && (
 										<div className="absolute bottom-2 right-2 bg-black/60 px-1.5 py-0.5 rounded text-[10px] font-medium text-white">
 											{asset.duration}
@@ -241,14 +271,20 @@ export function MediaViewDrawer({
 								<button
 									type="button"
 									className="p-1 text-gray-400 hover:text-gray-900 transition-colors"
-									title="Crop"
+									title={intl.formatMessage({
+										id: 'media.viewDrawer.crop',
+										defaultMessage: 'Crop',
+									})}
 								>
 									<Crop className="w-4 h-4" />
 								</button>
 								<button
 									type="button"
 									className="p-1 text-gray-400 hover:text-gray-900 transition-colors"
-									title="Open Original"
+									title={intl.formatMessage({
+										id: 'media.viewDrawer.openOriginal',
+										defaultMessage: 'Open Original',
+									})}
 									onClick={() => {
 										if (asset.url) window.open(asset.url, '_blank')
 									}}
@@ -281,7 +317,10 @@ export function MediaViewDrawer({
 								className="flex items-center justify-center gap-2 w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-xs font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all"
 							>
 								<Download className="w-3.5 h-3.5" />
-								Download
+								{intl.formatMessage({
+									id: 'media.viewDrawer.download',
+									defaultMessage: 'Download',
+								})}
 							</button>
 						</div>
 						<p className="text-[10px] text-gray-400 mt-2 px-1">
@@ -296,7 +335,10 @@ export function MediaViewDrawer({
 								htmlFor="filename"
 								className="text-xs font-medium text-gray-700 mb-1.5"
 							>
-								File Name
+								{intl.formatMessage({
+									id: 'media.viewDrawer.fileName',
+									defaultMessage: 'File Name',
+								})}
 							</Label>
 							<div className="relative">
 								<Input
@@ -317,7 +359,10 @@ export function MediaViewDrawer({
 								htmlFor="alt-text"
 								className="text-xs font-medium text-gray-700 mb-1.5"
 							>
-								Alt Text
+								{intl.formatMessage({
+									id: 'media.viewDrawer.altText',
+									defaultMessage: 'Alt Text',
+								})}
 							</Label>
 							<Textarea
 								id="alt-text"
@@ -325,20 +370,30 @@ export function MediaViewDrawer({
 								value={altText}
 								onChange={(e) => setAltText(e.target.value)}
 								className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-gray-900 sm:text-sm sm:leading-6 pl-3 resize-none"
-								placeholder="Describe this image for accessibility"
+								placeholder={intl.formatMessage({
+									id: 'media.viewDrawer.altTextPlaceholder',
+									defaultMessage: 'Describe this image for accessibility',
+								})}
 							/>
 						</div>
 
 						{/* Folder Context */}
 						<div>
 							<Label className="block text-xs font-medium text-gray-700 mb-1.5">
-								Location
+								{intl.formatMessage({
+									id: 'media.viewDrawer.location',
+									defaultMessage: 'Location',
+								})}
 							</Label>
 							<div className="flex items-center justify-between p-2 bg-gray-50 border border-gray-200 rounded-md">
 								<div className="flex items-center gap-2 overflow-hidden">
 									<div className="w-4 h-4 text-gray-400 shrink-0">📁</div>
 									<span className="text-xs text-gray-600 truncate">
-										{asset.location || 'Root'}
+										{asset.location ||
+											intl.formatMessage({
+												id: 'media.viewDrawer.root',
+												defaultMessage: 'Root',
+											})}
 									</span>
 								</div>
 								<button
@@ -346,7 +401,10 @@ export function MediaViewDrawer({
 									className="text-xs text-blue-600 font-medium hover:text-blue-700 whitespace-nowrap ml-2"
 									onClick={() => setShowMoveSelect(!showMoveSelect)}
 								>
-									Move
+									{intl.formatMessage({
+										id: 'media.viewDrawer.moveTo',
+										defaultMessage: 'Move to...',
+									})}
 								</button>
 							</div>
 							{showMoveSelect && folders && onMove && (
@@ -454,7 +512,11 @@ export function MediaViewDrawer({
 										Created
 									</dt>
 									<dd className="text-xs font-medium text-gray-700 mt-0.5">
-										{asset.createdAt || 'Unknown'}
+										{asset.createdAt ||
+											intl.formatMessage({
+												id: 'media.viewDrawer.unknown',
+												defaultMessage: 'Unknown',
+											})}
 									</dd>
 								</div>
 								<div>
@@ -465,7 +527,11 @@ export function MediaViewDrawer({
 										<div className="w-4 h-4 rounded-full bg-gray-200 flex items-center justify-center text-[8px]">
 											{asset.uploadedBy?.[0]?.toUpperCase() || 'U'}
 										</div>
-										{asset.uploadedBy || 'Unknown'}
+										{asset.uploadedBy ||
+											intl.formatMessage({
+												id: 'media.viewDrawer.unknown',
+												defaultMessage: 'Unknown',
+											})}
 									</dd>
 								</div>
 								<div>
@@ -489,14 +555,20 @@ export function MediaViewDrawer({
 						onClick={handleDelete}
 						className="text-xs font-medium text-red-600 hover:text-red-700 bg-white border border-red-200 hover:bg-red-50 px-3 py-2"
 					>
-						Delete Asset
+						{intl.formatMessage({
+							id: 'media.viewDrawer.deleteAsset',
+							defaultMessage: 'Delete',
+						})}
 					</Button>
 					<Button
 						type="button"
 						onClick={handleSave}
 						className="text-xs font-medium text-white bg-gray-900 hover:bg-gray-800 px-4 py-2"
 					>
-						Save Changes
+						{intl.formatMessage({
+							id: 'common.actions.saveChanges',
+							defaultMessage: 'Save Changes',
+						})}
 					</Button>
 				</div>
 			</SheetContent>

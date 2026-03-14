@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useState } from 'react'
+import { useAppIntl } from '~/i18n'
 
 interface Asset {
 	id: string
@@ -104,6 +105,7 @@ export function AssetCard({
 	onView,
 	onDownload,
 }: AssetCardProps) {
+	const intl = useAppIntl()
 	const [isHovered, setIsHovered] = useState(false)
 
 	const docIcon =
@@ -125,7 +127,12 @@ export function AssetCard({
 				)}
 				{asset.type === 'video' && (
 					<div className="w-full h-full bg-gray-800 flex items-center justify-center">
-						<div className="text-white opacity-50">Video</div>
+						<div className="text-white opacity-50">
+							{intl.formatMessage({
+								id: 'media.video',
+								defaultMessage: 'Video',
+							})}
+						</div>
 						{asset.duration && (
 							<div className="absolute bottom-2 right-2 bg-black/60 px-1.5 py-0.5 rounded text-[10px] font-medium text-white">
 								{asset.duration}

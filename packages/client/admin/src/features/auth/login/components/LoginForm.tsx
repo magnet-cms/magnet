@@ -8,19 +8,19 @@ import {
 	RHFText,
 } from '@magnet-cms/ui/components/molecules/hook-form'
 import { ArrowRight } from 'lucide-react'
+import { useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import { Link } from 'react-router-dom'
 import { z } from 'zod'
 import { useMagnetConfig } from '~/core/provider/MagnetProvider'
 import { useStatus } from '~/hooks/useAuth'
+import { useAppIntl } from '~/i18n'
 
-const loginSchema = z.object({
-	email: z.string().min(1, 'Email is required').email('Invalid email address'),
-	password: z.string().min(1, 'Password is required'),
-	rememberMe: z.boolean().optional(),
-})
-
-type LoginFormValues = z.infer<typeof loginSchema>
+interface LoginFormValues {
+	email: string
+	password: string
+	rememberMe?: boolean
+}
 
 interface LoginFormProps {
 	onSubmit?: (data: LoginFormValues) => void
@@ -28,6 +28,36 @@ interface LoginFormProps {
 }
 
 export function LoginForm({ onSubmit, isLoading = false }: LoginFormProps) {
+	const intl = useAppIntl()
+	const loginSchema = useMemo(
+		() =>
+			z.object({
+				email: z
+					.string()
+					.min(
+						1,
+						intl.formatMessage({
+							id: 'validation.emailRequired',
+							defaultMessage: 'Email is required',
+						}),
+					)
+					.email(
+						intl.formatMessage({
+							id: 'validation.emailInvalid',
+							defaultMessage: 'Invalid email address',
+						}),
+					),
+				password: z.string().min(
+					1,
+					intl.formatMessage({
+						id: 'validation.passwordRequired',
+						defaultMessage: 'Password is required',
+					}),
+				),
+				rememberMe: z.boolean().optional(),
+			}),
+		[intl],
+	)
 	const form = useForm<LoginFormValues>({
 		resolver: zodResolver(loginSchema),
 		defaultValues: {
@@ -58,9 +88,17 @@ export function LoginForm({ onSubmit, isLoading = false }: LoginFormProps) {
 		>
 			{/* Header */}
 			<div className="flex flex-col gap-2">
-				<h1 className="text-2xl font-semibold tracking-tight">Welcome back</h1>
+				<h1 className="text-2xl font-semibold tracking-tight">
+					{intl.formatMessage({
+						id: 'auth.login.title',
+						defaultMessage: 'Welcome back',
+					})}
+				</h1>
 				<p className="text-muted-foreground text-sm">
-					Please enter your details to sign in.
+					{intl.formatMessage({
+						id: 'auth.login.subtitle',
+						defaultMessage: 'Please enter your details to sign in.',
+					})}
 				</p>
 			</div>
 
@@ -68,16 +106,25 @@ export function LoginForm({ onSubmit, isLoading = false }: LoginFormProps) {
 			<div className="flex flex-col gap-4">
 				<RHFText
 					name="email"
-					label="Email"
+					label={intl.formatMessage({
+						id: 'auth.login.emailLabel',
+						defaultMessage: 'Email',
+					})}
 					type="email"
-					placeholder="jane@example.com"
+					placeholder={intl.formatMessage({
+						id: 'auth.login.emailPlaceholder',
+						defaultMessage: 'jane@example.com',
+					})}
 					inputClassName="bg-muted/50"
 					autoComplete="email"
 				/>
 
 				<RHFText
 					name="password"
-					label="Password"
+					label={intl.formatMessage({
+						id: 'auth.login.passwordLabel',
+						defaultMessage: 'Password',
+					})}
 					type="password"
 					inputClassName="bg-muted/50"
 					autoComplete="current-password"
@@ -86,7 +133,10 @@ export function LoginForm({ onSubmit, isLoading = false }: LoginFormProps) {
 				<div className="flex items-center justify-between pt-1">
 					<RHFCheckbox
 						name="rememberMe"
-						label="Remember me"
+						label={intl.formatMessage({
+							id: 'auth.login.rememberMe',
+							defaultMessage: 'Remember me',
+						})}
 						formItemClassName="flex flex-row items-center space-x-2 space-y-0"
 						checkboxProps={{ className: 'size-4' }}
 					/>
@@ -94,7 +144,10 @@ export function LoginForm({ onSubmit, isLoading = false }: LoginFormProps) {
 						to="/forgot-password"
 						className="text-xs font-medium text-foreground hover:underline"
 					>
-						Forgot password?
+						{intl.formatMessage({
+							id: 'auth.login.forgotPassword',
+							defaultMessage: 'Forgot password?',
+						})}
 					</Link>
 				</div>
 
@@ -104,7 +157,15 @@ export function LoginForm({ onSubmit, isLoading = false }: LoginFormProps) {
 					className="w-full gap-2"
 					disabled={isLoading}
 				>
-					{isLoading ? 'Signing in...' : 'Sign in'}
+					{isLoading
+						? intl.formatMessage({
+								id: 'auth.login.signingIn',
+								defaultMessage: 'Signing in...',
+							})
+						: intl.formatMessage({
+								id: 'auth.login.signIn',
+								defaultMessage: 'Sign in',
+							})}
 					{!isLoading && <ArrowRight className="size-3.5" />}
 				</Button>
 			</div>
@@ -115,7 +176,10 @@ export function LoginForm({ onSubmit, isLoading = false }: LoginFormProps) {
 					<div className="relative">
 						<Separator />
 						<span className="bg-background text-muted-foreground absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 px-2 text-xs font-medium">
-							Or continue with
+							{intl.formatMessage({
+								id: 'auth.login.oauthContinueWith',
+								defaultMessage: 'Or continue with',
+							})}
 						</span>
 					</div>
 

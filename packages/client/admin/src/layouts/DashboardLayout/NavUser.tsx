@@ -16,8 +16,10 @@ import { BadgeCheck, Bell, ChevronsUpDown, LogOut } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useNotifications } from '~/contexts/NotificationsContext'
 import { useAuth } from '~/hooks/useAuth'
+import { useAppIntl } from '~/i18n'
 
 export const NavUser = () => {
+	const intl = useAppIntl()
 	const { isMobile } = useSidebar()
 	const { user, logout } = useAuth()
 	const { open: openNotifications } = useNotifications()
@@ -75,17 +77,26 @@ export const NavUser = () => {
 						<DropdownMenuGroup>
 							<DropdownMenuItem onClick={handleAccountClick}>
 								<BadgeCheck />
-								Account
+								{intl.formatMessage({
+									id: 'nav.account',
+									defaultMessage: 'Account',
+								})}
 							</DropdownMenuItem>
 							<DropdownMenuItem onClick={openNotifications}>
 								<Bell />
-								Notifications
+								{intl.formatMessage({
+									id: 'nav.notifications',
+									defaultMessage: 'Notifications',
+								})}
 							</DropdownMenuItem>
 						</DropdownMenuGroup>
 						<DropdownMenuSeparator />
 						<DropdownMenuItem onClick={handleLogout}>
 							<LogOut />
-							Log out
+							{intl.formatMessage({
+								id: 'nav.logOut',
+								defaultMessage: 'Log out',
+							})}
 						</DropdownMenuItem>
 					</DropdownMenuContent>
 				</DropdownMenu>

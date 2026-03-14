@@ -16,6 +16,7 @@ import {
 	useRoleDelete,
 	useRoleList,
 } from '~/hooks/useRoles'
+import { useAppIntl } from '~/i18n'
 
 import { CreateRoleDrawer } from './CreateRoleDrawer'
 
@@ -67,6 +68,7 @@ function transformRole(role: RoleListItem): RoleDisplay {
 }
 
 export function AccessControlListingPage() {
+	const intl = useAppIntl()
 	const [searchQuery, setSearchQuery] = useState('')
 	const [createRoleOpen, setCreateRoleOpen] = useState(false)
 	const navigate = useNavigate()
@@ -93,12 +95,23 @@ export function AccessControlListingPage() {
 
 		createRole(createData, {
 			onSuccess: () => {
-				toast.success('Role created successfully')
+				toast.success(
+					intl.formatMessage({
+						id: 'accessControl.createSuccess',
+						defaultMessage: 'Role created successfully',
+					}),
+				)
 				setCreateRoleOpen(false)
 				refetch()
 			},
 			onError: (err) => {
-				toast.error(err.message || 'Failed to create role')
+				toast.error(
+					err.message ||
+						intl.formatMessage({
+							id: 'accessControl.createError',
+							defaultMessage: 'Failed to create role',
+						}),
+				)
 			},
 		})
 	}
@@ -123,7 +136,13 @@ export function AccessControlListingPage() {
 				refetch()
 			},
 			onError: (err) => {
-				toast.error(err.message || 'Failed to delete role')
+				toast.error(
+					err.message ||
+						intl.formatMessage({
+							id: 'accessControl.deleteError',
+							defaultMessage: 'Failed to delete role',
+						}),
+				)
 			},
 		})
 	}

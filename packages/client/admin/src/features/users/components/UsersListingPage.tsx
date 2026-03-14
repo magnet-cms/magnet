@@ -17,6 +17,7 @@ import {
 } from '@magnet-cms/ui'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
+import { useAppIntl } from '~/i18n'
 
 import { PageHeader } from '~/features/shared'
 import { useRoleList } from '~/hooks/useRoles'
@@ -89,7 +90,7 @@ function transformUser(apiUser: ApiUser): User {
 			? formatRelativeTime(new Date(apiUser.lastLogin))
 			: 'Never',
 		createdAt: apiUser.createdAt
-			? new Date(apiUser.createdAt).toLocaleDateString('en-US', {
+			? new Date(apiUser.createdAt).toLocaleDateString(undefined, {
 					month: 'short',
 					day: 'numeric',
 					year: 'numeric',
@@ -114,6 +115,7 @@ function formatRelativeTime(date: Date): string {
 }
 
 export function UsersListingPage() {
+	const intl = useAppIntl()
 	const [searchQuery, setSearchQuery] = useState('')
 	const [statusFilter, setStatusFilter] = useState<string>('All Status')
 	const [createUserModalOpen, setCreateUserModalOpen] = useState(false)
@@ -153,11 +155,22 @@ export function UsersListingPage() {
 			{ id: userId, data: { role: newRole } },
 			{
 				onSuccess: () => {
-					toast.success('User role updated')
+					toast.success(
+						intl.formatMessage({
+							id: 'users.createSuccess',
+							defaultMessage: 'User role updated',
+						}),
+					)
 					refetch()
 				},
 				onError: (err) => {
-					toast.error(err.message || 'Failed to update role')
+					toast.error(
+						err.message ||
+							intl.formatMessage({
+								id: 'users.createError',
+								defaultMessage: 'Failed to update role',
+							}),
+					)
 				},
 			},
 		)
@@ -178,12 +191,23 @@ export function UsersListingPage() {
 
 		createUser(data, {
 			onSuccess: () => {
-				toast.success('User created successfully')
+				toast.success(
+					intl.formatMessage({
+						id: 'users.createSuccess',
+						defaultMessage: 'User created successfully',
+					}),
+				)
 				setCreateUserModalOpen(false)
 				refetch()
 			},
 			onError: (err) => {
-				toast.error(err.message || 'Failed to create user')
+				toast.error(
+					err.message ||
+						intl.formatMessage({
+							id: 'users.createError',
+							defaultMessage: 'Failed to create user',
+						}),
+				)
 			},
 		})
 	}
@@ -193,11 +217,22 @@ export function UsersListingPage() {
 
 		deleteUser(userId, {
 			onSuccess: () => {
-				toast.success('User deleted')
+				toast.success(
+					intl.formatMessage({
+						id: 'users.deleteSuccess',
+						defaultMessage: 'User deleted successfully',
+					}),
+				)
 				refetch()
 			},
 			onError: (err) => {
-				toast.error(err.message || 'Failed to delete user')
+				toast.error(
+					err.message ||
+						intl.formatMessage({
+							id: 'users.deleteError',
+							defaultMessage: 'Failed to delete user',
+						}),
+				)
 			},
 		})
 	}
@@ -310,7 +345,10 @@ export function UsersListingPage() {
 					<Input
 						type="text"
 						className="pl-9 pr-3 py-1.5 border border-gray-200 rounded-lg text-sm bg-gray-50 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-1 focus:ring-gray-900 focus:border-gray-900 transition-all shadow-sm"
-						placeholder="Search users..."
+						placeholder={intl.formatMessage({
+							id: 'users.searchPlaceholder',
+							defaultMessage: 'Search users...',
+						})}
 						value={searchQuery}
 						onChange={(e) => setSearchQuery(e.target.value)}
 					/>
@@ -339,7 +377,10 @@ export function UsersListingPage() {
 								setStatusFilter('All Status')
 							}}
 						>
-							Clear Filters
+							{intl.formatMessage({
+								id: 'common.actions.clearFilters',
+								defaultMessage: 'Clear Filters',
+							})}
 						</Button>
 					</div>
 				</div>
@@ -415,7 +456,10 @@ export function UsersListingPage() {
 								Users
 							</h1>
 							<p className="text-xs text-gray-500">
-								Manage users and their roles.
+								{intl.formatMessage({
+									id: 'users.subtitle',
+									defaultMessage: 'Manage users and their roles.',
+								})}
 							</p>
 						</div>
 					</div>
@@ -446,8 +490,11 @@ export function UsersListingPage() {
 							Users
 						</h1>
 						<p className="text-xs text-gray-500">
-							Manage users and their roles. {usersData?.total || 0} user(s)
-							total.
+							{intl.formatMessage({
+								id: 'users.subtitle',
+								defaultMessage: 'Manage users and their roles.',
+							})}{' '}
+							{usersData?.total || 0} user(s) total.
 						</p>
 					</div>
 

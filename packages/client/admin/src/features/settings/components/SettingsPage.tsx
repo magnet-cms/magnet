@@ -8,6 +8,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { useAdapter } from '~/core/provider/MagnetProvider'
 import { useSettings } from '~/hooks/useDiscovery'
+import { useAppIntl } from '~/i18n'
 import { PageHeader } from '../../shared'
 import type { SettingsTab } from '../types'
 import { getIconComponent } from '../utils/iconMap'
@@ -16,6 +17,7 @@ import {
 	DynamicSettingsForm,
 	type DynamicSettingsFormRef,
 } from './DynamicSettingsForm'
+import { LanguageSettingsCard } from './LanguageSettingsCard'
 import { SettingsDocumentationPanel } from './SettingsDocumentationPanel'
 
 /**
@@ -23,6 +25,7 @@ import { SettingsDocumentationPanel } from './SettingsDocumentationPanel'
  * Each registered setting appears as a tab, ordered by the `order` property.
  */
 export function SettingsPage() {
+	const intl = useAppIntl()
 	const adapter = useAdapter()
 	const formRef = useRef<DynamicSettingsFormRef>(null)
 	const [saving, setSaving] = useState(false)
@@ -134,20 +137,34 @@ export function SettingsPage() {
 					<div className="h-16 flex items-center px-6">
 						<div>
 							<h1 className="text-lg font-semibold text-gray-900 tracking-tight">
-								Settings
+								{intl.formatMessage({
+									id: 'settings.title',
+									defaultMessage: 'Settings',
+								})}
 							</h1>
 							<p className="text-xs text-gray-500">
-								No settings have been registered yet.
+								{intl.formatMessage({
+									id: 'settings.noSettingsRegistered',
+									defaultMessage: 'No settings have been registered yet.',
+								})}
 							</p>
 						</div>
 					</div>
 				</PageHeader>
 				<div className="flex-1 flex items-center justify-center bg-gray-50/50">
 					<div className="text-center text-gray-500">
-						<p className="text-sm">No settings schemas found.</p>
+						<p className="text-sm">
+							{intl.formatMessage({
+								id: 'settings.noSettingsSchemas',
+								defaultMessage: 'No settings schemas found.',
+							})}
+						</p>
 						<p className="text-xs mt-1">
-							Register settings using the @Settings decorator in your backend
-							modules.
+							{intl.formatMessage({
+								id: 'settings.registerHint',
+								defaultMessage:
+									'Register settings using the @Settings decorator in your backend modules.',
+							})}
 						</p>
 					</div>
 				</div>
@@ -176,7 +193,10 @@ export function SettingsPage() {
 							size="sm"
 							onClick={handleReset}
 						>
-							Reset
+							{intl.formatMessage({
+								id: 'common.actions.reset',
+								defaultMessage: 'Reset',
+							})}
 						</Button>
 						<Button
 							type="button"
@@ -189,7 +209,10 @@ export function SettingsPage() {
 							) : (
 								<Save className="w-3.5 h-3.5" />
 							)}
-							Save Changes
+							{intl.formatMessage({
+								id: 'common.actions.saveChanges',
+								defaultMessage: 'Save Changes',
+							})}
 						</Button>
 					</div>
 				</div>
@@ -224,6 +247,7 @@ export function SettingsPage() {
 			<div className="flex-1 flex overflow-hidden bg-gray-50/50">
 				<div className="flex-1 overflow-y-auto p-6">
 					<div className="space-y-8 pb-10">
+						{activeTab === 'general' && <LanguageSettingsCard />}
 						{activeTab && (
 							<DynamicSettingsForm ref={formRef} group={activeTab} />
 						)}

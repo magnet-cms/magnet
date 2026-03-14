@@ -1,6 +1,7 @@
 import { BrowserRouter, useRoutes } from 'react-router-dom'
 import { DialogProvider } from './core/dialog'
 import { MagnetProvider } from './core/provider/MagnetProvider'
+import { AppIntlProvider } from './i18n'
 import { routes } from './routes/index.tsx'
 
 import './styles/global.css'
@@ -27,13 +28,15 @@ const AppRoutes = () => {
  */
 const App = () => {
 	return (
-		<MagnetProvider config={{ apiBaseUrl, basePath }}>
-			<DialogProvider>
-				<BrowserRouter basename={basePath}>
-					<AppRoutes />
-				</BrowserRouter>
-			</DialogProvider>
-		</MagnetProvider>
+		<AppIntlProvider>
+			<MagnetProvider config={{ apiBaseUrl, basePath }}>
+				<DialogProvider>
+					<BrowserRouter basename={basePath}>
+						<AppRoutes />
+					</BrowserRouter>
+				</DialogProvider>
+			</MagnetProvider>
+		</AppIntlProvider>
 	)
 }
 

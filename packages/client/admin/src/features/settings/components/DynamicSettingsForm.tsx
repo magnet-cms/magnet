@@ -8,6 +8,7 @@ import { toast } from 'sonner'
 
 import { useSetting } from '~/hooks/useDiscovery'
 import { useSettingData, useSettingMutation } from '~/hooks/useSetting'
+import { useAppIntl } from '~/i18n'
 import type { ParsedSettingsSchema } from '../types'
 import { parseSettingsSchema } from '../utils/parseSchema'
 import { SettingsSectionCard } from './SettingsSectionCard'
@@ -36,6 +37,7 @@ export const DynamicSettingsForm = forwardRef<
 	DynamicSettingsFormRef,
 	DynamicSettingsFormProps
 >(function DynamicSettingsForm({ group }, ref) {
+	const intl = useAppIntl()
 	// Fetch schema metadata
 	const { data: schemaData, isLoading: schemaLoading } = useSetting(group)
 
@@ -130,12 +132,23 @@ export const DynamicSettingsForm = forwardRef<
 		return new Promise((resolve, reject) => {
 			updateSettings(payload, {
 				onSuccess: () => {
-					toast.success('Settings saved successfully')
+					toast.success(
+						intl.formatMessage({
+							id: 'settings.savedSuccess',
+							defaultMessage: 'Settings saved successfully',
+						}),
+					)
 					refetch()
 					resolve()
 				},
 				onError: (err) => {
-					toast.error(err.message || 'Failed to save settings')
+					toast.error(
+						err.message ||
+							intl.formatMessage({
+								id: 'settings.saveError',
+								defaultMessage: 'Failed to save settings',
+							}),
+					)
 					reject(err)
 				},
 			})
@@ -184,7 +197,13 @@ export const DynamicSettingsForm = forwardRef<
 	if (!parsedSchema) {
 		return (
 			<div className="text-center py-8 text-gray-500">
-				Failed to load settings schema for &quot;{group}&quot;
+				{intl.formatMessage(
+					{
+						id: 'settings.loadError',
+						defaultMessage: 'Failed to load settings schema for "{group}"',
+					},
+					{ group },
+				)}
 			</div>
 		)
 	}
@@ -193,7 +212,10 @@ export const DynamicSettingsForm = forwardRef<
 	if (parsedSchema.sections.length === 0) {
 		return (
 			<div className="text-center py-8 text-gray-500">
-				No settings available for this group
+				{intl.formatMessage({
+					id: 'settings.noAvailable',
+					defaultMessage: 'No settings available for this group',
+				})}
 			</div>
 		)
 	}

@@ -16,6 +16,7 @@ import {
 	useMediaUrl,
 } from '~/hooks/useMedia'
 
+import { useAppIntl } from '~/i18n'
 import { PageHeader } from '../../shared'
 
 import {
@@ -124,6 +125,7 @@ function transformMediaToAsset(
 }
 
 export function MediaLibraryPage() {
+	const intl = useAppIntl()
 	// State
 	const [searchQuery, setSearchQuery] = useState('')
 	const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('')
@@ -234,12 +236,27 @@ export function MediaLibraryPage() {
 				{ files, options: { folder: currentFolder } },
 				{
 					onSuccess: () => {
-						toast.success(`Uploaded ${files.length} file(s) successfully`)
+						toast.success(
+							intl.formatMessage(
+								{
+									id: 'media.uploadSuccess',
+									defaultMessage:
+										'Uploaded {count, plural, one {# file} other {# files}} successfully',
+								},
+								{ count: files.length },
+							),
+						)
 						setUploadDrawerOpen(false)
 						refetch()
 					},
 					onError: (err) => {
-						toast.error(err.message || 'Failed to upload files')
+						toast.error(
+							err.message ||
+								intl.formatMessage({
+									id: 'media.uploadError',
+									defaultMessage: 'Failed to upload files',
+								}),
+						)
 					},
 				},
 			)
@@ -253,11 +270,25 @@ export function MediaLibraryPage() {
 				{ name, parentPath: currentFolder },
 				{
 					onSuccess: () => {
-						toast.success(`Folder "${name}" created successfully`)
+						toast.success(
+							intl.formatMessage(
+								{
+									id: 'media.folderCreated',
+									defaultMessage: 'Folder "{name}" created successfully',
+								},
+								{ name },
+							),
+						)
 						setNewFolderOpen(false)
 					},
 					onError: (err) => {
-						toast.error(err.message || 'Failed to create folder')
+						toast.error(
+							err.message ||
+								intl.formatMessage({
+									id: 'media.folderCreateError',
+									defaultMessage: 'Failed to create folder',
+								}),
+						)
 					},
 				},
 			)
@@ -302,13 +333,24 @@ export function MediaLibraryPage() {
 		(id: string) => {
 			deleteMedia(id, {
 				onSuccess: () => {
-					toast.success('Asset deleted successfully')
+					toast.success(
+						intl.formatMessage({
+							id: 'media.assetDeleted',
+							defaultMessage: 'Asset deleted successfully',
+						}),
+					)
 					setMediaViewOpen(false)
 					setSelectedAsset(null)
 					refetch()
 				},
 				onError: (err) => {
-					toast.error(err.message || 'Failed to delete asset')
+					toast.error(
+						err.message ||
+							intl.formatMessage({
+								id: 'media.assetDeleteError',
+								defaultMessage: 'Failed to delete asset',
+							}),
+					)
 				},
 			})
 		},
@@ -324,11 +366,22 @@ export function MediaLibraryPage() {
 				},
 				{
 					onSuccess: () => {
-						toast.success('Asset updated successfully')
+						toast.success(
+							intl.formatMessage({
+								id: 'media.assetUpdated',
+								defaultMessage: 'Asset updated successfully',
+							}),
+						)
 						refetch()
 					},
 					onError: (err) => {
-						toast.error(err.message || 'Failed to update asset')
+						toast.error(
+							err.message ||
+								intl.formatMessage({
+									id: 'media.assetUpdateError',
+									defaultMessage: 'Failed to update asset',
+								}),
+						)
 					},
 				},
 			)
@@ -401,10 +454,17 @@ export function MediaLibraryPage() {
 					<div className="h-16 flex items-center justify-between px-6">
 						<div>
 							<h1 className="text-lg font-semibold text-gray-900 tracking-tight">
-								Media Library
+								{intl.formatMessage({
+									id: 'media.title',
+									defaultMessage: 'Media Library',
+								})}
 							</h1>
 							<p className="text-xs text-gray-500">
-								Manage and organize your project&apos;s digital assets.
+								{intl.formatMessage({
+									id: 'media.subtitle',
+									defaultMessage:
+										"Manage and organize your project's digital assets.",
+								})}
 							</p>
 						</div>
 					</div>
@@ -412,9 +472,18 @@ export function MediaLibraryPage() {
 				<div className="flex-1 flex items-center justify-center bg-gray-50">
 					<div className="text-center">
 						<p className="text-gray-500 mb-4">
-							{error.message || 'Failed to load media'}
+							{error.message ||
+								intl.formatMessage({
+									id: 'media.failedToLoad',
+									defaultMessage: 'Failed to load media',
+								})}
 						</p>
-						<Button onClick={() => refetch()}>Retry</Button>
+						<Button onClick={() => refetch()}>
+							{intl.formatMessage({
+								id: 'common.actions.retry',
+								defaultMessage: 'Retry',
+							})}
+						</Button>
 					</div>
 				</div>
 			</div>
@@ -429,7 +498,10 @@ export function MediaLibraryPage() {
 				<div className="h-16 flex items-center justify-between px-6">
 					<div>
 						<h1 className="text-lg font-semibold text-gray-900 tracking-tight">
-							Media Library
+							{intl.formatMessage({
+								id: 'media.title',
+								defaultMessage: 'Media Library',
+							})}
 							{currentFolder && (
 								<span className="text-gray-400 font-normal">
 									{' '}
@@ -438,7 +510,10 @@ export function MediaLibraryPage() {
 							)}
 						</h1>
 						<p className="text-xs text-gray-500">
-							{mediaData?.total || 0} assets
+							{intl.formatMessage(
+								{ id: 'media.assetCount', defaultMessage: '{count} assets' },
+								{ count: mediaData?.total || 0 },
+							)}
 							{currentFolder && (
 								<button
 									type="button"
@@ -448,7 +523,10 @@ export function MediaLibraryPage() {
 									}}
 									className="ml-2 text-blue-600 hover:text-blue-700 cursor-pointer"
 								>
-									← Back to all
+									{intl.formatMessage({
+										id: 'media.backToAll',
+										defaultMessage: '← Back to all',
+									})}
 								</button>
 							)}
 						</p>
@@ -461,7 +539,10 @@ export function MediaLibraryPage() {
 							onClick={() => setNewFolderOpen(true)}
 						>
 							<FolderPlus className="w-3.5 h-3.5" />
-							New Folder
+							{intl.formatMessage({
+								id: 'media.newFolder',
+								defaultMessage: 'New Folder',
+							})}
 						</Button>
 						<Button
 							size="sm"
@@ -469,7 +550,15 @@ export function MediaLibraryPage() {
 							disabled={isUploading}
 						>
 							<Upload className="w-3.5 h-3.5 mr-2" />
-							{isUploading ? 'Uploading...' : 'Upload Assets'}
+							{isUploading
+								? intl.formatMessage({
+										id: 'media.uploading',
+										defaultMessage: 'Uploading...',
+									})
+								: intl.formatMessage({
+										id: 'media.uploadAssets',
+										defaultMessage: 'Upload Assets',
+									})}
 						</Button>
 					</div>
 				</div>
@@ -501,22 +590,40 @@ export function MediaLibraryPage() {
 					{/* Assets */}
 					<div>
 						<h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
-							Assets
+							{intl.formatMessage({
+								id: 'media.assets',
+								defaultMessage: 'Assets',
+							})}
 						</h3>
 						{assets.length === 0 ? (
 							<div className="flex flex-col items-center justify-center py-12 text-center">
 								<div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
 									<Upload className="w-8 h-8 text-gray-400" />
 								</div>
-								<p className="text-gray-500 mb-2">No assets found</p>
+								<p className="text-gray-500 mb-2">
+									{intl.formatMessage({
+										id: 'media.noAssets',
+										defaultMessage: 'No assets found',
+									})}
+								</p>
 								<p className="text-xs text-gray-400 mb-4">
 									{searchQuery
-										? 'Try a different search term'
-										: 'Upload your first asset to get started'}
+										? intl.formatMessage({
+												id: 'media.searchHint',
+												defaultMessage: 'Try a different search term',
+											})
+										: intl.formatMessage({
+												id: 'media.uploadFirstAsset',
+												defaultMessage:
+													'Upload your first asset to get started',
+											})}
 								</p>
 								<Button size="sm" onClick={() => setUploadDrawerOpen(true)}>
 									<Upload className="w-3.5 h-3.5 mr-2" />
-									Upload Assets
+									{intl.formatMessage({
+										id: 'media.uploadAssets',
+										defaultMessage: 'Upload Assets',
+									})}
 								</Button>
 							</div>
 						) : (
@@ -540,7 +647,15 @@ export function MediaLibraryPage() {
 								onClick={handleLoadMore}
 								disabled={isLoading}
 							>
-								{isLoading ? 'Loading...' : 'Load More Assets'}
+								{isLoading
+									? intl.formatMessage({
+											id: 'common.actions.loading',
+											defaultMessage: 'Loading...',
+										})
+									: intl.formatMessage({
+											id: 'media.loadMore',
+											defaultMessage: 'Load More Assets',
+										})}
 								<ArrowDown className="w-3 h-3" />
 							</Button>
 						</div>
@@ -577,11 +692,22 @@ export function MediaLibraryPage() {
 						{ id: assetId, data: { folder: folder || undefined } },
 						{
 							onSuccess: () => {
-								toast.success('File moved successfully')
+								toast.success(
+									intl.formatMessage({
+										id: 'media.fileMoved',
+										defaultMessage: 'File moved successfully',
+									}),
+								)
 								refetch()
 							},
 							onError: (err) => {
-								toast.error(err.message || 'Failed to move file')
+								toast.error(
+									err.message ||
+										intl.formatMessage({
+											id: 'media.fileMoveError',
+											defaultMessage: 'Failed to move file',
+										}),
+								)
 							},
 						},
 					)
@@ -591,10 +717,24 @@ export function MediaLibraryPage() {
 						{ name, parentPath },
 						{
 							onSuccess: () => {
-								toast.success(`Subfolder "${name}" created`)
+								toast.success(
+									intl.formatMessage(
+										{
+											id: 'media.subfolderCreated',
+											defaultMessage: 'Subfolder "{name}" created',
+										},
+										{ name },
+									),
+								)
 							},
 							onError: (err) => {
-								toast.error(err.message || 'Failed to create subfolder')
+								toast.error(
+									err.message ||
+										intl.formatMessage({
+											id: 'media.subfolderCreateError',
+											defaultMessage: 'Failed to create subfolder',
+										}),
+								)
 							},
 						},
 					)

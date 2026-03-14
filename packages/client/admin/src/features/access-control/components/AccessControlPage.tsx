@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 
+import { useAppIntl } from '~/i18n'
 import { PageHeader } from '../../shared'
 
 import {
@@ -19,6 +20,7 @@ import { PermissionMatrix } from './PermissionMatrix'
 import { RoleHeader } from './RoleHeader'
 
 export function AccessControlPage() {
+	const intl = useAppIntl()
 	const { role: roleId = '' } = useParams<{ role: string }>()
 	const navigate = useNavigate()
 
@@ -124,11 +126,22 @@ export function AccessControlPage() {
 			{ id: roleData.id, permissions },
 			{
 				onSuccess: () => {
-					toast.success('Permissions saved successfully')
+					toast.success(
+						intl.formatMessage({
+							id: 'accessControl.updateSuccess',
+							defaultMessage: 'Permissions saved successfully',
+						}),
+					)
 					refetch()
 				},
 				onError: (err) => {
-					toast.error(err.message || 'Failed to save permissions')
+					toast.error(
+						err.message ||
+							intl.formatMessage({
+								id: 'accessControl.updateError',
+								defaultMessage: 'Failed to save permissions',
+							}),
+					)
 				},
 			},
 		)
@@ -149,7 +162,13 @@ export function AccessControlPage() {
 						navigate(`/access-control/${newRole.id}`)
 					},
 					onError: (err) => {
-						toast.error(err.message || 'Failed to duplicate role')
+						toast.error(
+							err.message ||
+								intl.formatMessage({
+									id: 'accessControl.duplicateError',
+									defaultMessage: 'Failed to duplicate role',
+								}),
+						)
 					},
 				},
 			)

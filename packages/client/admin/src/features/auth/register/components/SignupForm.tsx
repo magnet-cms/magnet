@@ -7,24 +7,19 @@ import {
 	RHFText,
 } from '@magnet-cms/ui/components/molecules/hook-form'
 import { ArrowRight } from 'lucide-react'
+import { useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { useMagnetConfig } from '~/core/provider/MagnetProvider'
 import { useStatus } from '~/hooks/useAuth'
+import { useAppIntl } from '~/i18n'
 
-const signupSchema = z.object({
-	firstName: z.string().min(1, 'First name is required'),
-	lastName: z.string().min(1, 'Last name is required'),
-	email: z.string().min(1, 'Email is required').email('Invalid email address'),
-	password: z
-		.string()
-		.min(8, 'Password must be at least 8 characters')
-		.regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-		.regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-		.regex(/[0-9]/, 'Password must contain at least one number'),
-})
-
-type SignupFormValues = z.infer<typeof signupSchema>
+interface SignupFormValues {
+	firstName: string
+	lastName: string
+	email: string
+	password: string
+}
 
 interface SignupFormProps {
 	onSubmit?: (data: SignupFormValues) => void
@@ -32,6 +27,74 @@ interface SignupFormProps {
 }
 
 export function SignupForm({ onSubmit, isLoading = false }: SignupFormProps) {
+	const intl = useAppIntl()
+	const signupSchema = useMemo(
+		() =>
+			z.object({
+				firstName: z.string().min(
+					1,
+					intl.formatMessage({
+						id: 'validation.firstNameRequired',
+						defaultMessage: 'First name is required',
+					}),
+				),
+				lastName: z.string().min(
+					1,
+					intl.formatMessage({
+						id: 'validation.lastNameRequired',
+						defaultMessage: 'Last name is required',
+					}),
+				),
+				email: z
+					.string()
+					.min(
+						1,
+						intl.formatMessage({
+							id: 'validation.emailRequired',
+							defaultMessage: 'Email is required',
+						}),
+					)
+					.email(
+						intl.formatMessage({
+							id: 'validation.emailInvalid',
+							defaultMessage: 'Invalid email address',
+						}),
+					),
+				password: z
+					.string()
+					.min(
+						8,
+						intl.formatMessage({
+							id: 'validation.passwordMin8',
+							defaultMessage: 'Password must be at least 8 characters',
+						}),
+					)
+					.regex(
+						/[a-z]/,
+						intl.formatMessage({
+							id: 'validation.passwordLowercase',
+							defaultMessage:
+								'Password must contain at least one lowercase letter',
+						}),
+					)
+					.regex(
+						/[A-Z]/,
+						intl.formatMessage({
+							id: 'validation.passwordUppercase',
+							defaultMessage:
+								'Password must contain at least one uppercase letter',
+						}),
+					)
+					.regex(
+						/[0-9]/,
+						intl.formatMessage({
+							id: 'validation.passwordNumber',
+							defaultMessage: 'Password must contain at least one number',
+						}),
+					),
+			}),
+		[intl],
+	)
 	const form = useForm<SignupFormValues>({
 		resolver: zodResolver(signupSchema),
 		defaultValues: {
@@ -64,10 +127,16 @@ export function SignupForm({ onSubmit, isLoading = false }: SignupFormProps) {
 			{/* Header */}
 			<div className="flex flex-col gap-2">
 				<h1 className="text-2xl font-semibold tracking-tight">
-					Create your account
+					{intl.formatMessage({
+						id: 'auth.signup.title',
+						defaultMessage: 'Create your account',
+					})}
 				</h1>
 				<p className="text-muted-foreground text-sm">
-					Start planning your next adventure together.
+					{intl.formatMessage({
+						id: 'auth.signup.subtitle',
+						defaultMessage: 'Start planning your next adventure together.',
+					})}
 				</p>
 			</div>
 
@@ -76,8 +145,14 @@ export function SignupForm({ onSubmit, isLoading = false }: SignupFormProps) {
 				<div className="flex gap-4">
 					<RHFText
 						name="firstName"
-						label="First name"
-						placeholder="Jane"
+						label={intl.formatMessage({
+							id: 'auth.signup.firstNameLabel',
+							defaultMessage: 'First name',
+						})}
+						placeholder={intl.formatMessage({
+							id: 'auth.signup.firstNamePlaceholder',
+							defaultMessage: 'Jane',
+						})}
 						inputClassName="bg-muted/50"
 						formItemClassName="flex-1"
 						autoComplete="given-name"
@@ -85,8 +160,14 @@ export function SignupForm({ onSubmit, isLoading = false }: SignupFormProps) {
 
 					<RHFText
 						name="lastName"
-						label="Last name"
-						placeholder="Doe"
+						label={intl.formatMessage({
+							id: 'auth.signup.lastNameLabel',
+							defaultMessage: 'Last name',
+						})}
+						placeholder={intl.formatMessage({
+							id: 'auth.signup.lastNamePlaceholder',
+							defaultMessage: 'Doe',
+						})}
 						inputClassName="bg-muted/50"
 						formItemClassName="flex-1"
 						autoComplete="family-name"
@@ -95,20 +176,33 @@ export function SignupForm({ onSubmit, isLoading = false }: SignupFormProps) {
 
 				<RHFText
 					name="email"
-					label="Email"
+					label={intl.formatMessage({
+						id: 'auth.signup.emailLabel',
+						defaultMessage: 'Email',
+					})}
 					type="email"
-					placeholder="jane@example.com"
+					placeholder={intl.formatMessage({
+						id: 'auth.signup.emailPlaceholder',
+						defaultMessage: 'jane@example.com',
+					})}
 					inputClassName="bg-muted/50"
 					autoComplete="email"
 				/>
 
 				<RHFText
 					name="password"
-					label="Password"
+					label={intl.formatMessage({
+						id: 'auth.signup.passwordLabel',
+						defaultMessage: 'Password',
+					})}
 					type="password"
 					inputClassName="bg-muted/50"
 					autoComplete="new-password"
-					description="Must be at least 8 characters with uppercase, lowercase, and number."
+					description={intl.formatMessage({
+						id: 'auth.signup.passwordDescription',
+						defaultMessage:
+							'Must be at least 8 characters with uppercase, lowercase, and number.',
+					})}
 				/>
 
 				<Button
@@ -117,7 +211,15 @@ export function SignupForm({ onSubmit, isLoading = false }: SignupFormProps) {
 					className="w-full gap-2"
 					disabled={isLoading}
 				>
-					{isLoading ? 'Creating account...' : 'Get started'}
+					{isLoading
+						? intl.formatMessage({
+								id: 'auth.signup.creatingAccount',
+								defaultMessage: 'Creating account...',
+							})
+						: intl.formatMessage({
+								id: 'auth.signup.getStarted',
+								defaultMessage: 'Get started',
+							})}
 					{!isLoading && <ArrowRight className="size-3.5" />}
 				</Button>
 			</div>
@@ -128,7 +230,10 @@ export function SignupForm({ onSubmit, isLoading = false }: SignupFormProps) {
 					<div className="relative">
 						<Separator />
 						<span className="bg-background text-muted-foreground absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 px-2 text-xs font-medium">
-							Or continue with
+							{intl.formatMessage({
+								id: 'auth.signup.oauthContinueWith',
+								defaultMessage: 'Or continue with',
+							})}
 						</span>
 					</div>
 

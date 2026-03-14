@@ -1,4 +1,5 @@
 import { Folder as FolderIcon } from 'lucide-react'
+import { useAppIntl } from '~/i18n'
 
 interface FolderItem {
 	id: string
@@ -12,10 +13,11 @@ interface FolderGridProps {
 }
 
 export function FolderGrid({ folders, onFolderClick }: FolderGridProps) {
+	const intl = useAppIntl()
 	return (
 		<div className="mb-6">
 			<h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
-				Folders
+				{intl.formatMessage({ id: 'media.folders', defaultMessage: 'Folders' })}
 			</h3>
 			<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
 				{folders.map((folder) => (
@@ -30,7 +32,10 @@ export function FolderGrid({ folders, onFolderClick }: FolderGridProps) {
 							{folder.name}
 						</span>
 						<span className="text-xs text-gray-500">
-							{folder.itemCount} items
+							{intl.formatMessage(
+								{ id: 'media.itemCount', defaultMessage: '{count} items' },
+								{ count: folder.itemCount },
+							)}
 						</span>
 					</button>
 				))}

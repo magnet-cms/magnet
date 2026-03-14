@@ -7,6 +7,7 @@ import type {
 } from './core/adapters/types'
 import { MagnetProvider } from './core/provider/MagnetProvider'
 import { MagnetRouter } from './core/router/MagnetRouter'
+import { AppIntlProvider } from './i18n'
 import { routes } from './routes/index.tsx'
 
 export interface MagnetAdminProps {
@@ -74,6 +75,18 @@ export interface MagnetAdminProps {
 	 * Initial entries for memory router (only used when router='memory')
 	 */
 	initialEntries?: string[]
+
+	/**
+	 * Locale for the admin UI (e.g. 'en', 'pt-BR', 'es')
+	 * Falls back to localStorage → browser language → 'en'
+	 */
+	locale?: string
+
+	/**
+	 * Custom message overrides for the admin UI
+	 * Keys are message IDs, values are translated strings
+	 */
+	messages?: Record<string, string>
 }
 
 /**
@@ -150,6 +163,8 @@ export function MagnetAdmin({
 	onUnauthorized,
 	onError,
 	initialEntries = ['/'],
+	locale,
+	messages,
 }: MagnetAdminProps) {
 	const config: MagnetConfig = {
 		apiAdapter,
@@ -163,14 +178,16 @@ export function MagnetAdmin({
 	}
 
 	return (
-		<MagnetProvider config={config}>
-			<MagnetRouter
-				type={router}
-				basePath={basePath}
-				routes={routes}
-				initialEntries={initialEntries}
-			/>
-		</MagnetProvider>
+		<AppIntlProvider locale={locale} messages={messages}>
+			<MagnetProvider config={config}>
+				<MagnetRouter
+					type={router}
+					basePath={basePath}
+					routes={routes}
+					initialEntries={initialEntries}
+				/>
+			</MagnetProvider>
+		</AppIntlProvider>
 	)
 }
 

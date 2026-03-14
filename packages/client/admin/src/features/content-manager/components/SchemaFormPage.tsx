@@ -35,6 +35,7 @@ import {
 	useContentVersions,
 	useLocaleStatuses,
 } from '~/hooks/useSchema'
+import { useAppIntl } from '~/i18n'
 import { RelationsAndMetadataPanel } from './RelationsAndMetadataPanel'
 import { VersionDiffDrawer } from './VersionDiffDrawer'
 
@@ -93,6 +94,7 @@ export function SchemaFormPage({
 	schemaDisplayName,
 	entryId,
 }: SchemaFormPageProps) {
+	const intl = useAppIntl()
 	const navigate = useNavigate()
 	const location = useLocation()
 	const adapter = useAdapter()
@@ -185,16 +187,33 @@ export function SchemaFormPage({
 		mutationFn: (versionId: string) =>
 			adapter.history.publishVersion(versionId),
 		onSuccess: () => {
-			toast.success('Version published', {
-				description: 'The draft has been published successfully',
-			})
+			toast.success(
+				intl.formatMessage({
+					id: 'contentManager.versions.versionPublished',
+					defaultMessage: 'Version published',
+				}),
+				{
+					description: intl.formatMessage({
+						id: 'contentManager.versions.versionPublishedDescription',
+						defaultMessage: 'The draft has been published successfully',
+					}),
+				},
+			)
 			queryClient.invalidateQueries({ queryKey: ['versions', schema, entryId] })
 			queryClient.invalidateQueries({
 				queryKey: ['content', schema, entryId, 'locales'],
 			})
 		},
 		onError: (error: Error) => {
-			toast.error(`Failed to publish version: ${error.message}`)
+			toast.error(
+				intl.formatMessage(
+					{
+						id: 'contentManager.versions.failedToPublishVersion',
+						defaultMessage: 'Failed to publish version: {error}',
+					},
+					{ error: error.message },
+				),
+			)
 		},
 	})
 
@@ -202,13 +221,30 @@ export function SchemaFormPage({
 		mutationFn: (versionId: string) =>
 			adapter.history.archiveVersion(versionId),
 		onSuccess: () => {
-			toast.success('Version archived', {
-				description: 'The version has been archived successfully',
-			})
+			toast.success(
+				intl.formatMessage({
+					id: 'contentManager.versions.versionArchived',
+					defaultMessage: 'Version archived',
+				}),
+				{
+					description: intl.formatMessage({
+						id: 'contentManager.versions.versionArchivedDescription',
+						defaultMessage: 'The version has been archived successfully',
+					}),
+				},
+			)
 			queryClient.invalidateQueries({ queryKey: ['versions', schema, entryId] })
 		},
 		onError: (error: Error) => {
-			toast.error(`Failed to archive version: ${error.message}`)
+			toast.error(
+				intl.formatMessage(
+					{
+						id: 'contentManager.versions.failedToArchiveVersion',
+						defaultMessage: 'Failed to archive version: {error}',
+					},
+					{ error: error.message },
+				),
+			)
 		},
 	})
 
@@ -216,16 +252,33 @@ export function SchemaFormPage({
 		mutationFn: (versionId: string) =>
 			adapter.history.publishVersion(versionId),
 		onSuccess: () => {
-			toast.success('Version restored', {
-				description: 'The selected version has been published',
-			})
+			toast.success(
+				intl.formatMessage({
+					id: 'contentManager.versions.versionRestored',
+					defaultMessage: 'Version restored',
+				}),
+				{
+					description: intl.formatMessage({
+						id: 'contentManager.versions.versionRestoredDescription',
+						defaultMessage: 'The selected version has been published',
+					}),
+				},
+			)
 			queryClient.invalidateQueries({ queryKey: ['versions', schema, entryId] })
 			queryClient.invalidateQueries({
 				queryKey: ['content', schema, entryId, 'locales'],
 			})
 		},
 		onError: (error: Error) => {
-			toast.error(`Failed to restore version: ${error.message}`)
+			toast.error(
+				intl.formatMessage(
+					{
+						id: 'contentManager.versions.failedToRestoreVersion',
+						defaultMessage: 'Failed to restore version: {error}',
+					},
+					{ error: error.message },
+				),
+			)
 		},
 	})
 
@@ -286,11 +339,23 @@ export function SchemaFormPage({
 			},
 			{
 				onSuccess: () => {
-					toast.success('Published successfully', {
-						description: hasI18n
-							? `${schemaDisplayName} (${currentLocale}) was published`
-							: undefined,
-					})
+					toast.success(
+						intl.formatMessage({
+							id: 'contentManager.form.publishedSuccess',
+							defaultMessage: 'Published successfully',
+						}),
+						{
+							description: hasI18n
+								? intl.formatMessage(
+										{
+											id: 'contentManager.form.publishedWithLocale',
+											defaultMessage: '{schema} ({locale}) was published',
+										},
+										{ schema: schemaDisplayName, locale: currentLocale },
+									)
+								: undefined,
+						},
+					)
 					// Invalidate locale statuses to update the badge
 					queryClient.invalidateQueries({
 						queryKey: ['content', 'localeStatuses', schema, entryId],
@@ -310,7 +375,13 @@ export function SchemaFormPage({
 					})
 				},
 				onError: (error) => {
-					toast.error(error.message || 'Failed to publish')
+					toast.error(
+						error.message ||
+							intl.formatMessage({
+								id: 'contentManager.form.failedToPublish',
+								defaultMessage: 'Failed to publish',
+							}),
+					)
 				},
 			},
 		)
@@ -334,11 +405,23 @@ export function SchemaFormPage({
 			},
 			{
 				onSuccess: () => {
-					toast.success('Unpublished successfully', {
-						description: hasI18n
-							? `${schemaDisplayName} (${currentLocale}) was unpublished`
-							: undefined,
-					})
+					toast.success(
+						intl.formatMessage({
+							id: 'contentManager.form.unpublishedSuccess',
+							defaultMessage: 'Unpublished successfully',
+						}),
+						{
+							description: hasI18n
+								? intl.formatMessage(
+										{
+											id: 'contentManager.form.unpublishedWithLocale',
+											defaultMessage: '{schema} ({locale}) was unpublished',
+										},
+										{ schema: schemaDisplayName, locale: currentLocale },
+									)
+								: undefined,
+						},
+					)
 					// Invalidate locale statuses to update the badge
 					queryClient.invalidateQueries({
 						queryKey: ['content', 'localeStatuses', schema, entryId],
@@ -358,7 +441,13 @@ export function SchemaFormPage({
 					})
 				},
 				onError: (error) => {
-					toast.error(error.message || 'Failed to unpublish')
+					toast.error(
+						error.message ||
+							intl.formatMessage({
+								id: 'contentManager.form.failedToUnpublish',
+								defaultMessage: 'Failed to unpublish',
+							}),
+					)
 				},
 			},
 		)
@@ -400,13 +489,31 @@ export function SchemaFormPage({
 				},
 				{
 					onSuccess: () => {
-						toast.success('Locale added', {
-							description: `${locale} translation was created`,
-						})
+						toast.success(
+							intl.formatMessage({
+								id: 'contentManager.form.localeAdded',
+								defaultMessage: 'Locale added',
+							}),
+							{
+								description: intl.formatMessage(
+									{
+										id: 'contentManager.form.localeAddedDescription',
+										defaultMessage: '{locale} translation was created',
+									},
+									{ locale },
+								),
+							},
+						)
 						setCurrentLocale(locale)
 					},
 					onError: (error) => {
-						toast.error(error.message || 'Failed to add locale')
+						toast.error(
+							error.message ||
+								intl.formatMessage({
+									id: 'contentManager.form.failedToAddLocale',
+									defaultMessage: 'Failed to add locale',
+								}),
+						)
 					},
 				},
 			)
@@ -429,7 +536,10 @@ export function SchemaFormPage({
 		}[] = []
 		if (hasVersioning && currentLocaleStatus?.hasPublished) {
 			items.push({
-				label: 'Unpublish',
+				label: intl.formatMessage({
+					id: 'contentManager.form.unpublish',
+					defaultMessage: 'Unpublish',
+				}),
 				onClick: handleUnpublish,
 				variant: 'destructive',
 			})
@@ -471,16 +581,28 @@ export function SchemaFormPage({
 							{schemaDisplayName}
 						</h1>
 						<Button variant="outline" onClick={handleDiscard}>
-							Back to List
+							{intl.formatMessage({
+								id: 'contentManager.form.backToList',
+								defaultMessage: 'Back to List',
+							})}
 						</Button>
 					</div>
 				</header>
 				<div className="flex-1 flex items-center justify-center p-8">
 					<div className="text-center">
 						<p className="text-gray-500 mb-4">
-							{contentError?.message || 'Failed to load content'}
+							{contentError?.message ||
+								intl.formatMessage({
+									id: 'contentManager.form.failedToLoadContent',
+									defaultMessage: 'Failed to load content',
+								})}
 						</p>
-						<Button onClick={() => window.location.reload()}>Retry</Button>
+						<Button onClick={() => window.location.reload()}>
+							{intl.formatMessage({
+								id: 'common.actions.retry',
+								defaultMessage: 'Retry',
+							})}
+						</Button>
 					</div>
 				</div>
 			</div>
@@ -496,9 +618,27 @@ export function SchemaFormPage({
 				status={displayStatus as 'draft' | 'published' | undefined}
 				lastEdited={normalizedData?.updatedAt}
 				tabs={[
-					{ label: 'Edit', to: '' },
-					{ label: 'Versions', to: 'versions' },
-					{ label: 'API', to: 'api' },
+					{
+						label: intl.formatMessage({
+							id: 'contentManager.form.editTab',
+							defaultMessage: 'Edit',
+						}),
+						to: '',
+					},
+					{
+						label: intl.formatMessage({
+							id: 'contentManager.form.versionsTab',
+							defaultMessage: 'Versions',
+						}),
+						to: 'versions',
+					},
+					{
+						label: intl.formatMessage({
+							id: 'contentManager.form.apiTab',
+							defaultMessage: 'API',
+						}),
+						to: 'api',
+					},
 				]}
 				onDiscard={handleDiscard}
 				onPublish={hasVersioning ? handlePublish : undefined}
@@ -529,7 +669,11 @@ export function SchemaFormPage({
 				currentLocaleStatus?.hasPublished && (
 					<div className="px-6 py-2 border-b border-amber-200 bg-amber-50 flex items-center gap-2">
 						<span className="text-xs text-amber-700">
-							Editing published content. Changes will be saved as a new draft.
+							{intl.formatMessage({
+								id: 'contentManager.form.editingPublished',
+								defaultMessage:
+									'Editing published content. Changes will be saved as a new draft.',
+							})}
 						</span>
 					</div>
 				)}
@@ -572,10 +716,19 @@ export function SchemaFormPage({
 									{/* Card Header */}
 									<div className="px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
 										<h2 className="text-sm font-semibold text-gray-900">
-											Version History
+											{intl.formatMessage({
+												id: 'contentManager.versions.title',
+												defaultMessage: 'Version History',
+											})}
 										</h2>
 										<span className="text-xs text-gray-500">
-											{versions?.length ?? 0} versions found
+											{intl.formatMessage(
+												{
+													id: 'contentManager.versions.versionsFound',
+													defaultMessage: '{count} versions found',
+												},
+												{ count: versions?.length ?? 0 },
+											)}
 										</span>
 									</div>
 
@@ -603,10 +756,27 @@ export function SchemaFormPage({
 													const isDraft = version.status === 'draft'
 
 													const getVersionTitle = () => {
-														if (isDraft) return 'Current Draft'
+														if (isDraft)
+															return intl.formatMessage({
+																id: 'contentManager.versions.currentDraft',
+																defaultMessage: 'Current Draft',
+															})
 														if (index === sortedVersions.length - 1)
-															return 'Initial Creation'
-														return `${version.status.charAt(0).toUpperCase() + version.status.slice(1)} Version`
+															return intl.formatMessage({
+																id: 'contentManager.versions.initialCreation',
+																defaultMessage: 'Initial Creation',
+															})
+														return intl.formatMessage(
+															{
+																id: 'contentManager.versions.versionLabel',
+																defaultMessage: '{status} Version',
+															},
+															{
+																status:
+																	version.status.charAt(0).toUpperCase() +
+																	version.status.slice(1),
+															},
+														)
 													}
 
 													return (
@@ -658,10 +828,13 @@ export function SchemaFormPage({
 																<p className="text-sm text-gray-500 mb-3">
 																	{version.createdBy && (
 																		<>
-																			Edited by{' '}
-																			<span className="text-gray-900 font-medium">
-																				{version.createdBy}
-																			</span>{' '}
+																			{intl.formatMessage(
+																				{
+																					id: 'contentManager.versions.editedBy',
+																					defaultMessage: 'Edited by {author}',
+																				},
+																				{ author: version.createdBy },
+																			)}{' '}
 																		</>
 																	)}
 																	{formatDistanceToNow(
@@ -671,13 +844,16 @@ export function SchemaFormPage({
 																</p>
 																{changedFields.length > 0 && (
 																	<div className="text-xs text-gray-400 font-mono bg-gray-50 inline-block px-2 py-1 rounded border border-gray-200">
-																		Changes:{' '}
+																		{intl.formatMessage({
+																			id: 'contentManager.versions.changes',
+																			defaultMessage: 'Changes:',
+																		})}{' '}
 																		{changedFields
 																			.slice(0, 3)
 																			.map((c) => c.split(':')[0])
 																			.join(', ')}
 																		{changedFields.length > 3 &&
-																			` +${changedFields.length - 3} more`}
+																			` ${intl.formatMessage({ id: 'contentManager.versions.moreChanges', defaultMessage: '+{count} more' }, { count: changedFields.length - 3 })}`}
 																	</div>
 																)}
 															</div>
@@ -691,7 +867,10 @@ export function SchemaFormPage({
 																		setCompareVersionId(version.versionId)
 																	}
 																>
-																	Compare
+																	{intl.formatMessage({
+																		id: 'contentManager.versions.compare',
+																		defaultMessage: 'Compare',
+																	})}
 																</Button>
 																{isDraft && (
 																	<Button
@@ -705,8 +884,14 @@ export function SchemaFormPage({
 																		disabled={publishVersionMutation.isPending}
 																	>
 																		{publishVersionMutation.isPending
-																			? 'Publishing...'
-																			: 'Publish'}
+																			? intl.formatMessage({
+																					id: 'contentManager.versions.publishing',
+																					defaultMessage: 'Publishing...',
+																				})
+																			: intl.formatMessage({
+																					id: 'contentManager.versions.publish',
+																					defaultMessage: 'Publish',
+																				})}
 																	</Button>
 																)}
 																{version.status === 'published' && (
@@ -721,8 +906,14 @@ export function SchemaFormPage({
 																		disabled={archiveVersionMutation.isPending}
 																	>
 																		{archiveVersionMutation.isPending
-																			? 'Archiving...'
-																			: 'Archive'}
+																			? intl.formatMessage({
+																					id: 'contentManager.versions.archiving',
+																					defaultMessage: 'Archiving...',
+																				})
+																			: intl.formatMessage({
+																					id: 'contentManager.versions.archive',
+																					defaultMessage: 'Archive',
+																				})}
 																	</Button>
 																)}
 																{version.status === 'archived' && (
@@ -737,8 +928,14 @@ export function SchemaFormPage({
 																		disabled={restoreVersionMutation.isPending}
 																	>
 																		{restoreVersionMutation.isPending
-																			? 'Restoring...'
-																			: 'Restore'}
+																			? intl.formatMessage({
+																					id: 'contentManager.versions.restoring',
+																					defaultMessage: 'Restoring...',
+																				})
+																			: intl.formatMessage({
+																					id: 'contentManager.versions.restore',
+																					defaultMessage: 'Restore',
+																				})}
 																	</Button>
 																)}
 															</div>
@@ -748,7 +945,10 @@ export function SchemaFormPage({
 											})()
 										) : (
 											<div className="p-6 text-center text-gray-500">
-												No version history available
+												{intl.formatMessage({
+													id: 'contentManager.versions.noHistory',
+													defaultMessage: 'No version history available',
+												})}
 											</div>
 										)}
 									</div>
@@ -937,7 +1137,10 @@ fetch('${apiBaseUrl}/content/${schema}/${entryId}${selectedApiLocale && selected
 															</SelectTrigger>
 															<SelectContent>
 																<SelectItem value="none" className="text-xs">
-																	No locale (default)
+																	{intl.formatMessage({
+																		id: 'contentManager.api.noLocale',
+																		defaultMessage: 'No locale (default)',
+																	})}
 																</SelectItem>
 																{availableLocales.map((locale) => (
 																	<SelectItem
@@ -957,7 +1160,10 @@ fetch('${apiBaseUrl}/content/${schema}/${entryId}${selectedApiLocale && selected
 												<Card>
 													<CardContent className="p-6">
 														<h3 className="text-sm font-semibold text-gray-900 mb-4">
-															Endpoints
+															{intl.formatMessage({
+																id: 'contentManager.api.endpoints',
+																defaultMessage: 'Endpoints',
+															})}
 														</h3>
 														<div className="space-y-3">
 															{endpoints.map((endpoint) => (
@@ -1002,10 +1208,18 @@ fetch('${apiBaseUrl}/content/${schema}/${entryId}${selectedApiLocale && selected
 														<Info className="w-5 h-5 text-blue-600 mt-0.5" />
 														<div>
 															<p className="text-sm font-medium text-blue-900">
-																Authentication Required
+																{intl.formatMessage({
+																	id: 'contentManager.api.authRequired',
+																	defaultMessage: 'Authentication Required',
+																})}
 															</p>
 															<p className="text-xs text-blue-700 mt-1 leading-relaxed">
-																Include your API token in the header: <br />
+																{intl.formatMessage({
+																	id: 'contentManager.api.authDescription',
+																	defaultMessage:
+																		'Include your API token in the header:',
+																})}{' '}
+																<br />
 																<code className="bg-blue-100 px-1 py-0.5 rounded text-blue-800">
 																	Authorization: Bearer YOUR_TOKEN
 																</code>
@@ -1043,12 +1257,18 @@ fetch('${apiBaseUrl}/content/${schema}/${entryId}${selectedApiLocale && selected
 														copied[activeEndpointData.id] ? (
 															<>
 																<Check className="w-3 h-3 mr-1" />
-																Copied!
+																{intl.formatMessage({
+																	id: 'contentManager.api.copied',
+																	defaultMessage: 'Copied!',
+																})}
 															</>
 														) : (
 															<>
 																<Copy className="w-3 h-3 mr-1" />
-																Copy
+																{intl.formatMessage({
+																	id: 'contentManager.api.copy',
+																	defaultMessage: 'Copy',
+																})}
 															</>
 														)}
 													</Button>

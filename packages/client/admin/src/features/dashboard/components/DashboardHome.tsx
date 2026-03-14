@@ -26,6 +26,7 @@ import { useAuth } from '~/hooks/useAuth'
 import { useSchemas } from '~/hooks/useDiscovery'
 import { useMediaList, useMediaUrl } from '~/hooks/useMedia'
 
+import { useAppIntl } from '~/i18n'
 import { PageHeader } from '../../shared'
 
 import { ActivityFeed } from './ActivityFeed'
@@ -33,7 +34,10 @@ import { CollectionCard } from './CollectionCard'
 import { MediaLibraryPreview } from './MediaLibraryPreview'
 import { StatCard } from './StatCard'
 
-function getActivityDisplay(record: ActivityRecord): {
+function getActivityDisplay(
+	record: ActivityRecord,
+	intl: ReturnType<typeof useAppIntl>,
+): {
 	icon: typeof Plus
 	iconBgColor: string
 	iconColor: string
@@ -45,56 +49,95 @@ function getActivityDisplay(record: ActivityRecord): {
 				icon: Plus,
 				iconBgColor: 'bg-green-100',
 				iconColor: 'text-green-600',
-				message: `Created ${record.entityType} entry`,
+				message: intl.formatMessage(
+					{
+						id: 'dashboard.activity.contentCreated',
+						defaultMessage: 'Created {entityType} entry',
+					},
+					{ entityType: record.entityType },
+				),
 			}
 		case 'content.updated':
 			return {
 				icon: FilePen,
 				iconBgColor: 'bg-blue-100',
 				iconColor: 'text-blue-600',
-				message: `Updated ${record.entityType} entry`,
+				message: intl.formatMessage(
+					{
+						id: 'dashboard.activity.contentUpdated',
+						defaultMessage: 'Updated {entityType} entry',
+					},
+					{ entityType: record.entityType },
+				),
 			}
 		case 'content.deleted':
 			return {
 				icon: Trash2,
 				iconBgColor: 'bg-red-100',
 				iconColor: 'text-red-600',
-				message: `Deleted ${record.entityType} entry`,
+				message: intl.formatMessage(
+					{
+						id: 'dashboard.activity.contentDeleted',
+						defaultMessage: 'Deleted {entityType} entry',
+					},
+					{ entityType: record.entityType },
+				),
 			}
 		case 'content.published':
 			return {
 				icon: Send,
 				iconBgColor: 'bg-purple-100',
 				iconColor: 'text-purple-600',
-				message: `Published ${record.entityType} entry`,
+				message: intl.formatMessage(
+					{
+						id: 'dashboard.activity.contentPublished',
+						defaultMessage: 'Published {entityType} entry',
+					},
+					{ entityType: record.entityType },
+				),
 			}
 		case 'content.unpublished':
 			return {
 				icon: FilePen,
 				iconBgColor: 'bg-yellow-100',
 				iconColor: 'text-yellow-600',
-				message: `Unpublished ${record.entityType} entry`,
+				message: intl.formatMessage(
+					{
+						id: 'dashboard.activity.contentUnpublished',
+						defaultMessage: 'Unpublished {entityType} entry',
+					},
+					{ entityType: record.entityType },
+				),
 			}
 		case 'user.login':
 			return {
 				icon: LogIn,
 				iconBgColor: 'bg-green-100',
 				iconColor: 'text-green-600',
-				message: 'User logged in',
+				message: intl.formatMessage({
+					id: 'dashboard.activity.userLogin',
+					defaultMessage: 'User logged in',
+				}),
 			}
 		case 'user.logout':
 			return {
 				icon: LogOut,
 				iconBgColor: 'bg-gray-100',
 				iconColor: 'text-gray-600',
-				message: 'User logged out',
+				message: intl.formatMessage({
+					id: 'dashboard.activity.userLogout',
+					defaultMessage: 'User logged out',
+				}),
 			}
 		case 'user.registered':
 			return {
 				icon: Users,
 				iconBgColor: 'bg-blue-100',
 				iconColor: 'text-blue-600',
-				message: 'New user registered',
+				message: intl.formatMessage({
+					id: 'dashboard.activity.userRegistered',
+					defaultMessage: 'New user registered',
+				}),
 			}
 		case 'settings.updated':
 		case 'settings.group_updated':
@@ -102,7 +145,10 @@ function getActivityDisplay(record: ActivityRecord): {
 				icon: Settings,
 				iconBgColor: 'bg-orange-100',
 				iconColor: 'text-orange-600',
-				message: 'Settings updated',
+				message: intl.formatMessage({
+					id: 'dashboard.activity.settingsUpdated',
+					defaultMessage: 'Settings updated',
+				}),
 			}
 		case 'api_key.created':
 		case 'api_key.revoked':
@@ -110,7 +156,16 @@ function getActivityDisplay(record: ActivityRecord): {
 				icon: Key,
 				iconBgColor: 'bg-yellow-100',
 				iconColor: 'text-yellow-600',
-				message: `API key ${record.action === 'api_key.created' ? 'created' : 'revoked'}`,
+				message:
+					record.action === 'api_key.created'
+						? intl.formatMessage({
+								id: 'dashboard.activity.apiKeyCreated',
+								defaultMessage: 'API key created',
+							})
+						: intl.formatMessage({
+								id: 'dashboard.activity.apiKeyRevoked',
+								defaultMessage: 'API key revoked',
+							}),
 			}
 		default:
 			return {
@@ -122,21 +177,31 @@ function getActivityDisplay(record: ActivityRecord): {
 	}
 }
 
-function formatRelativeTime(timestamp: string): string {
+function formatRelativeTime(
+	timestamp: string,
+	intl: ReturnType<typeof useAppIntl>,
+): string {
 	const diff = Date.now() - new Date(timestamp).getTime()
 	const seconds = Math.floor(diff / 1000)
-	if (seconds < 60) return 'Just now'
+	if (seconds < 60)
+		return intl.formatMessage({
+			id: 'dashboard.activity.justNow',
+			defaultMessage: 'Just now',
+		})
 	const minutes = Math.floor(seconds / 60)
-	if (minutes < 60) return `${minutes}m ago`
+	if (minutes < 60)
+		return intl.formatRelativeTime(-minutes, 'minute', { style: 'narrow' })
 	const hours = Math.floor(minutes / 60)
-	if (hours < 24) return `${hours}h ago`
+	if (hours < 24)
+		return intl.formatRelativeTime(-hours, 'hour', { style: 'narrow' })
 	const days = Math.floor(hours / 24)
-	return `${days}d ago`
+	return intl.formatRelativeTime(-days, 'day', { style: 'narrow' })
 }
 
 // Stats - these would ideally come from a dedicated dashboard API
 // For now, we derive some stats from available data
 function useDashboardStats() {
+	const intl = useAppIntl()
 	const { data: schemas } = useSchemas()
 	const { data: mediaData } = useMediaList({ limit: 1 })
 
@@ -147,27 +212,39 @@ function useDashboardStats() {
 		return [
 			{
 				icon: Database,
-				label: 'Collections',
+				label: intl.formatMessage({
+					id: 'dashboard.stats.collections',
+					defaultMessage: 'Collections',
+				}),
 				value: schemaCount.toString(),
 				iconBgColor: 'bg-blue-50',
 				iconColor: 'text-blue-600',
 			},
 			{
 				icon: Image,
-				label: 'Media Assets',
+				label: intl.formatMessage({
+					id: 'dashboard.stats.mediaAssets',
+					defaultMessage: 'Media Assets',
+				}),
 				value: mediaCount.toString(),
 				iconBgColor: 'bg-purple-50',
 				iconColor: 'text-purple-600',
 			},
 			{
 				icon: Server,
-				label: 'API Status',
-				value: 'Online',
+				label: intl.formatMessage({
+					id: 'dashboard.stats.apiStatus',
+					defaultMessage: 'API Status',
+				}),
+				value: intl.formatMessage({
+					id: 'common.status.online',
+					defaultMessage: 'Online',
+				}),
 				iconBgColor: 'bg-green-50',
 				iconColor: 'text-green-600',
 			},
 		]
-	}, [schemas, mediaData])
+	}, [schemas, mediaData, intl])
 }
 
 // Map schema names to icons (can be extended)
@@ -178,6 +255,7 @@ function getSchemaIcon(_schemaName: string) {
 }
 
 export function DashboardHome() {
+	const intl = useAppIntl()
 	const navigate = useNavigate()
 	const { user, isLoading: isUserLoading } = useAuth()
 	const { data: schemas, isLoading: isSchemasLoading } = useSchemas()
@@ -198,13 +276,19 @@ export function DashboardHome() {
 			title:
 				schemaName.charAt(0).toUpperCase() +
 				schemaName.slice(1).replace(/([A-Z])/g, ' $1'),
-			description: `Manage ${schemaName} content`,
-			itemCount: 0, // Would need per-schema counts from API
+			description: intl.formatMessage(
+				{
+					id: 'dashboard.collections.manageContent',
+					defaultMessage: 'Manage {schema} content',
+				},
+				{ schema: schemaName },
+			),
+			itemCount: 0,
 			href: `/content-manager/${schemaName}`,
 			iconBgColor: 'bg-gray-50',
 			iconColor: 'text-gray-600',
 		}))
-	}, [schemas])
+	}, [schemas, intl])
 
 	// Transform media items for preview
 	const mediaItems = useMemo(() => {
@@ -237,10 +321,19 @@ export function DashboardHome() {
 						) : (
 							<>
 								<h1 className="text-2xl font-medium text-gray-900 tracking-tight">
-									Welcome back, {userName}
+									{intl.formatMessage(
+										{
+											id: 'dashboard.welcomeBack',
+											defaultMessage: 'Welcome back, {userName}',
+										},
+										{ userName },
+									)}
 								</h1>
 								<p className="mt-1 text-sm text-gray-500">
-									Here&apos;s what&apos;s happening in your project.
+									{intl.formatMessage({
+										id: 'dashboard.subtitle',
+										defaultMessage: "Here's what's happening in your project.",
+									})}
 								</p>
 							</>
 						)}
@@ -253,12 +346,18 @@ export function DashboardHome() {
 								rel="noopener noreferrer"
 							>
 								<Book className="w-4 h-4" />
-								Documentation
+								{intl.formatMessage({
+									id: 'dashboard.documentation',
+									defaultMessage: 'Documentation',
+								})}
 							</a>
 						</Button>
 						<Button size="sm" onClick={() => navigate('/content-manager')}>
 							<Plus className="w-4 h-4" />
-							New Entry
+							{intl.formatMessage({
+								id: 'dashboard.newEntry',
+								defaultMessage: 'New Entry',
+							})}
 						</Button>
 					</div>
 				</div>
@@ -278,13 +377,19 @@ export function DashboardHome() {
 					<div>
 						<div className="flex items-center justify-between mb-4">
 							<h2 className="text-sm font-semibold text-gray-900">
-								Collections
+								{intl.formatMessage({
+									id: 'dashboard.collections.title',
+									defaultMessage: 'Collections',
+								})}
 							</h2>
 							<Link
 								to="/content-manager"
 								className="text-xs font-medium text-blue-600 hover:text-blue-700"
 							>
-								View all
+								{intl.formatMessage({
+									id: 'common.actions.viewAll',
+									defaultMessage: 'View all',
+								})}
 							</Link>
 						</div>
 						{isLoading ? (
@@ -298,7 +403,10 @@ export function DashboardHome() {
 								<div className="col-span-full text-center py-8 bg-white rounded-xl border border-dashed border-gray-200">
 									<Database className="w-8 h-8 text-gray-300 mx-auto mb-2" />
 									<p className="text-sm text-gray-500 mb-3">
-										No collections yet
+										{intl.formatMessage({
+											id: 'dashboard.collections.noCollections',
+											defaultMessage: 'No collections yet',
+										})}
 									</p>
 									<Button
 										size="sm"
@@ -306,7 +414,10 @@ export function DashboardHome() {
 										onClick={() => navigate('/schema-builder')}
 									>
 										<Plus className="w-4 h-4" />
-										Create your first schema
+										{intl.formatMessage({
+											id: 'dashboard.collections.createFirstSchema',
+											defaultMessage: 'Create your first schema',
+										})}
 									</Button>
 								</div>
 							</div>
@@ -318,8 +429,14 @@ export function DashboardHome() {
 								{collections.length < 4 && (
 									<CollectionCard
 										icon={Plus}
-										title="Create new type"
-										description="Add a new schema"
+										title={intl.formatMessage({
+											id: 'dashboard.collections.createNewType',
+											defaultMessage: 'Create new type',
+										})}
+										description={intl.formatMessage({
+											id: 'dashboard.collections.addNewSchema',
+											defaultMessage: 'Add a new schema',
+										})}
 										itemCount={0}
 										href="/schema-builder"
 										isCreateNew
@@ -351,14 +468,14 @@ export function DashboardHome() {
 								activities={
 									recentActivity && recentActivity.length > 0
 										? recentActivity.map((record) => {
-												const display = getActivityDisplay(record)
+												const display = getActivityDisplay(record, intl)
 												return {
 													id: record.id,
 													icon: display.icon,
 													iconBgColor: display.iconBgColor,
 													iconColor: display.iconColor,
 													message: display.message,
-													timestamp: formatRelativeTime(record.timestamp),
+													timestamp: formatRelativeTime(record.timestamp, intl),
 												}
 											})
 										: [
@@ -366,7 +483,10 @@ export function DashboardHome() {
 													id: 'empty',
 													iconBgColor: 'bg-green-100',
 													iconColor: 'text-green-600',
-													message: 'No activity yet',
+													message: intl.formatMessage({
+														id: 'dashboard.activity.noActivity',
+														defaultMessage: 'No activity yet',
+													}),
 													timestamp: '',
 												},
 											]
@@ -389,13 +509,23 @@ export function DashboardHome() {
 								<div className="relative z-10">
 									<Code2 className="w-8 h-8 mb-4 text-gray-300" />
 									<h3 className="text-base font-semibold mb-2">
-										API Documentation
+										{intl.formatMessage({
+											id: 'dashboard.footer.apiDocs',
+											defaultMessage: 'API Documentation',
+										})}
 									</h3>
 									<p className="text-sm text-gray-400 mb-4">
-										Learn how to consume your content via REST or GraphQL APIs.
+										{intl.formatMessage({
+											id: 'dashboard.footer.apiDocsDescription',
+											defaultMessage:
+												'Learn how to consume your content via REST or GraphQL APIs.',
+										})}
 									</p>
 									<Badge className="text-xs font-medium bg-white/10 px-3 py-1.5 rounded-full hover:bg-white/20 transition-colors">
-										Read Docs
+										{intl.formatMessage({
+											id: 'dashboard.footer.readDocs',
+											defaultMessage: 'Read Docs',
+										})}
 									</Badge>
 								</div>
 							</a>
@@ -412,11 +542,17 @@ export function DashboardHome() {
 										</span>
 									</div>
 									<h3 className="text-base font-semibold text-gray-900 mb-2">
-										Manage Team
+										{intl.formatMessage({
+											id: 'dashboard.footer.manageTeam',
+											defaultMessage: 'Manage Team',
+										})}
 									</h3>
 									<p className="text-sm text-gray-500">
-										Invite new members, manage roles and permissions for your
-										project.
+										{intl.formatMessage({
+											id: 'dashboard.footer.manageTeamDescription',
+											defaultMessage:
+												'Invite new members, manage roles and permissions for your project.',
+										})}
 									</p>
 								</div>
 							</Link>

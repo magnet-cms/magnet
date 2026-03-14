@@ -32,6 +32,7 @@ import type {
 import { PageHeader } from '~/features/shared'
 import { useActivitySearch } from '~/hooks/useActivity'
 import { useUserList } from '~/hooks/useUsers'
+import { useAppIntl } from '~/i18n'
 
 // ============================================================================
 // Helpers
@@ -102,6 +103,7 @@ const contentManagerStyles = `
 // ============================================================================
 
 export function ActivityPage() {
+	const intl = useAppIntl()
 	const [actionFilter, setActionFilter] = useState('all')
 	const [entityTypeFilter, setEntityTypeFilter] = useState('all')
 	const [userFilter, setUserFilter] = useState('all')
@@ -339,7 +341,10 @@ export function ActivityPage() {
 					<div className="h-16 flex items-center justify-between px-6">
 						<div>
 							<h1 className="text-lg font-semibold text-gray-900 tracking-tight">
-								Activity Log
+								{intl.formatMessage({
+									id: 'activity.title',
+									defaultMessage: 'Activity Log',
+								})}
 							</h1>
 							<p className="text-xs text-red-500">Error loading activity</p>
 						</div>

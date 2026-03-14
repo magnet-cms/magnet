@@ -9,6 +9,7 @@ import { Activity, Database, ImageIcon, Settings2 } from 'lucide-react'
 import type * as React from 'react'
 import { useAdmin } from '~/contexts/useAdmin'
 import { usePluginSidebarItems } from '~/core/plugins/PluginRegistry'
+import { useAppIntl } from '~/i18n'
 import { EnvSwitcher } from './EnvSwitcher'
 import { NavMain } from './NavMain'
 import { NavUser } from './NavUser'
@@ -16,6 +17,7 @@ import { NavUser } from './NavUser'
 export const AppSidebar = ({
 	...props
 }: React.ComponentProps<typeof Sidebar>) => {
+	const intl = useAppIntl()
 	const { schemas, settings } = useAdmin()
 	const pluginSidebarItems = usePluginSidebarItems()
 
@@ -30,7 +32,15 @@ export const AppSidebar = ({
 			title: name.title,
 			url: `/content-manager/${name.key}`,
 		}
-	}) || [{ title: 'No Content Available', url: '/' }]
+	}) || [
+		{
+			title: intl.formatMessage({
+				id: 'nav.noContent',
+				defaultMessage: 'No Content Available',
+			}),
+			url: '/',
+		},
+	]
 
 	const settingsItems =
 		settings?.map((item: string) => {
@@ -45,7 +55,10 @@ export const AppSidebar = ({
 	// Plugin items (like Playground from content-builder) are added via usePluginSidebarItems()
 	const coreSidebarItems = [
 		{
-			title: 'Content Manager',
+			title: intl.formatMessage({
+				id: 'nav.contentManager',
+				defaultMessage: 'Content Manager',
+			}),
 			url: '/',
 			icon: Database,
 			isActive: true,
@@ -53,19 +66,25 @@ export const AppSidebar = ({
 			order: 10,
 		},
 		{
-			title: 'Media',
+			title: intl.formatMessage({ id: 'nav.media', defaultMessage: 'Media' }),
 			url: '/media',
 			icon: ImageIcon,
 			order: 30,
 		},
 		{
-			title: 'Activity',
+			title: intl.formatMessage({
+				id: 'nav.activity',
+				defaultMessage: 'Activity',
+			}),
 			url: '/activity',
 			icon: Activity,
 			order: 70,
 		},
 		{
-			title: 'Settings',
+			title: intl.formatMessage({
+				id: 'nav.settings',
+				defaultMessage: 'Settings',
+			}),
 			url: '/',
 			icon: Settings2,
 			items: settingsItems,

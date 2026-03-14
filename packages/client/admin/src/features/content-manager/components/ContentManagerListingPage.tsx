@@ -27,6 +27,7 @@ import {
 	useContentDelete,
 	useContentList,
 } from '~/hooks/useSchema'
+import { useAppIntl } from '~/i18n'
 import type { ViewConfigColumn } from '../hooks/useViewConfig'
 import { useViewConfig } from '../hooks/useViewConfig'
 import { ConfigureViewDrawer } from './ConfigureViewDrawer'
@@ -97,7 +98,7 @@ function formatCellValue(value: unknown, property: SchemaProperty): string {
 	) {
 		const date = new Date(value as string)
 		if (!Number.isNaN(date.getTime())) {
-			return date.toLocaleDateString('en-US', {
+			return date.toLocaleDateString(undefined, {
 				month: 'short',
 				day: 'numeric',
 				year: 'numeric',
@@ -219,7 +220,7 @@ function generateColumns(
 		cell: (row) => {
 			const date = row.original.updatedAt as string
 			if (!date) return <span className="text-sm text-gray-500">-</span>
-			const formatted = new Date(date).toLocaleDateString('en-US', {
+			const formatted = new Date(date).toLocaleDateString(undefined, {
 				month: 'short',
 				day: 'numeric',
 				year: 'numeric',
@@ -247,6 +248,7 @@ export function ContentManagerListingPage({
 	schema,
 	schemaDisplayName,
 }: ContentManagerListingPageProps) {
+	const intl = useAppIntl()
 	const navigate = useNavigate()
 	const [searchQuery, setSearchQuery] = useState('')
 	const [statusFilter, setStatusFilter] = useState<string>('all')
@@ -284,7 +286,12 @@ export function ContentManagerListingPage({
 	const handleDelete = (entry: ContentEntry) => {
 		const id = getEntryId(entry)
 		if (!id) {
-			toast.error('Cannot delete entry: missing ID')
+			toast.error(
+				intl.formatMessage({
+					id: 'contentManager.listing.deleteNoId',
+					defaultMessage: 'Cannot delete entry: missing ID',
+				}),
+			)
 			return
 		}
 
@@ -292,10 +299,21 @@ export function ContentManagerListingPage({
 			{ schema, documentId: id },
 			{
 				onSuccess: () => {
-					toast.success('Entry deleted successfully')
+					toast.success(
+						intl.formatMessage({
+							id: 'contentManager.listing.deleteSuccess',
+							defaultMessage: 'Entry deleted successfully',
+						}),
+					)
 				},
 				onError: (error) => {
-					toast.error(error.message || 'Failed to delete entry')
+					toast.error(
+						error.message ||
+							intl.formatMessage({
+								id: 'contentManager.listing.deleteError',
+								defaultMessage: 'Failed to delete entry',
+							}),
+					)
 				},
 			},
 		)
@@ -307,11 +325,22 @@ export function ContentManagerListingPage({
 			{ schema },
 			{
 				onSuccess: (data) => {
-					toast.success('New entry created')
+					toast.success(
+						intl.formatMessage({
+							id: 'contentManager.listing.createSuccess',
+							defaultMessage: 'New entry created',
+						}),
+					)
 					navigate(`/content-manager/${schema}/${data.documentId}`)
 				},
 				onError: (error) => {
-					toast.error(error.message || 'Failed to create entry')
+					toast.error(
+						error.message ||
+							intl.formatMessage({
+								id: 'contentManager.listing.createError',
+								defaultMessage: 'Failed to create entry',
+							}),
+					)
 				},
 			},
 		)
@@ -384,7 +413,10 @@ export function ContentManagerListingPage({
 					<Input
 						type="text"
 						className="pl-9 pr-3 py-1.5 border border-gray-200 rounded-lg text-sm bg-gray-50 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-1 focus:ring-gray-900 focus:border-gray-900 transition-all shadow-sm"
-						placeholder="Search entries..."
+						placeholder={intl.formatMessage({
+							id: 'contentManager.listing.searchPlaceholder',
+							defaultMessage: 'Search entries...',
+						})}
 						value={searchQuery}
 						onChange={(e) => setSearchQuery(e.target.value)}
 					/>
@@ -396,9 +428,24 @@ export function ContentManagerListingPage({
 							<SelectValue />
 						</SelectTrigger>
 						<SelectContent>
-							<SelectItem value="all">All Status</SelectItem>
-							<SelectItem value="published">Published</SelectItem>
-							<SelectItem value="draft">Draft</SelectItem>
+							<SelectItem value="all">
+								{intl.formatMessage({
+									id: 'common.status.allStatus',
+									defaultMessage: 'All Status',
+								})}
+							</SelectItem>
+							<SelectItem value="published">
+								{intl.formatMessage({
+									id: 'common.status.published',
+									defaultMessage: 'Published',
+								})}
+							</SelectItem>
+							<SelectItem value="draft">
+								{intl.formatMessage({
+									id: 'common.status.draft',
+									defaultMessage: 'Draft',
+								})}
+							</SelectItem>
 						</SelectContent>
 					</Select>
 
@@ -412,7 +459,10 @@ export function ContentManagerListingPage({
 								setStatusFilter('all')
 							}}
 						>
-							Clear Filters
+							{intl.formatMessage({
+								id: 'common.actions.clearFilters',
+								defaultMessage: 'Clear Filters',
+							})}
 						</Button>
 					</div>
 				</div>
@@ -429,9 +479,13 @@ export function ContentManagerListingPage({
 		return (
 			<div className="flex-none px-6 py-4 border-t border-gray-200 bg-white flex items-center justify-between">
 				<div className="text-xs text-gray-500">
-					Showing <span className="font-medium text-gray-900">{startRow}</span>{' '}
-					to <span className="font-medium text-gray-900">{endRow}</span> of{' '}
-					<span className="font-medium text-gray-900">{totalRows}</span> results
+					{intl.formatMessage(
+						{
+							id: 'common.pagination.showing',
+							defaultMessage: 'Showing {start} to {end} of {total} results',
+						},
+						{ start: startRow, end: endRow, total: totalRows },
+					)}
 				</div>
 				<div className="flex items-center gap-2">
 					<Button
@@ -441,7 +495,10 @@ export function ContentManagerListingPage({
 						disabled={!table.getCanPreviousPage()}
 						onClick={() => table.previousPage()}
 					>
-						Previous
+						{intl.formatMessage({
+							id: 'common.actions.previous',
+							defaultMessage: 'Previous',
+						})}
 					</Button>
 					<Button
 						variant="outline"
@@ -450,7 +507,10 @@ export function ContentManagerListingPage({
 						disabled={!table.getCanNextPage()}
 						onClick={() => table.nextPage()}
 					>
-						Next
+						{intl.formatMessage({
+							id: 'common.actions.next',
+							defaultMessage: 'Next',
+						})}
 					</Button>
 				</div>
 			</div>
@@ -467,7 +527,12 @@ export function ContentManagerListingPage({
 							<h1 className="text-lg font-semibold text-gray-900 tracking-tight">
 								{schemaDisplayName}
 							</h1>
-							<p className="text-xs text-gray-500">Loading...</p>
+							<p className="text-xs text-gray-500">
+								{intl.formatMessage({
+									id: 'common.actions.loading',
+									defaultMessage: 'Loading...',
+								})}
+							</p>
 						</div>
 					</div>
 				</PageHeader>
@@ -489,14 +554,24 @@ export function ContentManagerListingPage({
 							<h1 className="text-lg font-semibold text-gray-900 tracking-tight">
 								{schemaDisplayName}
 							</h1>
-							<p className="text-xs text-red-500">Error loading content</p>
+							<p className="text-xs text-red-500">
+								{intl.formatMessage({
+									id: 'common.errors.errorLoadingContent',
+									defaultMessage: 'Error loading content',
+								})}
+							</p>
 						</div>
 					</div>
 				</PageHeader>
 				<div className="flex-1 p-6">
 					<div className="text-center py-12">
 						<p className="text-gray-500 mb-4">{contentError.message}</p>
-						<Button onClick={() => window.location.reload()}>Retry</Button>
+						<Button onClick={() => window.location.reload()}>
+							{intl.formatMessage({
+								id: 'common.actions.retry',
+								defaultMessage: 'Retry',
+							})}
+						</Button>
 					</div>
 				</div>
 			</div>
@@ -517,8 +592,14 @@ export function ContentManagerListingPage({
 							{schemaDisplayName}
 						</h1>
 						<p className="text-xs text-gray-500">
-							Manage your {schemaDisplayName.toLowerCase()} entries and
-							publications.
+							{intl.formatMessage(
+								{
+									id: 'contentManager.listing.manageEntries',
+									defaultMessage:
+										'Manage your {schema} entries and publications.',
+								},
+								{ schema: schemaDisplayName.toLowerCase() },
+							)}
 						</p>
 					</div>
 
@@ -529,10 +610,21 @@ export function ContentManagerListingPage({
 							size="sm"
 							onClick={() => setConfigOpen(true)}
 						>
-							Configure View
+							{intl.formatMessage({
+								id: 'contentManager.listing.configureView',
+								defaultMessage: 'Configure View',
+							})}
 						</Button>
 						<Button size="sm" onClick={handleCreate} disabled={isCreating}>
-							{isCreating ? 'Creating...' : 'Create New Entry'}
+							{isCreating
+								? intl.formatMessage({
+										id: 'contentManager.listing.creating',
+										defaultMessage: 'Creating...',
+									})
+								: intl.formatMessage({
+										id: 'contentManager.listing.createNewEntry',
+										defaultMessage: 'Create New Entry',
+									})}
 						</Button>
 					</div>
 				</div>
@@ -562,14 +654,31 @@ export function ContentManagerListingPage({
 									</svg>
 								</div>
 								<h3 className="text-lg font-medium text-gray-900 mb-2">
-									No entries yet
+									{intl.formatMessage({
+										id: 'contentManager.listing.noEntries',
+										defaultMessage: 'No entries yet',
+									})}
 								</h3>
 								<p className="text-sm text-gray-500 mb-4">
-									Get started by creating your first{' '}
-									{schemaDisplayName.toLowerCase()} entry.
+									{intl.formatMessage(
+										{
+											id: 'contentManager.listing.getStarted',
+											defaultMessage:
+												'Get started by creating your first {schema} entry.',
+										},
+										{ schema: schemaDisplayName.toLowerCase() },
+									)}
 								</p>
 								<Button onClick={handleCreate} disabled={isCreating}>
-									{isCreating ? 'Creating...' : 'Create New Entry'}
+									{isCreating
+										? intl.formatMessage({
+												id: 'contentManager.listing.creating',
+												defaultMessage: 'Creating...',
+											})
+										: intl.formatMessage({
+												id: 'contentManager.listing.createNewEntry',
+												defaultMessage: 'Create New Entry',
+											})}
 								</Button>
 							</div>
 						) : (
@@ -582,11 +691,17 @@ export function ContentManagerListingPage({
 									rowActions: {
 										items: [
 											{
-												label: 'Edit',
+												label: intl.formatMessage({
+													id: 'common.actions.edit',
+													defaultMessage: 'Edit',
+												}),
 												onSelect: (row) => handleEdit(row),
 											},
 											{
-												label: 'Delete',
+												label: intl.formatMessage({
+													id: 'common.actions.delete',
+													defaultMessage: 'Delete',
+												}),
 												onSelect: (row) => handleDelete(row),
 												destructive: true,
 											},

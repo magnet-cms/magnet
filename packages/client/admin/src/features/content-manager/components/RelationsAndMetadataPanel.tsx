@@ -2,6 +2,7 @@
 
 import type { SchemaProperty } from '@magnet-cms/common'
 import type { ReactElement } from 'react'
+import { useAppIntl } from '~/i18n'
 
 interface RelationsAndMetadataPanelProps {
 	// Relationship fields from the schema
@@ -21,24 +22,71 @@ interface RelationsAndMetadataPanelProps {
 }
 
 /**
- * Format a date for display
+ * Format a date for display using intl
  */
-function formatRelativeDate(date: string | Date | undefined): string {
-	if (!date) return 'Never'
+function formatRelativeDate(
+	date: string | Date | undefined,
+	intl: ReturnType<typeof useAppIntl>,
+): string {
+	if (!date)
+		return intl.formatMessage({
+			id: 'contentManager.metadata.never',
+			defaultMessage: 'Never',
+		})
 
 	const d = typeof date === 'string' ? new Date(date) : date
-	if (Number.isNaN(d.getTime())) return 'Never'
+	if (Number.isNaN(d.getTime()))
+		return intl.formatMessage({
+			id: 'contentManager.metadata.never',
+			defaultMessage: 'Never',
+		})
 
 	const now = new Date()
 	const diffMs = now.getTime() - d.getTime()
 	const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
 
-	if (diffDays === 0) return 'Today'
-	if (diffDays === 1) return 'Yesterday'
-	if (diffDays < 7) return `${diffDays} days ago`
-	if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`
-	if (diffDays < 365) return `${Math.floor(diffDays / 30)} months ago`
-	return `${Math.floor(diffDays / 365)} years ago`
+	if (diffDays === 0)
+		return intl.formatMessage({
+			id: 'contentManager.metadata.today',
+			defaultMessage: 'Today',
+		})
+	if (diffDays === 1)
+		return intl.formatMessage({
+			id: 'contentManager.metadata.yesterday',
+			defaultMessage: 'Yesterday',
+		})
+	if (diffDays < 7)
+		return intl.formatMessage(
+			{
+				id: 'contentManager.metadata.daysAgo',
+				defaultMessage: '{count, plural, one {# day ago} other {# days ago}}',
+			},
+			{ count: diffDays },
+		)
+	if (diffDays < 30)
+		return intl.formatMessage(
+			{
+				id: 'contentManager.metadata.weeksAgo',
+				defaultMessage: '{count, plural, one {# week ago} other {# weeks ago}}',
+			},
+			{ count: Math.floor(diffDays / 7) },
+		)
+	if (diffDays < 365)
+		return intl.formatMessage(
+			{
+				id: 'contentManager.metadata.monthsAgo',
+				defaultMessage:
+					'{count, plural, one {# month ago} other {# months ago}}',
+			},
+			{ count: Math.floor(diffDays / 30) },
+		)
+	return intl.formatMessage(
+		{
+			id: 'contentManager.metadata.yearsAgo',
+			defaultMessage: '{count, plural, one {# year ago} other {# years ago}}',
+		},
+		{ count: Math.floor(diffDays / 365) },
+	)
 }
 
 export function RelationsAndMetadataPanel({
@@ -48,6 +96,7 @@ export function RelationsAndMetadataPanel({
 	metadata,
 	showRelations = true,
 }: RelationsAndMetadataPanelProps) {
+	const intl = useAppIntl()
 	const hasRelations =
 		showRelations && relationshipFields.length > 0 && renderField
 	const hasSidePanelFields = sidePanelFields.length > 0 && renderField
@@ -60,7 +109,10 @@ export function RelationsAndMetadataPanel({
 					{hasRelations && (
 						<div>
 							<h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">
-								Relations
+								{intl.formatMessage({
+									id: 'contentManager.metadata.relations',
+									defaultMessage: 'Relations',
+								})}
 							</h2>
 							<div className="space-y-4">
 								{relationshipFields.map((prop) => (
@@ -74,7 +126,10 @@ export function RelationsAndMetadataPanel({
 					{hasSidePanelFields && (
 						<div>
 							<h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">
-								Additional Info
+								{intl.formatMessage({
+									id: 'contentManager.metadata.additionalInfo',
+									defaultMessage: 'Additional Info',
+								})}
 							</h2>
 							<div className="space-y-4">
 								{sidePanelFields.map((prop) => (
@@ -87,25 +142,43 @@ export function RelationsAndMetadataPanel({
 					{/* Metadata - Always visible */}
 					<div>
 						<h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">
-							Metadata
+							{intl.formatMessage({
+								id: 'contentManager.metadata.title',
+								defaultMessage: 'Metadata',
+							})}
 						</h2>
 						<div className="space-y-4">
 							<div className="flex justify-between items-center text-sm">
-								<span className="text-gray-500">Created</span>
+								<span className="text-gray-500">
+									{intl.formatMessage({
+										id: 'contentManager.metadata.created',
+										defaultMessage: 'Created',
+									})}
+								</span>
 								<span className="font-medium text-gray-900">
-									{formatRelativeDate(metadata?.createdAt)}
+									{formatRelativeDate(metadata?.createdAt, intl)}
 								</span>
 							</div>
 							<div className="flex justify-between items-center text-sm">
-								<span className="text-gray-500">Updated</span>
+								<span className="text-gray-500">
+									{intl.formatMessage({
+										id: 'contentManager.metadata.updated',
+										defaultMessage: 'Updated',
+									})}
+								</span>
 								<span className="font-medium text-gray-900">
-									{formatRelativeDate(metadata?.updatedAt)}
+									{formatRelativeDate(metadata?.updatedAt, intl)}
 								</span>
 							</div>
 							<div className="flex justify-between items-center text-sm">
-								<span className="text-gray-500">Last Published</span>
+								<span className="text-gray-500">
+									{intl.formatMessage({
+										id: 'contentManager.metadata.lastPublished',
+										defaultMessage: 'Last Published',
+									})}
+								</span>
 								<span className="font-medium text-gray-900">
-									{formatRelativeDate(metadata?.publishedAt)}
+									{formatRelativeDate(metadata?.publishedAt, intl)}
 								</span>
 							</div>
 						</div>

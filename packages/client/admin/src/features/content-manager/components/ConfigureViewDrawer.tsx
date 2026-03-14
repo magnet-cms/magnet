@@ -21,6 +21,7 @@ import {
 } from '@magnet-cms/ui'
 import { GripVertical } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { useAppIntl } from '~/i18n'
 import type { ViewConfig, ViewConfigColumn } from '../hooks/useViewConfig'
 
 // ============================================================================
@@ -86,6 +87,7 @@ export function ConfigureViewDrawer({
 	config,
 	onSave,
 }: ConfigureViewDrawerProps) {
+	const intl = useAppIntl()
 	const [columns, setColumns] = useState<ViewConfigColumn[]>(() =>
 		mergeWithProperties(properties, config.columns),
 	)
@@ -140,15 +142,28 @@ export function ConfigureViewDrawer({
 				className="flex w-full flex-col p-0 sm:max-w-sm"
 			>
 				<SheetHeader className="sticky top-0 z-10 border-b bg-background px-5 py-4">
-					<SheetTitle>Configure View</SheetTitle>
+					<SheetTitle>
+						{intl.formatMessage({
+							id: 'contentManager.configureView.title',
+							defaultMessage: 'Configure View',
+						})}
+					</SheetTitle>
 				</SheetHeader>
 
 				<div className="flex-1 overflow-y-auto px-5 py-4 space-y-6">
 					{/* Column visibility & order */}
 					<div>
-						<p className="text-sm font-medium mb-3">Columns</p>
+						<p className="text-sm font-medium mb-3">
+							{intl.formatMessage({
+								id: 'contentManager.configureView.columns',
+								defaultMessage: 'Columns',
+							})}
+						</p>
 						<p className="text-xs text-muted-foreground mb-3">
-							Toggle visibility and drag to reorder.
+							{intl.formatMessage({
+								id: 'contentManager.configureView.columnsDescription',
+								defaultMessage: 'Toggle visibility and drag to reorder.',
+							})}
 						</p>
 						<Sortable
 							value={columns}
@@ -192,11 +207,19 @@ export function ConfigureViewDrawer({
 
 					{/* Display settings */}
 					<div className="space-y-4">
-						<p className="text-sm font-medium">Display Settings</p>
+						<p className="text-sm font-medium">
+							{intl.formatMessage({
+								id: 'contentManager.configureView.displaySettings',
+								defaultMessage: 'Display Settings',
+							})}
+						</p>
 
 						<div className="space-y-1.5">
 							<Label className="text-xs text-muted-foreground">
-								Default Page Size
+								{intl.formatMessage({
+									id: 'contentManager.configureView.defaultPageSize',
+									defaultMessage: 'Default Page Size',
+								})}
 							</Label>
 							<Select
 								value={String(pageSize)}
@@ -208,7 +231,13 @@ export function ConfigureViewDrawer({
 								<SelectContent>
 									{PAGE_SIZE_OPTIONS.map((size) => (
 										<SelectItem key={size} value={String(size)}>
-											{size} rows
+											{intl.formatMessage(
+												{
+													id: 'contentManager.configureView.rows',
+													defaultMessage: '{count} rows',
+												},
+												{ count: size },
+											)}
 										</SelectItem>
 									))}
 								</SelectContent>
@@ -217,14 +246,27 @@ export function ConfigureViewDrawer({
 
 						<div className="space-y-1.5">
 							<Label className="text-xs text-muted-foreground">
-								Default Sort Field
+								{intl.formatMessage({
+									id: 'contentManager.configureView.defaultSortField',
+									defaultMessage: 'Default Sort Field',
+								})}
 							</Label>
 							<Select value={sortField} onValueChange={setSortField}>
 								<SelectTrigger className="w-full">
-									<SelectValue placeholder="None" />
+									<SelectValue
+										placeholder={intl.formatMessage({
+											id: 'contentManager.configureView.none',
+											defaultMessage: 'None',
+										})}
+									/>
 								</SelectTrigger>
 								<SelectContent>
-									<SelectItem value={SORT_NONE}>None</SelectItem>
+									<SelectItem value={SORT_NONE}>
+										{intl.formatMessage({
+											id: 'contentManager.configureView.none',
+											defaultMessage: 'None',
+										})}
+									</SelectItem>
 									{properties.map((p) => (
 										<SelectItem key={p.name} value={p.name}>
 											{p.name}
@@ -237,7 +279,10 @@ export function ConfigureViewDrawer({
 						{sortField && sortField !== SORT_NONE && (
 							<div className="space-y-1.5">
 								<Label className="text-xs text-muted-foreground">
-									Sort Direction
+									{intl.formatMessage({
+										id: 'contentManager.configureView.sortDirection',
+										defaultMessage: 'Sort Direction',
+									})}
 								</Label>
 								<Select
 									value={sortDirection}
@@ -247,8 +292,18 @@ export function ConfigureViewDrawer({
 										<SelectValue />
 									</SelectTrigger>
 									<SelectContent>
-										<SelectItem value="asc">Ascending</SelectItem>
-										<SelectItem value="desc">Descending</SelectItem>
+										<SelectItem value="asc">
+											{intl.formatMessage({
+												id: 'contentManager.configureView.ascending',
+												defaultMessage: 'Ascending',
+											})}
+										</SelectItem>
+										<SelectItem value="desc">
+											{intl.formatMessage({
+												id: 'contentManager.configureView.descending',
+												defaultMessage: 'Descending',
+											})}
+										</SelectItem>
 									</SelectContent>
 								</Select>
 							</div>
@@ -258,7 +313,10 @@ export function ConfigureViewDrawer({
 
 				<SheetFooter className="flex justify-between border-t px-5 py-4">
 					<Button variant="ghost" size="sm" onClick={handleReset}>
-						Reset to Defaults
+						{intl.formatMessage({
+							id: 'contentManager.configureView.resetToDefaults',
+							defaultMessage: 'Reset to Defaults',
+						})}
 					</Button>
 					<div className="flex gap-2">
 						<Button
@@ -266,10 +324,16 @@ export function ConfigureViewDrawer({
 							size="sm"
 							onClick={() => onOpenChange(false)}
 						>
-							Cancel
+							{intl.formatMessage({
+								id: 'common.actions.cancel',
+								defaultMessage: 'Cancel',
+							})}
 						</Button>
 						<Button size="sm" onClick={handleApply}>
-							Apply
+							{intl.formatMessage({
+								id: 'contentManager.configureView.apply',
+								defaultMessage: 'Apply',
+							})}
 						</Button>
 					</div>
 				</SheetFooter>

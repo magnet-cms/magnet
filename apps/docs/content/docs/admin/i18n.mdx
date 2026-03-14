@@ -1,0 +1,141 @@
+---
+title: Internationalization (i18n)
+description: How to add translations and manage locales in the Magnet Admin UI.
+---
+
+# Internationalization (i18n)
+
+The Magnet Admin UI uses [react-intl](https://formatjs.github.io/docs/react-intl/) (FormatJS) for internationalization. All user-facing strings are stored in message catalogs and can be translated into multiple languages.
+
+## Supported Locales
+
+- `en` — English (default)
+- `pt-BR` — Portuguese (Brazil)
+- `es` — Spanish
+
+## How It Works
+
+### Message Catalogs
+
+All translatable strings live in JSON files under `packages/client/admin/src/i18n/messages/`:
+
+```
+src/i18n/messages/
+  en.json        # English (source of truth)
+  pt-BR.json     # Portuguese (Brazil)
+  es.json        # Spanish
+```
+
+Each file maps message IDs to translated strings:
+
+```json
+{
+  "auth.login.title": "Welcome back",
+  "auth.login.subtitle": "Please enter your details to sign in.",
+  "common.actions.save": "Save"
+}
+```
+
+### Message ID Convention
+
+Message IDs follow the pattern `{feature}.{section}.{element}`:
+
+- `auth.login.title` — Auth feature, login section, title element
+- `dashboard.stats.collections` — Dashboard feature, stats section, collections label
+- `common.actions.save` — Common namespace, actions section, save button
+
+### Using Translations in Components
+
+Use the `useAppIntl()` hook to access the `intl` object:
+
+```tsx
+import { useAppIntl } from '~/i18n'
+
+export function MyComponent() {
+  const intl = useAppIntl()
+
+  return (
+    <h1>
+      {intl.formatMessage({
+        id: 'myFeature.title',
+        defaultMessage: 'My Feature',
+      })}
+    </h1>
+  )
+}
+```
+
+### Interpolation
+
+Use ICU message format for dynamic values:
+
+```tsx
+intl.formatMessage(
+  { id: 'dashboard.welcomeBack', defaultMessage: 'Welcome back, {userName}' },
+  { userName: 'John' }
+)
+```
+
+### Pluralization
+
+Use ICU plural syntax:
+
+```json
+{
+  "common.itemCount": "{count, plural, one {# item} other {# items}}"
+}
+```
+
+### Date and Number Formatting
+
+Use `intl.formatDate()` and `intl.formatNumber()` instead of `toLocaleDateString()`:
+
+```tsx
+intl.formatDate(new Date(), { month: 'short', day: 'numeric', year: 'numeric' })
+intl.formatNumber(1234.56, { style: 'currency', currency: 'USD' })
+```
+
+## Adding a New Translatable String
+
+1. Add the key and English text to `src/i18n/messages/en.json`
+2. Add the same key to `pt-BR.json` and `es.json` (with translated text or English placeholder)
+3. Use `intl.formatMessage({ id: 'your.key', defaultMessage: 'English text' })` in the component
+4. The `defaultMessage` serves as documentation and fallback
+
+## Adding a New Locale
+
+1. Create a new JSON file in `src/i18n/messages/` (e.g., `fr.json`)
+2. Copy all keys from `en.json` and translate the values
+3. Add the locale to `SUPPORTED_LOCALES` in `src/i18n/provider.tsx`
+4. Add a label for it in `LanguageSettingsCard.tsx`
+
+## Library Usage
+
+When embedding `MagnetAdmin` in a host application, you can control the locale via props:
+
+```tsx
+import { MagnetAdmin } from '@magnet-cms/admin'
+
+function App() {
+  return (
+    <MagnetAdmin
+      locale="pt-BR"
+      messages={myCustomMessages}
+    />
+  )
+}
+```
+
+- `locale` — Override the detected locale
+- `messages` — Provide custom message overrides
+
+## Locale Detection
+
+The locale is resolved in this order:
+
+1. `locale` prop on `MagnetAdmin` (if provided)
+2. Value stored in `localStorage` (key: `magnet-admin-locale`)
+3. Browser language (`navigator.language`)
+4. Fallback to `en`
+
+Non-English locale bundles are lazy-loaded to avoid increasing the main bundle size.
