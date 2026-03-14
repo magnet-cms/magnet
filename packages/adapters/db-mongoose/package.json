@@ -1,0 +1,43 @@
+{
+  "name": "@magnet-cms/adapter-db-mongoose",
+  "version": "1.0.2",
+  "description": "Mongoose database adapter for Magnet CMS",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "exports": {
+    "import": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "require": {
+      "types": "./dist/index.d.cts",
+      "default": "./dist/index.cjs"
+    }
+  },
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build:dev": "tsup --watch",
+    "build": "tsup"
+  },
+  "devDependencies": {
+    "@magnet-cms/common": "workspace:*",
+    "@nestjs/common": "^11.1.12",
+    "@nestjs/mongoose": "^11.0.1",
+    "@repo/biome": "workspace:*",
+    "@repo/tsup": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "mongoose": "^8.10.0",
+    "reflect-metadata": "0.2.2"
+  },
+  "peerDependencies": {
+    "@magnet-cms/common": "^0.1.0",
+    "@nestjs/common": "^11.1.12",
+    "@nestjs/mongoose": "^11.0.0",
+    "mongoose": "^8.10.0",
+    "reflect-metadata": "0.2.2"
+  }
+}

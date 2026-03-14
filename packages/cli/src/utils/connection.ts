@@ -1,4 +1,4 @@
-import type { MigrationDb } from '@magnet-cms/adapter-drizzle'
+import type { MigrationDb } from '@magnet-cms/adapter-db-drizzle'
 
 /**
  * Create a minimal MigrationDb connection from a connection URL.

@@ -209,11 +209,13 @@ export class SettingsService implements OnApplicationBootstrap {
 		// Create an instance of the schema with only the key we're updating
 		const instance = plainToInstance(schema, { [key]: value })
 		// Use skipMissingProperties so only the provided key is checked.
-		// Do NOT use whitelist/forbidNonWhitelisted — @SettingField.* decorators
-		// store custom metadata only (no class-validator metadata), so those
-		// options would incorrectly reject every valid settings field.
+		// forbidUnknownValues must be false because @SettingField.* decorators
+		// store custom metadata only (no class-validator metadata). Since
+		// class-validator 0.14, forbidUnknownValues defaults to true, which
+		// rejects classes without class-validator decorators as "unknown values".
 		const errors = await validate(instance, {
 			skipMissingProperties: true,
+			forbidUnknownValues: false,
 		})
 
 		if (errors.length > 0) {
@@ -508,11 +510,13 @@ export class SettingsService implements OnApplicationBootstrap {
 	): Promise<void> {
 		// Create an instance with the updates
 		const instance = plainToInstance(settingsClass, updates)
-		// Do NOT use whitelist/forbidNonWhitelisted — @SettingField.* decorators
-		// store custom metadata only (no class-validator metadata), so those
-		// options would incorrectly reject every valid settings field.
+		// forbidUnknownValues must be false because @SettingField.* decorators
+		// store custom metadata only (no class-validator metadata). Since
+		// class-validator 0.14, forbidUnknownValues defaults to true, which
+		// rejects classes without class-validator decorators as "unknown values".
 		const errors = await validate(instance, {
 			skipMissingProperties: true,
+			forbidUnknownValues: false,
 		})
 
 		if (errors.length > 0) {

@@ -9,7 +9,7 @@ import {
 	UseGuards,
 } from '@nestjs/common'
 import type { Request } from 'express'
-import { JwtAuthGuard } from '~/modules/auth/guards/jwt-auth.guard'
+import { DynamicAuthGuard } from '~/modules/auth/guards/dynamic-auth.guard'
 import type { ViewConfig } from './schemas/view-config.schema'
 import type { UpsertViewConfigDto } from './view-config.service'
 import { ViewConfigService } from './view-config.service'
@@ -27,7 +27,7 @@ export interface ViewConfigResponse {
 }
 
 @Controller('user-preferences')
-@UseGuards(JwtAuthGuard)
+@UseGuards(DynamicAuthGuard)
 export class ViewConfigController {
 	constructor(private readonly viewConfigService: ViewConfigService) {}
 

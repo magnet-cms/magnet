@@ -40,5 +40,8 @@
   },
   "overrides": {
     "log-symbols": "4.1.0"
+  },
+  "dependencies": {
+    "@clerk/backend": "3.2.0"
   }
 }

@@ -25,9 +25,15 @@ Bun-based Turbo monorepo — headless CMS framework built on NestJS.
 |---------|------|-------------|
 | `@magnet-cms/core` | `packages/core` | Core NestJS module (17 sub-modules) |
 | `@magnet-cms/common` | `packages/common` | Shared types, decorators, utilities |
-| `@magnet-cms/adapter-mongoose` | `packages/adapters/mongoose` | Mongoose database adapter |
-| `@magnet-cms/adapter-drizzle` | `packages/adapters/drizzle` | Drizzle database adapter |
-| `@magnet-cms/adapter-supabase` | `packages/adapters/supabase` | Supabase auth & storage adapter |
+| `@magnet-cms/adapter-db-mongoose` | `packages/adapters/db-mongoose` | Mongoose database adapter |
+| `@magnet-cms/adapter-db-drizzle` | `packages/adapters/db-drizzle` | Drizzle database adapter |
+| `@magnet-cms/adapter-auth-supabase` | `packages/adapters/auth-supabase` | Supabase auth strategy |
+| `@magnet-cms/adapter-auth-clerk` | `packages/adapters/auth-clerk` | Clerk auth strategy (RS256/JWKS via @clerk/backend) |
+| `@magnet-cms/adapter-storage-supabase` | `packages/adapters/storage-supabase` | Supabase storage adapter |
+| `@magnet-cms/adapter-storage-s3` | `packages/adapters/storage-s3` | AWS S3 storage adapter |
+| `@magnet-cms/adapter-storage-r2` | `packages/adapters/storage-r2` | Cloudflare R2 storage adapter |
+| `@magnet-cms/email-nodemailer` | `packages/adapters/email-nodemailer` | Nodemailer email adapter |
+| `@magnet-cms/email-resend` | `packages/adapters/email-resend` | Resend email adapter |
 | `@magnet-cms/admin` | `packages/client/admin` | React admin UI (Vite) |
 | `@magnet-cms/ui` | `packages/client/ui` | Shared UI component library |
 | `@magnet-cms/plugin-content-builder` | `packages/plugins/content-builder` | Content builder plugin |

@@ -30,7 +30,7 @@
   },
   "dependencies": {
     "@inquirer/prompts": "^7.5.0",
-    "@magnet-cms/adapter-drizzle": "workspace:*",
+    "@magnet-cms/adapter-db-drizzle": "workspace:*",
     "ansis": "^3.17.0",
     "commander": "^13.1.0"
   },

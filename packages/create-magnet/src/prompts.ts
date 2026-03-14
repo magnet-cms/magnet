@@ -6,6 +6,7 @@ import type {
 	Plugin,
 	ProjectConfig,
 	StorageAdapter,
+	VaultAdapter,
 } from './types.js'
 import {
 	detectPackageManager,
@@ -36,6 +37,9 @@ export async function collectConfig(
 	// Storage adapter
 	const storage = await promptStorageAdapter(database)
 
+	// Vault adapter
+	const vault = await promptVaultAdapter()
+
 	// Include example
 	const includeExample = options.example ?? (await promptIncludeExample())
 
@@ -48,6 +52,7 @@ export async function collectConfig(
 		database,
 		plugins,
 		storage,
+		vault,
 		packageManager,
 		includeExample,
 	}
@@ -149,6 +154,33 @@ async function promptStorageAdapter(
 				name: 'None (skip storage setup)',
 				value: 'none' as const,
 				description: 'Configure storage later',
+			},
+		],
+	})
+}
+
+async function promptVaultAdapter(): Promise<VaultAdapter> {
+	return select({
+		message: 'Select vault adapter for encrypted secrets:',
+		default: 'db',
+		choices: [
+			{
+				name: 'Database (built-in)',
+				value: 'db' as const,
+				description:
+					'Store encrypted secrets in your app database using AES-256-GCM (requires VAULT_MASTER_KEY env var)',
+			},
+			{
+				name: 'HashiCorp Vault',
+				value: 'hashicorp' as const,
+				description:
+					'Use HashiCorp Vault for secrets management (requires running Vault server)',
+			},
+			{
+				name: 'Supabase Vault',
+				value: 'supabase' as const,
+				description:
+					'Use Supabase native Vault extension for secrets management',
 			},
 		],
 	})

@@ -1,21 +1,15 @@
 import type {
-	EmailAdapter,
 	EventPayload,
 	SendEmailOptions,
 	SendEmailResult,
 } from '@magnet-cms/common'
 import { OnEvent } from '@magnet-cms/common'
-import {
-	Inject,
-	Injectable,
-	OnModuleInit,
-	Optional,
-	forwardRef,
-} from '@nestjs/common'
+import { Inject, Injectable, OnModuleInit, forwardRef } from '@nestjs/common'
 import { AuthSettings } from '~/modules/auth/auth.settings'
 import { GeneralSettings } from '~/modules/general/general.settings'
 import { MagnetLogger } from '~/modules/logging/logger.service'
 import { SettingsService } from '~/modules/settings/settings.service'
+import type { ConsoleEmailAdapter } from './adapters/console-email.adapter'
 import { EmailVerificationService } from './email-verification.service'
 import { EmailSettings } from './email.settings'
 import { TemplateService } from './template.service'
@@ -27,8 +21,9 @@ export const EMAIL_ADAPTER_TOKEN = 'EMAIL_ADAPTER'
  * Core email service for sending templated and raw emails.
  *
  * Wraps the configured email adapter with template rendering,
- * default settings, and error handling. If no adapter is configured,
- * all send operations gracefully no-op with a warning log.
+ * default settings, and error handling. The adapter is always a
+ * `ConsoleEmailAdapter` that wraps the real adapter (if configured),
+ * ensuring emails are always at least logged.
  */
 @Injectable()
 export class EmailService implements OnModuleInit {
@@ -42,15 +37,14 @@ export class EmailService implements OnModuleInit {
 		private readonly settingsService: SettingsService,
 		@Inject(forwardRef(() => EmailVerificationService))
 		private readonly verificationService: EmailVerificationService,
-		@Optional()
 		@Inject(EMAIL_ADAPTER_TOKEN)
-		private readonly adapter: EmailAdapter | null,
+		private readonly adapter: ConsoleEmailAdapter,
 	) {
 		this.logger.setContext(EmailService.name)
 
-		if (!this.adapter) {
+		if (!this.adapter.hasInnerAdapter()) {
 			this.logger.warn(
-				'No email adapter configured. Email sending is disabled. Configure email in MagnetModuleOptions to enable.',
+				'No email adapter configured. Emails will be logged to console only. Configure email in MagnetModuleOptions to enable delivery.',
 			)
 		}
 	}
@@ -80,15 +74,13 @@ export class EmailService implements OnModuleInit {
 		}
 
 		// Verify adapter connection on startup (non-blocking)
-		if (this.adapter) {
-			const ok = await this.verify()
-			if (ok) {
-				this.logger.log('Email adapter connection verified')
-			} else {
-				this.logger.warn(
-					'Email adapter connection verification failed — emails may not be delivered',
-				)
-			}
+		const ok = await this.verify()
+		if (ok) {
+			this.logger.log('Email adapter connection verified')
+		} else {
+			this.logger.warn(
+				'Email adapter connection verification failed — emails may not be delivered',
+			)
 		}
 	}
 
@@ -117,7 +109,7 @@ export class EmailService implements OnModuleInit {
 	 * @param subject - Email subject
 	 * @param templateName - Template name (without .hbs)
 	 * @param context - Template variables
-	 * @returns Send result or null if adapter not configured
+	 * @returns Send result or null if template renders empty
 	 */
 	async send(
 		to: string | string[],
@@ -125,8 +117,6 @@ export class EmailService implements OnModuleInit {
 		templateName: string,
 		context: Record<string, unknown> = {},
 	): Promise<SendEmailResult | null> {
-		if (!this.adapter) return null
-
 		const html = this.templateService.render(templateName, {
 			...context,
 			appUrl: this.appUrl,
@@ -150,11 +140,9 @@ export class EmailService implements OnModuleInit {
 	 * Send a raw email without template rendering.
 	 *
 	 * @param options - Full email options
-	 * @returns Send result or null if adapter not configured
+	 * @returns Send result
 	 */
-	async sendRaw(options: SendEmailOptions): Promise<SendEmailResult | null> {
-		if (!this.adapter) return null
-
+	async sendRaw(options: SendEmailOptions): Promise<SendEmailResult> {
 		try {
 			const emailOptions: SendEmailOptions = {
 				...options,
@@ -188,7 +176,6 @@ export class EmailService implements OnModuleInit {
 	 * Verify the email adapter connection.
 	 */
 	async verify(): Promise<boolean> {
-		if (!this.adapter) return false
 		try {
 			return await this.adapter.verify()
 		} catch {
@@ -197,10 +184,10 @@ export class EmailService implements OnModuleInit {
 	}
 
 	/**
-	 * Check if email sending is available.
+	 * Check if a real email adapter (not just console) is configured.
 	 */
 	isConfigured(): boolean {
-		return this.adapter !== null
+		return this.adapter.hasInnerAdapter()
 	}
 
 	// -------------------------------------------------------------------------
@@ -211,7 +198,7 @@ export class EmailService implements OnModuleInit {
 	async onEmailVerificationRequested(
 		payload: EventPayload<'user.email_verification_requested'>,
 	): Promise<void> {
-		if (!this.adapter || !payload.email || !payload.verificationToken) return
+		if (!payload.email || !payload.verificationToken) return
 
 		try {
 			const verifyLink = `${this.appUrl}/api/email/verify?token=${payload.verificationToken}`
@@ -235,7 +222,7 @@ export class EmailService implements OnModuleInit {
 	async onUserRegistered(
 		payload: EventPayload<'user.registered'>,
 	): Promise<void> {
-		if (!this.adapter || !payload.email) return
+		if (!payload.email) return
 
 		try {
 			// Send welcome email
@@ -281,7 +268,7 @@ export class EmailService implements OnModuleInit {
 	async onPasswordResetRequested(
 		payload: EventPayload<'user.password_reset_requested'>,
 	): Promise<void> {
-		if (!this.adapter || !payload.plainToken || !payload.email) return
+		if (!payload.plainToken || !payload.email) return
 
 		try {
 			const resetLink = `${this.appUrl}/auth/reset-password?token=${payload.plainToken}`

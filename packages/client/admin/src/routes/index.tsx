@@ -46,6 +46,7 @@ import { DashboardHome } from '~/features/dashboard'
 import { MediaLibraryPage } from '~/features/media-library'
 import { ProfilePage, SettingsPage } from '~/features/settings'
 import { UsersListingPage } from '~/features/users'
+import { VaultPage } from '~/features/vault'
 
 // ============================================================================
 // Auth Page Wrappers
@@ -273,6 +274,10 @@ const coreDashboardRoutes: RouteObject[] = [
 	{
 		path: 'api-keys',
 		element: withSuspense(ApiKeysListingPage),
+	},
+	{
+		path: 'vault',
+		element: withSuspense(VaultPage),
 	},
 	{
 		path: 'settings',

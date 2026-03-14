@@ -16,11 +16,10 @@
     "docker:logs": "docker compose -f docker/docker-compose.yml logs -f"
   },
   "dependencies": {
-    "@magnet-cms/adapter-mongoose": "workspace:*",
+    "@magnet-cms/adapter-db-mongoose": "workspace:*",
     "@magnet-cms/common": "workspace:*",
     "@magnet-cms/core": "workspace:*",
     "@magnet-cms/plugin-content-builder": "workspace:*",
-    "@magnet-cms/plugin-vault": "workspace:*",
     "@nestjs/common": "^11.1.12",
     "@nestjs/config": "^4.0.0",
     "@nestjs/core": "^11.1.12",

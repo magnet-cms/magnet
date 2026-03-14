@@ -14,7 +14,9 @@ export function generateAppModule(config: ProjectConfig): string {
 	imports.push("import { MagnetModule } from '@magnet-cms/core'")
 
 	if (database === 'drizzle-supabase') {
-		imports.push("import { SupabaseAuthStrategy } from '@magnet-cms/core'")
+		imports.push(
+			"import { SupabaseAuthStrategy } from '@magnet-cms/adapter-auth-supabase'",
+		)
 		imports.push("import { AuthStrategyFactory } from '@magnet-cms/core'")
 	}
 
@@ -143,16 +145,20 @@ function generateMagnetConfig(config: ProjectConfig): string {
 		} else if (storage === 'r2') {
 			lines.push('\t\t\t\tr2: {')
 			lines.push(`\t\t\t\t\tbucket: process.env.R2_BUCKET || '',`)
+			lines.push(`\t\t\t\t\tregion: 'auto',`)
 			lines.push(`\t\t\t\t\taccountId: process.env.R2_ACCOUNT_ID || '',`)
 			lines.push(`\t\t\t\t\taccessKeyId: process.env.R2_ACCESS_KEY_ID || '',`)
 			lines.push(
 				`\t\t\t\t\tsecretAccessKey: process.env.R2_SECRET_ACCESS_KEY || '',`,
 			)
+			lines.push(`\t\t\t\t\tpublicUrl: process.env.R2_PUBLIC_URL || '',`)
 			lines.push('\t\t\t\t},')
 		} else if (storage === 'supabase') {
 			lines.push('\t\t\t\tsupabase: {')
-			lines.push(`\t\t\t\t\turl: process.env.SUPABASE_URL || '',`)
-			lines.push(`\t\t\t\t\tkey: process.env.SUPABASE_SERVICE_KEY || '',`)
+			lines.push(`\t\t\t\t\tsupabaseUrl: process.env.SUPABASE_URL || '',`)
+			lines.push(
+				`\t\t\t\t\tsupabaseKey: process.env.SUPABASE_SERVICE_KEY || '',`,
+			)
 			lines.push(
 				`\t\t\t\t\tbucket: process.env.SUPABASE_STORAGE_BUCKET || 'media',`,
 			)

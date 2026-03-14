@@ -1,0 +1,42 @@
+{
+  "name": "@magnet-cms/adapter-auth-supabase",
+  "version": "1.0.2",
+  "description": "Supabase auth strategy for Magnet CMS",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "exports": {
+    "import": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "require": {
+      "types": "./dist/index.d.cts",
+      "default": "./dist/index.cjs"
+    }
+  },
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build:dev": "tsup --watch",
+    "build": "tsup"
+  },
+  "devDependencies": {
+    "@magnet-cms/common": "workspace:*",
+    "@nestjs/common": "^11.1.12",
+    "@repo/biome": "workspace:*",
+    "@repo/tsup": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@supabase/supabase-js": "^2.49.0",
+    "passport-jwt": "^4.0.1",
+    "@types/passport-jwt": "^4.0.1"
+  },
+  "peerDependencies": {
+    "@magnet-cms/common": "^0.1.0",
+    "@nestjs/common": "^11.1.12",
+    "@supabase/supabase-js": "^2.49.0",
+    "passport-jwt": "^4.0.1"
+  }
+}

@@ -16,7 +16,7 @@
     "docker:logs": "docker compose -f docker/docker-compose.yml logs -f"
   },
   "dependencies": {
-    "@magnet-cms/adapter-drizzle": "workspace:*",
+    "@magnet-cms/adapter-db-drizzle": "workspace:*",
     "@magnet-cms/common": "workspace:*",
     "@magnet-cms/core": "workspace:*",
     "@neondatabase/serverless": "^0.10.0",

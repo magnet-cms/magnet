@@ -1,0 +1,2 @@
+export const VAULT_ADAPTER = 'VAULT_ADAPTER'
+export const VAULT_CONFIG = 'VAULT_CONFIG'

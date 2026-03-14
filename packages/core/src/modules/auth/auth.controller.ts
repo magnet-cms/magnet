@@ -20,7 +20,7 @@ import { RefreshTokenDto } from './dto/refresh-token.dto'
 import { RegisterDTO } from './dto/register.dto'
 import { ResetPasswordDto } from './dto/reset-password.dto'
 import { UpdateProfileDto } from './dto/update-profile.dto'
-import { JwtAuthGuard } from './guards/jwt-auth.guard'
+import { DynamicAuthGuard } from './guards/dynamic-auth.guard'
 
 /**
  * Authenticated user from JWT payload
@@ -99,7 +99,7 @@ export class AuthController {
 	 * Logout (revoke refresh token)
 	 */
 	@Post('logout')
-	@UseGuards(JwtAuthGuard)
+	@UseGuards(DynamicAuthGuard)
 	async logout(
 		@Body() refreshTokenDto: RefreshTokenDto,
 	): Promise<{ message: string }> {
@@ -111,7 +111,7 @@ export class AuthController {
 	 * Logout from all devices
 	 */
 	@Post('logout-all')
-	@UseGuards(JwtAuthGuard)
+	@UseGuards(DynamicAuthGuard)
 	async logoutAll(
 		@Req() req: AuthenticatedRequest,
 	): Promise<{ message: string }> {
@@ -122,7 +122,7 @@ export class AuthController {
 	/**
 	 * Get current user info
 	 */
-	@UseGuards(JwtAuthGuard)
+	@UseGuards(DynamicAuthGuard)
 	@Get('me')
 	async me(@Req() req: AuthenticatedRequest): Promise<AuthUser> {
 		try {
@@ -185,7 +185,7 @@ export class AuthController {
 	 * Get active sessions
 	 */
 	@Get('sessions')
-	@UseGuards(JwtAuthGuard)
+	@UseGuards(DynamicAuthGuard)
 	async getSessions(@Req() req: AuthenticatedRequest): Promise<SessionInfo[]> {
 		return this.authService.getSessions(req.user.id, req.sessionId)
 	}
@@ -194,7 +194,7 @@ export class AuthController {
 	 * Revoke a specific session
 	 */
 	@Delete('sessions/:sessionId')
-	@UseGuards(JwtAuthGuard)
+	@UseGuards(DynamicAuthGuard)
 	async revokeSession(
 		@Req() req: AuthenticatedRequest,
 		@Param('sessionId') sessionId: string,
@@ -242,7 +242,7 @@ export class AuthController {
 	/**
 	 * Change password (authenticated)
 	 */
-	@UseGuards(JwtAuthGuard)
+	@UseGuards(DynamicAuthGuard)
 	@Put('account/password')
 	async changePassword(
 		@Req() req: AuthenticatedRequest,
@@ -258,7 +258,7 @@ export class AuthController {
 	/**
 	 * Update user profile
 	 */
-	@UseGuards(JwtAuthGuard)
+	@UseGuards(DynamicAuthGuard)
 	@Put('account/profile')
 	async updateProfile(
 		@Req() req: AuthenticatedRequest,

@@ -1,6 +1,6 @@
 import { describe, expect, it, spyOn } from 'bun:test'
-import { MigrationRunner } from '@magnet-cms/adapter-drizzle'
-import type { MigrationDb } from '@magnet-cms/adapter-drizzle'
+import { MigrationRunner } from '@magnet-cms/adapter-db-drizzle'
+import type { MigrationDb } from '@magnet-cms/adapter-db-drizzle'
 import { runMigrateFresh } from '../commands/migrate-fresh'
 
 function makeMockDb(): MigrationDb {

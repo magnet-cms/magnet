@@ -14,14 +14,14 @@ import {
 	UseInterceptors,
 } from '@nestjs/common'
 import { RestrictedRoute } from '~/decorators/restricted.route'
-import { JwtAuthGuard } from '~/modules/auth/guards/jwt-auth.guard'
+import { DynamicAuthGuard } from '~/modules/auth/guards/dynamic-auth.guard'
 import { PermissionGuard } from '~/modules/rbac/guards/permission.guard'
 import { DynamicPermissionInterceptor } from '~/modules/rbac/interceptors/dynamic-permission.interceptor'
 import { ContentService } from './content.service'
 
 @Controller('content')
 @RestrictedRoute()
-@UseGuards(JwtAuthGuard, PermissionGuard)
+@UseGuards(DynamicAuthGuard, PermissionGuard)
 @UseInterceptors(DynamicPermissionInterceptor)
 export class ContentController {
 	constructor(private readonly contentService: ContentService) {}

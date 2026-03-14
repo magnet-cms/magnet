@@ -2,7 +2,7 @@ import type {
 	Migration,
 	MigrationDb,
 	MigrationRunner,
-} from '@magnet-cms/adapter-drizzle'
+} from '@magnet-cms/adapter-db-drizzle'
 
 /**
  * Core logic for migrate:fresh — drop all tables directly, then re-apply migrations.

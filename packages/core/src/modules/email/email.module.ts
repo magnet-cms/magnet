@@ -1,8 +1,9 @@
-import type { EmailConfig } from '@magnet-cms/common'
+import type { EmailAdapter, EmailConfig } from '@magnet-cms/common'
 import { DynamicModule, Logger, Module, forwardRef } from '@nestjs/common'
 import { DatabaseModule } from '~/modules/database'
 import { SettingsModule } from '~/modules/settings'
 import { UserModule } from '~/modules/user/user.module'
+import { ConsoleEmailAdapter } from './adapters/console-email.adapter'
 import { EmailAdapterFactory } from './email-adapter.factory'
 import { EmailVerificationService } from './email-verification.service'
 import { EmailController } from './email.controller'
@@ -18,40 +19,42 @@ export class EmailModule {
 	/**
 	 * Configure the email module with an adapter.
 	 *
-	 * If no config is provided, the module still registers but email
-	 * sending is disabled (EmailService no-ops gracefully).
+	 * Always wraps the configured adapter (or null) with a ConsoleEmailAdapter
+	 * that logs email summaries. When no config is provided, emails are
+	 * logged to console only.
 	 */
 	static forRoot(config?: EmailConfig): DynamicModule {
 		const providers = [TemplateService, EmailService, EmailVerificationService]
 
+		let innerAdapter: EmailAdapter | null = null
+
 		if (config) {
 			try {
-				const adapter = EmailAdapterFactory.create(config)
-
-				providers.push({
-					provide: EMAIL_ADAPTER_TOKEN,
-					useValue: adapter,
-				} as never)
-
-				// Set defaults from config
-				if (config.defaults) {
-					providers.push({
-						provide: 'EMAIL_DEFAULTS',
-						useValue: config.defaults,
-					} as never)
-				}
-
+				innerAdapter = EmailAdapterFactory.create(config)
 				logger.log(`Email module initialized with '${config.adapter}' adapter`)
 			} catch (error) {
 				logger.warn(
-					`Failed to initialize email adapter: ${error instanceof Error ? error.message : String(error)}. Email sending disabled.`,
+					`Failed to initialize email adapter: ${error instanceof Error ? error.message : String(error)}. Falling back to console-only.`,
 				)
 			}
+
+			// Set defaults from config
+			if (config.defaults) {
+				providers.push({
+					provide: 'EMAIL_DEFAULTS',
+					useValue: config.defaults,
+				} as never)
+			}
 		} else {
-			logger.log(
-				'Email module initialized without adapter (email sending disabled)',
-			)
+			logger.log('Email module initialized without adapter (console-only mode)')
 		}
+
+		// Always wrap with ConsoleEmailAdapter for logging
+		const consoleAdapter = new ConsoleEmailAdapter(logger, innerAdapter)
+		providers.push({
+			provide: EMAIL_ADAPTER_TOKEN,
+			useValue: consoleAdapter,
+		} as never)
 
 		return {
 			module: EmailModule,

@@ -16,7 +16,7 @@ export function Schema(options: SchemaOptions = {}): ClassDecorator {
 		Reflect.defineMetadata(SCHEMA_METADATA_KEY, true, target)
 		Reflect.defineMetadata(SCHEMA_OPTIONS_METADATA_KEY, mergedOptions, target)
 
-		const { Schema } = require(`@magnet-cms/adapter-${adapter}`)
+		const { Schema } = require(`@magnet-cms/adapter-db-${adapter}`)
 		return Schema()(target)
 	}
 }

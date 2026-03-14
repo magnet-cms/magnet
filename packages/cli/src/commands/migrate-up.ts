@@ -2,7 +2,7 @@ import type {
 	Migration,
 	MigrationResult,
 	MigrationRunner,
-} from '@magnet-cms/adapter-drizzle'
+} from '@magnet-cms/adapter-db-drizzle'
 
 /**
  * Core logic for migrate:up — apply all pending migrations.

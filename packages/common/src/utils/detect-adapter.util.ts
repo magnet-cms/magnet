@@ -41,13 +41,13 @@ export function detectDatabaseAdapter(dbConfig?: DBConfig): SupportedAdapter {
 	if (cachedAdapter) return cachedAdapter
 
 	// Fallback to package detection
-	if (isPackageInstalled('@magnet-cms/adapter-mongoose')) {
+	if (isPackageInstalled('@magnet-cms/adapter-db-mongoose')) {
 		cachedAdapter = 'mongoose'
-	} else if (isPackageInstalled('@magnet-cms/adapter-drizzle')) {
+	} else if (isPackageInstalled('@magnet-cms/adapter-db-drizzle')) {
 		cachedAdapter = 'drizzle'
 	} else {
 		throw new Error(
-			'❌ No supported database adapter found. Install @magnet-cms/adapter-mongoose or @magnet-cms/adapter-drizzle.',
+			'❌ No supported database adapter found. Install @magnet-cms/adapter-db-mongoose or @magnet-cms/adapter-db-drizzle.',
 		)
 	}
 

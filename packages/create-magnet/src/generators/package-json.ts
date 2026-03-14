@@ -2,7 +2,7 @@ import type { ProjectConfig } from '../types.js'
 import { PACKAGE_VERSIONS } from '../utils/versions.js'
 
 export function generatePackageJson(config: ProjectConfig): string {
-	const { projectName, database, plugins, storage } = config
+	const { projectName, database, plugins, storage, vault } = config
 
 	const dependencies: Record<string, string> = {
 		'@magnet-cms/common': PACKAGE_VERSIONS['@magnet-cms/common'],
@@ -19,18 +19,20 @@ export function generatePackageJson(config: ProjectConfig): string {
 
 	// Add database adapter
 	if (database === 'mongoose') {
-		dependencies['@magnet-cms/adapter-mongoose'] =
-			PACKAGE_VERSIONS['@magnet-cms/adapter-mongoose']
+		dependencies['@magnet-cms/adapter-db-mongoose'] =
+			PACKAGE_VERSIONS['@magnet-cms/adapter-db-mongoose']
 		dependencies.mongoose = PACKAGE_VERSIONS.mongoose
 	} else {
-		dependencies['@magnet-cms/adapter-drizzle'] =
-			PACKAGE_VERSIONS['@magnet-cms/adapter-drizzle']
+		dependencies['@magnet-cms/adapter-db-drizzle'] =
+			PACKAGE_VERSIONS['@magnet-cms/adapter-db-drizzle']
 		dependencies['drizzle-orm'] = PACKAGE_VERSIONS['drizzle-orm']
 
 		if (database === 'drizzle-neon') {
 			dependencies['@neondatabase/serverless'] =
 				PACKAGE_VERSIONS['@neondatabase/serverless']
 		} else if (database === 'drizzle-supabase') {
+			dependencies['@magnet-cms/adapter-auth-supabase'] =
+				PACKAGE_VERSIONS['@magnet-cms/adapter-auth-supabase']
 			dependencies['@supabase/supabase-js'] =
 				PACKAGE_VERSIONS['@supabase/supabase-js']
 			dependencies.pg = PACKAGE_VERSIONS.pg
@@ -47,8 +49,32 @@ export function generatePackageJson(config: ProjectConfig): string {
 			PACKAGE_VERSIONS['@magnet-cms/plugin-seo']
 	}
 
-	// Storage adapters are part of core, no extra deps needed for local
-	// S3, R2, Supabase storage would need additional config but not extra packages
+	// Add storage adapter packages when not using local
+	if (storage === 's3') {
+		dependencies['@magnet-cms/adapter-storage-s3'] =
+			PACKAGE_VERSIONS['@magnet-cms/adapter-storage-s3'] ?? '^1.0.0'
+	} else if (storage === 'r2') {
+		dependencies['@magnet-cms/adapter-storage-r2'] =
+			PACKAGE_VERSIONS['@magnet-cms/adapter-storage-r2'] ?? '^1.0.0'
+	} else if (storage === 'supabase') {
+		dependencies['@magnet-cms/adapter-storage-supabase'] =
+			PACKAGE_VERSIONS['@magnet-cms/adapter-storage-supabase']
+		dependencies['@supabase/supabase-js'] =
+			dependencies['@supabase/supabase-js'] ??
+			PACKAGE_VERSIONS['@supabase/supabase-js']
+	}
+
+	// Add vault adapter packages when not using the built-in DB adapter
+	if (vault === 'hashicorp') {
+		dependencies['@magnet-cms/adapter-vault-hashicorp'] =
+			PACKAGE_VERSIONS['@magnet-cms/adapter-vault-hashicorp']
+	} else if (vault === 'supabase') {
+		dependencies['@magnet-cms/adapter-vault-supabase'] =
+			PACKAGE_VERSIONS['@magnet-cms/adapter-vault-supabase']
+		dependencies['@supabase/supabase-js'] =
+			dependencies['@supabase/supabase-js'] ??
+			PACKAGE_VERSIONS['@supabase/supabase-js']
+	}
 
 	// Add migrate scripts and CLI for Drizzle projects
 	const scripts: Record<string, string> = {

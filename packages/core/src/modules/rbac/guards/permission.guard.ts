@@ -26,7 +26,7 @@ interface AuthenticatedRequest extends Request {
  * Usage:
  * ```typescript
  * @Get()
- * @UseGuards(JwtAuthGuard, PermissionGuard)
+ * @UseGuards(DynamicAuthGuard, PermissionGuard)
  * @RequirePermission({
  *   id: 'content.posts.find',
  *   name: 'List Posts',

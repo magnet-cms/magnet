@@ -147,7 +147,7 @@ function applyAdapterProp(
 
 		// Dynamically require the adapter-specific Prop decorator
 		// eslint-disable-next-line @typescript-eslint/no-require-imports
-		const { Prop } = require(`@magnet-cms/adapter-${adapter}`)
+		const { Prop } = require(`@magnet-cms/adapter-db-${adapter}`)
 		Prop(propOptions)(target, propertyKey)
 	} catch {
 		// Adapter not available, skip adapter-specific decoration

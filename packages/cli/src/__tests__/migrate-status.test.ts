@@ -1,6 +1,6 @@
 import { describe, expect, it, spyOn } from 'bun:test'
-import { MigrationRunner } from '@magnet-cms/adapter-drizzle'
-import type { MigrationHistoryRecord } from '@magnet-cms/adapter-drizzle'
+import { MigrationRunner } from '@magnet-cms/adapter-db-drizzle'
+import type { MigrationHistoryRecord } from '@magnet-cms/adapter-db-drizzle'
 import { runMigrateStatus } from '../commands/migrate-status'
 
 function makeMockRunner(): MigrationRunner {

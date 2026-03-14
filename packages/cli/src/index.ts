@@ -1,7 +1,7 @@
 import {
 	DEFAULT_MIGRATION_CONFIG,
 	MigrationRunner,
-} from '@magnet-cms/adapter-drizzle'
+} from '@magnet-cms/adapter-db-drizzle'
 import ansis from 'ansis'
 import { Command } from 'commander'
 import { runMigrateCreate } from './commands/migrate-create'
@@ -165,7 +165,7 @@ migrate
 					...config.migrations,
 				}
 				const { SchemaBridge, SchemaDiff, MigrationGenerator } = await import(
-					'@magnet-cms/adapter-drizzle'
+					'@magnet-cms/adapter-db-drizzle'
 				)
 				const bridge = new SchemaBridge()
 				const diff = new SchemaDiff(bridge)

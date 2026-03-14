@@ -17,7 +17,7 @@ import {
 } from '@nestjs/common'
 import type { Request } from 'express'
 import { RestrictedRoute } from '~/decorators/restricted.route'
-import { JwtAuthGuard } from '~/modules/auth/guards/jwt-auth.guard'
+import { DynamicAuthGuard } from '~/modules/auth/guards/dynamic-auth.guard'
 import { NotificationService } from './notification.service'
 import type { Notification } from './schemas/notification.schema'
 
@@ -40,7 +40,7 @@ interface SendNotificationBody {
 
 @Controller('notifications')
 @RestrictedRoute()
-@UseGuards(JwtAuthGuard)
+@UseGuards(DynamicAuthGuard)
 export class NotificationController {
 	constructor(private readonly notificationService: NotificationService) {}
 

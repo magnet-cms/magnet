@@ -2,7 +2,7 @@
 import { setDatabaseAdapter } from '@magnet-cms/common'
 setDatabaseAdapter('drizzle')
 
-import { SupabaseAuthStrategy } from '@magnet-cms/adapter-supabase'
+import { SupabaseAuthStrategy } from '@magnet-cms/adapter-auth-supabase'
 import { AuthStrategyFactory, MagnetModule } from '@magnet-cms/core'
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'

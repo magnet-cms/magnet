@@ -9,7 +9,7 @@ import {
 	UseGuards,
 } from '@nestjs/common'
 import { RestrictedRoute } from '~/decorators/restricted.route'
-import { JwtAuthGuard } from '~/modules/auth/guards/jwt-auth.guard'
+import { DynamicAuthGuard } from '~/modules/auth/guards/dynamic-auth.guard'
 import { ActivityService } from './activity.service'
 import { Activity } from './schemas/activity.schema'
 
@@ -67,7 +67,7 @@ const VALID_EVENT_NAMES = new Set<string>([
 
 @Controller('activity')
 @RestrictedRoute()
-@UseGuards(JwtAuthGuard)
+@UseGuards(DynamicAuthGuard)
 export class ActivityController {
 	constructor(private readonly activityService: ActivityService) {}
 

@@ -6,8 +6,8 @@ import {
 	MigrationGenerator,
 	SchemaBridge,
 	SchemaDiff,
-} from '@magnet-cms/adapter-drizzle'
-import type { SnapshotJSON } from '@magnet-cms/adapter-drizzle'
+} from '@magnet-cms/adapter-db-drizzle'
+import type { SnapshotJSON } from '@magnet-cms/adapter-db-drizzle'
 import { runMigrateGenerate } from '../commands/migrate-generate'
 
 function makeSnapshot(): SnapshotJSON {

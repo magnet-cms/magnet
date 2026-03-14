@@ -1,8 +1,8 @@
 import type {
 	MigrationGenerator,
 	SchemaDiff,
-} from '@magnet-cms/adapter-drizzle'
-import type { MigrationDialect } from '@magnet-cms/adapter-drizzle'
+} from '@magnet-cms/adapter-db-drizzle'
+import type { MigrationDialect } from '@magnet-cms/adapter-db-drizzle'
 
 export interface GenerateOptions {
 	dryRun: boolean

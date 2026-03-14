@@ -3,6 +3,12 @@ import { Logger } from '@nestjs/common'
 
 const logger = new Logger('EmailAdapterFactory')
 
+/** Known adapter names → package names */
+const PACKAGE_MAP: Record<string, string> = {
+	nodemailer: '@magnet-cms/email-nodemailer',
+	resend: '@magnet-cms/email-resend',
+}
+
 /**
  * Factory for creating email adapter instances from configuration.
  *
@@ -12,16 +18,15 @@ const logger = new Logger('EmailAdapterFactory')
 export class EmailAdapterFactory {
 	static create(config: EmailConfig): EmailAdapter {
 		const adapterName = config.adapter
+		const packageName =
+			PACKAGE_MAP[adapterName] ?? `@magnet-cms/email-${adapterName}`
 
 		try {
-			// Dynamic require: @magnet-cms/adapter-nodemailer or @magnet-cms/adapter-resend
-			const adapterModule = require(`@magnet-cms/adapter-${adapterName}`)
+			const adapterModule = require(packageName)
 			const AdapterClass = adapterModule.EmailAdapter
 
 			if (!AdapterClass) {
-				throw new Error(
-					`Package @magnet-cms/adapter-${adapterName} does not export EmailAdapter`,
-				)
+				throw new Error(`Package ${packageName} does not export EmailAdapter`)
 			}
 
 			// Get the provider-specific config
@@ -42,7 +47,7 @@ export class EmailAdapterFactory {
 				error.message.includes('Cannot find module')
 			) {
 				throw new Error(
-					`Email adapter package @magnet-cms/adapter-${adapterName} is not installed. Run: bun add @magnet-cms/adapter-${adapterName}`,
+					`Email adapter package ${packageName} is not installed. Run: bun add ${packageName}`,
 				)
 			}
 			throw error

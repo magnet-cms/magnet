@@ -16,7 +16,7 @@ import {
 	UseGuards,
 } from '@nestjs/common'
 import type { Request } from 'express'
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
+import { DynamicAuthGuard } from '../auth/guards/dynamic-auth.guard'
 import { AssignRoleDto } from './dto/assign-role.dto'
 import { CreateRoleDto } from './dto/create-role.dto'
 import { DuplicateRoleDto } from './dto/duplicate-role.dto'
@@ -57,7 +57,7 @@ interface RoleListItem extends Role {
  * - PUT /api/users/:userId/role - Assign role to user
  */
 @Controller('rbac')
-@UseGuards(JwtAuthGuard)
+@UseGuards(DynamicAuthGuard)
 export class RBACController {
 	constructor(
 		private readonly roleService: RoleService,

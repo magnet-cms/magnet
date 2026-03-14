@@ -58,7 +58,7 @@ export function ExtendUser(options: ExtendUserOptions = {}): ClassDecorator {
 		try {
 			const adapter = detectDatabaseAdapter()
 			// eslint-disable-next-line @typescript-eslint/no-require-imports
-			const { Schema } = require(`@magnet-cms/adapter-${adapter}`)
+			const { Schema } = require(`@magnet-cms/adapter-db-${adapter}`)
 			Schema({ collection: 'users', timestamps: mergedOptions.timestamps })(
 				target,
 			)

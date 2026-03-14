@@ -1,6 +1,5 @@
 import { MagnetModule } from '@magnet-cms/core'
 import { ContentBuilderPlugin } from '@magnet-cms/plugin-content-builder'
-import { VaultPlugin } from '@magnet-cms/plugin-vault'
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { CatsModule } from './modules/cats/cats.module'
@@ -20,7 +19,10 @@ import { VeterinariansModule } from './modules/veterinarians/veterinarians.modul
 				secret: process.env.JWT_SECRET || 'development-secret-key',
 			},
 			admin: true,
-			plugins: [{ plugin: ContentBuilderPlugin }, { plugin: VaultPlugin }],
+			// Vault is now a core module — always enabled with the built-in DB adapter.
+			// Set VAULT_MASTER_KEY env var to enable encrypted secret storage.
+			vault: { adapter: 'db' },
+			plugins: [{ plugin: ContentBuilderPlugin }],
 		}),
 		CatsModule,
 		OwnersModule,

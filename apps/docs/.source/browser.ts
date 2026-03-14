@@ -33,16 +33,6 @@ const browserCollections = {
 			import('../content/docs/common/field-decorators.mdx?collection=docs'),
 		'common/index.mdx': () =>
 			import('../content/docs/common/index.mdx?collection=docs'),
-		'guides/nextjs-integration.mdx': () =>
-			import('../content/docs/guides/nextjs-integration.mdx?collection=docs'),
-		'getting-started/index.mdx': () =>
-			import('../content/docs/getting-started/index.mdx?collection=docs'),
-		'getting-started/installation.mdx': () =>
-			import(
-				'../content/docs/getting-started/installation.mdx?collection=docs'
-			),
-		'getting-started/quick-start.mdx': () =>
-			import('../content/docs/getting-started/quick-start.mdx?collection=docs'),
 		'core/admin-module.mdx': () =>
 			import('../content/docs/core/admin-module.mdx?collection=docs'),
 		'core/api-keys-module.mdx': () =>
@@ -59,6 +49,16 @@ const browserCollections = {
 			import('../content/docs/core/notifications-module.mdx?collection=docs'),
 		'core/rbac-module.mdx': () =>
 			import('../content/docs/core/rbac-module.mdx?collection=docs'),
+		'getting-started/index.mdx': () =>
+			import('../content/docs/getting-started/index.mdx?collection=docs'),
+		'getting-started/installation.mdx': () =>
+			import(
+				'../content/docs/getting-started/installation.mdx?collection=docs'
+			),
+		'getting-started/quick-start.mdx': () =>
+			import('../content/docs/getting-started/quick-start.mdx?collection=docs'),
+		'guides/nextjs-integration.mdx': () =>
+			import('../content/docs/guides/nextjs-integration.mdx?collection=docs'),
 		'migrations/best-practices.mdx': () =>
 			import('../content/docs/migrations/best-practices.mdx?collection=docs'),
 		'migrations/cli-commands.mdx': () =>

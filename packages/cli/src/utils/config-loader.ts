@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
-import type { MigrationConfig } from '@magnet-cms/adapter-drizzle'
+import type { MigrationConfig } from '@magnet-cms/adapter-db-drizzle'
 
 export interface MagnetCliConfig {
 	databaseUrl: string

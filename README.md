@@ -93,9 +93,12 @@ bun run dev:admin
 
 | Package | Description |
 |---------|-------------|
-| `@magnet-cms/adapter-mongoose` | Mongoose database adapter with schema decorators for MongoDB |
-| `@magnet-cms/adapter-drizzle` | Drizzle ORM adapter supporting PostgreSQL, MySQL, and SQLite |
-| `@magnet-cms/adapter-supabase` | Supabase adapter providing auth strategy and storage adapter |
+| `@magnet-cms/adapter-db-mongoose` | Mongoose database adapter with schema decorators for MongoDB |
+| `@magnet-cms/adapter-db-drizzle` | Drizzle ORM adapter supporting PostgreSQL, MySQL, and SQLite |
+| `@magnet-cms/adapter-auth-supabase` | Supabase auth strategy |
+| `@magnet-cms/adapter-storage-supabase` | Supabase storage adapter |
+| `@magnet-cms/adapter-storage-s3` | AWS S3 storage adapter |
+| `@magnet-cms/adapter-storage-r2` | Cloudflare R2 storage adapter |
 
 ### Client Packages
 
@@ -181,13 +184,13 @@ Install Magnet in an existing NestJS project:
 
 ```bash
 # For MongoDB (Mongoose adapter)
-bun add @magnet-cms/core @magnet-cms/common @magnet-cms/adapter-mongoose
+bun add @magnet-cms/core @magnet-cms/common @magnet-cms/adapter-db-mongoose
 
 # For PostgreSQL/MySQL/SQLite (Drizzle adapter)
-bun add @magnet-cms/core @magnet-cms/common @magnet-cms/adapter-drizzle drizzle-orm
+bun add @magnet-cms/core @magnet-cms/common @magnet-cms/adapter-db-drizzle drizzle-orm
 
 # For Supabase
-bun add @magnet-cms/core @magnet-cms/common @magnet-cms/adapter-drizzle @magnet-cms/adapter-supabase
+bun add @magnet-cms/core @magnet-cms/common @magnet-cms/adapter-db-drizzle @magnet-cms/adapter-auth-supabase
 ```
 
 ### Basic Configuration

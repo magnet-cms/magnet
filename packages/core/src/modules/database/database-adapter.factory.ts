@@ -14,9 +14,13 @@ export class DatabaseAdapterFactory {
 		const adapterName = detectDatabaseAdapter(dbConfig)
 
 		try {
-			DatabaseAdapterFactory.cachedAdapter = require(
-				`@magnet-cms/adapter-${adapterName}`,
-			).Adapter
+			const packageMap: Record<string, string> = {
+				mongoose: '@magnet-cms/adapter-db-mongoose',
+				drizzle: '@magnet-cms/adapter-db-drizzle',
+			}
+			const packageName =
+				packageMap[adapterName] ?? `@magnet-cms/adapter-db-${adapterName}`
+			DatabaseAdapterFactory.cachedAdapter = require(packageName).Adapter
 		} catch (error) {
 			throw new Error(`Adapter ${adapterName} not found`)
 		}

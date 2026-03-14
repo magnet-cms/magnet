@@ -2,7 +2,7 @@ import type {
 	Migration,
 	MigrationHistoryRecord,
 	MigrationRunner,
-} from '@magnet-cms/adapter-drizzle'
+} from '@magnet-cms/adapter-db-drizzle'
 
 export interface MigrateStatusResult {
 	applied: MigrationHistoryRecord[]

@@ -1,4 +1,4 @@
-import type { Migration, MigrationRunner } from '@magnet-cms/adapter-drizzle'
+import type { Migration, MigrationRunner } from '@magnet-cms/adapter-db-drizzle'
 
 export interface ResetOptions {
 	force?: boolean

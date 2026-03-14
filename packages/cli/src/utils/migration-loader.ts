@@ -1,6 +1,6 @@
 import { readdir } from 'node:fs/promises'
 import { join, resolve } from 'node:path'
-import type { Migration } from '@magnet-cms/adapter-drizzle'
+import type { Migration } from '@magnet-cms/adapter-db-drizzle'
 
 /**
  * Load all migration files from a directory.

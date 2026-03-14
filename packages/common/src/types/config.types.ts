@@ -5,6 +5,7 @@ import type { EmailConfig } from './email.types'
 import type { PluginConfig } from './plugin.types'
 import type { RBACModuleOptions } from './rbac.types'
 import { StorageConfig } from './storage.types'
+import type { VaultConfig } from './vault.types'
 
 export interface InternationalizationOptions {
 	locales: string[]
@@ -75,6 +76,15 @@ export class MagnetModuleOptions {
 	 */
 	rbac?: RBACModuleOptions
 
+	/**
+	 * Vault configuration for encrypted secrets management.
+	 * Uses the built-in DB adapter by default (requires VAULT_MASTER_KEY env var).
+	 * @example
+	 * vault: { adapter: 'db' }
+	 * vault: { adapter: 'hashicorp', hashicorp: { url: 'https://vault.example.com:8200' } }
+	 */
+	vault?: VaultConfig
+
 	constructor({
 		db,
 		jwt,
@@ -86,6 +96,7 @@ export class MagnetModuleOptions {
 		plugins,
 		admin,
 		rbac,
+		vault,
 	}: MagnetModuleOptions) {
 		this.db = db
 		this.jwt = jwt
@@ -97,6 +108,7 @@ export class MagnetModuleOptions {
 		this.plugins = plugins
 		this.admin = admin
 		this.rbac = rbac
+		this.vault = vault
 	}
 }
 

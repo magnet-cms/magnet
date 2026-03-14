@@ -1,4 +1,4 @@
-import { MigrationGenerator } from '@magnet-cms/adapter-drizzle'
+import { MigrationGenerator } from '@magnet-cms/adapter-db-drizzle'
 
 /**
  * Core logic for migrate:create — generate an empty migration template.

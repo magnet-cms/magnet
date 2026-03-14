@@ -6,9 +6,15 @@ export const PACKAGE_VERSIONS = {
 	// Magnet CMS packages
 	'@magnet-cms/core': '^1.0.0',
 	'@magnet-cms/common': '^0.1.0',
-	'@magnet-cms/adapter-mongoose': '^1.0.0',
-	'@magnet-cms/adapter-drizzle': '^1.0.0',
-	'@magnet-cms/adapter-supabase': '^1.0.0',
+	'@magnet-cms/adapter-db-mongoose': '^1.0.0',
+	'@magnet-cms/adapter-db-drizzle': '^1.0.0',
+	'@magnet-cms/adapter-auth-supabase': '^1.0.0',
+	'@magnet-cms/adapter-auth-clerk': '^1.0.0',
+	'@magnet-cms/adapter-storage-supabase': '^1.0.0',
+	'@magnet-cms/adapter-storage-s3': '^1.0.0',
+	'@magnet-cms/adapter-storage-r2': '^1.0.0',
+	'@magnet-cms/adapter-vault-hashicorp': '^1.0.0',
+	'@magnet-cms/adapter-vault-supabase': '^1.0.0',
 	'@magnet-cms/plugin-content-builder': '^1.0.0',
 	'@magnet-cms/plugin-seo': '^0.1.0',
 

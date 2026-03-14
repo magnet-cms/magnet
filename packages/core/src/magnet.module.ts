@@ -34,6 +34,7 @@ import { PluginModule } from './modules/plugin/plugin.module'
 import { RBACModule } from './modules/rbac/rbac.module'
 import { SettingsModule } from './modules/settings/settings.module'
 import { StorageModule } from './modules/storage/storage.module'
+import { VaultModule } from './modules/vault/vault.module'
 import { ViewConfigModule } from './modules/view-config/view-config.module'
 import { initOptions } from './utils'
 
@@ -64,6 +65,7 @@ export class MagnetModule {
 
 		const DBModule = DatabaseModule.register(defaultOptions)
 		const StorageModuleConfig = StorageModule.forRoot(defaultOptions.storage)
+		const VaultModuleConfig = VaultModule.forRoot(defaultOptions.vault)
 
 		const AuthModuleConfig = AuthModule.forRoot(defaultOptions.auth)
 
@@ -90,6 +92,7 @@ export class MagnetModule {
 			RBACModule.forRoot(defaultOptions.rbac),
 			SettingsModule.forRoot(),
 			StorageModuleConfig,
+			VaultModuleConfig,
 			ViewConfigModule,
 		]
 
@@ -126,6 +129,7 @@ export class MagnetModule {
 				NotificationModule,
 				PluginModule,
 				StorageModuleConfig,
+				VaultModuleConfig,
 			],
 		}
 	}

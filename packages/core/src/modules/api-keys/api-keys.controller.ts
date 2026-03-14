@@ -11,7 +11,7 @@ import {
 	UseGuards,
 } from '@nestjs/common'
 import type { Request } from 'express'
-import { JwtAuthGuard } from '~/modules/auth/guards/jwt-auth.guard'
+import { DynamicAuthGuard } from '~/modules/auth/guards/dynamic-auth.guard'
 import {
 	ApiKeyService,
 	type ApiKeyStats,
@@ -77,7 +77,7 @@ interface CreatedApiKeyResponse extends ApiKeyResponse {
  * ```
  */
 @Controller('api/api-keys')
-@UseGuards(JwtAuthGuard)
+@UseGuards(DynamicAuthGuard)
 export class ApiKeyController {
 	constructor(private readonly apiKeyService: ApiKeyService) {}
 

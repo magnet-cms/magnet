@@ -1,9 +1,9 @@
 import { Controller, Get, UseGuards } from '@nestjs/common'
-import { JwtAuthGuard } from '~/modules/auth/guards/jwt-auth.guard'
+import { DynamicAuthGuard } from '~/modules/auth/guards/dynamic-auth.guard'
 import { EnvironmentService } from './environment.service'
 
 @Controller('environments')
-@UseGuards(JwtAuthGuard)
+@UseGuards(DynamicAuthGuard)
 export class EnvironmentController {
 	constructor(private readonly environmentService: EnvironmentService) {}
 

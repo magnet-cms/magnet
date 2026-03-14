@@ -55,11 +55,11 @@ export class StorageAdapterFactory {
 					throw new Error('R2 configuration is required for R2 adapter')
 				}
 				try {
-					const { R2StorageAdapter } = require('@magnet-cms/adapter-storage-s3')
+					const { R2StorageAdapter } = require('@magnet-cms/adapter-storage-r2')
 					StorageAdapterFactory.cachedAdapter = new R2StorageAdapter(config.r2)
 				} catch {
 					throw new Error(
-						'R2 storage adapter not found. Please install @magnet-cms/adapter-storage-s3',
+						'R2 storage adapter not found. Please install @magnet-cms/adapter-storage-r2',
 					)
 				}
 				break
@@ -73,13 +73,13 @@ export class StorageAdapterFactory {
 				try {
 					const {
 						SupabaseStorageAdapter,
-					} = require('@magnet-cms/adapter-supabase')
+					} = require('@magnet-cms/adapter-storage-supabase')
 					StorageAdapterFactory.cachedAdapter = new SupabaseStorageAdapter(
 						config.supabase,
 					)
 				} catch {
 					throw new Error(
-						'Supabase storage adapter not found. Please install @magnet-cms/adapter-supabase',
+						'Supabase storage adapter not found. Please install @magnet-cms/adapter-storage-supabase',
 					)
 				}
 				break

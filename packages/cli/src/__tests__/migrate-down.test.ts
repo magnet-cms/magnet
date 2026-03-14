@@ -1,5 +1,5 @@
 import { describe, expect, it, spyOn } from 'bun:test'
-import { MigrationRunner } from '@magnet-cms/adapter-drizzle'
+import { MigrationRunner } from '@magnet-cms/adapter-db-drizzle'
 import { runMigrateDown } from '../commands/migrate-down'
 
 function makeMockRunner(): MigrationRunner {

@@ -13,6 +13,7 @@ import { AUTH_CONFIG, AUTH_STRATEGY } from './auth.constants'
 import { AuthController } from './auth.controller'
 import { AuthService } from './auth.service'
 import { AuthSettings } from './auth.settings'
+import { DynamicAuthGuard } from './guards/dynamic-auth.guard'
 import { DynamicOAuthGuard } from './guards/dynamic-oauth.guard'
 import {
 	OAuthController,
@@ -67,8 +68,10 @@ export class AuthModule {
 				UserModule,
 				EventsModule,
 				SettingsModule.forFeature(AuthSettings),
-				// Always use 'jwt' as default strategy for guards (JwtAuthGuard)
-				PassportModule.register({ defaultStrategy: 'jwt' }),
+				// Use configured strategy as Passport default (falls back to 'jwt')
+				PassportModule.register({
+					defaultStrategy: authConfig?.strategy || 'jwt',
+				}),
 				JwtModule.registerAsync({
 					useFactory: (options: MagnetModuleOptions): JwtModuleOptions => ({
 						secret: authConfig?.jwt?.secret || options.jwt.secret,
@@ -103,7 +106,7 @@ export class AuthModule {
 					},
 					inject: [MagnetModuleOptions, UserService],
 				},
-				// Always register JwtAuthStrategy for Passport integration (required for JwtAuthGuard)
+				// Always register JwtAuthStrategy for Passport 'jwt' strategy (used when strategy is 'jwt' or as fallback)
 				// This ensures the 'jwt' passport strategy is available even when using custom auth strategies
 				{
 					provide: JwtAuthStrategy,
@@ -126,6 +129,14 @@ export class AuthModule {
 				},
 				OAuthService,
 				DynamicOAuthGuard,
+				{
+					provide: DynamicAuthGuard,
+					useFactory: () => {
+						// Set strategy name on the class so all usages pick it up without DI
+						DynamicAuthGuard.strategyName = authConfig?.strategy || 'jwt'
+						return new DynamicAuthGuard()
+					},
+				},
 				PasswordResetService,
 				AuthService,
 			],
@@ -133,6 +144,7 @@ export class AuthModule {
 				AuthService,
 				OAuthService,
 				AUTH_STRATEGY,
+				DynamicAuthGuard,
 				JwtModule,
 				PassportModule,
 			],

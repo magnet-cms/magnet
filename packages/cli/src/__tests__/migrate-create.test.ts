@@ -38,7 +38,7 @@ describe('runMigrateCreate', () => {
 		const content = await readFile(result.path, 'utf-8')
 
 		expect(content).toContain('export const migration')
-		expect(content).toContain("'@magnet-cms/adapter-drizzle'")
+		expect(content).toContain("'@magnet-cms/adapter-db-drizzle'")
 
 		await rm(dir, { recursive: true })
 	})

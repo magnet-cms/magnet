@@ -12,6 +12,7 @@ import {
 	FlaskConical,
 	Image,
 	Key,
+	KeyRound,
 	Layers,
 	LayoutDashboard,
 	Settings,
@@ -137,6 +138,11 @@ export function AuthedLayout({ children, header, sidebar }: AuthedLayoutProps) {
 					title: 'Activity',
 					url: '/activity',
 					icon: Activity,
+				},
+				{
+					title: 'Vault',
+					url: '/vault',
+					icon: KeyRound,
 				},
 				{
 					title: 'Settings',
