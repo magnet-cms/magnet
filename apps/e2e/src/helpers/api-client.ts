@@ -1118,6 +1118,29 @@ export class ApiClient {
 		})
 	}
 
+	// View Config endpoints
+	async getViewConfig(schema: string) {
+		return this.request.get(
+			`${this.baseURL}/user-preferences/view-config/${schema}`,
+			{ headers: this.getHeaders() },
+		)
+	}
+
+	async putViewConfig(
+		schema: string,
+		data: {
+			columns?: Array<{ name: string; visible: boolean; order: number }>
+			pageSize?: number
+			sortField?: string
+			sortDirection?: 'asc' | 'desc'
+		},
+	) {
+		return this.request.put(
+			`${this.baseURL}/user-preferences/view-config/${schema}`,
+			{ headers: this.getHeaders(), data },
+		)
+	}
+
 	// Helper to make requests with API key authentication (instead of JWT)
 	async makeApiKeyRequest(
 		method: 'GET' | 'POST' | 'PUT' | 'DELETE',

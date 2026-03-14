@@ -1,0 +1,5 @@
+export { ViewConfigModule } from './view-config.module'
+export { ViewConfigService } from './view-config.service'
+export type { UpsertViewConfigDto } from './view-config.service'
+export { ViewConfig } from './schemas/view-config.schema'
+export type { ViewConfigColumn } from './schemas/view-config.schema'

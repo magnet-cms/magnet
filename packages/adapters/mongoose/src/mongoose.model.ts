@@ -739,13 +739,8 @@ export function createModel<T>(
 		 * ```
 		 */
 		query(): MongooseQueryBuilder<T> {
-			if (!this._model) {
-				throw new Error(
-					'Model not initialized. Call an async method first to initialize the model.',
-				)
-			}
 			return new MongooseQueryBuilder<T>(
-				this._model,
+				this._ensureModel(),
 				this.currentLocale,
 				this.currentVersion,
 			)

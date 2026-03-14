@@ -6,7 +6,7 @@ import type {
 	Model,
 	SortQuery,
 } from '@magnet-cms/common'
-import { OnEvent } from '@magnet-cms/common'
+import { InjectModel, OnEvent } from '@magnet-cms/common'
 import { Injectable } from '@nestjs/common'
 import { MagnetLogger } from '~/modules/logging/logger.service'
 import { SettingsService } from '~/modules/settings/settings.service'
@@ -51,7 +51,7 @@ export interface PaginatedActivities {
 @Injectable()
 export class ActivityService {
 	constructor(
-		private readonly activityModel: Model<Activity>,
+		@InjectModel(Activity) private readonly activityModel: Model<Activity>,
 		private readonly settingsService: SettingsService,
 		private readonly logger: MagnetLogger,
 	) {

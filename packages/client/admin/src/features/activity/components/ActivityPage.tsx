@@ -2,7 +2,9 @@
 
 import {
 	Button,
-	Input,
+	DataTable,
+	type DataTableColumn,
+	type DataTableRenderContext,
 	Select,
 	SelectContent,
 	SelectItem,
@@ -17,19 +19,23 @@ import {
 	LogIn,
 	LogOut,
 	Plus,
-	Search,
 	Send,
 	Settings,
 	Trash2,
 	Users,
 } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useMemo, useState } from 'react'
 import type {
 	ActivityRecord,
 	ActivitySearchParams,
 } from '~/core/adapters/types'
 import { PageHeader } from '~/features/shared'
 import { useActivitySearch } from '~/hooks/useActivity'
+import { useUserList } from '~/hooks/useUsers'
+
+// ============================================================================
+// Helpers
+// ============================================================================
 
 function getActionIcon(action: string) {
 	if (action.startsWith('content.created')) return Plus
@@ -56,8 +62,12 @@ function formatRelativeTime(timestamp: string): string {
 	return `${days}d ago`
 }
 
+// ============================================================================
+// Filter Options
+// ============================================================================
+
 const ACTION_OPTIONS = [
-	{ label: 'All Actions', value: '' },
+	{ label: 'All Actions', value: 'all' },
 	{ label: 'Content Created', value: 'content.created' },
 	{ label: 'Content Updated', value: 'content.updated' },
 	{ label: 'Content Deleted', value: 'content.deleted' },
@@ -70,205 +80,331 @@ const ACTION_OPTIONS = [
 ]
 
 const ENTITY_TYPE_OPTIONS = [
-	{ label: 'All Types', value: '' },
+	{ label: 'All Types', value: 'all' },
 	{ label: 'Content', value: 'content' },
 	{ label: 'User', value: 'user' },
 	{ label: 'Settings', value: 'settings' },
 	{ label: 'API Key', value: 'api_key' },
 ]
 
-const PAGE_SIZE = 20
+// Styles for content-manager variant
+const contentManagerStyles = `
+  .table-row-hover:hover td {
+    background-color: #F9FAFB;
+  }
+  .table-row-hover.group:hover td {
+    background-color: #F9FAFB;
+  }
+`
+
+// ============================================================================
+// Component
+// ============================================================================
 
 export function ActivityPage() {
-	const [filters, setFilters] = useState<ActivitySearchParams>({
-		limit: PAGE_SIZE,
-		offset: 0,
-	})
-	const [entityTypeFilter, setEntityTypeFilter] = useState('')
-	const [actionFilter, setActionFilter] = useState('')
-	const [userIdFilter, setUserIdFilter] = useState('')
-	const [allItems, setAllItems] = useState<ActivityRecord[]>([])
+	const [actionFilter, setActionFilter] = useState('all')
+	const [entityTypeFilter, setEntityTypeFilter] = useState('all')
+	const [userFilter, setUserFilter] = useState('all')
 
+	// Fetch users for the dropdown
+	const { data: usersData } = useUserList(1, 100)
+	const users = usersData?.users ?? []
+
+	// Build search params from filters — treat 'all' and 'system' specially
 	const searchParams: ActivitySearchParams = {
-		...filters,
-		entityType: entityTypeFilter || undefined,
-		action: actionFilter || undefined,
-		userId: userIdFilter || undefined,
+		limit: 500,
+		offset: 0,
+		action: actionFilter !== 'all' ? actionFilter : undefined,
+		entityType: entityTypeFilter !== 'all' ? entityTypeFilter : undefined,
+		userId:
+			userFilter !== 'all' && userFilter !== 'system' ? userFilter : undefined,
 	}
 
-	const { data, isLoading } = useActivitySearch(searchParams)
+	const { data, isLoading, error } = useActivitySearch(searchParams)
 
-	// Accumulate items: reset on filter change (offset=0), append on load more
-	useEffect(() => {
-		if (!data) return
-		if ((filters.offset ?? 0) === 0) {
-			setAllItems(data.items)
-		} else {
-			setAllItems((prev) => [...prev, ...data.items])
+	// Build user options for dropdown: All + System + real users
+	const userOptions = useMemo(
+		() => [
+			{ label: 'All Users', value: 'all' },
+			{ label: 'System', value: 'system' },
+			...users.map((u) => ({ label: u.name || u.email, value: u.id })),
+		],
+		[users],
+	)
+
+	// Determine items to show — for 'system' filter, filter client-side
+	const items = useMemo(() => {
+		if (!data?.items) return []
+		if (userFilter === 'system') {
+			// System events have no userId or userId is 'system'
+			return data.items.filter((r) => !r.userId || r.userId === 'system')
 		}
-	}, [data, filters.offset])
+		return data.items
+	}, [data?.items, userFilter])
 
-	const handleApplyFilters = () => {
-		setAllItems([])
-		setFilters((prev) => ({ ...prev, offset: 0 }))
+	// ============================================================================
+	// Columns
+	// ============================================================================
+
+	const columns: DataTableColumn<ActivityRecord>[] = [
+		{
+			type: 'custom',
+			header: 'Action',
+			cell: (row) => {
+				const record = row.original
+				const Icon = getActionIcon(record.action)
+				return (
+					<div className="flex items-center gap-2">
+						<div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
+							<Icon className="w-3 h-3 text-gray-600" />
+						</div>
+						<span className="text-sm font-medium text-gray-900">
+							{record.action}
+						</span>
+					</div>
+				)
+			},
+		},
+		{
+			type: 'custom',
+			header: 'Entity',
+			cell: (row) => {
+				const record = row.original
+				const label = record.entityName || record.entityId
+				return (
+					<div className="text-sm text-gray-600">
+						<span className="font-medium">{record.entityType}</span>
+						{label ? <span className="text-gray-400"> · {label}</span> : null}
+					</div>
+				)
+			},
+		},
+		{
+			type: 'text',
+			header: 'User',
+			accessorKey: 'userName',
+			format: (value, row) => (
+				<span className="text-sm text-gray-600">
+					{(value as string) || row.userId || '—'}
+				</span>
+			),
+		},
+		{
+			type: 'text',
+			header: 'Timestamp',
+			accessorKey: 'timestamp',
+			format: (value) => (
+				<span className="text-sm text-gray-400">
+					{formatRelativeTime(value as string)}
+				</span>
+			),
+		},
+	]
+
+	// ============================================================================
+	// Toolbar
+	// ============================================================================
+
+	const renderToolbar = () => (
+		<div className="px-6 py-4 flex flex-col sm:flex-row gap-3 items-center justify-between flex-none bg-white border-b border-gray-200">
+			<div className="flex items-center gap-3 w-full flex-wrap">
+				<Select value={actionFilter} onValueChange={setActionFilter}>
+					<SelectTrigger className="appearance-none pl-3 pr-8 py-1.5 border border-gray-200 rounded-lg text-sm bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-gray-900 focus:border-gray-900 shadow-sm cursor-pointer min-w-[140px]">
+						<SelectValue />
+					</SelectTrigger>
+					<SelectContent>
+						{ACTION_OPTIONS.map((opt) => (
+							<SelectItem key={opt.value} value={opt.value}>
+								{opt.label}
+							</SelectItem>
+						))}
+					</SelectContent>
+				</Select>
+
+				<Select value={entityTypeFilter} onValueChange={setEntityTypeFilter}>
+					<SelectTrigger className="appearance-none pl-3 pr-8 py-1.5 border border-gray-200 rounded-lg text-sm bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-gray-900 focus:border-gray-900 shadow-sm cursor-pointer min-w-[130px]">
+						<SelectValue />
+					</SelectTrigger>
+					<SelectContent>
+						{ENTITY_TYPE_OPTIONS.map((opt) => (
+							<SelectItem key={opt.value} value={opt.value}>
+								{opt.label}
+							</SelectItem>
+						))}
+					</SelectContent>
+				</Select>
+
+				<Select value={userFilter} onValueChange={setUserFilter}>
+					<SelectTrigger className="appearance-none pl-3 pr-8 py-1.5 border border-gray-200 rounded-lg text-sm bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-gray-900 focus:border-gray-900 shadow-sm cursor-pointer min-w-[130px]">
+						<SelectValue />
+					</SelectTrigger>
+					<SelectContent>
+						{userOptions.map((opt) => (
+							<SelectItem key={opt.value} value={opt.value}>
+								{opt.label}
+							</SelectItem>
+						))}
+					</SelectContent>
+				</Select>
+
+				<div className="flex items-center border border-gray-200 rounded-lg p-0.5 bg-gray-50">
+					<Button
+						variant="ghost"
+						size="sm"
+						className="px-2 py-1 text-xs font-medium text-gray-600 hover:text-gray-900"
+						onClick={() => {
+							setActionFilter('all')
+							setEntityTypeFilter('all')
+							setUserFilter('all')
+						}}
+					>
+						Clear Filters
+					</Button>
+				</div>
+			</div>
+		</div>
+	)
+
+	// ============================================================================
+	// Pagination
+	// ============================================================================
+
+	const renderPagination = (table: DataTableRenderContext<ActivityRecord>) => {
+		const { pageIndex, pageSize } = table.getState().pagination
+		const totalRows = table.getFilteredRowModel().rows.length
+		const startRow = totalRows > 0 ? pageIndex * pageSize + 1 : 0
+		const endRow = Math.min((pageIndex + 1) * pageSize, totalRows)
+
+		return (
+			<div className="flex-none px-6 py-4 border-t border-gray-200 bg-white flex items-center justify-between">
+				<div className="text-xs text-gray-500">
+					Showing <span className="font-medium text-gray-900">{startRow}</span>{' '}
+					to <span className="font-medium text-gray-900">{endRow}</span> of{' '}
+					<span className="font-medium text-gray-900">{totalRows}</span> results
+				</div>
+				<div className="flex items-center gap-2">
+					<Button
+						variant="outline"
+						size="sm"
+						className="px-3 py-1.5 border border-gray-200 rounded-md text-xs font-medium text-gray-400 cursor-not-allowed bg-gray-50"
+						disabled={!table.getCanPreviousPage()}
+						onClick={() => table.previousPage()}
+					>
+						Previous
+					</Button>
+					<Button
+						variant="outline"
+						size="sm"
+						className="px-3 py-1.5 border border-gray-200 rounded-md text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+						disabled={!table.getCanNextPage()}
+						onClick={() => table.nextPage()}
+					>
+						Next
+					</Button>
+				</div>
+			</div>
+		)
 	}
 
-	const handleLoadMore = () => {
-		setFilters((prev) => ({
-			...prev,
-			offset: (prev.offset ?? 0) + PAGE_SIZE,
-		}))
+	// ============================================================================
+	// Loading state
+	// ============================================================================
+
+	if (isLoading) {
+		return (
+			<div className="flex-1 flex flex-col min-w-0 bg-white h-full relative overflow-hidden">
+				<PageHeader>
+					<div className="h-16 flex items-center justify-between px-6">
+						<div>
+							<Skeleton className="h-6 w-24 mb-1" />
+							<Skeleton className="h-4 w-48" />
+						</div>
+					</div>
+				</PageHeader>
+				<div className="flex-1 p-6">
+					<Skeleton className="h-96 w-full" />
+				</div>
+			</div>
+		)
 	}
 
-	const hasMore = data
-		? (data?.total ?? allItems.length > (filters.offset ?? 0) + PAGE_SIZE)
-		: false
+	// ============================================================================
+	// Error state
+	// ============================================================================
+
+	if (error) {
+		return (
+			<div className="flex-1 flex flex-col min-w-0 bg-white h-full relative overflow-hidden">
+				<PageHeader>
+					<div className="h-16 flex items-center justify-between px-6">
+						<div>
+							<h1 className="text-lg font-semibold text-gray-900 tracking-tight">
+								Activity Log
+							</h1>
+							<p className="text-xs text-red-500">Error loading activity</p>
+						</div>
+					</div>
+				</PageHeader>
+				<div className="flex-1 flex items-center justify-center">
+					<div className="text-center">
+						<p className="text-gray-500 mb-4">
+							{error.message || 'Failed to load activity records'}
+						</p>
+					</div>
+				</div>
+			</div>
+		)
+	}
+
+	// ============================================================================
+	// Main render
+	// ============================================================================
 
 	return (
-		<div className="flex-1 flex flex-col min-w-0 bg-white h-full relative">
+		<div className="flex-1 flex flex-col min-w-0 bg-white h-full relative overflow-hidden">
+			<style>{contentManagerStyles}</style>
+
+			{/* Header */}
 			<PageHeader>
-				<div className="px-8 py-6 flex items-center justify-between">
+				<div className="h-16 flex items-center justify-between px-6">
 					<div>
-						<h1 className="text-2xl font-medium text-gray-900 tracking-tight">
+						<h1 className="text-lg font-semibold text-gray-900 tracking-tight">
 							Activity Log
 						</h1>
-						<p className="mt-1 text-sm text-gray-500">
-							Audit trail of all user actions
+						<p className="text-xs text-gray-500">
+							Audit trail of all user actions.{' '}
+							{data?.total !== undefined ? `${data.total} records total.` : ''}
 						</p>
 					</div>
 				</div>
 			</PageHeader>
 
-			<div className="flex-1 overflow-y-auto bg-gray-50/50 p-8">
-				{/* Filters */}
-				<div className="bg-white rounded-xl border border-gray-200 p-4 mb-6 flex flex-wrap gap-3 items-end">
-					<div className="flex-1 min-w-[160px]">
-						<span className="text-xs font-medium text-gray-600 mb-1 block">
-							Action Type
-						</span>
-						<Select value={actionFilter} onValueChange={setActionFilter}>
-							<SelectTrigger className="h-9 text-sm">
-								<SelectValue placeholder="All Actions" />
-							</SelectTrigger>
-							<SelectContent>
-								{ACTION_OPTIONS.map((opt) => (
-									<SelectItem key={opt.value} value={opt.value}>
-										{opt.label}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
-					</div>
-
-					<div className="flex-1 min-w-[160px]">
-						<span className="text-xs font-medium text-gray-600 mb-1 block">
-							Entity Type
-						</span>
-						<Select
-							value={entityTypeFilter}
-							onValueChange={setEntityTypeFilter}
-						>
-							<SelectTrigger className="h-9 text-sm">
-								<SelectValue placeholder="All Types" />
-							</SelectTrigger>
-							<SelectContent>
-								{ENTITY_TYPE_OPTIONS.map((opt) => (
-									<SelectItem key={opt.value} value={opt.value}>
-										{opt.label}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
-					</div>
-
-					<div className="flex-1 min-w-[160px]">
-						<span className="text-xs font-medium text-gray-600 mb-1 block">
-							User ID
-						</span>
-						<Input
-							className="h-9 text-sm"
-							placeholder="Filter by user..."
-							value={userIdFilter}
-							onChange={(e) => setUserIdFilter(e.target.value)}
-						/>
-					</div>
-
-					<Button size="sm" onClick={handleApplyFilters}>
-						<Search className="w-4 h-4" />
-						Filter
-					</Button>
-				</div>
-
-				{/* Results */}
-				<div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-					{isLoading ? (
-						<div className="divide-y divide-gray-100">
-							{Array.from({ length: 5 }).map((_, i) => (
-								// biome-ignore lint/suspicious/noArrayIndexKey: skeleton placeholders
-								<div key={i} className="p-4 flex items-center gap-4">
-									<Skeleton className="w-8 h-8 rounded-full" />
-									<div className="flex-1 space-y-2">
-										<Skeleton className="h-4 w-48" />
-										<Skeleton className="h-3 w-32" />
-									</div>
-									<Skeleton className="h-3 w-16" />
-								</div>
-							))}
-						</div>
-					) : allItems.length === 0 && !isLoading ? (
-						<div className="py-16 text-center">
-							<Activity className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-							<p className="text-sm text-gray-500">No activity records found</p>
-						</div>
-					) : (
-						<>
-							<ul className="divide-y divide-gray-100">
-								{allItems.map((record) => {
-									const Icon = getActionIcon(record.action)
-									return (
-										<li
-											key={record.id}
-											className="p-4 flex items-start gap-4 hover:bg-gray-50/50"
-										>
-											<div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
-												<Icon className="w-4 h-4 text-gray-600" />
-											</div>
-											<div className="flex-1 min-w-0">
-												<p className="text-sm font-medium text-gray-900">
-													{record.action}
-												</p>
-												<p className="text-xs text-gray-500 mt-0.5 truncate">
-													{record.entityType}
-													{record.entityId ? ` · ${record.entityId}` : ''}
-													{record.userId ? ` · by ${record.userId}` : ''}
-												</p>
-											</div>
-											<span className="text-xs text-gray-400 shrink-0">
-												{formatRelativeTime(record.timestamp)}
-											</span>
-										</li>
-									)
-								})}
-							</ul>
-							{hasMore && (
-								<div className="p-4 text-center border-t border-gray-100">
-									<Button variant="outline" size="sm" onClick={handleLoadMore}>
-										Load more
-									</Button>
+			{/* Main Workspace */}
+			<div className="flex-1 flex flex-col overflow-hidden bg-gray-50">
+				<div className="flex-1 overflow-hidden relative">
+					<div className="absolute inset-0 overflow-auto">
+						<DataTable
+							data={items}
+							columns={columns}
+							getRowId={(row) => row.id}
+							renderToolbar={renderToolbar}
+							renderPagination={renderPagination}
+							enablePagination={true}
+							pageSizeOptions={[10, 20, 50]}
+							initialPagination={{ pageIndex: 0, pageSize: 20 }}
+							showCount={false}
+							className="h-full flex flex-col"
+							variant="content-manager"
+							renderEmpty={(_table) => (
+								<div className="py-16 text-center">
+									<Activity className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+									<p className="text-sm text-gray-500">
+										No activity records found
+									</p>
 								</div>
 							)}
-							<div className="px-4 py-3 bg-gray-50/50 border-t border-gray-100">
-								<p className="text-xs text-gray-500">
-									Showing{' '}
-									{Math.min(
-										(filters.offset ?? 0) + PAGE_SIZE,
-										data?.total ?? allItems.length,
-									)}{' '}
-									of {data?.total ?? allItems.length} records
-								</p>
-							</div>
-						</>
-					)}
+						/>
+					</div>
 				</div>
 			</div>
 		</div>

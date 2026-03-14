@@ -27,6 +27,9 @@ import {
 	useContentDelete,
 	useContentList,
 } from '~/hooks/useSchema'
+import type { ViewConfigColumn } from '../hooks/useViewConfig'
+import { useViewConfig } from '../hooks/useViewConfig'
+import { ConfigureViewDrawer } from './ConfigureViewDrawer'
 
 // Styles for content-manager variant
 const contentManagerStyles = `
@@ -128,15 +131,29 @@ function formatCellValue(value: unknown, property: SchemaProperty): string {
 }
 
 /**
- * Generate columns from schema properties
+ * Generate columns from schema properties, optionally filtered/ordered by view config
  */
 function generateColumns(
 	properties: SchemaProperty[],
+	viewColumns?: ViewConfigColumn[],
 ): DataTableColumn<ContentEntry>[] {
-	// Filter out internal fields and limit to first 5 visible columns
-	const visibleProps = properties
-		.filter((p) => !p.name.startsWith('_'))
-		.slice(0, 5)
+	// Filter out internal fields
+	let visibleProps = properties.filter((p) => !p.name.startsWith('_'))
+
+	if (viewColumns && viewColumns.length > 0) {
+		// Apply view config: filter to visible columns, sorted by config order
+		const configMap = new Map(viewColumns.map((c) => [c.name, c]))
+		visibleProps = visibleProps
+			.filter((p) => configMap.get(p.name)?.visible !== false)
+			.sort((a, b) => {
+				const aOrder = configMap.get(a.name)?.order ?? 999
+				const bOrder = configMap.get(b.name)?.order ?? 999
+				return aOrder - bOrder
+			})
+	} else {
+		// No config saved yet: show first 5 as default
+		visibleProps = visibleProps.slice(0, 5)
+	}
 
 	// ID column is always first
 	const idColumn: DataTableColumn<ContentEntry> = {
@@ -161,6 +178,7 @@ function generateColumns(
 		idColumn,
 		...visibleProps.map((prop) => ({
 			type: 'custom' as const,
+			accessorKey: prop.name,
 			header:
 				prop.ui?.label ||
 				prop.name.charAt(0).toUpperCase() + prop.name.slice(1),
@@ -232,6 +250,10 @@ export function ContentManagerListingPage({
 	const navigate = useNavigate()
 	const [searchQuery, setSearchQuery] = useState('')
 	const [statusFilter, setStatusFilter] = useState<string>('all')
+	const [configOpen, setConfigOpen] = useState(false)
+
+	// View config (localStorage + API)
+	const { config, updateConfig, configVersion } = useViewConfig(schema)
 
 	// Fetch schema metadata for column generation
 	const { data: schemaMetadata, isLoading: isSchemaLoading } = useSchema(schema)
@@ -295,13 +317,22 @@ export function ContentManagerListingPage({
 		)
 	}
 
-	// Generate columns from schema metadata
+	// Generate columns from schema metadata, applying view config
 	const columns = useMemo(() => {
 		if (!schemaMetadata || 'error' in schemaMetadata) {
 			return []
 		}
-		return generateColumns(schemaMetadata.properties)
-	}, [schemaMetadata])
+		return generateColumns(schemaMetadata.properties, config.columns)
+	}, [schemaMetadata, config.columns])
+
+	// Derive initial sorting from view config
+	const initialSorting = useMemo(
+		() =>
+			config.sortField
+				? [{ id: config.sortField, desc: config.sortDirection === 'desc' }]
+				: [],
+		[config.sortField, config.sortDirection],
+	)
 
 	// Filter data based on search query
 	const filteredData = useMemo(() => {
@@ -496,9 +527,7 @@ export function ContentManagerListingPage({
 						<Button
 							variant="outline"
 							size="sm"
-							onClick={() => {
-								console.log('Configure view')
-							}}
+							onClick={() => setConfigOpen(true)}
 						>
 							Configure View
 						</Button>
@@ -545,6 +574,7 @@ export function ContentManagerListingPage({
 							</div>
 						) : (
 							<DataTable
+								key={configVersion}
 								data={filteredData}
 								columns={columns}
 								options={{
@@ -568,7 +598,8 @@ export function ContentManagerListingPage({
 								renderPagination={renderPagination}
 								enablePagination={true}
 								pageSizeOptions={[5, 10, 20, 30, 50]}
-								initialPagination={{ pageIndex: 0, pageSize: 10 }}
+								initialPagination={{ pageIndex: 0, pageSize: config.pageSize }}
+								initialSorting={initialSorting}
 								showCount={false}
 								className="h-full flex flex-col"
 								variant="content-manager"
@@ -577,6 +608,18 @@ export function ContentManagerListingPage({
 					</div>
 				</div>
 			</div>
+
+			<ConfigureViewDrawer
+				open={configOpen}
+				onOpenChange={setConfigOpen}
+				properties={
+					schemaMetadata && !('error' in schemaMetadata)
+						? schemaMetadata.properties
+						: []
+				}
+				config={config}
+				onSave={updateConfig}
+			/>
 		</div>
 	)
 }

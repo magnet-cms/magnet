@@ -67,13 +67,23 @@ export class MongooseQueryBuilder<T> extends QueryBuilder<T> {
 	private currentVersion?: string
 
 	constructor(
-		private readonly model: MongooseModel<Document & BaseSchema<T>>,
+		private readonly modelOrPromise:
+			| MongooseModel<Document & BaseSchema<T>>
+			| Promise<MongooseModel<Document & BaseSchema<T>>>,
 		locale?: string,
 		version?: string,
 	) {
 		super()
 		this.currentLocale = locale
 		this.currentVersion = version
+	}
+
+	private async resolveModel(): Promise<
+		MongooseModel<Document & BaseSchema<T>>
+	> {
+		return this.modelOrPromise instanceof Promise
+			? this.modelOrPromise
+			: this.modelOrPromise
 	}
 
 	/**
@@ -159,7 +169,8 @@ export class MongooseQueryBuilder<T> extends QueryBuilder<T> {
 	 */
 	async exec(): Promise<BaseSchema<T>[]> {
 		try {
-			let query = this.model.find(this.filterAccumulator)
+			const model = await this.resolveModel()
+			let query = model.find(this.filterAccumulator)
 
 			if (Object.keys(this.sortSpec).length > 0) {
 				query = query.sort(this.sortSpec as Record<string, 1 | -1>)
@@ -194,7 +205,8 @@ export class MongooseQueryBuilder<T> extends QueryBuilder<T> {
 	 */
 	async execOne(): Promise<BaseSchema<T> | null> {
 		try {
-			let query = this.model.findOne(this.filterAccumulator)
+			const model = await this.resolveModel()
+			let query = model.findOne(this.filterAccumulator)
 
 			if (Object.keys(this.sortSpec).length > 0) {
 				query = query.sort(this.sortSpec as Record<string, 1 | -1>)
@@ -226,16 +238,16 @@ export class MongooseQueryBuilder<T> extends QueryBuilder<T> {
 	 * Count matching documents without fetching them
 	 */
 	async count(): Promise<number> {
-		return this.model.countDocuments(this.filterAccumulator)
+		const model = await this.resolveModel()
+		return model.countDocuments(this.filterAccumulator)
 	}
 
 	/**
 	 * Check if any matching documents exist
 	 */
 	async exists(): Promise<boolean> {
-		const count = await this.model
-			.countDocuments(this.filterAccumulator)
-			.limit(1)
+		const model = await this.resolveModel()
+		const count = await model.countDocuments(this.filterAccumulator).limit(1)
 		return count > 0
 	}
 

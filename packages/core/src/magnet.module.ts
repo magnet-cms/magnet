@@ -30,6 +30,7 @@ import { PluginModule } from './modules/plugin/plugin.module'
 import { RBACModule } from './modules/rbac/rbac.module'
 import { SettingsModule } from './modules/settings/settings.module'
 import { StorageModule } from './modules/storage/storage.module'
+import { ViewConfigModule } from './modules/view-config/view-config.module'
 import { initOptions } from './utils'
 
 /**
@@ -82,6 +83,7 @@ export class MagnetModule {
 			RBACModule.forRoot(defaultOptions.rbac),
 			SettingsModule.forRoot(),
 			StorageModuleConfig,
+			ViewConfigModule,
 		]
 
 		// Add AdminServeModule if enabled

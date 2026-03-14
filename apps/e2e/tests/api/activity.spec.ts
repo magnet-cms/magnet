@@ -47,6 +47,22 @@ test.describe('Activity API', () => {
 	})
 
 	test.describe('GET /activity/search', () => {
+		test('returns paginated result on first call (regression: model not initialized)', async ({
+			authenticatedApiClient,
+		}) => {
+			// Regression test: query() must work even when no prior async method
+			// has been called on the model (e.g. on first page load with no activity logged).
+			const response = await authenticatedApiClient.searchActivity({
+				limit: 500,
+				offset: 0,
+			})
+			expect(response.ok()).toBeTruthy()
+			const body = await response.json()
+			expect(body).toHaveProperty('items')
+			expect(body).toHaveProperty('total')
+			expect(Array.isArray(body.items)).toBe(true)
+		})
+
 		test('returns paginated result with items and total', async ({
 			authenticatedApiClient,
 		}) => {

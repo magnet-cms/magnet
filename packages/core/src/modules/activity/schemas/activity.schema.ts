@@ -7,7 +7,7 @@ import type { EventName } from '@magnet-cms/common'
  * This schema uses `versioning: false` and `i18n: false` because activity logs
  * are internal records that should not themselves be versioned or localized.
  */
-@Schema({ versioning: false, i18n: false })
+@Schema({ versioning: false, i18n: false, visible: false })
 export class Activity {
 	/**
 	 * The event/action that was performed.

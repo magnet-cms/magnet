@@ -1,6 +1,7 @@
 export * from './login.page'
 export * from './dashboard.page'
 export * from './content-manager.page'
+export * from './configure-view-drawer'
 export * from './media.page'
 export * from './account.page'
 export * from './settings.page'

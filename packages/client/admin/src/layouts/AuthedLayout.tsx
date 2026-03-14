@@ -7,6 +7,7 @@ import type {
 } from '@magnet-cms/ui/components/organisms/app-layout'
 import { AppLayout } from '@magnet-cms/ui/components/organisms/app-layout'
 import {
+	Activity,
 	Bell,
 	FlaskConical,
 	Image,
@@ -142,6 +143,11 @@ export function AuthedLayout({ children, header, sidebar }: AuthedLayoutProps) {
 					title: 'API Keys',
 					url: '/api-keys',
 					icon: Key,
+				},
+				{
+					title: 'Activity',
+					url: '/activity',
+					icon: Activity,
 				},
 				{
 					title: 'Settings',
