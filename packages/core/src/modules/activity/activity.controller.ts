@@ -60,6 +60,7 @@ const VALID_EVENT_NAMES = new Set<string>([
 	'webhook.delivery_failed',
 	'plugin.initialized',
 	'plugin.destroyed',
+	'notification.created',
 	'system.startup',
 	'system.shutdown',
 ])

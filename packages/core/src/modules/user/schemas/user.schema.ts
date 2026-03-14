@@ -39,6 +39,9 @@ export class User {
 	@Field.Date({ hidden: true })
 	lastLogin?: Date
 
+	@Field.DateTime({ default: () => new Date(), hidden: true })
+	createdAt?: Date
+
 	async hashPassword() {
 		this.password = await hash(this.password, 10)
 	}

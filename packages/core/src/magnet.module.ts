@@ -21,6 +21,7 @@ import { ContentModule } from './modules/content/content.module'
 import { DatabaseModule } from './modules/database/database.module'
 import { DocumentModule } from './modules/document/document.module'
 import { EnvironmentModule } from './modules/environment/environment.module'
+import { EventContextInterceptor } from './modules/events/event-context.interceptor'
 import { EventsModule } from './modules/events/events.module'
 import { HealthModule } from './modules/health/health.module'
 import { HistoryModule } from './modules/history/history.module'
@@ -101,6 +102,7 @@ export class MagnetModule {
 			providers: [
 				{ provide: APP_PIPE, useClass: ValidationPipe },
 				{ provide: APP_FILTER, useClass: GlobalExceptionFilter },
+				{ provide: APP_INTERCEPTOR, useClass: EventContextInterceptor },
 				{ provide: APP_INTERCEPTOR, useClass: LoggingInterceptor },
 				{ provide: MagnetModuleOptions, useValue: defaultOptions },
 				{ provide: APP_GUARD, useClass: RestrictedGuard },

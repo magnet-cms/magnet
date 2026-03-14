@@ -201,8 +201,9 @@ export class AuthService {
 			sessionId = session.sessionId
 		}
 
-		// Log successful login
+		// Log successful login and update lastLogin timestamp
 		await this.logLoginAttempt(credentials.email, true, null, context)
+		await this.userService.update(user.id, { lastLogin: new Date() })
 		await this.emitEvent('user.login', { userId: user.id, sessionId })
 
 		return {

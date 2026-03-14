@@ -64,6 +64,8 @@ export type EventName =
 	// Plugin events
 	| 'plugin.initialized'
 	| 'plugin.destroyed'
+	// Notification events
+	| 'notification.created'
 	// System events
 	| 'system.startup'
 	| 'system.shutdown'
@@ -225,6 +227,16 @@ export interface SystemEventPayload extends BaseEventPayload {
 }
 
 /**
+ * Notification created event payload
+ */
+export interface NotificationEventPayload extends BaseEventPayload {
+	notificationId: string
+	targetUserId: string
+	type: string
+	channels: string[]
+}
+
+/**
  * Event payload map - maps event names to their payload types
  */
 export interface EventPayloadMap {
@@ -293,6 +305,9 @@ export interface EventPayloadMap {
 	// Plugin events
 	'plugin.initialized': PluginEventPayload
 	'plugin.destroyed': PluginEventPayload
+
+	// Notification events
+	'notification.created': NotificationEventPayload
 
 	// System events
 	'system.startup': SystemEventPayload

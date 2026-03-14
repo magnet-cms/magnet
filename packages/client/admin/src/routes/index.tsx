@@ -36,6 +36,7 @@ import { LoginForm } from '~/features/auth/login'
 import { ProfileSetupForm } from '~/features/auth/profile-setup'
 import { SignupForm } from '~/features/auth/register'
 import {
+	ContentManagerHomePage,
 	ContentManagerListingPage,
 	SchemaFormPage,
 } from '~/features/content-manager'
@@ -220,6 +221,10 @@ const coreDashboardRoutes: RouteObject[] = [
 		path: 'content-manager',
 		element: <Outlet />,
 		children: [
+			{
+				path: '',
+				element: withSuspense(ContentManagerHomePage),
+			},
 			{
 				path: ':schema',
 				element: withSuspense(ContentManagerListingPageWrapper),

@@ -45,7 +45,7 @@ export class UserService {
 		return this.userModel.create(userData)
 	}
 
-	async update(id: string, updateUserDto: Partial<CreateUserDto>) {
+	async update(id: string, updateUserDto: Partial<User>) {
 		return this.userModel.update({ id }, updateUserDto)
 	}
 
