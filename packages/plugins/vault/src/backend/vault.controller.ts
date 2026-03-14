@@ -146,7 +146,7 @@ export class VaultController {
 	 *
 	 * Read secret key names (NOT values) at the given path.
 	 */
-	@Get('secrets/:path(*)')
+	@Get('secrets/*path')
 	async getSecretKeys(
 		@Param('path') path: string,
 	): Promise<{ keys: string[] }> {
