@@ -11,7 +11,7 @@ import * as __fd_glob_16 from '../content/docs/client/ui.mdx?collection=docs'
 import * as __fd_glob_17 from '../content/docs/common/decorators.mdx?collection=docs'
 import * as __fd_glob_18 from '../content/docs/common/field-decorators.mdx?collection=docs'
 import * as __fd_glob_19 from '../content/docs/common/index.mdx?collection=docs'
-import { default as __fd_glob_5 } from '../content/docs/common/meta.json?collection=docs'
+import { default as __fd_glob_3 } from '../content/docs/common/meta.json?collection=docs'
 import * as __fd_glob_20 from '../content/docs/core/admin-module.mdx?collection=docs'
 import * as __fd_glob_21 from '../content/docs/core/api-keys-module.mdx?collection=docs'
 import * as __fd_glob_22 from '../content/docs/core/auth-module.mdx?collection=docs'
@@ -23,7 +23,7 @@ import * as __fd_glob_26 from '../content/docs/core/notifications-module.mdx?col
 import * as __fd_glob_27 from '../content/docs/core/rbac-module.mdx?collection=docs'
 import * as __fd_glob_28 from '../content/docs/getting-started/index.mdx?collection=docs'
 import * as __fd_glob_29 from '../content/docs/getting-started/installation.mdx?collection=docs'
-import { default as __fd_glob_3 } from '../content/docs/getting-started/meta.json?collection=docs'
+import { default as __fd_glob_5 } from '../content/docs/getting-started/meta.json?collection=docs'
 import * as __fd_glob_30 from '../content/docs/getting-started/quick-start.mdx?collection=docs'
 import { default as __fd_glob_6 } from '../content/docs/guides/meta.json?collection=docs'
 import * as __fd_glob_31 from '../content/docs/guides/nextjs-integration.mdx?collection=docs'
@@ -56,9 +56,9 @@ export const docs = await create.docs(
 		'meta.json': __fd_glob_0,
 		'adapters/meta.json': __fd_glob_1,
 		'client/meta.json': __fd_glob_2,
-		'getting-started/meta.json': __fd_glob_3,
+		'common/meta.json': __fd_glob_3,
 		'core/meta.json': __fd_glob_4,
-		'common/meta.json': __fd_glob_5,
+		'getting-started/meta.json': __fd_glob_5,
 		'guides/meta.json': __fd_glob_6,
 		'migrations/meta.json': __fd_glob_7,
 		'plugins/meta.json': __fd_glob_8,

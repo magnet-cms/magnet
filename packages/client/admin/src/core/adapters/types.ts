@@ -106,6 +106,8 @@ export interface AuthStatus {
 	authenticated: boolean
 	requiresSetup: boolean
 	message: string
+	/** OAuth providers that are configured and enabled. Used to render provider buttons. */
+	providers?: string[]
 }
 
 // ============================================================================

@@ -2,7 +2,7 @@
 
 import { Button, Skeleton } from '@magnet-cms/ui'
 import { ArrowDown, FolderPlus, Upload } from 'lucide-react'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
 import type { MediaItem } from '~/core/adapters/types'
@@ -126,6 +126,15 @@ function transformMediaToAsset(
 export function MediaLibraryPage() {
 	// State
 	const [searchQuery, setSearchQuery] = useState('')
+	const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('')
+
+	useEffect(() => {
+		const timer = setTimeout(() => {
+			setDebouncedSearchQuery(searchQuery)
+			setPage(1)
+		}, 400)
+		return () => clearTimeout(timer)
+	}, [searchQuery])
 	const [typeFilter, setTypeFilter] = useState('all')
 	const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'name' | 'size'>(
 		'newest',
@@ -162,11 +171,11 @@ export function MediaLibraryPage() {
 			limit: 24,
 			folder: currentFolder,
 			mimeType: mimeTypeMap[typeFilter],
-			search: searchQuery || undefined,
+			search: debouncedSearchQuery || undefined,
 			sortBy: sortMap[sortBy],
 			sortOrder: sortBy === 'oldest' ? ('asc' as const) : ('desc' as const),
 		}
-	}, [page, currentFolder, typeFilter, searchQuery, sortBy])
+	}, [page, currentFolder, typeFilter, debouncedSearchQuery, sortBy])
 
 	// Hooks
 	const {
@@ -437,7 +446,7 @@ export function MediaLibraryPage() {
 										setCurrentFolder(undefined)
 										setPage(1)
 									}}
-									className="ml-2 text-blue-600 hover:text-blue-700"
+									className="ml-2 text-blue-600 hover:text-blue-700 cursor-pointer"
 								>
 									← Back to all
 								</button>
@@ -480,7 +489,7 @@ export function MediaLibraryPage() {
 				/>
 
 				{/* Content Grid */}
-				<div className="flex-1 overflow-auto px-6 pb-6">
+				<div className="flex-1 overflow-auto px-6 py-6">
 					{/* Folders */}
 					{!currentFolder && transformedFolders.length > 0 && (
 						<FolderGrid
@@ -490,7 +499,7 @@ export function MediaLibraryPage() {
 					)}
 
 					{/* Assets */}
-					<div className="mt-6">
+					<div>
 						<h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
 							Assets
 						</h3>

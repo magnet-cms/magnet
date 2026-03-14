@@ -13,8 +13,8 @@ export class CreateUserDto {
 
 	@IsString()
 	@Length(6, 100)
-	@IsNotEmpty()
-	password!: string
+	@IsOptional()
+	password?: string | null
 
 	@IsString()
 	@Length(2, 100)
@@ -24,4 +24,12 @@ export class CreateUserDto {
 	@IsString()
 	@IsOptional()
 	role?: string
+
+	@IsString()
+	@IsOptional()
+	provider?: string | null
+
+	@IsString()
+	@IsOptional()
+	providerId?: string | null
 }

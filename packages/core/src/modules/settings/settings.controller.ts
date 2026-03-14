@@ -1,4 +1,5 @@
 import type { SettingValue, SettingsRecord } from '@magnet-cms/common'
+import { ValidationException } from '@magnet-cms/common'
 import {
 	Body,
 	Controller,
@@ -63,6 +64,7 @@ export class SettingsController {
 
 			return results
 		} catch (error: unknown) {
+			if (error instanceof ValidationException) throw error
 			throw new HttpException(
 				error instanceof Error ? error.message : 'Failed to update settings',
 				HttpStatus.BAD_REQUEST,
@@ -79,6 +81,7 @@ export class SettingsController {
 		try {
 			return await this.settingsService.updateSetting(key, value)
 		} catch (error: unknown) {
+			if (error instanceof ValidationException) throw error
 			throw new HttpException(
 				error instanceof Error ? error.message : 'Failed to update setting',
 				HttpStatus.BAD_REQUEST,

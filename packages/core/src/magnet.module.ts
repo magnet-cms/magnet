@@ -20,6 +20,7 @@ import { AuthModule } from './modules/auth/auth.module'
 import { ContentModule } from './modules/content/content.module'
 import { DatabaseModule } from './modules/database/database.module'
 import { DocumentModule } from './modules/document/document.module'
+import { EmailModule } from './modules/email/email.module'
 import { EnvironmentModule } from './modules/environment/environment.module'
 import { EventContextInterceptor } from './modules/events/event-context.interceptor'
 import { EventsModule } from './modules/events/events.module'
@@ -77,6 +78,7 @@ export class MagnetModule {
 			DBModule,
 			DiscoveryModule,
 			DocumentModule,
+			EmailModule.forRoot(defaultOptions.email),
 			EnvironmentModule,
 			EventsModule,
 			HistoryModule,

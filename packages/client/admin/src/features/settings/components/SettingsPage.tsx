@@ -29,6 +29,7 @@ export function SettingsPage() {
 	const [tabs, setTabs] = useState<SettingsTab[]>([])
 	const [activeTab, setActiveTab] = useState<string>('')
 	const [loadingTabs, setLoadingTabs] = useState(true)
+	const initialTabSet = useRef(false)
 
 	// Fetch all settings schema names
 	const { data: settingsNames, isLoading: namesLoading } = useSettings()
@@ -53,15 +54,18 @@ export function SettingsPage() {
 			const parsedTabs = parseSettingsTabs(validSchemas)
 			setTabs(parsedTabs)
 
-			// Set first tab as active if none selected
-			const firstTab = parsedTabs[0]
-			if (firstTab && !activeTab) {
-				setActiveTab(firstTab.id)
+			// Set first tab as active only on initial load
+			if (!initialTabSet.current) {
+				const firstTab = parsedTabs[0]
+				if (firstTab) {
+					setActiveTab(firstTab.id)
+					initialTabSet.current = true
+				}
 			}
 		} finally {
 			setLoadingTabs(false)
 		}
-	}, [settingsNames, adapter, activeTab])
+	}, [settingsNames, adapter])
 
 	useEffect(() => {
 		loadSchemas()
@@ -221,11 +225,7 @@ export function SettingsPage() {
 				<div className="flex-1 overflow-y-auto p-6">
 					<div className="space-y-8 pb-10">
 						{activeTab && (
-							<DynamicSettingsForm
-								key={activeTab}
-								ref={formRef}
-								group={activeTab}
-							/>
+							<DynamicSettingsForm ref={formRef} group={activeTab} />
 						)}
 					</div>
 				</div>

@@ -47,7 +47,7 @@ export function SettingsDocumentationPanel({
 	if (!activeItem) return null
 
 	return (
-		<aside className="w-80 bg-white border-l border-gray-200 hidden md:flex flex-col sticky top-0 h-screen">
+		<aside className="w-80 bg-white border-l border-gray-200 hidden md:flex flex-col">
 			<div className="flex items-center justify-between p-4 border-b border-gray-100 shrink-0">
 				<h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
 					Documentation

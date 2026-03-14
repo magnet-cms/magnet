@@ -1,10 +1,12 @@
 import { Module, forwardRef } from '@nestjs/common'
 import { SettingsModule } from '~/modules/settings'
 import { InternationalizationService } from './internationalization.service'
-import { Internationalization } from './setting/internationalization.setting'
+import { InternationalizationSettings } from './internationalization.settings'
 
 @Module({
-	imports: [forwardRef(() => SettingsModule.forFeature(Internationalization))],
+	imports: [
+		forwardRef(() => SettingsModule.forFeature(InternationalizationSettings)),
+	],
 	providers: [InternationalizationService],
 	exports: [InternationalizationService],
 })

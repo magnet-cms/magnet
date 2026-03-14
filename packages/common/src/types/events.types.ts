@@ -30,6 +30,7 @@ export type EventName =
 	| 'user.password_reset_requested'
 	| 'user.password_reset'
 	| 'user.password_reset_completed'
+	| 'user.email_verification_requested'
 	| 'user.email_verified'
 	| 'user.session_revoked'
 	// Auth events
@@ -253,14 +254,21 @@ export interface EventPayloadMap {
 	'user.created': UserEventPayload
 	'user.updated': UserEventPayload & { changes: string[] }
 	'user.deleted': UserEventPayload
-	'user.registered': UserEventPayload
+	'user.registered': UserEventPayload & { name?: string }
 	'user.login': UserEventPayload & { sessionId?: string }
 	'user.logout': UserEventPayload & { sessionId?: string }
 	'user.logout_all': UserEventPayload
 	'user.password_changed': UserEventPayload
-	'user.password_reset_requested': UserEventPayload & { token?: string }
+	'user.password_reset_requested': UserEventPayload & {
+		token?: string
+		plainToken?: string
+	}
 	'user.password_reset': UserEventPayload
 	'user.password_reset_completed': UserEventPayload
+	'user.email_verification_requested': UserEventPayload & {
+		name?: string
+		verificationToken?: string
+	}
 	'user.email_verified': UserEventPayload
 	'user.session_revoked': UserEventPayload & { sessionId: string }
 

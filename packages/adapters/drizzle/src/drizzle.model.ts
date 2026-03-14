@@ -127,7 +127,7 @@ export function createModel<T>(
 
 				// Prepare insert data
 				const insertData: Record<string, unknown> = {
-					...this._prepareData(data),
+					...this._prepareData(data, true),
 				}
 
 				// Add document fields if table has them
@@ -552,12 +552,22 @@ export function createModel<T>(
 		 * For JSONB columns (arrays/objects), ensure values are properly formatted
 		 * @internal
 		 */
-		_prepareData(data: Record<string, unknown>): Record<string, unknown> {
+		_prepareData(
+			data: Record<string, unknown>,
+			isCreate = false,
+		): Record<string, unknown> {
 			const result: Record<string, unknown> = {}
+
+			// Ensure createdAt is set on new records so it never relies on a
+			// potentially-missing DB-level default (e.g. when the column was
+			// originally migrated without DEFAULT NOW()).
+			if (isCreate && !data.createdAt) {
+				result.createdAt = new Date()
+			}
 
 			for (const [key, value] of Object.entries(data)) {
 				if (key === 'id') continue // Skip id, it's auto-generated
-				if (key === 'createdAt') continue // Skip createdAt - let database use default
+				if (key === 'createdAt') continue // Skip createdAt - handled above or irrelevant for updates
 
 				if (value === undefined || value === null) {
 					// Skip undefined/null - let database defaults handle it

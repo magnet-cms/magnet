@@ -1,6 +1,7 @@
 import { Type } from '@nestjs/common'
 import type { AuthConfig } from './auth.types'
 import { DBConfig } from './database.types'
+import type { EmailConfig } from './email.types'
 import type { PluginConfig } from './plugin.types'
 import type { RBACModuleOptions } from './rbac.types'
 import { StorageConfig } from './storage.types'
@@ -45,6 +46,12 @@ export class MagnetModuleOptions {
 	playground?: PlaygroundOptions
 	storage?: StorageConfig
 	/**
+	 * Email adapter configuration
+	 * @example
+	 * email: { adapter: 'nodemailer', nodemailer: { host: 'smtp.example.com', port: 587, auth: { user: 'user', pass: 'pass' } } }
+	 */
+	email?: EmailConfig
+	/**
 	 * Plugins to load with the Magnet module
 	 */
 	plugins?: PluginConfig[]
@@ -75,6 +82,7 @@ export class MagnetModuleOptions {
 		internationalization,
 		playground,
 		storage,
+		email,
 		plugins,
 		admin,
 		rbac,
@@ -85,6 +93,7 @@ export class MagnetModuleOptions {
 		this.internationalization = internationalization
 		this.playground = playground
 		this.storage = storage
+		this.email = email
 		this.plugins = plugins
 		this.admin = admin
 		this.rbac = rbac

@@ -78,6 +78,7 @@ export class JwtAuthStrategy
 		const user = await this.userService.findOne({ email })
 		if (!user) return null
 
+		if (!user.password) return null
 		const isPasswordValid = await compare(password, user.password)
 		if (!isPasswordValid) return null
 

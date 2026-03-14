@@ -237,15 +237,15 @@ export function AccessControlPage() {
 					onDuplicate={() => setDuplicateOpen(true)}
 				/>
 
-				<div className="w-full px-6 border-b border-gray-200 flex items-end gap-6">
+				<div className="px-8 flex items-center gap-6 border-t border-gray-200 border-b border-gray-100 overflow-x-auto">
 					<button
 						type="button"
 						onClick={() => setActiveTab('permissions')}
 						className={cn(
-							'pb-3 text-xs font-medium border-b-2 transition-colors',
+							'py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap',
 							activeTab === 'permissions'
-								? 'border-gray-900 text-gray-900'
-								: 'border-transparent text-gray-500 hover:text-gray-700',
+								? 'text-gray-900 border-gray-900'
+								: 'text-gray-500 hover:text-gray-900 border-transparent hover:border-gray-200',
 						)}
 					>
 						Permissions
@@ -254,10 +254,10 @@ export function AccessControlPage() {
 						type="button"
 						onClick={() => setActiveTab('advanced')}
 						className={cn(
-							'pb-3 text-xs font-medium border-b-2 transition-colors',
+							'py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap',
 							activeTab === 'advanced'
-								? 'border-gray-900 text-gray-900'
-								: 'border-transparent text-gray-500 hover:text-gray-700',
+								? 'text-gray-900 border-gray-900'
+								: 'text-gray-500 hover:text-gray-900 border-transparent hover:border-gray-200',
 						)}
 					>
 						Advanced Settings

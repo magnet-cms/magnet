@@ -1,5 +1,4 @@
 import { SettingField, Settings } from '@magnet-cms/common'
-import { locales } from '~/modules/database/modules/internationalization/setting/internationalization.setting'
 
 /**
  * Content settings schema.
@@ -44,18 +43,11 @@ import { locales } from '~/modules/database/modules/internationalization/setting
 			order: 3,
 		},
 		{
-			name: 'i18n',
-			label: 'Internationalization',
-			icon: 'languages',
-			description: 'Configure multi-language content settings',
-			order: 4,
-		},
-		{
 			name: 'deletion',
 			label: 'Deletion',
 			icon: 'trash-2',
 			description: 'Configure content deletion behavior',
-			order: 5,
+			order: 4,
 			variant: 'danger',
 		},
 	],
@@ -130,46 +122,6 @@ export class ContentSettings {
 		order: 2,
 	})
 	maxRevisions = 20
-
-	// Internationalization
-	@SettingField.Boolean({
-		label: 'Enable i18n',
-		description: 'Enable internationalization for content',
-		default: true,
-		section: 'i18n',
-		order: 1,
-	})
-	enableI18n = true
-
-	@SettingField.Select({
-		label: 'Available Languages',
-		description: 'Select which languages are available for content',
-		options: locales,
-		default: ['en'],
-		multiple: true,
-		section: 'i18n',
-		order: 2,
-	})
-	locales: string[] = ['en']
-
-	@SettingField.Select({
-		label: 'Default Locale',
-		description: 'Default language for content',
-		options: locales,
-		default: 'en',
-		section: 'i18n',
-		order: 3,
-	})
-	defaultLocale = 'en'
-
-	@SettingField.Boolean({
-		label: 'Require All Locales',
-		description: 'Require content to be translated to all enabled locales',
-		default: false,
-		section: 'i18n',
-		order: 4,
-	})
-	requireAllLocales = false
 
 	// Deletion
 	@SettingField.Boolean({

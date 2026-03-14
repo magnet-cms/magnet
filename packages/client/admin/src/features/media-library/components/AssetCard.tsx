@@ -170,7 +170,7 @@ export function AssetCard({
 				{/* Overlay Actions */}
 				<div
 					className={cn(
-						'absolute inset-0 bg-black/40 transition-opacity flex items-center justify-center gap-2',
+						'absolute inset-0 bg-black/40 transition-opacity flex items-center justify-center gap-2 pointer-events-none',
 						isHovered ? 'opacity-100' : 'opacity-0',
 					)}
 				>
@@ -181,7 +181,7 @@ export function AssetCard({
 							e.stopPropagation()
 							onView(asset.id)
 						}}
-						className="p-1.5 bg-white/90 hover:bg-white"
+						className="p-1.5 bg-white/90 hover:bg-white pointer-events-auto"
 					>
 						<Eye className="w-4 h-4" />
 					</Button>
@@ -192,7 +192,7 @@ export function AssetCard({
 							e.stopPropagation()
 							onDownload(asset.id)
 						}}
-						className="p-1.5 bg-white/90 hover:bg-white"
+						className="p-1.5 bg-white/90 hover:bg-white pointer-events-auto"
 					>
 						<Download className="w-4 h-4" />
 					</Button>

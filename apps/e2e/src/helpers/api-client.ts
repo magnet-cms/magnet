@@ -75,6 +75,8 @@ export interface AuthStatus {
 	authenticated: boolean
 	requiresSetup?: boolean
 	message?: string
+	/** OAuth providers that are configured and enabled */
+	providers?: string[]
 	user?: {
 		id: string
 		email: string

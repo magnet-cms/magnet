@@ -1,0 +1,24 @@
+<h2 style="margin: 0 0 16px; font-size: 20px; font-weight: 600; color: #18181b;">Verify Your Email</h2>
+
+<p style="margin: 0 0 16px; color: #3f3f46; font-size: 14px; line-height: 1.6;">
+  Hi{{#if userName}} {{userName}}{{/if}},
+</p>
+
+<p style="margin: 0 0 24px; color: #3f3f46; font-size: 14px; line-height: 1.6;">
+  Please verify your email address by clicking the button below. This link will expire in 24 hours.
+</p>
+
+<div style="text-align: center; margin: 0 0 24px;">
+  <a href="{{verifyLink}}" style="display: inline-block; padding: 12px 24px; background-color: #18181b; color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 14px; font-weight: 500;">
+    Verify Email
+  </a>
+</div>
+
+<p style="margin: 0 0 8px; color: #71717a; font-size: 12px; line-height: 1.5;">
+  If you didn't create an account, you can safely ignore this email.
+</p>
+
+<p style="margin: 0; color: #71717a; font-size: 12px; line-height: 1.5;">
+  If the button doesn't work, copy and paste this link into your browser:<br>
+  <a href="{{verifyLink}}" style="color: #3b82f6; word-break: break-all;">{{verifyLink}}</a>
+</p>

@@ -33,6 +33,7 @@ import {
 import { ActivityPage } from '~/features/activity'
 import { ApiKeysListingPage } from '~/features/api-keys'
 import { LoginForm } from '~/features/auth/login'
+import { OAuthCallbackPage } from '~/features/auth/oauth-callback'
 import { ProfileSetupForm } from '~/features/auth/profile-setup'
 import { SignupForm } from '~/features/auth/register'
 import {
@@ -380,6 +381,11 @@ export const routes: RouteObject[] = [
 			{
 				path: '/auth',
 				element: <Navigate to="/login" replace />,
+			},
+			{
+				// OAuth callback: NestJS backend redirects here with tokens in query params
+				path: '/auth/callback',
+				element: <OAuthCallbackPage />,
 			},
 			{
 				path: '/login',

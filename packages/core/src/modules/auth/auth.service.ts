@@ -7,13 +7,15 @@ import {
 	Model,
 	UserNotFoundError,
 } from '@magnet-cms/common'
+import type { AuthConfig } from '@magnet-cms/common'
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common'
+import { JwtService } from '@nestjs/jwt'
 import { compare, hash } from 'bcryptjs'
 import { EventService } from '~/modules/events'
 import { MagnetLogger } from '~/modules/logging/logger.service'
 import { SettingsService } from '~/modules/settings'
 import { UserService } from '~/modules/user'
-import { AUTH_STRATEGY } from './auth.constants'
+import { AUTH_CONFIG, AUTH_STRATEGY } from './auth.constants'
 import { AuthSettings } from './auth.settings'
 import { ChangePasswordDto } from './dto/change-password.dto'
 import { RegisterDTO } from './dto/register.dto'
@@ -77,7 +79,9 @@ export class AuthService {
 		private settingsService: SettingsService,
 		private eventService: EventService,
 		private passwordResetService: PasswordResetService,
+		private jwtService: JwtService,
 		@Inject(AUTH_STRATEGY) private readonly authStrategy: AuthStrategy,
+		@Inject(AUTH_CONFIG) private readonly authConfig: AuthConfig | null,
 		@InjectModel(RefreshToken)
 		private readonly refreshTokenModel: Model<RefreshToken>,
 		@InjectModel(Session) private readonly sessionModel: Model<Session>,
@@ -113,7 +117,11 @@ export class AuthService {
 			role,
 		})
 
-		await this.emitEvent('user.registered', { userId: user.id })
+		await this.emitEvent('user.registered', {
+			userId: user.id,
+			email: registerDto.email,
+			name: registerDto.name,
+		})
 
 		return user
 	}
@@ -435,7 +443,11 @@ export class AuthService {
 		}
 
 		const result = await this.passwordResetService.createResetRequest(user.id)
-		await this.emitEvent('user.password_reset_requested', { userId: user.id })
+		await this.emitEvent('user.password_reset_requested', {
+			userId: user.id,
+			plainToken: result?.token,
+			email: user.email,
+		})
 
 		return result
 	}
@@ -475,6 +487,12 @@ export class AuthService {
 	): Promise<{ message: string }> {
 		const user = await this.userService.findOneById(userId)
 		if (!user) throw new UserNotFoundError(userId)
+
+		if (!user.password) {
+			throw new InvalidCredentialsError(
+				'This account uses OAuth login and has no local password to change.',
+			)
+		}
 
 		const isPasswordValid = await compare(
 			changePasswordDto.currentPassword,
@@ -577,6 +595,147 @@ export class AuthService {
 	 */
 	getStrategyName(): string {
 		return this.authStrategy.name
+	}
+
+	/**
+	 * Returns the list of OAuth providers that are both:
+	 * - Configured with credentials (in AuthConfig.oauth)
+	 * - Enabled in AuthSettings
+	 *
+	 * This is exposed via GET /auth/status so the admin UI knows which
+	 * provider buttons to render.
+	 */
+	async getEnabledOAuthProviders(): Promise<string[]> {
+		const configuredProviders = Object.keys(this.authConfig?.oauth ?? {})
+		if (configuredProviders.length === 0) return []
+
+		const settings = await this.settingsService.get(AuthSettings)
+
+		const enabledMap: Record<string, boolean> = {
+			google: settings.enableGoogleOAuth,
+			github: settings.enableGithubOAuth,
+		}
+
+		return configuredProviders.filter((p) => enabledMap[p] ?? false)
+	}
+
+	// ============================================================================
+	// OAuth Helpers
+	// ============================================================================
+
+	/**
+	 * Find an existing user by OAuth provider/providerId, or create one if not found.
+	 * Called from the OAuth callback handler after Passport validates the provider token.
+	 */
+	async findOrCreateOAuthUser(
+		provider: string,
+		providerId: string,
+		email: string,
+		name: string,
+	): Promise<AuthUser> {
+		// Look up by provider + providerId first (most reliable)
+		const existingByProvider = await this.userService.findOne({
+			provider,
+			providerId,
+		})
+		if (existingByProvider) {
+			return {
+				id: existingByProvider.id,
+				email: existingByProvider.email,
+				role: existingByProvider.role ?? 'viewer',
+			}
+		}
+
+		// If the email exists as a local-only user, return it and link the provider
+		if (email) {
+			const existingByEmail = await this.userService.findOne({ email })
+			if (existingByEmail) {
+				await this.userService.update(existingByEmail.id, {
+					provider,
+					providerId,
+				})
+				return {
+					id: existingByEmail.id,
+					email: existingByEmail.email,
+					role: existingByEmail.role ?? 'viewer',
+				}
+			}
+		}
+
+		// Create a new user for this OAuth identity
+		const newUser = await this.userService.create({
+			email,
+			name,
+			password: undefined,
+			role: 'viewer',
+			provider,
+			providerId,
+		})
+
+		await this.emitEvent('user.registered', {
+			userId: newUser.id,
+			email: newUser.email,
+			name: newUser.name,
+		})
+
+		return {
+			id: newUser.id,
+			email: newUser.email,
+			role: newUser.role ?? 'viewer',
+		}
+	}
+
+	/**
+	 * Issue JWT tokens for a user authenticated via an OAuth provider.
+	 * Bypasses credential validation — only called after Passport has already
+	 * verified the OAuth token with the provider.
+	 */
+	async loginWithOAuthProfile(
+		user: AuthUser,
+		context: RequestContext = {},
+	): Promise<AuthResult> {
+		const settings = await this.settingsService.get(AuthSettings)
+
+		// Enforce concurrent session limit if configured
+		if (settings.enableSessions && settings.maxConcurrentSessions > 0) {
+			await this.enforceConcurrentSessionLimit(
+				user.id,
+				settings.maxConcurrentSessions,
+			)
+		}
+
+		// Sign an access token directly (OAuth users skip credential validation)
+		const payload = { sub: user.id, email: user.email, role: user.role }
+		const accessToken = this.jwtService.sign(payload)
+
+		// Create a refresh token
+		const refreshTokenData = await this.createRefreshToken(
+			user.id,
+			settings.refreshTokenDuration,
+			context,
+		)
+
+		// Create session if enabled
+		let sessionId: string | undefined
+		if (settings.enableSessions) {
+			const session = await this.createSession(
+				user.id,
+				refreshTokenData.id,
+				context,
+				settings,
+			)
+			sessionId = session.sessionId
+		}
+
+		await this.userService.update(user.id, { lastLogin: new Date() })
+		await this.emitEvent('user.login', { userId: user.id, sessionId })
+
+		return {
+			access_token: accessToken,
+			refresh_token: refreshTokenData.plainToken,
+			expires_in: settings.sessionDuration * 3600,
+			token_type: 'Bearer',
+		}
 	}
 
 	// ============================================================================

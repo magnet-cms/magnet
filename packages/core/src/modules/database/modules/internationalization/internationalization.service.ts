@@ -1,6 +1,7 @@
 import { Injectable, OnModuleInit } from '@nestjs/common'
 import { MagnetLogger } from '~/modules/logging/logger.service'
 import { SettingsService } from '~/modules/settings'
+import { InternationalizationSettings } from './internationalization.settings'
 
 @Injectable()
 export class InternationalizationService implements OnModuleInit {
@@ -20,29 +21,17 @@ export class InternationalizationService implements OnModuleInit {
 
 	async loadSettings() {
 		try {
-			const settings = await this.settingsService.getSettingsByGroup(
-				'Internationalization',
+			const settings = await this.settingsService.get(
+				InternationalizationSettings,
 			)
-
-			// Find the locales setting
-			const localesSetting = settings.find((s) => s.key === 'locales')
-			if (
-				localesSetting &&
-				Array.isArray(localesSetting.value) &&
-				localesSetting.value.every((v) => typeof v === 'string')
-			) {
-				this.locales = localesSetting.value
+			if (Array.isArray(settings.locales) && settings.locales.length > 0) {
+				this.locales = settings.locales
 			}
-
-			// Find the default locale setting
-			const defaultLocaleSetting = settings.find(
-				(s) => s.key === 'defaultLocale',
-			)
 			if (
-				defaultLocaleSetting &&
-				typeof defaultLocaleSetting.value === 'string'
+				typeof settings.defaultLocale === 'string' &&
+				settings.defaultLocale
 			) {
-				this.defaultLocale = defaultLocaleSetting.value
+				this.defaultLocale = settings.defaultLocale
 			}
 		} catch (error) {
 			this.logger.error('Failed to load internationalization settings', error)
@@ -57,9 +46,11 @@ export class InternationalizationService implements OnModuleInit {
 		return this.defaultLocale
 	}
 
-	async setLocales(locales: string[]): Promise<void> {
-		this.locales = locales
-		await this.settingsService.updateSetting('locales', locales)
+	async setLocales(newLocales: string[]): Promise<void> {
+		this.locales = newLocales
+		await this.settingsService.update(InternationalizationSettings, {
+			locales: newLocales,
+		})
 	}
 
 	async setDefaultLocale(locale: string): Promise<void> {
@@ -70,7 +61,9 @@ export class InternationalizationService implements OnModuleInit {
 		}
 
 		this.defaultLocale = locale
-		await this.settingsService.updateSetting('defaultLocale', locale)
+		await this.settingsService.update(InternationalizationSettings, {
+			defaultLocale: locale,
+		})
 	}
 
 	async addLocale(locale: string): Promise<void> {

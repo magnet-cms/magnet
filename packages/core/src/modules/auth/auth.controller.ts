@@ -147,7 +147,9 @@ export class AuthController {
 	}
 
 	/**
-	 * Get auth status (public endpoint)
+	 * Get auth status (public endpoint).
+	 * Returns authentication state, setup requirement, and the list of
+	 * enabled OAuth providers so the admin UI can render provider buttons.
 	 */
 	@Get('status')
 	async status(@Req() req: Request & { user?: AuthenticatedUser }): Promise<{
@@ -155,9 +157,12 @@ export class AuthController {
 		requiresSetup?: boolean
 		message?: string
 		user?: AuthenticatedUser
+		providers?: string[]
 	}> {
+		const providers = await this.authService.getEnabledOAuthProviders()
+
 		if (req.user) {
-			return { authenticated: true, user: req.user }
+			return { authenticated: true, user: req.user, providers }
 		}
 
 		const existingUser = await this.authService.exists()
@@ -168,6 +173,7 @@ export class AuthController {
 			message: existingUser
 				? 'Authentication required.'
 				: 'No users found. Initial setup required.',
+			providers,
 		}
 	}
 

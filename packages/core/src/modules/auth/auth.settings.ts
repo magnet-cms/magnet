@@ -49,6 +49,14 @@ import { SettingField, Settings } from '@magnet-cms/common'
 			description: 'Control user registration settings',
 			order: 4,
 		},
+		{
+			name: 'oauth',
+			label: 'OAuth Providers',
+			icon: 'plug',
+			description:
+				'Enable or disable OAuth login providers. Credentials must be configured in MagnetModule.forRoot().',
+			order: 5,
+		},
 	],
 })
 export class AuthSettings {
@@ -164,4 +172,39 @@ export class AuthSettings {
 		order: 2,
 	})
 	requireEmailVerification = false
+
+	// OAuth Providers
+	@SettingField.Boolean({
+		label: 'Enable Google Login',
+		description:
+			'Allow users to sign in with Google. Requires Google OAuth credentials in MagnetModule config.',
+		default: false,
+		section: 'oauth',
+		order: 1,
+	})
+	enableGoogleOAuth = false
+
+	@SettingField.Boolean({
+		label: 'Enable GitHub Login',
+		description:
+			'Allow users to sign in with GitHub. Requires GitHub OAuth App credentials in MagnetModule config.',
+		default: false,
+		section: 'oauth',
+		order: 2,
+	})
+	enableGithubOAuth = false
+
+	/**
+	 * URL to redirect the user after a successful OAuth login.
+	 * Should point to the admin UI's /auth/callback path.
+	 * @example 'https://myapp.com/admin/auth/callback'
+	 */
+	@SettingField.Text({
+		label: 'OAuth Redirect URL',
+		description:
+			'Where to redirect after OAuth login completes. Should be your admin UI /auth/callback URL.',
+		section: 'oauth',
+		order: 3,
+	})
+	oauthRedirectUrl = ''
 }

@@ -419,7 +419,6 @@ export function createHttpAdapter(config: HttpAdapterConfig): MagnetApiAdapter {
 				configured: string[]
 				default: string
 			}> {
-				// Available locales - matches internationalization.setting.ts
 				const availableLocales = [
 					{ key: 'English', value: 'en' },
 					{ key: 'Spanish', value: 'es' },
@@ -434,11 +433,10 @@ export function createHttpAdapter(config: HttpAdapterConfig): MagnetApiAdapter {
 					{ key: 'Arabic', value: 'ar' },
 				]
 
-				// Fetch from content settings group
-				const settings =
-					await request<Array<{ key: string; value: unknown }>>(
-						'/settings/content',
-					)
+				// Fetch from the canonical internationalization settings group
+				const settings = await request<Array<{ key: string; value: unknown }>>(
+					'/settings/internationalization',
+				)
 				const localesSetting = settings.find((s) => s.key === 'locales')
 				const defaultLocaleSetting = settings.find(
 					(s) => s.key === 'defaultLocale',

@@ -85,22 +85,50 @@ export const DynamicSettingsForm = forwardRef<
 		formState: { isDirty },
 	} = methods
 
+	// Reset form immediately when group changes to avoid stale values
+	useEffect(() => {
+		reset(defaultValues)
+	}, [group, reset]) // eslint-disable-line react-hooks/exhaustive-deps
+
+	// Derive allowed field keys from parsed schema for safe payload filtering
+	const schemaFieldKeys = useMemo(() => {
+		if (!parsedSchema) return null
+		const keys = new Set<string>()
+		for (const section of parsedSchema.sections) {
+			for (const field of section.fields) {
+				keys.add(field.name)
+			}
+		}
+		return keys
+	}, [parsedSchema])
+
+	// Map Setting[] array (each item is { key, value, group, type, ... }) to { [key]: value }
+	const mergeSettingsData = (data: SettingsFormValues[]): SettingsFormValues =>
+		data.reduce<SettingsFormValues>((acc, item) => {
+			const setting = item as unknown as { key: string; value: SettingValue }
+			if (typeof setting.key === 'string') {
+				return { ...acc, [setting.key]: setting.value }
+			}
+			return acc
+		}, {})
+
 	// Sync form with loaded data
 	useEffect(() => {
 		if (settingsData && settingsData.length > 0) {
-			// Merge all settings into a single object
-			const merged = settingsData.reduce<SettingsFormValues>(
-				(acc, item) => ({ ...acc, ...(item as SettingsFormValues) }),
-				{},
-			)
+			const merged = mergeSettingsData(settingsData)
 			reset({ ...defaultValues, ...merged })
 		}
 	}, [settingsData, reset, defaultValues])
 
-	// Handle save
+	// Handle save — only send keys that belong to this settings schema
 	const handleSave = async (data: SettingsFormValues): Promise<void> => {
+		const payload = schemaFieldKeys
+			? Object.fromEntries(
+					Object.entries(data).filter(([k]) => schemaFieldKeys.has(k)),
+				)
+			: data
 		return new Promise((resolve, reject) => {
-			updateSettings(data, {
+			updateSettings(payload, {
 				onSuccess: () => {
 					toast.success('Settings saved successfully')
 					refetch()
@@ -117,10 +145,7 @@ export const DynamicSettingsForm = forwardRef<
 	// Handle reset
 	const handleReset = () => {
 		if (settingsData && settingsData.length > 0) {
-			const merged = settingsData.reduce<SettingsFormValues>(
-				(acc, item) => ({ ...acc, ...(item as SettingsFormValues) }),
-				{},
-			)
+			const merged = mergeSettingsData(settingsData)
 			reset({ ...defaultValues, ...merged })
 		} else {
 			reset(defaultValues)
