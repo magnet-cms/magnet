@@ -1,5 +1,6 @@
 import { MagnetModule } from '@magnet-cms/core'
 import { ContentBuilderPlugin } from '@magnet-cms/plugin-content-builder'
+import { VaultPlugin } from '@magnet-cms/plugin-vault'
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { CatsModule } from './modules/cats/cats.module'
@@ -19,7 +20,7 @@ import { VeterinariansModule } from './modules/veterinarians/veterinarians.modul
 				secret: process.env.JWT_SECRET || 'development-secret-key',
 			},
 			admin: true,
-			plugins: [{ plugin: ContentBuilderPlugin }],
+			plugins: [{ plugin: ContentBuilderPlugin }, { plugin: VaultPlugin }],
 		}),
 		CatsModule,
 		OwnersModule,

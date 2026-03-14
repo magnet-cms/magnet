@@ -50,12 +50,44 @@ import { SettingField, Settings } from '@magnet-cms/common'
 			order: 4,
 		},
 		{
-			name: 'oauth',
+			name: 'oauth_general',
 			label: 'OAuth Providers',
 			icon: 'plug',
 			description:
-				'Enable or disable OAuth login providers. Credentials must be configured in MagnetModule.forRoot().',
+				'Configure OAuth login providers. A provider becomes active once its Client ID and Client Secret are saved.',
 			order: 5,
+		},
+		{
+			name: 'oauth_google',
+			label: 'Google',
+			icon: 'globe',
+			description:
+				'Sign in with Google. Create credentials at console.cloud.google.com → APIs & Services → Credentials.',
+			order: 6,
+		},
+		{
+			name: 'oauth_github',
+			label: 'GitHub',
+			icon: 'github',
+			description:
+				'Sign in with GitHub. Create an OAuth App at github.com → Settings → Developer settings → OAuth Apps.',
+			order: 7,
+		},
+		{
+			name: 'oauth_facebook',
+			label: 'Facebook',
+			icon: 'facebook',
+			description:
+				'Sign in with Facebook. Create an app at developers.facebook.com.',
+			order: 8,
+		},
+		{
+			name: 'oauth_discord',
+			label: 'Discord',
+			icon: 'message-circle',
+			description:
+				'Sign in with Discord. Create an application at discord.com/developers/applications.',
+			order: 9,
 		},
 	],
 })
@@ -173,38 +205,138 @@ export class AuthSettings {
 	})
 	requireEmailVerification = false
 
-	// OAuth Providers
-	@SettingField.Boolean({
-		label: 'Enable Google Login',
-		description:
-			'Allow users to sign in with Google. Requires Google OAuth credentials in MagnetModule config.',
-		default: false,
-		section: 'oauth',
-		order: 1,
-	})
-	enableGoogleOAuth = false
-
-	@SettingField.Boolean({
-		label: 'Enable GitHub Login',
-		description:
-			'Allow users to sign in with GitHub. Requires GitHub OAuth App credentials in MagnetModule config.',
-		default: false,
-		section: 'oauth',
-		order: 2,
-	})
-	enableGithubOAuth = false
+	// ============================================================================
+	// OAuth General
+	// ============================================================================
 
 	/**
-	 * URL to redirect the user after a successful OAuth login.
-	 * Should point to the admin UI's /auth/callback path.
+	 * Where to redirect the browser after a successful OAuth login.
+	 * Should point to your admin UI's /auth/callback route.
 	 * @example 'https://myapp.com/admin/auth/callback'
 	 */
 	@SettingField.Text({
 		label: 'OAuth Redirect URL',
 		description:
-			'Where to redirect after OAuth login completes. Should be your admin UI /auth/callback URL.',
-		section: 'oauth',
-		order: 3,
+			'URL to redirect after OAuth login completes. Set this to your admin UI /auth/callback path.',
+		section: 'oauth_general',
+		order: 1,
 	})
 	oauthRedirectUrl = ''
+
+	// ============================================================================
+	// Google
+	// ============================================================================
+
+	@SettingField.Text({
+		label: 'Client ID',
+		description: 'Google OAuth 2.0 client ID',
+		section: 'oauth_google',
+		order: 1,
+	})
+	googleClientId = ''
+
+	@SettingField.Text({
+		label: 'Client Secret',
+		description: 'Google OAuth 2.0 client secret',
+		section: 'oauth_google',
+		order: 2,
+	})
+	googleClientSecret = ''
+
+	@SettingField.Text({
+		label: 'Callback URL',
+		description:
+			'Must match the authorized redirect URI in Google Cloud Console. Example: https://myapp.com/auth/oauth/google/callback',
+		section: 'oauth_google',
+		order: 3,
+	})
+	googleCallbackURL = ''
+
+	// ============================================================================
+	// GitHub
+	// ============================================================================
+
+	@SettingField.Text({
+		label: 'Client ID',
+		description: 'GitHub OAuth App client ID',
+		section: 'oauth_github',
+		order: 1,
+	})
+	githubClientId = ''
+
+	@SettingField.Text({
+		label: 'Client Secret',
+		description: 'GitHub OAuth App client secret',
+		section: 'oauth_github',
+		order: 2,
+	})
+	githubClientSecret = ''
+
+	@SettingField.Text({
+		label: 'Callback URL',
+		description:
+			'Must match the Authorization callback URL in your GitHub OAuth App. Example: https://myapp.com/auth/oauth/github/callback',
+		section: 'oauth_github',
+		order: 3,
+	})
+	githubCallbackURL = ''
+
+	// ============================================================================
+	// Facebook
+	// ============================================================================
+
+	@SettingField.Text({
+		label: 'App ID',
+		description: 'Facebook App ID from developers.facebook.com',
+		section: 'oauth_facebook',
+		order: 1,
+	})
+	facebookClientId = ''
+
+	@SettingField.Text({
+		label: 'App Secret',
+		description: 'Facebook App Secret from developers.facebook.com',
+		section: 'oauth_facebook',
+		order: 2,
+	})
+	facebookClientSecret = ''
+
+	@SettingField.Text({
+		label: 'Callback URL',
+		description:
+			'Must match a valid OAuth Redirect URI in your Facebook App settings. Example: https://myapp.com/auth/oauth/facebook/callback',
+		section: 'oauth_facebook',
+		order: 3,
+	})
+	facebookCallbackURL = ''
+
+	// ============================================================================
+	// Discord
+	// ============================================================================
+
+	@SettingField.Text({
+		label: 'Client ID',
+		description: 'Discord application client ID from discord.com/developers',
+		section: 'oauth_discord',
+		order: 1,
+	})
+	discordClientId = ''
+
+	@SettingField.Text({
+		label: 'Client Secret',
+		description:
+			'Discord application client secret from discord.com/developers',
+		section: 'oauth_discord',
+		order: 2,
+	})
+	discordClientSecret = ''
+
+	@SettingField.Text({
+		label: 'Callback URL',
+		description:
+			'Must match a redirect URI registered in your Discord application. Example: https://myapp.com/auth/oauth/discord/callback',
+		section: 'oauth_discord',
+		order: 3,
+	})
+	discordCallbackURL = ''
 }

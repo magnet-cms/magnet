@@ -40,15 +40,6 @@ export class EmailSettings {
 	enabled = true
 
 	@SettingField.Text({
-		label: 'Application URL',
-		description: 'Base URL used for links in emails (e.g., https://myapp.com)',
-		default: 'http://localhost:3000',
-		section: 'general',
-		order: 2,
-	})
-	appUrl = 'http://localhost:3000'
-
-	@SettingField.Text({
 		label: 'From Address',
 		description: 'Default sender email address',
 		default: 'noreply@example.com',

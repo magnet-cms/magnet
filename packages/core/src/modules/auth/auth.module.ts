@@ -13,17 +13,17 @@ import { AUTH_CONFIG, AUTH_STRATEGY } from './auth.constants'
 import { AuthController } from './auth.controller'
 import { AuthService } from './auth.service'
 import { AuthSettings } from './auth.settings'
+import { DynamicOAuthGuard } from './guards/dynamic-oauth.guard'
 import {
 	OAuthController,
 	OAuthProviderInfoController,
 } from './oauth.controller'
+import { OAuthService } from './oauth.service'
 import { LoginAttempt } from './schemas/login-attempt.schema'
 import { PasswordReset } from './schemas/password-reset.schema'
 import { RefreshToken } from './schemas/refresh-token.schema'
 import { Session } from './schemas/session.schema'
 import { PasswordResetService } from './services/password-reset.service'
-import { GithubOAuthStrategy } from './strategies/github.strategy'
-import { GoogleOAuthStrategy } from './strategies/google.strategy'
 import { JwtAuthStrategy } from './strategies/jwt-auth.strategy'
 
 @Module({})
@@ -31,6 +31,9 @@ export class AuthModule {
 	/**
 	 * Register the auth module with configuration.
 	 * Supports dynamic strategy registration via config.
+	 *
+	 * OAuth providers (Google, GitHub, Facebook, Discord) are configured entirely
+	 * through the admin settings UI — no code-level credentials are required.
 	 *
 	 * @param authConfig - Auth configuration (optional, uses JWT by default)
 	 *
@@ -51,40 +54,6 @@ export class AuthModule {
 	 * ```
 	 */
 	static forRoot(authConfig?: AuthConfig): DynamicModule {
-		const oauthConfig = authConfig?.oauth ?? {}
-		const hasGoogle = Boolean(oauthConfig.google)
-		const hasGithub = Boolean(oauthConfig.github)
-
-		const oauthProviders = [
-			...(hasGoogle
-				? [
-						{
-							provide: GoogleOAuthStrategy,
-							useFactory: () =>
-								new GoogleOAuthStrategy(
-									oauthConfig.google as NonNullable<typeof oauthConfig.google>,
-								),
-						},
-					]
-				: []),
-			...(hasGithub
-				? [
-						{
-							provide: GithubOAuthStrategy,
-							useFactory: () =>
-								new GithubOAuthStrategy(
-									oauthConfig.github as NonNullable<typeof oauthConfig.github>,
-								),
-						},
-					]
-				: []),
-		]
-
-		const oauthControllers =
-			hasGoogle || hasGithub
-				? [OAuthController, OAuthProviderInfoController]
-				: [OAuthProviderInfoController]
-
 		return {
 			module: AuthModule,
 			global: true,
@@ -110,7 +79,11 @@ export class AuthModule {
 					inject: [MagnetModuleOptions],
 				}),
 			],
-			controllers: [AuthController, ...oauthControllers],
+			controllers: [
+				AuthController,
+				OAuthController,
+				OAuthProviderInfoController,
+			],
 			providers: [
 				{
 					provide: AUTH_CONFIG,
@@ -151,11 +124,18 @@ export class AuthModule {
 					},
 					inject: [MagnetModuleOptions, UserService],
 				},
-				...oauthProviders,
+				OAuthService,
+				DynamicOAuthGuard,
 				PasswordResetService,
 				AuthService,
 			],
-			exports: [AuthService, AUTH_STRATEGY, JwtModule, PassportModule],
+			exports: [
+				AuthService,
+				OAuthService,
+				AUTH_STRATEGY,
+				JwtModule,
+				PassportModule,
+			],
 		}
 	}
 }

@@ -32,7 +32,7 @@ export const useSettingMutation = <T extends Record<string, unknown>>(
 			// Invalidate the settings query to refetch the data
 			queryClient.invalidateQueries({ queryKey: ['settings', group] })
 			// Also invalidate related caches
-			if (group.toLowerCase() === 'internationalization') {
+			if (group.toLowerCase() === 'general') {
 				queryClient.invalidateQueries({ queryKey: ['settings', 'locales'] })
 			}
 			if (group.toLowerCase() === 'environments') {

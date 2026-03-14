@@ -20,6 +20,7 @@ import { AuthSettings } from './auth.settings'
 import { ChangePasswordDto } from './dto/change-password.dto'
 import { RegisterDTO } from './dto/register.dto'
 import { UpdateProfileDto } from './dto/update-profile.dto'
+import { OAuthService } from './oauth.service'
 import type { LoginFailureReason } from './schemas/login-attempt.schema'
 import { LoginAttempt } from './schemas/login-attempt.schema'
 import { RefreshToken } from './schemas/refresh-token.schema'
@@ -88,6 +89,7 @@ export class AuthService {
 		@InjectModel(LoginAttempt)
 		private readonly loginAttemptModel: Model<LoginAttempt>,
 		private readonly logger: MagnetLogger,
+		private readonly oauthService: OAuthService,
 	) {
 		this.logger.setContext(AuthService.name)
 	}
@@ -598,25 +600,18 @@ export class AuthService {
 	}
 
 	/**
-	 * Returns the list of OAuth providers that are both:
-	 * - Configured with credentials (in AuthConfig.oauth)
-	 * - Enabled in AuthSettings
+	 * Returns the list of OAuth providers that are currently active.
+	 * A provider is active when its credentials (clientId + clientSecret) are
+	 * saved in OAuthSettings via the admin UI.
 	 *
-	 * This is exposed via GET /auth/status so the admin UI knows which
-	 * provider buttons to render.
+	 * Delegates to OAuthService.getActiveProviders() — no code-level config is
+	 * required; credentials are stored entirely in the database.
+	 *
+	 * This is exposed via GET /auth/status so the admin UI knows which provider
+	 * buttons to render on the login/signup forms.
 	 */
 	async getEnabledOAuthProviders(): Promise<string[]> {
-		const configuredProviders = Object.keys(this.authConfig?.oauth ?? {})
-		if (configuredProviders.length === 0) return []
-
-		const settings = await this.settingsService.get(AuthSettings)
-
-		const enabledMap: Record<string, boolean> = {
-			google: settings.enableGoogleOAuth,
-			github: settings.enableGithubOAuth,
-		}
-
-		return configuredProviders.filter((p) => enabledMap[p] ?? false)
+		return this.oauthService.getActiveProviders()
 	}
 
 	// ============================================================================

@@ -13,6 +13,7 @@ import {
 	forwardRef,
 } from '@nestjs/common'
 import { AuthSettings } from '~/modules/auth/auth.settings'
+import { GeneralSettings } from '~/modules/general/general.settings'
 import { MagnetLogger } from '~/modules/logging/logger.service'
 import { SettingsService } from '~/modules/settings/settings.service'
 import { EmailVerificationService } from './email-verification.service'
@@ -63,10 +64,19 @@ export class EmailService implements OnModuleInit {
 					? `${settings.fromName} <${settings.fromAddress}>`
 					: settings.fromAddress,
 				replyTo: settings.replyTo || undefined,
-				appUrl: settings.appUrl,
 			})
 		} catch {
 			this.logger.debug('EmailSettings not available, using defaults')
+		}
+
+		// Load base URL from General settings
+		try {
+			const general = await this.settingsService.get(GeneralSettings)
+			if (general.baseUrl) {
+				this.appUrl = general.baseUrl
+			}
+		} catch {
+			this.logger.debug('GeneralSettings not available, using default app URL')
 		}
 
 		// Verify adapter connection on startup (non-blocking)
@@ -88,11 +98,9 @@ export class EmailService implements OnModuleInit {
 	setDefaults(options: {
 		from?: string
 		replyTo?: string
-		appUrl?: string
 	}): void {
 		if (options.from) this.defaultFrom = options.from
 		if (options.replyTo) this.defaultReplyTo = options.replyTo
-		if (options.appUrl) this.appUrl = options.appUrl
 	}
 
 	/**

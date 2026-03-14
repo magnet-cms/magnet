@@ -208,11 +208,12 @@ export class SettingsService implements OnApplicationBootstrap {
 	): Promise<void> {
 		// Create an instance of the schema with only the key we're updating
 		const instance = plainToInstance(schema, { [key]: value })
-		// Validate only the specific property
+		// Use skipMissingProperties so only the provided key is checked.
+		// Do NOT use whitelist/forbidNonWhitelisted — @SettingField.* decorators
+		// store custom metadata only (no class-validator metadata), so those
+		// options would incorrectly reject every valid settings field.
 		const errors = await validate(instance, {
 			skipMissingProperties: true,
-			whitelist: true,
-			forbidNonWhitelisted: true,
 		})
 
 		if (errors.length > 0) {
@@ -507,10 +508,11 @@ export class SettingsService implements OnApplicationBootstrap {
 	): Promise<void> {
 		// Create an instance with the updates
 		const instance = plainToInstance(settingsClass, updates)
+		// Do NOT use whitelist/forbidNonWhitelisted — @SettingField.* decorators
+		// store custom metadata only (no class-validator metadata), so those
+		// options would incorrectly reject every valid settings field.
 		const errors = await validate(instance, {
 			skipMissingProperties: true,
-			whitelist: true,
-			forbidNonWhitelisted: true,
 		})
 
 		if (errors.length > 0) {

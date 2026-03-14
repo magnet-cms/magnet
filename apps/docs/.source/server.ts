@@ -6,12 +6,12 @@ import * as __fd_glob_12 from '../content/docs/adapters/mongoose.mdx?collection=
 import * as __fd_glob_13 from '../content/docs/adapters/supabase.mdx?collection=docs'
 import * as __fd_glob_14 from '../content/docs/client/admin.mdx?collection=docs'
 import * as __fd_glob_15 from '../content/docs/client/index.mdx?collection=docs'
-import { default as __fd_glob_2 } from '../content/docs/client/meta.json?collection=docs'
+import { default as __fd_glob_3 } from '../content/docs/client/meta.json?collection=docs'
 import * as __fd_glob_16 from '../content/docs/client/ui.mdx?collection=docs'
 import * as __fd_glob_17 from '../content/docs/common/decorators.mdx?collection=docs'
 import * as __fd_glob_18 from '../content/docs/common/field-decorators.mdx?collection=docs'
 import * as __fd_glob_19 from '../content/docs/common/index.mdx?collection=docs'
-import { default as __fd_glob_3 } from '../content/docs/common/meta.json?collection=docs'
+import { default as __fd_glob_2 } from '../content/docs/common/meta.json?collection=docs'
 import * as __fd_glob_20 from '../content/docs/core/admin-module.mdx?collection=docs'
 import * as __fd_glob_21 from '../content/docs/core/api-keys-module.mdx?collection=docs'
 import * as __fd_glob_22 from '../content/docs/core/auth-module.mdx?collection=docs'
@@ -38,8 +38,9 @@ import * as __fd_glob_36 from '../content/docs/migrations/migration-files.mdx?co
 import * as __fd_glob_37 from '../content/docs/plugins/content-builder.mdx?collection=docs'
 import * as __fd_glob_38 from '../content/docs/plugins/index.mdx?collection=docs'
 import { default as __fd_glob_8 } from '../content/docs/plugins/meta.json?collection=docs'
-// @ts-nocheck
 import * as __fd_glob_39 from '../content/docs/plugins/seo.mdx?collection=docs'
+// @ts-nocheck
+import * as __fd_glob_40 from '../content/docs/plugins/vault.mdx?collection=docs'
 import type * as Config from '../source.config'
 
 const create = server<
@@ -55,8 +56,8 @@ export const docs = await create.docs(
 	{
 		'meta.json': __fd_glob_0,
 		'adapters/meta.json': __fd_glob_1,
-		'client/meta.json': __fd_glob_2,
-		'common/meta.json': __fd_glob_3,
+		'common/meta.json': __fd_glob_2,
+		'client/meta.json': __fd_glob_3,
 		'core/meta.json': __fd_glob_4,
 		'getting-started/meta.json': __fd_glob_5,
 		'guides/meta.json': __fd_glob_6,
@@ -95,5 +96,6 @@ export const docs = await create.docs(
 		'plugins/content-builder.mdx': __fd_glob_37,
 		'plugins/index.mdx': __fd_glob_38,
 		'plugins/seo.mdx': __fd_glob_39,
+		'plugins/vault.mdx': __fd_glob_40,
 	},
 )

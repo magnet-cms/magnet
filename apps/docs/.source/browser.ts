@@ -73,6 +73,8 @@ const browserCollections = {
 			import('../content/docs/plugins/index.mdx?collection=docs'),
 		'plugins/seo.mdx': () =>
 			import('../content/docs/plugins/seo.mdx?collection=docs'),
+		'plugins/vault.mdx': () =>
+			import('../content/docs/plugins/vault.mdx?collection=docs'),
 	}),
 }
 export default browserCollections

@@ -1,0 +1,84 @@
+{
+  "name": "@magnet-cms/plugin-vault",
+  "version": "0.1.0",
+  "description": "HashiCorp Vault secrets management plugin for Magnet CMS",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./backend": {
+      "import": {
+        "types": "./dist/backend/index.d.ts",
+        "default": "./dist/backend/index.js"
+      },
+      "require": {
+        "types": "./dist/backend/index.d.cts",
+        "default": "./dist/backend/index.cjs"
+      }
+    },
+    "./frontend": {
+      "import": "./src/frontend/index.ts",
+      "types": "./src/frontend/index.ts"
+    }
+  },
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "src/frontend"
+  ],
+  "scripts": {
+    "build:dev": "tsup --watch",
+    "build": "tsup && bun run build:frontend",
+    "build:frontend": "vite build"
+  },
+  "dependencies": {
+    "node-vault-client": "^1.0.2"
+  },
+  "devDependencies": {
+    "@magnet-cms/admin": "workspace:*",
+    "@magnet-cms/common": "workspace:*",
+    "@magnet-cms/core": "workspace:*",
+    "@magnet-cms/ui": "workspace:*",
+    "@magnet-cms/utils": "workspace:*",
+    "@nestjs/common": "^11.1.12",
+    "@nestjs/passport": "^11.0.5",
+    "@repo/biome": "workspace:*",
+    "@repo/tsup": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@types/react": "^19.0.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "lucide-react": "^0.468.0",
+    "react": "^19.0.0",
+    "react-router-dom": "^7.1.1",
+    "reflect-metadata": "0.2.2",
+    "vite": "^6.0.7"
+  },
+  "peerDependencies": {
+    "@magnet-cms/admin": "^0.1.2",
+    "@magnet-cms/common": "^0.1.0",
+    "@magnet-cms/core": "^1.0.2",
+    "@magnet-cms/ui": "^0.1.0",
+    "@magnet-cms/utils": "^0.1.0",
+    "@nestjs/common": "^11.1.12",
+    "@nestjs/passport": "^11.0.5",
+    "lucide-react": ">=0.400.0",
+    "react": ">=18.0.0",
+    "react-router-dom": ">=6.0.0",
+    "reflect-metadata": "0.2.2"
+  },
+  "magnet": {
+    "type": "plugin",
+    "backend": true,
+    "frontend": true
+  }
+}

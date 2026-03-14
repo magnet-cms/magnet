@@ -20,57 +20,86 @@ export const timezones = [
 ] as const
 
 /**
- * Internationalization settings schema.
+ * General settings schema.
  *
- * This is the single source of truth for locale and timezone configuration
- * across the entire CMS. All subsystems (DocumentService, content manager UI,
- * HTTP adapter) read from this settings group.
+ * Top-level settings group covering site-wide configuration, internationalization,
+ * and timezone. This is the single source of truth for base URL (consumed by
+ * the email service for link generation) and locale configuration (consumed by
+ * InternationalizationService and the admin UI).
  *
  * @example
  * ```typescript
- * const intlConfig = await settingsService.get(InternationalizationSettings)
- * console.log(intlConfig.defaultLocale) // 'en'
- * console.log(intlConfig.locales)       // ['en', 'fr']
+ * const general = await settingsService.get(GeneralSettings)
+ * console.log(general.baseUrl)      // 'https://myapp.com'
+ * console.log(general.defaultLocale) // 'en'
  * ```
  */
 @Settings({
-	group: 'internationalization',
-	label: 'Internationalization',
-	icon: 'languages',
-	order: 3,
-	description: 'Configure language, locale, and timezone settings for the CMS',
+	group: 'general',
+	label: 'General',
+	icon: 'settings',
+	order: 1,
+	description: 'Site-wide configuration, internationalization, and timezone',
 	sections: [
 		{
-			name: 'locales',
-			label: 'Languages',
+			name: 'site',
+			label: 'Site',
 			icon: 'globe',
-			description: 'Configure available languages and the default locale',
+			description: 'Basic site information used across the CMS',
 			order: 1,
+		},
+		{
+			name: 'i18n',
+			label: 'Internationalization',
+			icon: 'languages',
+			description: 'Configure available languages and the default locale',
+			order: 2,
 		},
 		{
 			name: 'timezone',
 			label: 'Timezone',
 			icon: 'clock',
 			description: 'Configure timezone settings',
-			order: 2,
+			order: 3,
 		},
 		{
 			name: 'behavior',
 			label: 'Behavior',
 			icon: 'settings-2',
 			description: 'Configure localization behavior',
-			order: 3,
+			order: 4,
 		},
 	],
 })
-export class InternationalizationSettings {
+export class GeneralSettings {
+	// Site
+	@SettingField.Text({
+		label: 'Site Name',
+		description: 'The display name of your site',
+		default: 'Magnet CMS',
+		section: 'site',
+		order: 1,
+	})
+	siteName = 'Magnet CMS'
+
+	@SettingField.Text({
+		label: 'Base URL',
+		description:
+			'Base URL of your application (e.g. https://myapp.com). Used in email links and other services.',
+		default: 'http://localhost:3000',
+		section: 'site',
+		order: 2,
+	})
+	baseUrl = 'http://localhost:3000'
+
+	// Internationalization
 	@SettingField.Select({
 		label: 'Available Languages',
 		description: 'Select which languages are available across the CMS',
 		options: locales,
 		default: ['en'],
 		multiple: true,
-		section: 'locales',
+		section: 'i18n',
 		order: 1,
 	})
 	locales: string[] = ['en']
@@ -80,7 +109,7 @@ export class InternationalizationSettings {
 		description: 'Default language used when no locale is specified',
 		options: locales,
 		default: 'en',
-		section: 'locales',
+		section: 'i18n',
 		order: 2,
 	})
 	defaultLocale = 'en'
@@ -89,11 +118,12 @@ export class InternationalizationSettings {
 		label: 'Require All Locales',
 		description: 'Require content to be translated to all enabled locales',
 		default: false,
-		section: 'locales',
+		section: 'i18n',
 		order: 3,
 	})
 	requireAllLocales = false
 
+	// Timezone
 	@SettingField.Select({
 		label: 'Timezone',
 		description: 'Default timezone for date/time display',
@@ -104,6 +134,7 @@ export class InternationalizationSettings {
 	})
 	timezone = 'utc'
 
+	// Behavior
 	@SettingField.Boolean({
 		label: 'Auto-detect Locale',
 		description: 'Automatically detect the user locale from browser settings',

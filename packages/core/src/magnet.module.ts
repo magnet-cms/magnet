@@ -24,6 +24,7 @@ import { EmailModule } from './modules/email/email.module'
 import { EnvironmentModule } from './modules/environment/environment.module'
 import { EventContextInterceptor } from './modules/events/event-context.interceptor'
 import { EventsModule } from './modules/events/events.module'
+import { GeneralModule } from './modules/general/general.module'
 import { HealthModule } from './modules/health/health.module'
 import { HistoryModule } from './modules/history/history.module'
 import { LoggingInterceptor } from './modules/logging/logging.interceptor'
@@ -80,6 +81,7 @@ export class MagnetModule {
 			DocumentModule,
 			EmailModule.forRoot(defaultOptions.email),
 			EnvironmentModule,
+			GeneralModule,
 			EventsModule,
 			HistoryModule,
 			HealthModule,

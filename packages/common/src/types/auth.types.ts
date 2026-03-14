@@ -73,21 +73,6 @@ export interface SupabaseAuthConfig {
 }
 
 /**
- * Configuration for a single OAuth provider (e.g. Google, GitHub)
- */
-export interface OAuthProviderConfig {
-	/** OAuth app client ID */
-	clientId: string
-	/** OAuth app client secret */
-	clientSecret: string
-	/**
-	 * Full callback URL registered in the provider console.
-	 * @example 'https://myapp.com/auth/oauth/google/callback'
-	 */
-	callbackURL: string
-}
-
-/**
  * Auth configuration for MagnetModuleOptions
  */
 export interface AuthConfig {
@@ -103,17 +88,6 @@ export interface AuthConfig {
 	supabaseServiceKey?: string
 	/** Default role for new Supabase users */
 	defaultRole?: string
-	/**
-	 * OAuth provider configurations keyed by provider name.
-	 * A provider is available for login only when credentials are provided here
-	 * AND the provider is enabled in AuthSettings.
-	 * @example
-	 * oauth: {
-	 *   google: { clientId: '...', clientSecret: '...', callbackURL: 'https://myapp.com/auth/oauth/google/callback' },
-	 *   github: { clientId: '...', clientSecret: '...', callbackURL: 'https://myapp.com/auth/oauth/github/callback' },
-	 * }
-	 */
-	oauth?: Record<string, OAuthProviderConfig>
 	/** Allow extensible config for custom strategies */
 	[key: string]: unknown
 }

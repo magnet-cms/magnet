@@ -1,9 +1,9 @@
-import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common'
-import { AuthGuard } from '@nestjs/passport'
+import { Controller, Get, Param, Req, Res, UseGuards } from '@nestjs/common'
 import type { Request, Response } from 'express'
 import { SettingsService } from '~/modules/settings'
 import { AuthService } from './auth.service'
 import { AuthSettings } from './auth.settings'
+import { DynamicOAuthGuard } from './guards/dynamic-oauth.guard'
 import type { OAuthProfile } from './strategies/google.strategy'
 
 interface OAuthRequest extends Request {
@@ -11,15 +11,23 @@ interface OAuthRequest extends Request {
 }
 
 /**
- * Handles OAuth provider initiation and callbacks for Google and GitHub.
+ * Handles OAuth provider initiation and callbacks via generic `:provider` routes.
  *
  * Flow:
  *  1. User clicks "Sign in with Google" → GET /auth/oauth/google
- *  2. Passport redirects to provider consent page (no response body returned)
+ *  2. DynamicOAuthGuard selects the "google" Passport strategy; Passport redirects
+ *     to provider consent page (no response body returned from this controller)
  *  3. Provider redirects back → GET /auth/oauth/google/callback
- *  4. Passport validates code, calls strategy.validate(), attaches OAuthProfile to req.user
- *  5. Controller calls AuthService.loginWithOAuthProfile() to issue JWT
- *  6. Redirect to configured oauthRedirectUrl with tokens in query params
+ *  4. DynamicOAuthGuard validates the OAuth code via Passport; `req.user` is
+ *     populated with the normalised OAuthProfile by the strategy's validate callback
+ *  5. Controller calls AuthService.loginWithOAuthProfile() to issue JWT tokens
+ *  6. Browser is redirected to `AuthSettings.oauthRedirectUrl` with tokens in
+ *     query params, ready to be processed by the admin UI /auth/callback page
+ *
+ * Adding a new provider (e.g., Twitter) requires only:
+ *  - Adding credential fields to AuthSettings (oauth_* sections)
+ *  - Registering the strategy in OAuthService.registerStrategies()
+ *  No controller changes are needed.
  */
 @Controller('auth/oauth')
 export class OAuthController {
@@ -28,52 +36,26 @@ export class OAuthController {
 		private readonly settingsService: SettingsService,
 	) {}
 
-	// ============================================================================
-	// Google
-	// ============================================================================
-
 	/**
-	 * Initiates Google OAuth flow.
-	 * Passport redirects the browser to Google's consent page.
+	 * Initiates the OAuth flow for the given provider.
+	 * DynamicOAuthGuard selects the matching Passport strategy and triggers the
+	 * provider redirect — the controller body never executes.
 	 */
-	@Get('google')
-	@UseGuards(AuthGuard('google'))
-	initiateGoogle(): void {
+	@Get(':provider')
+	@UseGuards(DynamicOAuthGuard)
+	initiate(@Param('provider') _provider: string): void {
 		// Passport handles the redirect — this body never executes
 	}
 
 	/**
-	 * Google OAuth callback.
-	 * Google redirects here after user grants permission.
+	 * OAuth callback for the given provider.
+	 * The provider redirects here with an authorization code. Passport exchanges
+	 * the code for tokens and populates `req.user` via the strategy's validate().
 	 */
-	@Get('google/callback')
-	@UseGuards(AuthGuard('google'))
-	async callbackGoogle(
-		@Req() req: OAuthRequest,
-		@Res() res: Response,
-	): Promise<void> {
-		await this.handleOAuthCallback(req, res)
-	}
-
-	// ============================================================================
-	// GitHub
-	// ============================================================================
-
-	/**
-	 * Initiates GitHub OAuth flow.
-	 */
-	@Get('github')
-	@UseGuards(AuthGuard('github'))
-	initiateGithub(): void {
-		// Passport handles the redirect — this body never executes
-	}
-
-	/**
-	 * GitHub OAuth callback.
-	 */
-	@Get('github/callback')
-	@UseGuards(AuthGuard('github'))
-	async callbackGithub(
+	@Get(':provider/callback')
+	@UseGuards(DynamicOAuthGuard)
+	async callback(
+		@Param('provider') _provider: string,
 		@Req() req: OAuthRequest,
 		@Res() res: Response,
 	): Promise<void> {
@@ -85,7 +67,8 @@ export class OAuthController {
 	// ============================================================================
 
 	/**
-	 * Shared callback handler: find-or-create user, issue JWT, redirect to admin UI.
+	 * Shared callback handler: find-or-create the user, issue JWT tokens, and
+	 * redirect the browser to the admin UI callback page with tokens in the URL.
 	 */
 	private async handleOAuthCallback(
 		req: OAuthRequest,
@@ -131,20 +114,16 @@ export class OAuthController {
 }
 
 /**
- * Dynamic route to initiate any configured OAuth provider by name.
- * Used internally by the admin UI to generate provider URLs.
+ * Exposes the list of enabled OAuth providers.
+ * Used by the admin UI to determine which provider buttons to render.
  */
 @Controller('auth/oauth')
 export class OAuthProviderInfoController {
-	constructor(
-		private readonly authService: AuthService,
-		private readonly settingsService: SettingsService,
-	) {}
+	constructor(private readonly authService: AuthService) {}
 
 	/**
-	 * Returns the list of enabled OAuth providers.
-	 * Used by the admin UI to determine which provider buttons to show.
-	 * This duplicates the data in GET /auth/status for convenience.
+	 * Returns the names of OAuth providers that are currently configured
+	 * (i.e., have credentials stored in AuthSettings).
 	 */
 	@Get('providers')
 	async getProviders(): Promise<{ providers: string[] }> {

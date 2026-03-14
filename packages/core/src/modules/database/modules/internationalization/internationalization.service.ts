@@ -1,7 +1,7 @@
 import { Injectable, OnModuleInit } from '@nestjs/common'
+import { GeneralSettings } from '~/modules/general/general.settings'
 import { MagnetLogger } from '~/modules/logging/logger.service'
 import { SettingsService } from '~/modules/settings'
-import { InternationalizationSettings } from './internationalization.settings'
 
 @Injectable()
 export class InternationalizationService implements OnModuleInit {
@@ -21,9 +21,7 @@ export class InternationalizationService implements OnModuleInit {
 
 	async loadSettings() {
 		try {
-			const settings = await this.settingsService.get(
-				InternationalizationSettings,
-			)
+			const settings = await this.settingsService.get(GeneralSettings)
 			if (Array.isArray(settings.locales) && settings.locales.length > 0) {
 				this.locales = settings.locales
 			}
@@ -48,9 +46,7 @@ export class InternationalizationService implements OnModuleInit {
 
 	async setLocales(newLocales: string[]): Promise<void> {
 		this.locales = newLocales
-		await this.settingsService.update(InternationalizationSettings, {
-			locales: newLocales,
-		})
+		await this.settingsService.update(GeneralSettings, { locales: newLocales })
 	}
 
 	async setDefaultLocale(locale: string): Promise<void> {
@@ -61,7 +57,7 @@ export class InternationalizationService implements OnModuleInit {
 		}
 
 		this.defaultLocale = locale
-		await this.settingsService.update(InternationalizationSettings, {
+		await this.settingsService.update(GeneralSettings, {
 			defaultLocale: locale,
 		})
 	}
