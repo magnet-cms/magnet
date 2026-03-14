@@ -15,6 +15,7 @@ import {
 	UploadedFiles,
 	UseInterceptors,
 } from '@nestjs/common'
+import { ModuleRef } from '@nestjs/core'
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express'
 import type { Request } from 'express'
 import { RestrictedRoute } from '~/decorators/restricted.route'
@@ -37,10 +38,37 @@ interface DeleteManyDto {
 	ids: string[]
 }
 
+// DTO for folder creation
+interface CreateFolderDto {
+	name: string
+	parentPath?: string
+}
+
 @Controller('media')
 @RestrictedRoute()
 export class StorageController {
-	constructor(private readonly storageService: StorageService) {}
+	constructor(
+		private readonly storageService: StorageService,
+		private readonly moduleRef: ModuleRef,
+	) {}
+
+	/**
+	 * Resolve a user's display name by ID
+	 */
+	private async resolveUserName(
+		userId: string | undefined,
+	): Promise<string | undefined> {
+		if (!userId) return undefined
+		try {
+			const userService = this.moduleRef.get('UserService', {
+				strict: false,
+			})
+			const user = await userService.findOneById(userId)
+			return (user as { name?: string } | null)?.name
+		} catch {
+			return undefined
+		}
+	}
 
 	/**
 	 * Upload a single file
@@ -68,6 +96,7 @@ export class StorageController {
 		try {
 			const tags = tagsJson ? JSON.parse(tagsJson) : undefined
 			const userId = req?.user?.id
+			const userName = await this.resolveUserName(userId)
 
 			const result = await this.storageService.upload(
 				file.buffer,
@@ -78,6 +107,7 @@ export class StorageController {
 					tags,
 					alt,
 					createdBy: userId,
+					createdByName: userName,
 				},
 			)
 
@@ -113,6 +143,7 @@ export class StorageController {
 
 		try {
 			const userId = req?.user?.id
+			const userName = await this.resolveUserName(userId)
 
 			const results = await this.storageService.uploadMany(
 				files.map((file) => ({
@@ -122,6 +153,7 @@ export class StorageController {
 				{
 					folder,
 					createdBy: userId,
+					createdByName: userName,
 				},
 			)
 
@@ -129,6 +161,55 @@ export class StorageController {
 		} catch (error) {
 			throw new HttpException(
 				error instanceof Error ? error.message : 'Upload failed',
+				HttpStatus.BAD_REQUEST,
+			)
+		}
+	}
+
+	/**
+	 * Create a folder
+	 * POST /media/folders
+	 */
+	@Post('folders')
+	async createFolder(
+		@Body() body: CreateFolderDto,
+		@Req() req?: AuthenticatedRequest,
+	) {
+		if (!body.name || !body.name.trim()) {
+			throw new HttpException('Folder name is required', HttpStatus.BAD_REQUEST)
+		}
+
+		try {
+			const userId = req?.user?.id
+			return await this.storageService.createFolder(
+				body.name.trim(),
+				body.parentPath,
+				userId,
+			)
+		} catch (error) {
+			throw new HttpException(
+				error instanceof Error ? error.message : 'Failed to create folder',
+				HttpStatus.BAD_REQUEST,
+			)
+		}
+	}
+
+	/**
+	 * Delete a folder (must be empty)
+	 * DELETE /media/folders/:path
+	 */
+	@Delete('folders/*path')
+	async deleteFolder(@Param('path') path: string) {
+		try {
+			const success = await this.storageService.deleteFolder(path)
+			if (!success) {
+				throw new HttpException('Folder not found', HttpStatus.NOT_FOUND)
+			}
+			return { success: true }
+		} catch (error) {
+			if (error instanceof HttpException) throw error
+			throw new HttpException(
+				error instanceof Error ? error.message : 'Failed to delete folder',
 				HttpStatus.BAD_REQUEST,
 			)
 		}
@@ -173,6 +254,16 @@ export class StorageController {
 		if (!media) {
 			throw new HttpException('Media not found', HttpStatus.NOT_FOUND)
 		}
+
+		// Lazy backfill: resolve user name for older records
+		if (media.createdBy && !media.createdByName) {
+			const name = await this.resolveUserName(media.createdBy)
+			if (name) {
+				await this.storageService.update(id, { createdByName: name })
+				;(media as unknown as { createdByName: string }).createdByName = name
+			}
+		}
+
 		return media
 	}
 

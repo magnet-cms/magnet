@@ -7,6 +7,7 @@ import { toast } from 'sonner'
 
 import type { MediaItem } from '~/core/adapters/types'
 import {
+	useMediaCreateFolder,
 	useMediaDelete,
 	useMediaFolders,
 	useMediaList,
@@ -112,7 +113,7 @@ function transformMediaToAsset(
 		createdAt: media.createdAt
 			? new Date(media.createdAt).toLocaleDateString()
 			: undefined,
-		uploadedBy: media.createdBy,
+		uploadedBy: media.createdByName || media.createdBy,
 		altText: media.alt,
 		location: media.folder || 'Root',
 		dimensions:
@@ -179,15 +180,16 @@ export function MediaLibraryPage() {
 		useMediaUploadMultiple()
 	const { mutate: deleteMedia } = useMediaDelete()
 	const { mutate: updateMedia } = useMediaUpdate()
+	const { mutate: createFolder } = useMediaCreateFolder()
 	const { getUrl, getThumbnailUrl } = useMediaUrl()
 
 	// Transform folders for FolderGrid
 	const transformedFolders: Folder[] = useMemo(() => {
 		if (!folders) return []
-		return folders.map((name, index) => ({
-			id: `folder-${index}`,
-			name,
-			itemCount: 0, // We don't have counts from the API yet
+		return folders.map((f) => ({
+			id: f.id,
+			name: f.name,
+			itemCount: f.itemCount,
 		}))
 	}, [folders])
 
@@ -236,22 +238,34 @@ export function MediaLibraryPage() {
 		[uploadFiles, currentFolder, refetch],
 	)
 
-	const handleCreateFolder = useCallback((name: string) => {
-		// Note: Folder creation might need a separate API endpoint
-		// For now, folders are created implicitly when uploading with a folder option
-		toast.info(`Folder "${name}" will be created when you upload files to it`)
-		setNewFolderOpen(false)
-	}, [])
+	const handleCreateFolder = useCallback(
+		(name: string) => {
+			createFolder(
+				{ name, parentPath: currentFolder },
+				{
+					onSuccess: () => {
+						toast.success(`Folder "${name}" created successfully`)
+						setNewFolderOpen(false)
+					},
+					onError: (err) => {
+						toast.error(err.message || 'Failed to create folder')
+					},
+				},
+			)
+		},
+		[createFolder, currentFolder],
+	)
 
 	const handleFolderClick = useCallback(
 		(folderId: string) => {
-			const folder = transformedFolders.find((f) => f.id === folderId)
+			// Find from the original folders data (has path info)
+			const folder = folders?.find((f) => f.id === folderId)
 			if (folder) {
-				setCurrentFolder(folder.name)
+				setCurrentFolder(folder.path)
 				setPage(1)
 			}
 		},
-		[transformedFolders],
+		[folders],
 	)
 
 	const handleAssetView = useCallback(
@@ -540,9 +554,42 @@ export function MediaLibraryPage() {
 				open={mediaViewOpen}
 				onOpenChange={setMediaViewOpen}
 				asset={selectedAsset}
+				folders={folders?.map((f) => ({
+					id: f.id,
+					name: f.name,
+					path: f.path,
+					itemCount: f.itemCount,
+				}))}
 				onDownload={handleAssetDownload}
 				onDelete={handleAssetDelete}
 				onSave={handleAssetSave}
+				onMove={(assetId, folder) => {
+					updateMedia(
+						{ id: assetId, data: { folder: folder || undefined } },
+						{
+							onSuccess: () => {
+								toast.success('File moved successfully')
+								refetch()
+							},
+							onError: (err) => {
+								toast.error(err.message || 'Failed to move file')
+							},
+						},
+					)
+				}}
+				onCreateSubfolder={(name, parentPath) => {
+					createFolder(
+						{ name, parentPath },
+						{
+							onSuccess: () => {
+								toast.success(`Subfolder "${name}" created`)
+							},
+							onError: (err) => {
+								toast.error(err.message || 'Failed to create subfolder')
+							},
+						},
+					)
+				}}
 			/>
 		</div>
 	)

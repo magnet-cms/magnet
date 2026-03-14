@@ -413,7 +413,9 @@ export interface MagnetApiAdapter {
 		): Promise<MediaItem>
 		delete(id: string): Promise<{ success: boolean }>
 		deleteMany(ids: string[]): Promise<{ deleted: number; failed: string[] }>
-		getFolders(): Promise<string[]>
+		getFolders(): Promise<MediaFolder[]>
+		createFolder(name: string, parentPath?: string): Promise<MediaFolder>
+		deleteFolder(path: string): Promise<{ success: boolean }>
 		getTags(): Promise<string[]>
 		getStats(): Promise<MediaStats>
 		getUrl(id: string, transform?: TransformOptions): string
@@ -546,6 +548,18 @@ export interface MediaItem {
 	createdAt: string
 	updatedAt: string
 	createdBy?: string
+	createdByName?: string
+}
+
+export interface MediaFolder {
+	id: string
+	name: string
+	path: string
+	parentPath?: string
+	createdBy?: string
+	createdByName?: string
+	itemCount: number
+	createdAt: string
 }
 
 export interface MediaQueryOptions {

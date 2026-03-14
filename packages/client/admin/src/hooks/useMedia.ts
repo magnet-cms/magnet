@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type {
+	MediaFolder,
 	MediaItem,
 	MediaQueryOptions,
 	MediaUploadOptions,
@@ -131,9 +132,42 @@ export const useMediaDeleteMany = () => {
 export const useMediaFolders = () => {
 	const adapter = useAdapter()
 
-	return useQuery<string[], Error>({
+	return useQuery<MediaFolder[], Error>({
 		queryKey: ['media', 'folders'],
 		queryFn: () => adapter.media.getFolders(),
+	})
+}
+
+/**
+ * Hook to create a folder
+ */
+export const useMediaCreateFolder = () => {
+	const adapter = useAdapter()
+	const queryClient = useQueryClient()
+
+	return useMutation<MediaFolder, Error, { name: string; parentPath?: string }>(
+		{
+			mutationFn: ({ name, parentPath }) =>
+				adapter.media.createFolder(name, parentPath),
+			onSuccess: () => {
+				queryClient.invalidateQueries({ queryKey: ['media', 'folders'] })
+			},
+		},
+	)
+}
+
+/**
+ * Hook to delete a folder
+ */
+export const useMediaDeleteFolder = () => {
+	const adapter = useAdapter()
+	const queryClient = useQueryClient()
+
+	return useMutation<{ success: boolean }, Error, string>({
+		mutationFn: (path) => adapter.media.deleteFolder(path),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['media', 'folders'] })
+		},
 	})
 }
 

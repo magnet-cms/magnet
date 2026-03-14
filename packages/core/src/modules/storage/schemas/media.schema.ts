@@ -51,4 +51,7 @@ export class Media {
 
 	@Field.Text()
 	createdBy?: string
+
+	@Field.Text()
+	createdByName?: string
 }

@@ -2,6 +2,7 @@ import { StorageConfig } from '@magnet-cms/common'
 import { DynamicModule, Module } from '@nestjs/common'
 import { DatabaseModule } from '~/modules/database'
 import { SettingsModule } from '~/modules/settings'
+import { MediaFolder } from './schemas/media-folder.schema'
 import { Media } from './schemas/media.schema'
 import { StorageAdapterFactory } from './storage-adapter.factory'
 import { STORAGE_ADAPTER, STORAGE_CONFIG } from './storage.constants'
@@ -24,6 +25,7 @@ export class StorageModule {
 			global: true,
 			imports: [
 				DatabaseModule.forFeature(Media),
+				DatabaseModule.forFeature(MediaFolder),
 				SettingsModule.forFeature(MediaSettings),
 			],
 			controllers: [StorageController, TransformController],
@@ -44,6 +46,7 @@ export class StorageModule {
 }
 
 // Re-export components for external use
+export { MediaFolder } from './schemas/media-folder.schema'
 export { Media } from './schemas/media.schema'
 export { LocalStorageAdapter } from './adapters/local-storage.adapter'
 export { StorageAdapterFactory } from './storage-adapter.factory'

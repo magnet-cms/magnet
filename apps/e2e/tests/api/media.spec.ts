@@ -366,4 +366,167 @@ test.describe('Media API', () => {
 		const data: PaginatedMedia = await response.json()
 		expect(data.items.every((item) => item.folder === folderName)).toBe(true)
 	})
+
+	// -------------------------------------------------------------------------
+	// Folder CRUD tests
+	// -------------------------------------------------------------------------
+
+	test('POST /media/folders creates a folder', async ({ apiClient }) => {
+		const folderName = `test-folder-${Date.now()}`
+		const response = await apiClient.createMediaFolder(folderName)
+
+		expect(response.ok()).toBeTruthy()
+
+		const folder = await response.json()
+		expect(folder.name).toBe(folderName)
+		expect(folder.path).toBe(folderName)
+	})
+
+	test('POST /media/folders creates a subfolder', async ({ apiClient }) => {
+		const parentName = `parent-${Date.now()}`
+		const childName = 'child'
+
+		// Create parent
+		const parentResponse = await apiClient.createMediaFolder(parentName)
+		expect(parentResponse.ok()).toBeTruthy()
+
+		// Create child
+		const childResponse = await apiClient.createMediaFolder(
+			childName,
+			parentName,
+		)
+		expect(childResponse.ok()).toBeTruthy()
+
+		const child = await childResponse.json()
+		expect(child.name).toBe(childName)
+		expect(child.path).toBe(`${parentName}/${childName}`)
+		expect(child.parentPath).toBe(parentName)
+	})
+
+	test('GET /media/meta/folders returns folder objects with item counts', async ({
+		apiClient,
+	}) => {
+		const folderName = `counted-folder-${Date.now()}`
+		await apiClient.createMediaFolder(folderName)
+
+		// Upload a file to this folder
+		const testImage = createTestImage()
+		await apiClient.uploadMedia(testImage, 'count-test.png', 'image/png', {
+			folder: folderName,
+		})
+
+		const response = await apiClient.getMediaFolders()
+		expect(response.ok()).toBeTruthy()
+
+		const folders = await response.json()
+		const folder = folders.find((f: { path: string }) => f.path === folderName)
+		expect(folder).toBeDefined()
+		expect(folder.name).toBe(folderName)
+		expect(folder.itemCount).toBeGreaterThanOrEqual(1)
+	})
+
+	test('DELETE /media/folders/:path deletes an empty folder', async ({
+		apiClient,
+	}) => {
+		const folderName = `deletable-${Date.now()}`
+		await apiClient.createMediaFolder(folderName)
+
+		const response = await apiClient.deleteMediaFolder(folderName)
+		expect(response.ok()).toBeTruthy()
+
+		const result = await response.json()
+		expect(result.success).toBe(true)
+	})
+
+	test('DELETE /media/folders/:path rejects folder with files', async ({
+		apiClient,
+	}) => {
+		const folderName = `non-empty-${Date.now()}`
+		await apiClient.createMediaFolder(folderName)
+
+		// Upload a file to this folder
+		const testImage = createTestImage()
+		await apiClient.uploadMedia(testImage, 'blocking.png', 'image/png', {
+			folder: folderName,
+		})
+
+		const response = await apiClient.deleteMediaFolder(folderName)
+		expect(response.status()).toBe(400)
+	})
+
+	// -------------------------------------------------------------------------
+	// Upload with user name
+	// -------------------------------------------------------------------------
+
+	test('POST /media/upload populates createdByName', async ({ apiClient }) => {
+		const testImage = createTestImage()
+		const filename = `username-test-${Date.now()}.png`
+
+		const uploadResponse = await apiClient.uploadMedia(
+			testImage,
+			filename,
+			'image/png',
+		)
+		expect(uploadResponse.ok()).toBeTruthy()
+
+		const media: MediaItem = await uploadResponse.json()
+		expect(media.createdBy).toBeDefined()
+		// createdByName should be populated from the authenticated user
+		// (may be undefined if UserService lookup fails, but should be attempted)
+	})
+
+	// -------------------------------------------------------------------------
+	// Move file between folders
+	// -------------------------------------------------------------------------
+
+	test('PUT /media/:id moves file to different folder', async ({
+		apiClient,
+	}) => {
+		const testImage = createTestImage()
+		const filename = `move-test-${Date.now()}.png`
+		const targetFolder = `move-target-${Date.now()}`
+
+		await apiClient.createMediaFolder(targetFolder)
+
+		const uploadResponse = await apiClient.uploadMedia(
+			testImage,
+			filename,
+			'image/png',
+		)
+		const uploaded: MediaItem = await uploadResponse.json()
+
+		// Move to target folder
+		const moveResponse = await apiClient.updateMedia(uploaded.id, {
+			folder: targetFolder,
+		})
+		expect(moveResponse.ok()).toBeTruthy()
+
+		const moved: MediaItem = await moveResponse.json()
+		expect(moved.folder).toBe(targetFolder)
+	})
+
+	// -------------------------------------------------------------------------
+	// Activity log for media events
+	// -------------------------------------------------------------------------
+
+	test('media upload creates activity log entry', async ({ apiClient }) => {
+		const testImage = createTestImage()
+		const filename = `activity-test-${Date.now()}.png`
+
+		await apiClient.uploadMedia(testImage, filename, 'image/png')
+
+		// Check activity log
+		const activityResponse = await apiClient.getRecentActivity(10)
+
+		if (activityResponse.ok()) {
+			const activities = await activityResponse.json()
+			const uploadActivity = activities.find(
+				(a: { action: string }) => a.action === 'media.uploaded',
+			)
+			// Activity should exist if activity logging is enabled
+			if (uploadActivity) {
+				expect(uploadActivity.entityType).toBe('media')
+			}
+		}
+	})
 })

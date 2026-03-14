@@ -14,6 +14,7 @@ import type {
 	LocaleStatus,
 	LoginCredentials,
 	MagnetApiAdapter,
+	MediaFolder,
 	MediaItem,
 	MediaQueryOptions,
 	MediaStats,
@@ -721,8 +722,27 @@ export function createHttpAdapter(config: HttpAdapterConfig): MagnetApiAdapter {
 				)
 			},
 
-			async getFolders(): Promise<string[]> {
-				return request<string[]>('/media/meta/folders')
+			async getFolders(): Promise<MediaFolder[]> {
+				return request<MediaFolder[]>('/media/meta/folders')
+			},
+
+			async createFolder(
+				name: string,
+				parentPath?: string,
+			): Promise<MediaFolder> {
+				return request<MediaFolder>('/media/folders', {
+					method: 'POST',
+					body: { name, parentPath },
+				})
+			},
+
+			async deleteFolder(path: string): Promise<{ success: boolean }> {
+				return request<{ success: boolean }>(
+					`/media/folders/${encodeURIComponent(path)}`,
+					{
+						method: 'DELETE',
+					},
+				)
 			},
 
 			async getTags(): Promise<string[]> {

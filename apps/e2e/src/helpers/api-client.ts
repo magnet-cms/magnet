@@ -37,6 +37,8 @@ export interface MediaItem {
 	height?: number
 	createdAt: string
 	updatedAt: string
+	createdBy?: string
+	createdByName?: string
 }
 
 export interface PaginatedMedia {
@@ -395,6 +397,22 @@ export class ApiClient {
 		return this.request.get(`${this.baseURL}/media/meta/folders`, {
 			headers: this.getHeaders(),
 		})
+	}
+
+	async createMediaFolder(name: string, parentPath?: string) {
+		return this.request.post(`${this.baseURL}/media/folders`, {
+			headers: this.getHeaders(),
+			data: { name, parentPath },
+		})
+	}
+
+	async deleteMediaFolder(path: string) {
+		return this.request.delete(
+			`${this.baseURL}/media/folders/${encodeURIComponent(path)}`,
+			{
+				headers: this.getHeaders(),
+			},
+		)
 	}
 
 	async getMediaTags() {

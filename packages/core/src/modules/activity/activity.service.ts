@@ -262,6 +262,70 @@ export class ActivityService {
 	}
 
 	// -------------------------------------------------------------------------
+	// Media event handlers
+	// -------------------------------------------------------------------------
+
+	@OnEvent('media.uploaded', { async: true })
+	async onMediaUploaded(
+		payload: EventPayload<'media.uploaded'>,
+	): Promise<void> {
+		await this.log({
+			action: 'media.uploaded',
+			entityType: 'media',
+			entityId: payload.fileId,
+			entityName: payload.filename,
+			userId: payload.userId ?? 'system',
+			ipAddress: payload.ipAddress,
+			metadata: {
+				mimeType: payload.mimeType,
+				size: payload.size,
+				folder: payload.folder,
+			},
+		})
+	}
+
+	@OnEvent('media.deleted', { async: true })
+	async onMediaDeleted(payload: EventPayload<'media.deleted'>): Promise<void> {
+		await this.log({
+			action: 'media.deleted',
+			entityType: 'media',
+			entityId: payload.fileId,
+			entityName: payload.filename,
+			userId: payload.userId ?? 'system',
+			ipAddress: payload.ipAddress,
+		})
+	}
+
+	@OnEvent('media.folder_created', { async: true })
+	async onMediaFolderCreated(
+		payload: EventPayload<'media.folder_created'>,
+	): Promise<void> {
+		await this.log({
+			action: 'media.folder_created',
+			entityType: 'media_folder',
+			entityId: payload.folderId,
+			entityName: payload.folderName,
+			userId: payload.userId ?? 'system',
+			ipAddress: payload.ipAddress,
+			metadata: { parentFolder: payload.parentFolder },
+		})
+	}
+
+	@OnEvent('media.folder_deleted', { async: true })
+	async onMediaFolderDeleted(
+		payload: EventPayload<'media.folder_deleted'>,
+	): Promise<void> {
+		await this.log({
+			action: 'media.folder_deleted',
+			entityType: 'media_folder',
+			entityId: payload.folderId,
+			entityName: payload.folderName,
+			userId: payload.userId ?? 'system',
+			ipAddress: payload.ipAddress,
+		})
+	}
+
+	// -------------------------------------------------------------------------
 	// API key event handlers
 	// -------------------------------------------------------------------------
 
