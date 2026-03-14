@@ -7,9 +7,10 @@ import type {
 	SortQuery,
 } from '@magnet-cms/common'
 import { InjectModel, OnEvent } from '@magnet-cms/common'
-import { Injectable } from '@nestjs/common'
+import { Inject, Injectable, forwardRef } from '@nestjs/common'
 import { MagnetLogger } from '~/modules/logging/logger.service'
 import { SettingsService } from '~/modules/settings/settings.service'
+import { UserService } from '~/modules/user/user.service'
 import { ActivitySettings } from './activity.settings'
 import { Activity } from './schemas/activity.schema'
 
@@ -54,6 +55,8 @@ export class ActivityService {
 		@InjectModel(Activity) private readonly activityModel: Model<Activity>,
 		private readonly settingsService: SettingsService,
 		private readonly logger: MagnetLogger,
+		@Inject(forwardRef(() => UserService))
+		private readonly userService: UserService,
 	) {
 		this.logger.setContext(ActivityService.name)
 	}
@@ -75,6 +78,18 @@ export class ActivityService {
 
 			if (!settings.logIpAddresses) {
 				record.ipAddress = undefined
+			}
+
+			// Populate userName if not provided and userId is not 'system'
+			if (!record.userName && record.userId && record.userId !== 'system') {
+				try {
+					const user = await this.userService.findOneById(record.userId)
+					if (user) {
+						record.userName = user.name
+					}
+				} catch {
+					// Non-critical — proceed without userName
+				}
 			}
 
 			return await this.activityModel.create({

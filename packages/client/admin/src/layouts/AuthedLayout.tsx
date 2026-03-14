@@ -25,22 +25,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { NotificationsDrawer } from '~/features/notifications'
 import { useAuth, useLogout } from '~/hooks/useAuth'
 import { useSchemas } from '~/hooks/useDiscovery'
-
-// Mock notifications for unread count calculation
-// In a real app, this would come from a context or hook
-const mockNotifications = [
-	{
-		id: '1',
-		type: 'trip_invite' as const,
-		title: 'Welcome to Magnet',
-		message: 'Your CMS is ready to use.',
-		timestamp: new Date(Date.now() - 1000 * 60 * 5),
-		read: false,
-		href: '/',
-	},
-]
-
-const unreadCount = mockNotifications.filter((n) => !n.read).length
+import { useUnreadNotificationCount } from '~/hooks/useNotifications'
 
 interface AuthedLayoutProps {
 	children: ReactNode
@@ -58,6 +43,10 @@ export function AuthedLayout({ children, header, sidebar }: AuthedLayoutProps) {
 	// Auth hooks
 	const { user, isLoading: isUserLoading } = useAuth()
 	const logout = useLogout()
+
+	// Notification badge count
+	const { data: unreadData } = useUnreadNotificationCount()
+	const unreadCount = unreadData?.count ?? 0
 
 	// Get schemas for dynamic nav
 	const { data: schemas } = useSchemas()
@@ -174,7 +163,7 @@ export function AuthedLayout({ children, header, sidebar }: AuthedLayoutProps) {
 				onClick: () => setNotificationsOpen(true),
 			},
 		],
-		[],
+		[unreadCount],
 	)
 
 	// Compute active states based on current location

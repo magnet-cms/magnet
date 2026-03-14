@@ -27,6 +27,7 @@ import { HealthModule } from './modules/health/health.module'
 import { HistoryModule } from './modules/history/history.module'
 import { LoggingInterceptor } from './modules/logging/logging.interceptor'
 import { LoggingModule } from './modules/logging/logging.module'
+import { NotificationModule } from './modules/notification/notification.module'
 import { PluginModule } from './modules/plugin/plugin.module'
 import { RBACModule } from './modules/rbac/rbac.module'
 import { SettingsModule } from './modules/settings/settings.module'
@@ -80,6 +81,7 @@ export class MagnetModule {
 			EventsModule,
 			HistoryModule,
 			HealthModule,
+			NotificationModule.forRoot(),
 			PluginModule.forRoot({ plugins }),
 			RBACModule.forRoot(defaultOptions.rbac),
 			SettingsModule.forRoot(),
@@ -117,6 +119,7 @@ export class MagnetModule {
 				SettingsModule,
 				HistoryModule,
 				HealthModule,
+				NotificationModule,
 				PluginModule,
 				StorageModuleConfig,
 			],

@@ -1,4 +1,5 @@
 import type {
+	BaseSchema,
 	FilterQuery,
 	Model,
 	NotificationChannelAdapter,
@@ -14,10 +15,8 @@ import { Inject, Injectable, OnModuleInit } from '@nestjs/common'
 import { ModuleRef } from '@nestjs/core'
 import { MagnetLogger } from '~/modules/logging/logger.service'
 import { SettingsService } from '~/modules/settings/settings.service'
-import {
-	NOTIFICATION_MODULE_OPTIONS,
-	type NotificationModuleOptions,
-} from './notification.module'
+import { NOTIFICATION_MODULE_OPTIONS } from './notification.constants'
+import type { NotificationModuleOptions } from './notification.module'
 import { NotificationSettings } from './notification.settings'
 import { Notification } from './schemas/notification.schema'
 
@@ -246,10 +245,11 @@ export class NotificationService implements OnModuleInit {
 		const results: NotificationChannelResult[] = []
 		const deliveredChannels: Array<'platform' | 'email'> = []
 
-		// ---- Platform channel ------------------------------------------------
+		// ---- Platform channel (persist to DB) ---------------------------------
+		let persistedRecord: BaseSchema<Notification> | null = null
 		if (dto.channels.includes('platform') && settings.platformChannelEnabled) {
-			const record = await this.persistPlatformNotification(dto)
-			if (record) {
+			persistedRecord = await this.persistPlatformNotification(dto)
+			if (persistedRecord) {
 				deliveredChannels.push('platform')
 				results.push({ channel: 'platform', success: true })
 			} else {
@@ -261,39 +261,41 @@ export class NotificationService implements OnModuleInit {
 			}
 		}
 
-		// ---- External channel adapters --------------------------------------
+		// ---- External channel adapters (e.g. email) -------------------------
 		const externalChannels = dto.channels.filter(
 			(c) => c !== 'platform',
 		) as Array<'email'>
 
-		for (const channelName of externalChannels) {
-			if (channelName === 'email' && !settings.emailChannelEnabled) {
-				continue
-			}
-
-			const adapter = this.adapters.find((a) => a.channel === channelName)
-			if (!adapter) {
-				this.logger.debug(
-					`No adapter registered for channel '${channelName}' — skipping`,
-				)
-				continue
-			}
-
-			const recipient = await this.resolveRecipient(dto.userId)
-			const payload: NotificationSendPayload = {
-				id: dto.userId,
+		if (externalChannels.length > 0) {
+			const sendPayload: NotificationSendPayload = {
+				id: persistedRecord?.id ?? `${dto.userId}-${Date.now()}`,
 				type: dto.type,
 				title: dto.title,
 				message: dto.message,
 				href: dto.href,
 				metadata: dto.metadata,
-				createdAt: new Date(),
+				createdAt: persistedRecord?.createdAt ?? new Date(),
 			}
+			const recipient = await this.resolveRecipient(dto.userId)
 
-			const result = await adapter.send(payload, recipient)
-			results.push(result)
-			if (result.success) {
-				deliveredChannels.push(channelName)
+			for (const channelName of externalChannels) {
+				if (channelName === 'email' && !settings.emailChannelEnabled) {
+					continue
+				}
+
+				const adapter = this.adapters.find((a) => a.channel === channelName)
+				if (!adapter) {
+					this.logger.debug(
+						`No adapter registered for channel '${channelName}' — skipping`,
+					)
+					continue
+				}
+
+				const result = await adapter.send(sendPayload, recipient)
+				results.push(result)
+				if (result.success) {
+					deliveredChannels.push(channelName)
+				}
 			}
 		}
 
@@ -304,7 +306,7 @@ export class NotificationService implements OnModuleInit {
 
 	private async persistPlatformNotification(
 		dto: NotifyDto & { userId: string },
-	): Promise<Notification | null> {
+	): Promise<BaseSchema<Notification> | null> {
 		try {
 			return await this.notificationModel.create({
 				userId: dto.userId,

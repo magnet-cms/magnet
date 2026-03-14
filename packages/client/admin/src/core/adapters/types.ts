@@ -155,6 +155,38 @@ export interface VersionDetails extends VersionInfo {
 }
 
 // ============================================================================
+// Notification Types
+// ============================================================================
+
+export interface NotificationRecord {
+	id: string
+	userId: string
+	type: string
+	title: string
+	message: string
+	read: boolean
+	href?: string
+	channels: string[]
+	metadata?: Record<string, unknown>
+	createdAt: string
+	readAt?: string
+}
+
+export interface NotificationListOptions {
+	limit?: number
+	offset?: number
+	unreadOnly?: boolean
+}
+
+export interface PaginatedNotificationRecords {
+	items: NotificationRecord[]
+	total: number
+	unreadCount: number
+	limit: number
+	offset: number
+}
+
+// ============================================================================
 // Activity Types
 // ============================================================================
 
@@ -362,6 +394,18 @@ export interface MagnetApiAdapter {
 			versionId1: string,
 			versionId2: string,
 		): Promise<VersionDiff>
+	}
+
+	/**
+	 * Notification operations (in-app platform channel)
+	 */
+	notifications: {
+		list(
+			options?: NotificationListOptions,
+		): Promise<PaginatedNotificationRecords>
+		getUnreadCount(): Promise<{ count: number }>
+		markAsRead(id: string): Promise<void>
+		markAllAsRead(): Promise<void>
 	}
 
 	/**

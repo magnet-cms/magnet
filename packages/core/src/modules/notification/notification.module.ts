@@ -2,6 +2,7 @@ import type { NotificationChannelAdapter } from '@magnet-cms/common'
 import { type DynamicModule, Module } from '@nestjs/common'
 import { DatabaseModule } from '~/modules/database'
 import { SettingsModule } from '~/modules/settings'
+import { NOTIFICATION_MODULE_OPTIONS } from './notification.constants'
 import { NotificationController } from './notification.controller'
 import { NotificationService } from './notification.service'
 import { NotificationSettings } from './notification.settings'
@@ -18,11 +19,7 @@ export interface NotificationModuleOptions {
 	adapters?: NotificationChannelAdapter[]
 }
 
-/**
- * Injection token for NotificationModule options.
- * @internal
- */
-export const NOTIFICATION_MODULE_OPTIONS = 'NOTIFICATION_MODULE_OPTIONS'
+export { NOTIFICATION_MODULE_OPTIONS }
 
 /**
  * Handles in-app and multi-channel notifications.

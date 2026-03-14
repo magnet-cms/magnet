@@ -19,8 +19,10 @@ import type {
 	MediaQueryOptions,
 	MediaStats,
 	MediaUploadOptions,
+	NotificationListOptions,
 	PaginatedActivities,
 	PaginatedMedia,
+	PaginatedNotificationRecords,
 	PlaygroundCodePreview,
 	PlaygroundCreateModuleResponse,
 	PlaygroundCreateSchemaDto,
@@ -499,6 +501,33 @@ export function createHttpAdapter(config: HttpAdapterConfig): MagnetApiAdapter {
 				return request<VersionDiff>(
 					`/history/compare/${versionId1}/${versionId2}`,
 				)
+			},
+		},
+
+		notifications: {
+			async list(
+				options?: NotificationListOptions,
+			): Promise<PaginatedNotificationRecords> {
+				const url = buildUrl('/notifications', {
+					limit:
+						options?.limit !== undefined ? String(options.limit) : undefined,
+					offset:
+						options?.offset !== undefined ? String(options.offset) : undefined,
+					unreadOnly: options?.unreadOnly ? 'true' : undefined,
+				})
+				return request<PaginatedNotificationRecords>(url)
+			},
+
+			async getUnreadCount(): Promise<{ count: number }> {
+				return request<{ count: number }>('/notifications/unread-count')
+			},
+
+			async markAsRead(id: string): Promise<void> {
+				await request(`/notifications/${id}/read`, { method: 'PATCH' })
+			},
+
+			async markAllAsRead(): Promise<void> {
+				await request('/notifications/read-all', { method: 'PATCH' })
 			},
 		},
 
