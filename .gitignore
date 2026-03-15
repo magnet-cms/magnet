@@ -46,3 +46,5 @@ yarn-error.log*
 # Uploads - ignore all files but keep directories
 **/uploads/*
 !**/uploads/.gitkeep
+.worktrees/
+.worktrees/
