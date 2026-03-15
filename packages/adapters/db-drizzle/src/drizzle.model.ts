@@ -229,39 +229,46 @@ export function createModel<T>(
 		 * Find a document by ID
 		 */
 		async findById(id: string): Promise<BaseSchema<T> | null> {
-			const dynamicTable = this._table as DynamicTable
-			const dbWithSelect = this._db as DrizzleDB & { select: Function }
-			const conditions: DrizzleCondition[] = [eq(dynamicTable.id, id)]
+			try {
+				const dynamicTable = this._table as DynamicTable
+				const dbWithSelect = this._db as DrizzleDB & { select: Function }
+				const conditions: DrizzleCondition[] = [eq(dynamicTable.id, id)]
 
-			// Apply locale filter if set
-			if (this.currentLocale && 'locale' in dynamicTable) {
-				conditions.push(eq(dynamicTable.locale, this.currentLocale))
-			}
-
-			// Apply version/status filter if set
-			if (this.currentVersion && 'status' in dynamicTable) {
-				if (['draft', 'published', 'archived'].includes(this.currentVersion)) {
-					conditions.push(eq(dynamicTable.status, this.currentVersion))
+				// Apply locale filter if set
+				if (this.currentLocale && 'locale' in dynamicTable) {
+					conditions.push(eq(dynamicTable.locale, this.currentLocale))
 				}
-			}
 
-			const whereCondition: DrizzleCondition = and(...conditions)
-			const results = (await dbWithSelect
-				.select()
-				.from(this._table)
-				.where(whereCondition)
-				.limit(1)) as DatabaseRow[]
+				// Apply version/status filter if set
+				if (this.currentVersion && 'status' in dynamicTable) {
+					if (
+						['draft', 'published', 'archived'].includes(this.currentVersion)
+					) {
+						conditions.push(eq(dynamicTable.status, this.currentVersion))
+					}
+				}
 
-			if (!results || results.length === 0) {
+				const whereCondition: DrizzleCondition = and(...conditions)
+				const results = (await dbWithSelect
+					.select()
+					.from(this._table)
+					.where(whereCondition)
+					.limit(1)) as DatabaseRow[]
+
+				if (!results || results.length === 0) {
+					return null
+				}
+
+				const firstResult = results[0]
+				if (!firstResult) {
+					return null
+				}
+
+				return this._mapResult(firstResult)
+			} catch {
+				// Return null for invalid ID format (e.g., non-UUID on UUID columns)
 				return null
 			}
-
-			const firstResult = results[0]
-			if (!firstResult) {
-				return null
-			}
-
-			return this._mapResult(firstResult)
 		}
 
 		/**
@@ -270,40 +277,47 @@ export function createModel<T>(
 		async findOne(
 			query: Partial<BaseSchema<T>>,
 		): Promise<BaseSchema<T> | null> {
-			const dynamicTable = this._table as DynamicTable
-			const dbWithSelect = this._db as DrizzleDB & { select: Function }
-			const conditions: DrizzleCondition[] = this._buildConditions(query)
+			try {
+				const dynamicTable = this._table as DynamicTable
+				const dbWithSelect = this._db as DrizzleDB & { select: Function }
+				const conditions: DrizzleCondition[] = this._buildConditions(query)
 
-			// Apply locale filter if set
-			if (this.currentLocale && 'locale' in dynamicTable) {
-				conditions.push(eq(dynamicTable.locale, this.currentLocale))
-			}
-
-			// Apply version/status filter if set
-			if (this.currentVersion && 'status' in dynamicTable) {
-				if (['draft', 'published', 'archived'].includes(this.currentVersion)) {
-					conditions.push(eq(dynamicTable.status, this.currentVersion))
+				// Apply locale filter if set
+				if (this.currentLocale && 'locale' in dynamicTable) {
+					conditions.push(eq(dynamicTable.locale, this.currentLocale))
 				}
-			}
 
-			const whereCondition: DrizzleCondition =
-				conditions.length > 0 ? and(...conditions) : undefined
-			const results = (await dbWithSelect
-				.select()
-				.from(this._table)
-				.where(whereCondition)
-				.limit(1)) as DatabaseRow[]
+				// Apply version/status filter if set
+				if (this.currentVersion && 'status' in dynamicTable) {
+					if (
+						['draft', 'published', 'archived'].includes(this.currentVersion)
+					) {
+						conditions.push(eq(dynamicTable.status, this.currentVersion))
+					}
+				}
 
-			if (!results || results.length === 0) {
+				const whereCondition: DrizzleCondition =
+					conditions.length > 0 ? and(...conditions) : undefined
+				const results = (await dbWithSelect
+					.select()
+					.from(this._table)
+					.where(whereCondition)
+					.limit(1)) as DatabaseRow[]
+
+				if (!results || results.length === 0) {
+					return null
+				}
+
+				const firstResult = results[0]
+				if (!firstResult) {
+					return null
+				}
+
+				return this._mapResult(firstResult)
+			} catch {
+				// Return null for invalid query values (e.g., non-UUID on UUID columns)
 				return null
 			}
-
-			const firstResult = results[0]
-			if (!firstResult) {
-				return null
-			}
-
-			return this._mapResult(firstResult)
 		}
 
 		/**
@@ -638,6 +652,34 @@ export function createModel<T>(
 							: dateValue
 					} else {
 						// For other types (shouldn't happen), pass through
+						result[camelKey] = value
+					}
+				} else if (typeof value === 'string') {
+					// Try to parse JSON/array strings from text columns
+					// PostgreSQL array literals: {"a","b"} or text columns storing JSON
+					if (
+						(value.startsWith('[') && value.endsWith(']')) ||
+						(value.startsWith('{') && value.endsWith('}'))
+					) {
+						try {
+							// Try JSON parse first
+							result[camelKey] = JSON.parse(value)
+						} catch {
+							// Try PostgreSQL array literal: {"a","b","c"}
+							if (value.startsWith('{') && value.endsWith('}')) {
+								try {
+									// Convert PG array literal to JSON array
+									const jsonStr = `[${value.slice(1, -1).replace(/"/g, '"')}]`
+									const parsed = JSON.parse(jsonStr)
+									result[camelKey] = parsed
+								} catch {
+									result[camelKey] = value
+								}
+							} else {
+								result[camelKey] = value
+							}
+						}
+					} else {
 						result[camelKey] = value
 					}
 				} else {

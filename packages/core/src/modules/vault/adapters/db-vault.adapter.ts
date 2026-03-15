@@ -1,5 +1,10 @@
 import { createCipheriv, createDecipheriv, randomBytes } from 'node:crypto'
-import { type Model, VaultAdapter, getModelToken } from '@magnet-cms/common'
+import {
+	type Model,
+	VaultAdapter,
+	getModelToken,
+	getRegisteredModel,
+} from '@magnet-cms/common'
 import { Logger } from '@nestjs/common'
 import { ModuleRef } from '@nestjs/core'
 import { VaultSecret } from '../schemas/vault-secret.schema'
@@ -55,9 +60,9 @@ export class DbVaultAdapter extends VaultAdapter {
 		this.masterKey = keyBuffer
 
 		const token = getModelToken(VaultSecret.name)
-		this.model = this.moduleRef.get<Model<VaultSecret>>(token, {
-			strict: false,
-		})
+		this.model =
+			getRegisteredModel<Model<VaultSecret>>(token) ||
+			this.moduleRef.get<Model<VaultSecret>>(token, { strict: false })
 		this.configured = true
 
 		this.logger.log('DB vault adapter initialized')

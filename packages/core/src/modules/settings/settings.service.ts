@@ -124,7 +124,10 @@ export class SettingsService implements OnApplicationBootstrap {
 		const resolvedGroup = this.resolveGroup(group)
 
 		try {
-			return await this.settingModel.findMany({ group: resolvedGroup })
+			const settings = await this.settingModel.findMany({
+				group: resolvedGroup,
+			})
+			return settings.map((s) => this.coerceSettingValue(s))
 		} catch (error) {
 			this.logger.warn(
 				`Settings model not ready, returning empty array for group: ${resolvedGroup}`,
@@ -144,16 +147,45 @@ export class SettingsService implements OnApplicationBootstrap {
 		const resolvedGroup = this.resolveGroup(group)
 
 		try {
-			return await this.settingModel.findOne({
+			const setting = await this.settingModel.findOne({
 				group: resolvedGroup,
 				key,
 			})
+			return setting ? this.coerceSettingValue(setting) : null
 		} catch (error) {
 			this.logger.warn(
 				`Settings model not ready, returning null for ${resolvedGroup}/${key}`,
 			)
 			return null
 		}
+	}
+
+	/**
+	 * Coerce the setting value to its declared type.
+	 * SQL adapters store all values as text; this restores the original type.
+	 */
+	private coerceSettingValue(setting: Setting): Setting {
+		if (typeof setting.value !== 'string' || !setting.type) {
+			return setting
+		}
+		switch (setting.type) {
+			case 'number': {
+				const num = Number(setting.value)
+				if (!Number.isNaN(num)) {
+					return { ...setting, value: num }
+				}
+				break
+			}
+			case 'boolean':
+				if (setting.value === 'true' || setting.value === '1') {
+					return { ...setting, value: true }
+				}
+				if (setting.value === 'false' || setting.value === '0') {
+					return { ...setting, value: false }
+				}
+				break
+		}
+		return setting
 	}
 
 	async getSetting(key: string): Promise<Setting | null> {

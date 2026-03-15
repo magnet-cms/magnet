@@ -7,6 +7,7 @@ import {
 	type TransformOptions,
 	type UploadOptions,
 	getModelToken,
+	getRegisteredModel,
 } from '@magnet-cms/common'
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common'
 import { ModuleRef } from '@nestjs/core'
@@ -88,12 +89,28 @@ export class StorageService implements OnModuleInit {
 	 */
 	private getMediaModel(): Model<Media> {
 		if (!this.mediaModel) {
-			try {
-				this.mediaModel = this.moduleRef.get<Model<Media>>(
-					getModelToken(Media),
-					{ strict: false },
-				)
-			} catch {
+			const token = getModelToken(Media)
+			// Try global registry first (populated by DatabaseModule.forFeature)
+			const registered = getRegisteredModel<Model<Media>>(token)
+			if (registered) {
+				this.mediaModel = registered
+			} else {
+				try {
+					const model = this.moduleRef.get<Model<Media>>(token, {
+						strict: false,
+					})
+					if (
+						model &&
+						typeof (model as unknown as Record<string, unknown>).create ===
+							'function'
+					) {
+						this.mediaModel = model
+					}
+				} catch {
+					// Fall through
+				}
+			}
+			if (!this.mediaModel) {
 				throw new Error(
 					'Media model not found. Make sure the Media schema is registered.',
 				)
@@ -107,12 +124,27 @@ export class StorageService implements OnModuleInit {
 	 */
 	private getFolderModel(): Model<MediaFolder> {
 		if (!this.folderModel) {
-			try {
-				this.folderModel = this.moduleRef.get<Model<MediaFolder>>(
-					getModelToken(MediaFolder),
-					{ strict: false },
-				)
-			} catch {
+			const token = getModelToken(MediaFolder)
+			const registered = getRegisteredModel<Model<MediaFolder>>(token)
+			if (registered) {
+				this.folderModel = registered
+			} else {
+				try {
+					const model = this.moduleRef.get<Model<MediaFolder>>(token, {
+						strict: false,
+					})
+					if (
+						model &&
+						typeof (model as unknown as Record<string, unknown>).create ===
+							'function'
+					) {
+						this.folderModel = model
+					}
+				} catch {
+					// Fall through
+				}
+			}
+			if (!this.folderModel) {
 				throw new Error(
 					'MediaFolder model not found. Make sure the MediaFolder schema is registered.',
 				)

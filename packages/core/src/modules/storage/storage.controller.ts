@@ -199,9 +199,11 @@ export class StorageController {
 	 * DELETE /media/folders/:path
 	 */
 	@Delete('folders/*path')
-	async deleteFolder(@Param('path') path: string) {
+	async deleteFolder(@Param('path') path: string | string[]) {
+		// NestJS wildcard route params may return arrays — normalize to string
+		const folderPath = Array.isArray(path) ? path.join('/') : path
 		try {
-			const success = await this.storageService.deleteFolder(path)
+			const success = await this.storageService.deleteFolder(folderPath)
 			if (!success) {
 				throw new HttpException('Folder not found', HttpStatus.NOT_FOUND)
 			}
