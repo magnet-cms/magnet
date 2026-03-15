@@ -47,6 +47,7 @@ import { MediaLibraryPage } from '~/features/media-library'
 import { ProfilePage, SettingsPage } from '~/features/settings'
 import { UsersListingPage } from '~/features/users'
 import { VaultPage } from '~/features/vault'
+import { WebhooksListingPage } from '~/features/webhooks'
 
 // ============================================================================
 // Auth Page Wrappers
@@ -278,6 +279,10 @@ const coreDashboardRoutes: RouteObject[] = [
 	{
 		path: 'vault',
 		element: withSuspense(VaultPage),
+	},
+	{
+		path: 'webhooks',
+		element: withSuspense(WebhooksListingPage),
 	},
 	{
 		path: 'settings',

@@ -1037,6 +1037,76 @@ export class ApiClient {
 		)
 	}
 
+	// Webhook endpoints
+	async createWebhook(data: {
+		name: string
+		url: string
+		events: string[]
+		description?: string
+		headers?: Record<string, string>
+		enabled?: boolean
+	}) {
+		return this.request.post(`${this.baseURL}/webhooks`, {
+			headers: this.getHeaders(),
+			data,
+		})
+	}
+
+	async getWebhooks() {
+		return this.request.get(`${this.baseURL}/webhooks`, {
+			headers: this.getHeaders(),
+		})
+	}
+
+	async getWebhook(id: string) {
+		return this.request.get(`${this.baseURL}/webhooks/${id}`, {
+			headers: this.getHeaders(),
+		})
+	}
+
+	async updateWebhook(
+		id: string,
+		data: {
+			name?: string
+			url?: string
+			events?: string[]
+			description?: string
+			headers?: Record<string, string>
+			enabled?: boolean
+		},
+	) {
+		return this.request.put(`${this.baseURL}/webhooks/${id}`, {
+			headers: this.getHeaders(),
+			data,
+		})
+	}
+
+	async deleteWebhook(id: string) {
+		return this.request.delete(`${this.baseURL}/webhooks/${id}`, {
+			headers: this.getHeaders(),
+		})
+	}
+
+	async testWebhook(id: string) {
+		return this.request.post(`${this.baseURL}/webhooks/${id}/test`, {
+			headers: this.getHeaders(),
+		})
+	}
+
+	async regenerateWebhookSecret(id: string) {
+		return this.request.post(
+			`${this.baseURL}/webhooks/${id}/regenerate-secret`,
+			{ headers: this.getHeaders() },
+		)
+	}
+
+	async getWebhookDeliveries(id: string, page = 1, limit = 20) {
+		return this.request.get(
+			`${this.baseURL}/webhooks/${id}/deliveries?page=${page}&limit=${limit}`,
+			{ headers: this.getHeaders() },
+		)
+	}
+
 	// Playground (Content Builder plugin) endpoints
 	async listPlaygroundSchemas() {
 		return this.request.get(`${this.baseURL}/playground/schemas`, {

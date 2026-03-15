@@ -1,4 +1,4 @@
 {
   "title": "Core",
-  "pages": ["index", "content-module", "auth-module", "api-keys-module", "rbac-module", "admin-module", "database-module", "notifications-module"]
+  "pages": ["index", "content-module", "auth-module", "api-keys-module", "rbac-module", "admin-module", "database-module", "notifications-module", "webhooks-module"]
 }

@@ -444,6 +444,7 @@
   "nav.contentManager": "Content Manager",
   "nav.media": "Media",
   "nav.activity": "Activity",
+  "nav.webhooks": "Webhooks",
   "nav.settings": "Settings",
   "nav.noContent": "No Content Available",
   "nav.account": "Account",

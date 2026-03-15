@@ -1,0 +1,179 @@
+---
+title: Webhooks Module
+description: Configure outgoing HTTP webhooks that fire on system events with HMAC signing, retry, and delivery logging.
+---
+
+# Webhooks Module
+
+The Webhooks module provides outgoing HTTP webhook support for Magnet CMS. Configure webhooks that fire HTTP POST requests to external URLs when system events occur — content CRUD, user actions, media uploads, settings changes, and more.
+
+## Features
+
+- Subscribe to any combination of 40+ system events
+- Full document data in payloads (enriched for content events)
+- HMAC-SHA256 request signing (`X-Magnet-Signature` header)
+- Automatic retry with exponential backoff (1s, 5s, 30s)
+- Delivery logging with response status, duration, and error tracking
+- Admin UI for webhook management and delivery history
+- Configurable timeout, retry count, and log retention via Settings
+
+## Quick Start
+
+The webhook module is automatically included when using `MagnetModule.forRoot()`. No additional configuration is required — webhooks are managed entirely via the Admin UI or REST API.
+
+## REST API
+
+### Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/webhooks` | List all webhooks (secrets masked) |
+| `GET` | `/webhooks/:id` | Get webhook by ID (secret masked) |
+| `POST` | `/webhooks` | Create webhook (returns full secret) |
+| `PUT` | `/webhooks/:id` | Update webhook |
+| `DELETE` | `/webhooks/:id` | Delete webhook |
+| `POST` | `/webhooks/:id/test` | Send test delivery |
+| `POST` | `/webhooks/:id/regenerate-secret` | Regenerate HMAC secret |
+| `GET` | `/webhooks/:id/deliveries` | Paginated delivery logs |
+
+All endpoints require admin authentication (`RestrictedRoute`).
+
+### Create a Webhook
+
+```typescript
+const response = await fetch('/webhooks', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${token}`,
+  },
+  body: JSON.stringify({
+    name: 'Deploy Hook',
+    url: 'https://api.vercel.com/v1/integrations/deploy/xxx',
+    events: ['content.published', 'content.updated'],
+    description: 'Triggers deployment on content publish',
+  }),
+})
+
+const webhook = await response.json()
+// Save webhook.secret — it won't be shown again!
+console.log('Webhook secret:', webhook.secret)
+```
+
+## Payload Format
+
+Outgoing webhook requests are HTTP POST with a JSON body:
+
+```json
+{
+  "event": "content.created",
+  "timestamp": "2026-03-15T10:30:00.000Z",
+  "data": {
+    "schema": "posts",
+    "documentId": "abc123",
+    "title": "My New Post",
+    "body": "..."
+  }
+}
+```
+
+### Headers
+
+| Header | Description |
+|--------|-------------|
+| `Content-Type` | `application/json` |
+| `X-Magnet-Signature` | HMAC-SHA256 signature: `sha256=<hex>` |
+| `X-Magnet-Event` | Event name (e.g., `content.created`) |
+| Custom headers | Any headers configured on the webhook |
+
+## Verifying Signatures
+
+Verify webhook authenticity by computing the HMAC-SHA256 of the request body:
+
+```typescript
+import { createHmac } from 'node:crypto'
+
+function verifyWebhookSignature(
+  body: string,
+  signature: string,
+  secret: string,
+): boolean {
+  const expected = `sha256=${createHmac('sha256', secret).update(body).digest('hex')}`
+  return signature === expected
+}
+
+// In your Express/Fastify handler:
+app.post('/webhook', (req, res) => {
+  const signature = req.headers['x-magnet-signature']
+  const isValid = verifyWebhookSignature(
+    JSON.stringify(req.body),
+    signature,
+    process.env.WEBHOOK_SECRET,
+  )
+
+  if (!isValid) {
+    return res.status(401).json({ error: 'Invalid signature' })
+  }
+
+  // Process the webhook...
+  console.log('Event:', req.body.event)
+  console.log('Data:', req.body.data)
+
+  res.status(200).json({ received: true })
+})
+```
+
+## Available Events
+
+### Content
+- `content.created` — New content document created
+- `content.updated` — Content document updated
+- `content.deleted` — Content document deleted
+- `content.published` — Content published
+- `content.unpublished` — Content unpublished
+- `content.version.created` — New version created
+- `content.version.restored` — Version restored
+
+### User
+- `user.created`, `user.updated`, `user.deleted`
+- `user.registered`, `user.login`, `user.logout`
+- `user.password_changed`, `user.email_verified`
+
+### Auth
+- `auth.token_refreshed`, `auth.session_created`
+- `auth.session_revoked`, `auth.failed_login_attempt`
+
+### Media
+- `media.uploaded`, `media.deleted`
+- `media.folder_created`, `media.folder_deleted`
+
+### Roles & Settings
+- `role.created`, `role.updated`, `role.deleted`, `role.permissions_updated`
+- `settings.updated`, `settings.group_updated`
+
+### System
+- `system.startup`, `system.shutdown`
+- `plugin.initialized`, `plugin.destroyed`
+- `notification.created`
+- `api_key.created`, `api_key.revoked`
+
+## Settings
+
+Configure the webhook system via the Admin UI Settings page or the `/settings/webhooks` API:
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| Enabled | `true` | Master switch for webhook dispatching |
+| Max Retries | `3` | Retry attempts with exponential backoff |
+| Request Timeout | `10000` ms | Maximum wait time per request |
+| Retention Days | `30` | Days to keep delivery log records |
+
+## Retry Behavior
+
+Failed deliveries (non-2xx or network error) are retried with exponential backoff:
+
+1. **Retry 1:** After 1 second
+2. **Retry 2:** After 5 seconds
+3. **Retry 3:** After 30 seconds
+
+Each attempt is logged in the delivery history. Retries happen asynchronously and don't block the original event.

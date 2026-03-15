@@ -5,7 +5,7 @@ import {
 	SidebarHeader,
 } from '@magnet-cms/ui/components'
 import { names } from '@magnet-cms/utils'
-import { Activity, Database, ImageIcon, Settings2 } from 'lucide-react'
+import { Activity, Database, ImageIcon, Settings2, Webhook } from 'lucide-react'
 import type * as React from 'react'
 import { useAdmin } from '~/contexts/useAdmin'
 import { usePluginSidebarItems } from '~/core/plugins/PluginRegistry'
@@ -79,6 +79,15 @@ export const AppSidebar = ({
 			url: '/activity',
 			icon: Activity,
 			order: 70,
+		},
+		{
+			title: intl.formatMessage({
+				id: 'nav.webhooks',
+				defaultMessage: 'Webhooks',
+			}),
+			url: '/webhooks',
+			icon: Webhook,
+			order: 75,
 		},
 		{
 			title: intl.formatMessage({

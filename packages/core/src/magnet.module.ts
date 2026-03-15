@@ -36,6 +36,7 @@ import { SettingsModule } from './modules/settings/settings.module'
 import { StorageModule } from './modules/storage/storage.module'
 import { VaultModule } from './modules/vault/vault.module'
 import { ViewConfigModule } from './modules/view-config/view-config.module'
+import { WebhookModule } from './modules/webhook/webhook.module'
 import { initOptions } from './utils'
 
 /**
@@ -93,6 +94,7 @@ export class MagnetModule {
 			SettingsModule.forRoot(),
 			StorageModuleConfig,
 			VaultModuleConfig,
+			WebhookModule.forRoot(),
 			ViewConfigModule,
 		]
 
