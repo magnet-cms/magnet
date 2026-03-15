@@ -2,9 +2,14 @@ import ansis from 'ansis'
 import type { ProjectConfig } from '../types.js'
 
 export function showSuccessMessage(config: ProjectConfig): void {
-	const { projectName, packageManager } = config
+	const { projectName, database, packageManager } = config
 
 	const runCmd = packageManager === 'npm' ? 'npm run' : packageManager
+
+	const dbAdminUi =
+		database === 'mongoose'
+			? 'Mongo Express: http://localhost:8081'
+			: 'pgAdmin: http://localhost:5050'
 
 	console.log()
 	console.log(ansis.green.bold('Success!'), 'Your Magnet CMS project is ready.')
@@ -12,9 +17,15 @@ export function showSuccessMessage(config: ProjectConfig): void {
 	console.log(ansis.bold('Next steps:'))
 	console.log()
 	console.log(ansis.cyan(`  cd ${projectName}`))
-	console.log(ansis.cyan('  cp .env.example .env'))
-	console.log(ansis.cyan(`  ${runCmd} docker:up`))
 	console.log(ansis.cyan(`  ${runCmd} dev`))
+	console.log()
+	console.log(
+		ansis.dim(
+			'This starts Docker services, waits for the database, and launches the app.',
+		),
+	)
+	console.log(ansis.dim('Admin UI:    http://localhost:3000/admin'))
+	console.log(ansis.dim(`DB Admin:    ${dbAdminUi}`))
 	console.log()
 	console.log(ansis.dim('Happy building!'))
 	console.log()

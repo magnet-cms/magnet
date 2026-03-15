@@ -4,6 +4,7 @@ import { ensureDir, writeFile } from '../utils/fs.js'
 import { generateAppModule } from './app-module.js'
 import {
 	generateBiomeJson,
+	generateDotEnv,
 	generateEnvExample,
 	generateGitignore,
 	generateNestCliJson,
@@ -11,7 +12,7 @@ import {
 	generateTsconfig,
 	generateTsconfigBuild,
 } from './config-files.js'
-import { generateDockerCompose } from './docker.js'
+import { generateDockerCompose, generateSupabaseConfig } from './docker.js'
 import {
 	generateExampleController,
 	generateExampleDto,
@@ -36,15 +37,25 @@ export async function generateProject(config: ProjectConfig): Promise<void> {
 		{ path: 'tsconfig.build.json', content: generateTsconfigBuild() },
 		{ path: 'nest-cli.json', content: generateNestCliJson() },
 		{ path: 'biome.json', content: generateBiomeJson() },
+		{ path: '.env', content: generateDotEnv(config) },
 		{ path: '.env.example', content: generateEnvExample(config) },
 		{ path: '.gitignore', content: generateGitignore() },
 		{ path: 'README.md', content: generateReadme(config) },
 
-		// Docker
-		{
-			path: 'docker/docker-compose.yml',
-			content: generateDockerCompose(config),
-		},
+		// Docker / Supabase config
+		...(config.supabaseLocalMode === 'cli'
+			? [
+					{
+						path: 'supabase/config.toml',
+						content: generateSupabaseConfig(config.projectName),
+					},
+				]
+			: [
+					{
+						path: 'docker/docker-compose.yml',
+						content: generateDockerCompose(config),
+					},
+				]),
 
 		// Source files
 		{ path: 'src/main.ts', content: generateMain() },
@@ -92,12 +103,13 @@ export async function generateProject(config: ProjectConfig): Promise<void> {
 export { generatePackageJson } from './package-json.js'
 export { generateAppModule } from './app-module.js'
 export { generateMain } from './main.js'
-export { generateDockerCompose } from './docker.js'
+export { generateDockerCompose, generateSupabaseConfig } from './docker.js'
 export {
 	generateTsconfig,
 	generateTsconfigBuild,
 	generateNestCliJson,
 	generateBiomeJson,
+	generateDotEnv,
 	generateEnvExample,
 	generateGitignore,
 	generateReadme,

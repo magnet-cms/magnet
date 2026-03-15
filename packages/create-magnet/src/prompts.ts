@@ -6,6 +6,7 @@ import type {
 	Plugin,
 	ProjectConfig,
 	StorageAdapter,
+	SupabaseLocalMode,
 	VaultAdapter,
 } from './types.js'
 import {
@@ -31,6 +32,12 @@ export async function collectConfig(
 	// Database adapter
 	const database = options.database ?? (await promptDatabaseAdapter())
 
+	// Supabase local dev mode (only for drizzle-supabase)
+	const supabaseLocalMode =
+		database === 'drizzle-supabase'
+			? await promptSupabaseLocalMode()
+			: undefined
+
 	// Plugins
 	const plugins = await promptPlugins()
 
@@ -55,6 +62,7 @@ export async function collectConfig(
 		vault,
 		packageManager,
 		includeExample,
+		supabaseLocalMode,
 	}
 }
 
@@ -190,6 +198,27 @@ async function promptIncludeExample(): Promise<boolean> {
 	return confirm({
 		message: 'Include example module?',
 		default: true,
+	})
+}
+
+async function promptSupabaseLocalMode(): Promise<SupabaseLocalMode> {
+	return select({
+		message: 'Select local development setup for Supabase:',
+		default: 'postgres',
+		choices: [
+			{
+				name: 'Raw PostgreSQL (Docker)',
+				value: 'postgres' as const,
+				description:
+					'Run a local PostgreSQL container via Docker Compose — simple, no extra CLI needed',
+			},
+			{
+				name: 'Supabase CLI',
+				value: 'cli' as const,
+				description:
+					'Use the Supabase CLI (supabase start) for a full local Supabase stack with Auth, Storage, and Edge Functions',
+			},
+		],
 	})
 }
 

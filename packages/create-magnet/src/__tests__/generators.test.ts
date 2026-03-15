@@ -10,13 +10,14 @@ function makeConfig(overrides: Partial<ProjectConfig> = {}): ProjectConfig {
 		database: 'drizzle-neon',
 		plugins: [],
 		storage: 'none',
+		vault: 'db',
 		includeExample: false,
 		packageManager: 'npm',
 		...overrides,
 	}
 }
 
-describe('generatePackageJson (Drizzle)', () => {
+describe('generatePackageJson — CLI inclusion', () => {
 	it('includes @magnet-cms/cli in devDependencies for drizzle projects', () => {
 		const json = JSON.parse(
 			generatePackageJson(makeConfig({ database: 'drizzle-neon' })),
@@ -24,21 +25,24 @@ describe('generatePackageJson (Drizzle)', () => {
 		expect(json.devDependencies['@magnet-cms/cli']).toBeDefined()
 	})
 
-	it('includes migrate scripts for drizzle projects', () => {
-		const json = JSON.parse(
-			generatePackageJson(makeConfig({ database: 'drizzle-neon' })),
-		)
-		expect(json.scripts['migrate:up']).toBe('magnet migrate:up')
-		expect(json.scripts['migrate:down']).toBe('magnet migrate:down')
-		expect(json.scripts['migrate:status']).toBe('magnet migrate:status')
-		expect(json.scripts['migrate:generate']).toBe('magnet migrate:generate')
-	})
-
-	it('does NOT include @magnet-cms/cli for mongoose projects', () => {
+	it('includes @magnet-cms/cli in devDependencies for mongoose projects', () => {
 		const json = JSON.parse(
 			generatePackageJson(makeConfig({ database: 'mongoose' })),
 		)
-		expect(json.devDependencies['@magnet-cms/cli']).toBeUndefined()
+		expect(json.devDependencies['@magnet-cms/cli']).toBeDefined()
+	})
+})
+
+describe('generatePackageJson — migrate scripts', () => {
+	it('uses space-separated format for drizzle projects', () => {
+		const json = JSON.parse(
+			generatePackageJson(makeConfig({ database: 'drizzle-neon' })),
+		)
+		expect(json.scripts['migrate:up']).toBe('magnet migrate up')
+		expect(json.scripts['migrate:down']).toBe('magnet migrate down')
+		expect(json.scripts['migrate:status']).toBe('magnet migrate status')
+		expect(json.scripts['migrate:generate']).toBe('magnet migrate generate')
+		expect(json.scripts['migrate:create']).toBe('magnet migrate create')
 	})
 
 	it('does NOT include migrate scripts for mongoose projects', () => {
@@ -46,6 +50,30 @@ describe('generatePackageJson (Drizzle)', () => {
 			generatePackageJson(makeConfig({ database: 'mongoose' })),
 		)
 		expect(json.scripts['migrate:up']).toBeUndefined()
+	})
+})
+
+describe('generatePackageJson — dev/docker scripts', () => {
+	it('uses magnet dev as the dev script', () => {
+		const json = JSON.parse(generatePackageJson(makeConfig()))
+		expect(json.scripts.dev).toBe('magnet dev')
+	})
+
+	it('includes dev:app for direct NestJS start', () => {
+		const json = JSON.parse(generatePackageJson(makeConfig()))
+		expect(json.scripts['dev:app']).toBe('nest start --watch')
+	})
+
+	it('uses magnet docker commands', () => {
+		const json = JSON.parse(generatePackageJson(makeConfig()))
+		expect(json.scripts['docker:up']).toBe('magnet docker up')
+		expect(json.scripts['docker:down']).toBe('magnet docker down')
+		expect(json.scripts['docker:logs']).toBe('magnet docker logs')
+	})
+
+	it('includes db:reset script', () => {
+		const json = JSON.parse(generatePackageJson(makeConfig()))
+		expect(json.scripts['db:reset']).toBe('magnet db:reset')
 	})
 })
 

@@ -30,11 +30,19 @@
   },
   "dependencies": {
     "@inquirer/prompts": "^7.5.0",
-    "@magnet-cms/adapter-db-drizzle": "workspace:*",
     "ansis": "^3.17.0",
     "commander": "^13.1.0"
   },
+  "peerDependencies": {
+    "@magnet-cms/adapter-db-drizzle": "workspace:*"
+  },
+  "peerDependenciesMeta": {
+    "@magnet-cms/adapter-db-drizzle": {
+      "optional": true
+    }
+  },
   "devDependencies": {
+    "@magnet-cms/adapter-db-drizzle": "workspace:*",
     "@repo/biome": "workspace:*",
     "@repo/tsup": "workspace:*",
     "@repo/typescript-config": "workspace:*",
