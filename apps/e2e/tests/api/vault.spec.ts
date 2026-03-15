@@ -13,8 +13,15 @@ test.describe('Vault API', () => {
 		const body = await response.json()
 		expect(body.healthy).toBe(true)
 
-		// All templates use the db vault adapter by default
-		expect(body.adapter).toBeDefined()
+		// Template-specific adapter assertion
+		if (TEMPLATE_NAME === 'mongoose') {
+			expect(body.adapter).toBe('hashicorp')
+		} else if (TEMPLATE_NAME === 'drizzle-supabase') {
+			expect(body.adapter).toBe('supabase')
+		} else {
+			// drizzle-neon and others use DB vault
+			expect(body.adapter).toBeDefined()
+		}
 	})
 
 	test('Vault CRUD — create, read, update, delete secret', async ({

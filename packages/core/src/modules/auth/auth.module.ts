@@ -68,9 +68,11 @@ export class AuthModule {
 				UserModule,
 				EventsModule,
 				SettingsModule.forFeature(AuthSettings),
-				// Use configured strategy as Passport default (falls back to 'jwt')
+				// Always use 'jwt' as the Passport strategy for request authentication.
+				// Custom auth strategies (supabase, clerk) handle login/register
+				// but JWT validation is still used for authenticating API requests.
 				PassportModule.register({
-					defaultStrategy: authConfig?.strategy || 'jwt',
+					defaultStrategy: 'jwt',
 				}),
 				JwtModule.registerAsync({
 					useFactory: (options: MagnetModuleOptions): JwtModuleOptions => ({
@@ -132,8 +134,10 @@ export class AuthModule {
 				{
 					provide: DynamicAuthGuard,
 					useFactory: () => {
-						// Set strategy name on the class so all usages pick it up without DI
-						DynamicAuthGuard.strategyName = authConfig?.strategy || 'jwt'
+						// Always use 'jwt' Passport strategy for request authentication.
+						// Custom strategies (supabase, clerk) handle login/register but
+						// JWT validation is used for authenticating API requests.
+						DynamicAuthGuard.strategyName = 'jwt'
 						return new DynamicAuthGuard()
 					},
 				},

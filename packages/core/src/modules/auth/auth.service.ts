@@ -119,6 +119,19 @@ export class AuthService {
 			role,
 		})
 
+		// Ensure a local user record exists for external auth strategies
+		// (e.g., Supabase, Clerk) that create users in an external system
+		// but don't create local database records.
+		const existingLocal = await this.userService.findOne({ email: user.email })
+		if (!existingLocal) {
+			await this.userService.create({
+				id: user.id,
+				email: user.email,
+				name: user.name || registerDto.name,
+				role: user.role || role,
+			})
+		}
+
 		await this.emitEvent('user.registered', {
 			userId: user.id,
 			email: registerDto.email,
@@ -181,10 +194,15 @@ export class AuthService {
 			}
 		}
 
+		// Resolve local user ID — external auth strategies (Supabase, Clerk)
+		// may return a provider-specific ID that doesn't match the local database.
+		const localUser = await this.userService.findOne({ email: user.email })
+		const effectiveUserId = localUser?.id || user.id
+
 		// Check concurrent sessions if enabled
 		if (settings.enableSessions && settings.maxConcurrentSessions > 0) {
 			await this.enforceConcurrentSessionLimit(
-				user.id,
+				effectiveUserId,
 				settings.maxConcurrentSessions,
 			)
 		}
@@ -194,7 +212,7 @@ export class AuthService {
 
 		// Create refresh token
 		const refreshTokenData = await this.createRefreshToken(
-			user.id,
+			effectiveUserId,
 			settings.refreshTokenDuration,
 			context,
 		)
@@ -203,7 +221,7 @@ export class AuthService {
 		let sessionId: string | undefined
 		if (settings.enableSessions) {
 			const session = await this.createSession(
-				user.id,
+				effectiveUserId,
 				refreshTokenData.id,
 				context,
 				settings,
@@ -213,8 +231,14 @@ export class AuthService {
 
 		// Log successful login and update lastLogin timestamp
 		await this.logLoginAttempt(credentials.email, true, null, context)
-		await this.userService.update(user.id, { lastLogin: new Date() })
-		await this.emitEvent('user.login', { userId: user.id, sessionId })
+		try {
+			await this.userService.update(effectiveUserId, {
+				lastLogin: new Date(),
+			})
+		} catch {
+			// User may not have a local record yet (external auth)
+		}
+		await this.emitEvent('user.login', { userId: effectiveUserId, sessionId })
 
 		return {
 			...authResult,

@@ -77,6 +77,13 @@ const examples: Record<string, ExampleConfig> = {
 		),
 		port: 5432,
 		service: 'drizzle-supabase-db',
+		additionalChecks: [
+			{
+				container: 'supabase-kong',
+				type: 'http',
+				check: 'http://localhost:8000/rest/v1/',
+			},
+		],
 		maxAttempts: 90,
 	},
 }

@@ -15,6 +15,7 @@ interface DecryptedSecretRow {
  * Prerequisites:
  *   - Supabase project with the Vault extension enabled
  *   - Service role key (required for vault operations)
+ *   - PostgREST must expose the `vault` schema (PGRST_DB_SCHEMAS includes `vault`)
  *
  * @example
  * ```typescript
@@ -38,9 +39,14 @@ export class SupabaseVaultAdapter implements VaultAdapter {
 		})
 	}
 
+	/** Query builder scoped to the vault schema (sets Accept-Profile header for PostgREST). */
+	private vault() {
+		return this.client.schema('vault')
+	}
+
 	async get(key: string): Promise<Record<string, unknown> | null> {
-		const { data, error } = await this.client
-			.from('vault.decrypted_secrets')
+		const { data, error } = await this.vault()
+			.from('decrypted_secrets')
 			.select('name, decrypted_secret')
 			.eq('name', key)
 			.maybeSingle<DecryptedSecretRow>()
@@ -64,14 +70,14 @@ export class SupabaseVaultAdapter implements VaultAdapter {
 		const secretValue = JSON.stringify(data)
 
 		// Check if secret already exists
-		const { data: existing } = await this.client
-			.from('vault.decrypted_secrets')
+		const { data: existing } = await this.vault()
+			.from('decrypted_secrets')
 			.select('id')
 			.eq('name', key)
 			.maybeSingle<{ id: string }>()
 
 		if (existing?.id) {
-			const { error } = await this.client.rpc('vault.update_secret', {
+			const { error } = await this.vault().rpc('update_secret', {
 				secret_id: existing.id,
 				new_secret: secretValue,
 				new_name: key,
@@ -80,9 +86,9 @@ export class SupabaseVaultAdapter implements VaultAdapter {
 				throw new Error(`Supabase Vault update failed: ${error.message}`)
 			}
 		} else {
-			const { error } = await this.client.rpc('vault.create_secret', {
-				secret: secretValue,
-				name: key,
+			const { error } = await this.vault().rpc('create_secret', {
+				new_secret: secretValue,
+				new_name: key,
 			})
 			if (error) {
 				throw new Error(`Supabase Vault create failed: ${error.message}`)
@@ -91,8 +97,8 @@ export class SupabaseVaultAdapter implements VaultAdapter {
 	}
 
 	async delete(key: string): Promise<void> {
-		const { data: existing } = await this.client
-			.from('vault.decrypted_secrets')
+		const { data: existing } = await this.vault()
+			.from('decrypted_secrets')
 			.select('id')
 			.eq('name', key)
 			.maybeSingle<{ id: string }>()
@@ -101,8 +107,8 @@ export class SupabaseVaultAdapter implements VaultAdapter {
 			return
 		}
 
-		const { error } = await this.client
-			.from('vault.secrets')
+		const { error } = await this.vault()
+			.from('secrets')
 			.delete()
 			.eq('id', existing.id)
 
@@ -112,7 +118,7 @@ export class SupabaseVaultAdapter implements VaultAdapter {
 	}
 
 	async list(prefix?: string): Promise<string[]> {
-		let query = this.client.from('vault.decrypted_secrets').select('name')
+		let query = this.vault().from('decrypted_secrets').select('name')
 
 		if (prefix) {
 			query = query.like('name', `${prefix}%`)
@@ -129,8 +135,8 @@ export class SupabaseVaultAdapter implements VaultAdapter {
 
 	async healthCheck(): Promise<boolean> {
 		try {
-			const { error } = await this.client
-				.from('vault.decrypted_secrets')
+			const { error } = await this.vault()
+				.from('decrypted_secrets')
 				.select('name')
 				.limit(1)
 

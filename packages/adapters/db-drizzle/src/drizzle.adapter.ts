@@ -162,9 +162,14 @@ class DrizzleAdapter extends DatabaseAdapter {
 		const columns: string[] = []
 
 		// Generate column definitions
-		for (const [colName, col] of Object.entries(config.columns)) {
-			const colDef: string[] = [`"${colName}"`]
+		// config.columns is an array — use column.name for the SQL column name
+		const columnsArray = Array.isArray(config.columns)
+			? config.columns
+			: Object.values(config.columns)
+		for (const col of columnsArray) {
 			const column = col as any
+			const colName = column.name
+			const colDef: string[] = [`"${colName}"`]
 
 			// Get SQL type using getSQLType() method on the column builder
 			let sqlType: string
@@ -185,7 +190,7 @@ class DrizzleAdapter extends DatabaseAdapter {
 			// Add DEFAULT constraint
 			if (column.default !== undefined) {
 				const defaultValue = column.default
-				const defaultSQL = this.formatDefaultValue(defaultValue)
+				const defaultSQL = this.formatDefaultValue(defaultValue, sqlType)
 				if (defaultSQL) {
 					colDef.push(`DEFAULT ${defaultSQL}`)
 				}
@@ -265,23 +270,46 @@ class DrizzleAdapter extends DatabaseAdapter {
 	/**
 	 * Format default value for SQL DEFAULT clause.
 	 */
-	private formatDefaultValue(value: unknown): string | null {
+	private formatDefaultValue(value: unknown, colType?: string): string | null {
 		if (value === undefined || value === null) {
 			return null
 		}
 
-		// Handle SQL template literal objects (from sql`...`)
-		if (typeof value === 'object' && value !== null && 'sql' in value) {
-			const sqlObj = value as { sql: string; params?: unknown[] }
-			// Extract SQL from the template literal object
-			// Drizzle stores SQL as string in the sql property
-			return sqlObj.sql
+		// Handle Drizzle SQL template literal objects (from sql`...`)
+		if (typeof value === 'object' && value !== null) {
+			// Drizzle SQL objects have queryChunks (e.g., sql`gen_random_uuid()`)
+			if ('queryChunks' in value) {
+				const chunks = (value as { queryChunks: unknown[] }).queryChunks
+				const rawSQL = chunks
+					.map((chunk: unknown) => {
+						if (
+							typeof chunk === 'object' &&
+							chunk !== null &&
+							'value' in chunk
+						) {
+							const arr = (chunk as { value: unknown[] }).value
+							return arr.join('')
+						}
+						return String(chunk)
+					})
+					.join('')
+				return rawSQL || null
+			}
+			// Legacy: plain { sql: string } objects
+			if ('sql' in value) {
+				return (value as { sql: string }).sql
+			}
 		}
 
 		// Handle functions (like gen_random_uuid, now)
 		if (typeof value === 'function') {
 			const funcStr = value.toString()
 			if (funcStr.includes('gen_random_uuid')) {
+				// Cast to text when column type is TEXT/VARCHAR to avoid type mismatch
+				const upperType = colType?.toUpperCase() ?? ''
+				if (upperType.includes('TEXT') || upperType.includes('VARCHAR')) {
+					return 'gen_random_uuid()::text'
+				}
 				return 'gen_random_uuid()'
 			}
 			if (funcStr.includes('now') || funcStr.includes('CURRENT_TIMESTAMP')) {

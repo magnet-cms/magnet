@@ -21,7 +21,7 @@ AuthStrategyFactory.registerStrategy('supabase', SupabaseAuthStrategy)
  * - Drizzle ORM adapter with PostgreSQL (via Supabase)
  * - Supabase Auth strategy for authentication
  * - Supabase Storage adapter for file uploads
- * - DB vault for secrets management
+ * - Supabase Vault (pgsodium) for secrets management
  * - Content Builder plugin
  * - Admin UI serving
  * - Local development with Docker Compose
@@ -68,7 +68,14 @@ AuthStrategyFactory.registerStrategy('supabase', SupabaseAuthStrategy)
 					bucket: process.env.SUPABASE_STORAGE_BUCKET || 'media',
 				},
 			},
-			vault: { adapter: 'db' },
+			// Vault: Supabase Vault (pgsodium encryption)
+			vault: {
+				adapter: 'supabase',
+				supabase: {
+					supabaseUrl: process.env.SUPABASE_URL || 'http://localhost:8000',
+					supabaseServiceKey: process.env.SUPABASE_SERVICE_KEY || '',
+				},
+			},
 			plugins: [{ plugin: ContentBuilderPlugin }],
 		}),
 		CatsModule,
