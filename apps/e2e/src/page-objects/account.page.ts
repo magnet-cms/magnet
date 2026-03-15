@@ -1,5 +1,6 @@
 import type { Locator, Page } from '@playwright/test'
 import { expect } from '@playwright/test'
+import { adminPath } from '../helpers/admin-paths'
 
 export class AccountPage {
 	readonly page: Page
@@ -16,27 +17,33 @@ export class AccountPage {
 
 	constructor(page: Page) {
 		this.page = page
-		this.profileTab = page.getByRole('tab', { name: /profile/i })
-		this.securityTab = page.getByRole('tab', { name: /security/i })
-		this.nameInput = page.getByLabel(/name/i)
-		this.emailInput = page.getByLabel(/email/i)
+		// Profile page uses plain <button> elements for tabs, not role="tab"
+		this.profileTab = page.getByRole('button', { name: /personal/i })
+		this.securityTab = page.getByRole('button', { name: /security/i })
+		// Label text is "Full Name" and "Email Address" in the profile form
+		this.nameInput = page.getByLabel(/full name|name/i)
+		this.emailInput = page.getByLabel(/email address|email/i)
 		this.currentPasswordInput = page.getByLabel(/current password/i)
 		this.newPasswordInput = page.getByLabel(/new password/i)
 		this.confirmPasswordInput = page.getByLabel(/confirm.*password/i)
 		this.saveProfileButton = page.getByRole('button', { name: /save changes/i })
+		// Button text is "Update Password", not "Change Password"
 		this.changePasswordButton = page.getByRole('button', {
-			name: /change password/i,
+			name: /update password|change password/i,
 		})
-		this.avatar = page.locator('[data-testid="avatar"], .avatar, [role="img"]')
+		// Profile photo section: the avatar is a button with user initials
+		this.avatar = page.getByRole('heading', { name: 'Profile Photo' })
 	}
 
 	async goto() {
-		await this.page.goto('/admin/settings/profile')
+		await this.page.goto(adminPath('/settings/profile'))
 		await this.expectLoaded()
 	}
 
 	async expectLoaded() {
-		await expect(this.page.getByText(/account|profile/i)).toBeVisible()
+		await expect(
+			this.page.getByRole('heading', { name: 'Profile', exact: true }),
+		).toBeVisible()
 	}
 
 	async switchToProfileTab() {

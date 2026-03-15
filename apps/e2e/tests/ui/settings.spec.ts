@@ -1,4 +1,5 @@
 import { test as authTest, expect } from '../../src/fixtures/auth.fixture'
+import { POST_LOGIN_URL, adminPath } from '../../src/helpers/admin-paths'
 import { LoginPage } from '../../src/page-objects/login.page'
 import { SettingsPage } from '../../src/page-objects/settings.page'
 
@@ -7,7 +8,7 @@ authTest.describe('Settings UI', () => {
 		const loginPage = new LoginPage(page)
 		await loginPage.goto()
 		await loginPage.login(testUser.email, testUser.password)
-		await page.waitForURL(/\/admin\/(?!auth)/, { timeout: 10000 })
+		await page.waitForURL(POST_LOGIN_URL, { timeout: 10000 })
 	})
 
 	authTest('can navigate to settings', async ({ page }) => {
@@ -20,9 +21,8 @@ authTest.describe('Settings UI', () => {
 		const settingsPage = new SettingsPage(page)
 		await settingsPage.goto()
 
-		await expect(
-			page.getByText(/settings/i).or(page.locator('main')),
-		).toBeVisible()
+		// Settings page shows a heading (e.g. "General") and main content
+		await expect(page.locator('main')).toBeVisible()
 	})
 
 	authTest('can navigate to settings group', async ({ page }) => {
@@ -66,7 +66,7 @@ authTest.describe('Settings UI', () => {
 		await settingsPage.expectLoaded()
 
 		// Navigate away and back
-		await page.goto('/admin')
+		await page.goto(adminPath('/'))
 		await page.waitForLoadState('networkidle')
 
 		await settingsPage.goto()

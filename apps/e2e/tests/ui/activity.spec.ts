@@ -1,4 +1,5 @@
 import { test as authTest, expect } from '../../src/fixtures/auth.fixture'
+import { POST_LOGIN_URL, adminPath } from '../../src/helpers/admin-paths'
 import { LoginPage } from '../../src/page-objects/login.page'
 
 authTest.describe('Activity Page UI', () => {
@@ -6,11 +7,11 @@ authTest.describe('Activity Page UI', () => {
 		const loginPage = new LoginPage(page)
 		await loginPage.goto()
 		await loginPage.login(testUser.email, testUser.password)
-		await page.waitForURL(/\/admin\/(?!auth)/, { timeout: 10000 })
+		await page.waitForURL(POST_LOGIN_URL, { timeout: 10000 })
 	})
 
 	authTest('navigates to /activity from sidebar', async ({ page }) => {
-		await page.goto('/admin/activity')
+		await page.goto(adminPath('/activity'))
 		await page.waitForLoadState('networkidle')
 		await expect(page).toHaveURL(/\/activity/)
 	})
@@ -18,7 +19,7 @@ authTest.describe('Activity Page UI', () => {
 	authTest(
 		'activity page shows DataTable with content-manager layout',
 		async ({ page }) => {
-			await page.goto('/admin/activity')
+			await page.goto(adminPath('/activity'))
 			await page.waitForLoadState('networkidle')
 
 			// Page header with "Activity Log" title
@@ -36,7 +37,7 @@ authTest.describe('Activity Page UI', () => {
 	authTest(
 		'activity page filter dropdowns are present with correct defaults',
 		async ({ page }) => {
-			await page.goto('/admin/activity')
+			await page.goto(adminPath('/activity'))
 			await page.waitForLoadState('networkidle')
 
 			// Three filter dropdowns visible via their default selected labels
@@ -52,7 +53,7 @@ authTest.describe('Activity Page UI', () => {
 	)
 
 	authTest('activity page shows pagination controls', async ({ page }) => {
-		await page.goto('/admin/activity')
+		await page.goto(adminPath('/activity'))
 		await page.waitForLoadState('networkidle')
 
 		// Pagination Previous/Next buttons
@@ -68,7 +69,7 @@ authTest.describe('Activity Page UI', () => {
 	})
 
 	authTest('no stray "0" character on activity page', async ({ page }) => {
-		await page.goto('/admin/activity')
+		await page.goto(adminPath('/activity'))
 		await page.waitForLoadState('networkidle')
 
 		// The page body text should not contain a bare "0" (the old hasMore bug)
@@ -82,7 +83,7 @@ authTest.describe('Activity Page UI', () => {
 	authTest(
 		'empty state renders correctly when no activity',
 		async ({ page }) => {
-			await page.goto('/admin/activity')
+			await page.goto(adminPath('/activity'))
 			await page.waitForLoadState('networkidle')
 
 			// If there are no records, the empty state should render

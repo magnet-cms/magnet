@@ -1,4 +1,5 @@
 import { test as authTest, expect } from '../../src/fixtures/auth.fixture'
+import { POST_LOGIN_URL } from '../../src/helpers/admin-paths'
 import { AccountPage } from '../../src/page-objects/account.page'
 import { DashboardPage } from '../../src/page-objects/dashboard.page'
 import { LoginPage } from '../../src/page-objects/login.page'
@@ -8,7 +9,7 @@ authTest.describe('Account Page UI', () => {
 		const loginPage = new LoginPage(page)
 		await loginPage.goto()
 		await loginPage.login(testUser.email, testUser.password)
-		await page.waitForURL(/\/admin\/(?!auth)/, { timeout: 10000 })
+		await page.waitForURL(POST_LOGIN_URL, { timeout: 10000 })
 	})
 
 	authTest('can navigate to account page', async ({ page }) => {
@@ -57,9 +58,7 @@ authTest.describe('Account Page UI', () => {
 		await page.waitForLoadState('networkidle')
 
 		await expect(
-			page
-				.getByText(/profile updated|saved successfully/i)
-				.or(page.getByText(newName)),
+			page.getByText(/profile updated|saved successfully/i).first(),
 		).toBeVisible({ timeout: 5000 })
 	})
 
@@ -84,28 +83,17 @@ authTest.describe('Account Page UI', () => {
 		},
 	)
 
-	authTest(
-		'profile form shows validation errors for invalid email',
-		async ({ page }) => {
-			const accountPage = new AccountPage(page)
-			await accountPage.goto()
+	authTest('profile email field is read-only', async ({ page }) => {
+		const accountPage = new AccountPage(page)
+		await accountPage.goto()
 
-			await accountPage.switchToProfileTab()
+		await accountPage.switchToProfileTab()
 
-			const emailInput = accountPage.emailInput
-			if (await emailInput.isVisible()) {
-				await emailInput.clear()
-				await emailInput.fill('invalid-email')
-
-				await accountPage.saveProfileButton.click()
-				await page.waitForLoadState('networkidle')
-
-				await expect(page.getByText(/invalid|error|validation/i)).toBeVisible({
-					timeout: 3000,
-				})
-			}
-		},
-	)
+		// Email field is disabled — users cannot change their email
+		const emailInput = accountPage.emailInput
+		await expect(emailInput).toBeVisible()
+		await expect(emailInput).toBeDisabled()
+	})
 
 	authTest('account page is accessible after navigation', async ({ page }) => {
 		const accountPage = new AccountPage(page)

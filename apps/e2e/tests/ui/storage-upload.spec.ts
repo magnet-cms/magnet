@@ -1,4 +1,5 @@
 import { test as authTest, expect } from '../../src/fixtures/auth.fixture'
+import { POST_LOGIN_URL, adminPath } from '../../src/helpers/admin-paths'
 import { LoginPage } from '../../src/page-objects/login.page'
 
 authTest.describe('Storage Upload UI', () => {
@@ -6,11 +7,11 @@ authTest.describe('Storage Upload UI', () => {
 		const loginPage = new LoginPage(page)
 		await loginPage.goto()
 		await loginPage.login(testUser.email, testUser.password)
-		await page.waitForURL(/\/admin\/(?!auth)/, { timeout: 10000 })
+		await page.waitForURL(POST_LOGIN_URL, { timeout: 10000 })
 	})
 
 	authTest('can navigate to media library', async ({ page }) => {
-		await page.goto('/admin/media-library')
+		await page.goto(adminPath('/media-library'))
 		await page.waitForLoadState('networkidle')
 
 		// Media page should load with either a grid/list or empty state
@@ -19,7 +20,7 @@ authTest.describe('Storage Upload UI', () => {
 	})
 
 	authTest('can upload a file via the media library', async ({ page }) => {
-		await page.goto('/admin/media-library')
+		await page.goto(adminPath('/media-library'))
 		await page.waitForLoadState('networkidle')
 
 		// Look for upload button/area
@@ -86,7 +87,7 @@ authTest.describe('Storage Upload UI', () => {
 			}
 
 			// Navigate to media library and verify the file appears
-			await page.goto('/admin/media-library')
+			await page.goto(adminPath('/media-library'))
 			await page.waitForLoadState('networkidle')
 
 			// Wait for the grid to load

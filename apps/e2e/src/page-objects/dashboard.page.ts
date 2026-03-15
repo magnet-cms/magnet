@@ -1,10 +1,11 @@
 import type { Locator, Page } from '@playwright/test'
 import { expect } from '@playwright/test'
+import { ADMIN_PREFIX, adminPath } from '../helpers/admin-paths'
 
 export class DashboardPage {
 	readonly page: Page
 	readonly sidebar: Locator
-	readonly contentManagerLink: Locator
+	readonly contentManagerButton: Locator
 	readonly settingsLink: Locator
 	readonly userMenuButton: Locator
 	readonly logoutMenuItem: Locator
@@ -13,15 +14,17 @@ export class DashboardPage {
 
 	constructor(page: Page) {
 		this.page = page
-		this.sidebar = page.locator('[data-testid="sidebar"], aside, nav')
-		this.contentManagerLink = page.getByRole('link', {
+		// Sidebar uses shadcn/ui Sidebar component rendered as div[data-slot="sidebar"]
+		this.sidebar = page.locator('[data-slot="sidebar"]').first()
+		// Content Manager is a collapsible button (has sub-items for each schema)
+		this.contentManagerButton = page.getByRole('button', {
 			name: /content manager/i,
 		})
-		// Settings is a collapsible button, not a link
-		this.settingsLink = page.getByRole('button', { name: /settings/i })
+		// Settings is a link to /settings
+		this.settingsLink = page.getByRole('link', { name: /^settings$/i })
 		// User menu is the sidebar button that shows user's name/email with avatar
-		this.userMenuButton = page
-			.locator('button')
+		this.userMenuButton = this.sidebar
+			.getByRole('button')
 			.filter({ hasText: /@/ })
 			.first()
 		this.logoutMenuItem = page.getByRole('menuitem', { name: /log out/i })
@@ -30,7 +33,7 @@ export class DashboardPage {
 	}
 
 	async goto() {
-		await this.page.goto('/admin')
+		await this.page.goto(adminPath('/'))
 	}
 
 	async expectLoaded() {
@@ -38,17 +41,19 @@ export class DashboardPage {
 	}
 
 	async navigateToContentManager() {
-		await this.contentManagerLink.click()
-		await this.page.waitForURL('**/content-manager**')
+		// Content Manager is a collapsible button; click to expand, then click a schema link
+		await this.contentManagerButton.click()
+		// Click the first sub-item link under Content Manager
+		const firstSchemaLink = this.page
+			.locator('[data-slot="sidebar-menu-sub-button"]')
+			.first()
+		await firstSchemaLink.click()
+		await this.page.waitForURL('**/content-manager/**')
 	}
 
 	async navigateToSettings() {
-		// Settings is a collapsible menu, click to expand then click first settings group
 		await this.settingsLink.click()
-		// Wait for the submenu to appear and click first available settings link
-		const firstSettingsLink = this.page.locator('a[href*="/settings/"]').first()
-		await firstSettingsLink.click()
-		await this.page.waitForURL('**/settings/**')
+		await this.page.waitForURL('**/settings**')
 	}
 
 	async logout() {
@@ -58,20 +63,24 @@ export class DashboardPage {
 	}
 
 	async navigateToMedia() {
-		await this.page.getByRole('link', { name: /media/i }).click()
-		await this.page.waitForURL('**/media**')
+		await this.page.getByRole('link', { name: /media library/i }).click()
+		await this.page.waitForURL('**/media-library**')
 	}
 
 	async navigateToAccount() {
 		await this.userMenuButton.click()
 		await this.accountMenuItem.click()
-		await this.page.waitForURL(/settings\/profile|account/, { timeout: 5000 })
+		// /account redirects to /settings/profile
+		await this.page.waitForURL(/settings\/profile/, { timeout: 5000 })
 	}
 
 	async navigateToHome() {
-		await this.page.getByRole('link', { name: /home|dashboard/i }).click()
-		// Admin app is mounted at /admin; dashboard home is /admin or /admin/
-		await this.page.waitForURL(/\/admin\/?$/)
+		await this.page.getByRole('link', { name: /^dashboard$/i }).click()
+		// Dashboard home is at ADMIN_PREFIX root (e.g., /admin/ or /)
+		const pattern = ADMIN_PREFIX
+			? `${ADMIN_PREFIX.replace('/', '\\/')}\\/?$`
+			: '\\/$'
+		await this.page.waitForURL(new RegExp(pattern))
 	}
 
 	async expectUserMenuVisible() {
@@ -79,7 +88,11 @@ export class DashboardPage {
 	}
 
 	async getSidebarItems(): Promise<string[]> {
-		const items = await this.sidebar.getByRole('link').allTextContents()
-		return items
+		// Wait for sidebar to be visible first
+		await expect(this.sidebar).toBeVisible()
+		// Get all navigation link and button text from the sidebar
+		const links = await this.sidebar.getByRole('link').allTextContents()
+		const buttons = await this.sidebar.getByRole('button').allTextContents()
+		return [...links, ...buttons]
 	}
 }

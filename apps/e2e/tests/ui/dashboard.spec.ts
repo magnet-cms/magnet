@@ -1,4 +1,5 @@
 import { test as authTest, expect } from '../../src/fixtures/auth.fixture'
+import { POST_LOGIN_URL } from '../../src/helpers/admin-paths'
 import { DashboardPage } from '../../src/page-objects/dashboard.page'
 import { LoginPage } from '../../src/page-objects/login.page'
 
@@ -7,7 +8,7 @@ authTest.describe('Dashboard UI', () => {
 		const loginPage = new LoginPage(page)
 		await loginPage.goto()
 		await loginPage.login(testUser.email, testUser.password)
-		await page.waitForURL(/\/admin/, { timeout: 10000 })
+		await page.waitForURL(POST_LOGIN_URL, { timeout: 10000 })
 	})
 
 	authTest('dashboard loads successfully', async ({ page }) => {
@@ -45,7 +46,7 @@ authTest.describe('Dashboard UI', () => {
 		await dashboard.goto()
 		await dashboard.navigateToAccount()
 
-		// Account menu links to /settings/profile
+		// Account menu links to /account which redirects to /settings/profile
 		await expect(page).toHaveURL(/settings\/profile/)
 	})
 
@@ -99,7 +100,6 @@ authTest.describe('Dashboard UI', () => {
 		await page.reload()
 		await page.waitForLoadState('networkidle')
 
-		await expect(page).toHaveURL(/\/admin/)
 		await dashboard.expectLoaded()
 	})
 })

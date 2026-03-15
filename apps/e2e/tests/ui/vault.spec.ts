@@ -1,4 +1,5 @@
 import { test as authTest, expect } from '../../src/fixtures/auth.fixture'
+import { POST_LOGIN_URL, adminPath } from '../../src/helpers/admin-paths'
 import { LoginPage } from '../../src/page-objects/login.page'
 
 authTest.describe('Vault UI', () => {
@@ -6,11 +7,11 @@ authTest.describe('Vault UI', () => {
 		const loginPage = new LoginPage(page)
 		await loginPage.goto()
 		await loginPage.login(testUser.email, testUser.password)
-		await page.waitForURL(/\/admin\/(?!auth)/, { timeout: 10000 })
+		await page.waitForURL(POST_LOGIN_URL, { timeout: 10000 })
 	})
 
 	authTest('can navigate to vault settings page', async ({ page }) => {
-		await page.goto('/admin/settings')
+		await page.goto(adminPath('/settings'))
 		await page.waitForLoadState('networkidle')
 
 		// Look for vault-related settings or navigation
@@ -41,7 +42,7 @@ authTest.describe('Vault UI', () => {
 			expect(body.healthy).toBe(true)
 
 			// Navigate to settings to see vault configuration
-			await page.goto('/admin/settings')
+			await page.goto(adminPath('/settings'))
 			await page.waitForLoadState('networkidle')
 
 			// The settings page should show vault configuration

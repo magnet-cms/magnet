@@ -1,5 +1,6 @@
 import { test as authTest, expect } from '../../src/fixtures/auth.fixture'
 import { test as baseTest } from '../../src/fixtures/base.fixture'
+import { POST_LOGIN_URL } from '../../src/helpers/admin-paths'
 import { DashboardPage } from '../../src/page-objects/dashboard.page'
 import { LoginPage } from '../../src/page-objects/login.page'
 
@@ -29,7 +30,7 @@ authTest.describe('Authentication UI — login flow', () => {
 		await loginPage.goto()
 		await loginPage.login(testUser.email, testUser.password)
 
-		await page.waitForURL(/\/admin\/(?!auth)/, { timeout: 10000 })
+		await page.waitForURL(POST_LOGIN_URL, { timeout: 10000 })
 
 		const dashboard = new DashboardPage(page)
 		await dashboard.expectLoaded()
@@ -41,7 +42,7 @@ authTest.describe('Logout Flow', () => {
 		const loginPage = new LoginPage(page)
 		await loginPage.goto()
 		await loginPage.login(testUser.email, testUser.password)
-		await page.waitForURL(/\/admin\/(?!auth)/, { timeout: 10000 })
+		await page.waitForURL(POST_LOGIN_URL, { timeout: 10000 })
 	})
 
 	authTest('logout button is visible when authenticated', async ({ page }) => {
@@ -72,7 +73,7 @@ authTest.describe('Session Management', () => {
 		const loginPage = new LoginPage(page)
 		await loginPage.goto()
 		await loginPage.login(testUser.email, testUser.password)
-		await page.waitForURL(/\/admin\/(?!auth)/, { timeout: 10000 })
+		await page.waitForURL(POST_LOGIN_URL, { timeout: 10000 })
 	})
 
 	authTest('token persists across page reloads', async ({ page }) => {

@@ -1,4 +1,5 @@
 import { test as authTest, expect } from '../../src/fixtures/auth.fixture'
+import { POST_LOGIN_URL, adminPath } from '../../src/helpers/admin-paths'
 import { LoginPage } from '../../src/page-objects/login.page'
 
 authTest.describe('Content Manager Home Page', () => {
@@ -6,13 +7,13 @@ authTest.describe('Content Manager Home Page', () => {
 		const loginPage = new LoginPage(page)
 		await loginPage.goto()
 		await loginPage.login(testUser.email, testUser.password)
-		await page.waitForURL(/\/admin\/(?!auth)/, { timeout: 10000 })
+		await page.waitForURL(POST_LOGIN_URL, { timeout: 10000 })
 	})
 
 	authTest(
 		'should display collection cards on content-manager index',
 		async ({ page }) => {
-			await page.goto('/admin/content-manager')
+			await page.goto(adminPath('/content-manager'))
 			await page.waitForLoadState('networkidle')
 
 			// Verify the page header
@@ -32,7 +33,7 @@ authTest.describe('Content Manager Home Page', () => {
 	authTest(
 		'should navigate to schema listing when clicking a collection card',
 		async ({ page }) => {
-			await page.goto('/admin/content-manager')
+			await page.goto(adminPath('/content-manager'))
 			await page.waitForLoadState('networkidle')
 
 			// Get the first collection card link
@@ -55,7 +56,7 @@ authTest.describe('Content Manager Home Page', () => {
 	authTest(
 		'should not show media schema in collection cards',
 		async ({ page }) => {
-			await page.goto('/admin/content-manager')
+			await page.goto(adminPath('/content-manager'))
 			await page.waitForLoadState('networkidle')
 
 			// Wait for the page to fully render (heading visible = data loaded)

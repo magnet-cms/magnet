@@ -1,5 +1,6 @@
 import type { Locator, Page } from '@playwright/test'
 import { expect } from '@playwright/test'
+import { adminPath } from '../helpers/admin-paths'
 
 export class LoginPage {
 	readonly page: Page
@@ -15,10 +16,9 @@ export class LoginPage {
 		// getByLabel won't work. Use placeholder text for email and positional
 		// matching for password.
 		this.emailInput = page.getByPlaceholder(/email|jane@example/i)
-		this.passwordInput = page
-			.getByRole('textbox')
-			.nth(1)
-			.or(page.getByLabel('Password', { exact: true }))
+		// Password inputs have type="password", which is NOT the textbox role.
+		// Use a CSS selector for the password input type.
+		this.passwordInput = page.locator('input[type="password"]').first()
 		this.verifyPasswordInput = page
 			.getByPlaceholder(/verify|confirm/i)
 			.or(page.getByLabel(/verify password/i))
@@ -33,7 +33,7 @@ export class LoginPage {
 	}
 
 	async goto() {
-		await this.page.goto('/admin/auth')
+		await this.page.goto(adminPath('/auth'))
 	}
 
 	async login(email: string, password: string) {

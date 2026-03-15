@@ -1,4 +1,5 @@
 import { test as authTest, expect } from '../../src/fixtures/auth.fixture'
+import { POST_LOGIN_URL, adminPath } from '../../src/helpers/admin-paths'
 import { AccountPage } from '../../src/page-objects/account.page'
 import { DashboardPage } from '../../src/page-objects/dashboard.page'
 import { LoginPage } from '../../src/page-objects/login.page'
@@ -10,7 +11,7 @@ authTest.describe('Complete User Journey', () => {
 		const loginPage = new LoginPage(page)
 		await loginPage.goto()
 		await loginPage.login(testUser.email, testUser.password)
-		await page.waitForURL(/\/admin\/(?!auth)/, { timeout: 10000 })
+		await page.waitForURL(POST_LOGIN_URL, { timeout: 10000 })
 	})
 
 	authTest('can login and view dashboard', async ({ page }) => {
@@ -28,7 +29,7 @@ authTest.describe('Complete User Journey', () => {
 
 		const loginPage = new LoginPage(page)
 		await loginPage.login(testUser.email, testUser.password)
-		await page.waitForURL(/\/admin\/(?!auth)/, { timeout: 10000 })
+		await page.waitForURL(POST_LOGIN_URL, { timeout: 10000 })
 		await dashboard.expectLoaded()
 	})
 
@@ -80,7 +81,7 @@ authTest.describe('Complete User Journey', () => {
 			await dashboard.goto()
 			await dashboard.logout()
 
-			await page.goto('/admin')
+			await page.goto(adminPath('/'))
 			await page.waitForURL(/auth/, { timeout: 5000 })
 
 			const loginPage = new LoginPage(page)

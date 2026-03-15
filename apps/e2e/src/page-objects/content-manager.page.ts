@@ -1,5 +1,6 @@
 import type { Locator, Page } from '@playwright/test'
 import { expect } from '@playwright/test'
+import { adminPath } from '../helpers/admin-paths'
 
 export class ContentManagerPage {
 	readonly page: Page
@@ -19,15 +20,15 @@ export class ContentManagerPage {
 	}
 
 	async goto() {
-		await this.page.goto('/admin/content-manager')
+		await this.page.goto(adminPath('/content-manager'))
 	}
 
 	async gotoSchema(schemaName: string) {
-		await this.page.goto(`/admin/content-manager/${schemaName}`)
+		await this.page.goto(adminPath(`/content-manager/${schemaName}`))
 	}
 
 	async gotoItem(schemaName: string, itemId: string) {
-		await this.page.goto(`/admin/content-manager/${schemaName}/${itemId}`)
+		await this.page.goto(adminPath(`/content-manager/${schemaName}/${itemId}`))
 	}
 
 	async selectSchema(schemaName: string) {

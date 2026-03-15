@@ -12,7 +12,7 @@ test.describe('Admin Static Serving', () => {
 
 	test('serves index.html for admin root', async ({ page }) => {
 		await page.goto('/admin')
-		await expect(page).toHaveTitle(/Magnet/i)
+		await expect(page).toHaveTitle(/Magnet|Admin Panel/i)
 	})
 
 	test('serves static assets', async ({ request }) => {

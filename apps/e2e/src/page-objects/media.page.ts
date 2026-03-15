@@ -1,5 +1,6 @@
 import type { Locator, Page } from '@playwright/test'
 import { expect } from '@playwright/test'
+import { adminPath } from '../helpers/admin-paths'
 
 export class MediaPage {
 	readonly page: Page
@@ -19,7 +20,7 @@ export class MediaPage {
 		this.page = page
 		this.mainContent = page.locator('main')
 		this.mediaGrid = page.locator('[data-testid="media-grid"]')
-		this.uploadButton = page.getByRole('button', { name: /upload/i })
+		this.uploadButton = page.getByRole('button', { name: /upload assets/i })
 		this.uploadZone = page.locator('[data-testid="upload-zone"]')
 		this.searchInput = page.getByPlaceholder(/search/i)
 		this.folderFilter = page.locator('[data-testid="folder-filter"]')
@@ -31,15 +32,13 @@ export class MediaPage {
 	}
 
 	async goto() {
-		await this.page.goto('/admin/media-library')
+		await this.page.goto(adminPath('/media-library'))
 	}
 
 	async expectLoaded() {
 		await expect(this.mainContent).toBeVisible()
-		// Page should have either media items or empty state
-		await expect(
-			this.mediaItems.first().or(this.emptyState).or(this.pageHeader),
-		).toBeVisible()
+		// Page should show the Media Library heading
+		await expect(this.pageHeader).toBeVisible()
 	}
 
 	async uploadFile(filePath: string) {

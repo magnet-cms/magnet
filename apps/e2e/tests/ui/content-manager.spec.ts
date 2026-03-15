@@ -1,4 +1,5 @@
 import { test as authTest, expect } from '../../src/fixtures/auth.fixture'
+import { POST_LOGIN_URL, adminPath } from '../../src/helpers/admin-paths'
 import { testData } from '../../src/helpers/test-data'
 import { LoginPage } from '../../src/page-objects/login.page'
 
@@ -7,7 +8,7 @@ authTest.describe('Content Manager', () => {
 		const loginPage = new LoginPage(page)
 		await loginPage.goto()
 		await loginPage.login(testUser.email, testUser.password)
-		await page.waitForURL(/\/admin\/(?!auth)/, { timeout: 10000 })
+		await page.waitForURL(POST_LOGIN_URL, { timeout: 10000 })
 	})
 
 	// ==========================================
@@ -15,7 +16,7 @@ authTest.describe('Content Manager', () => {
 	// ==========================================
 	authTest.describe('Navigation', () => {
 		authTest('should list available schemas in sidebar', async ({ page }) => {
-			await page.goto('/admin/content-manager/veterinarian')
+			await page.goto(adminPath('/content-manager/veterinarian'))
 			await page.waitForLoadState('networkidle')
 
 			// Expand Content Manager if collapsed
@@ -29,7 +30,7 @@ authTest.describe('Content Manager', () => {
 				}
 			}
 
-			const schemaLinks = page.locator('a[href*="/admin/content-manager/"]')
+			const schemaLinks = page.locator('a[href*="/content-manager/"]')
 			await expect(schemaLinks.first()).toBeVisible({ timeout: 5000 })
 
 			const schemaCount = await schemaLinks.count()
@@ -37,19 +38,19 @@ authTest.describe('Content Manager', () => {
 		})
 
 		authTest('should navigate between different schemas', async ({ page }) => {
-			await page.goto('/admin/content-manager/veterinarian')
+			await page.goto(adminPath('/content-manager/veterinarian'))
 			await page.waitForLoadState('networkidle')
 			await expect(
 				page.getByRole('heading', { name: /veterinarian/i }),
 			).toBeVisible({ timeout: 5000 })
 
-			await page.goto('/admin/content-manager/owner')
+			await page.goto(adminPath('/content-manager/owner'))
 			await page.waitForLoadState('networkidle')
 			await expect(page.getByRole('heading', { name: /owner/i })).toBeVisible({
 				timeout: 5000,
 			})
 
-			await page.goto('/admin/content-manager/cat')
+			await page.goto(adminPath('/content-manager/cat'))
 			await page.waitForLoadState('networkidle')
 			await expect(page.getByRole('heading', { name: /cat/i })).toBeVisible({
 				timeout: 5000,
@@ -59,7 +60,7 @@ authTest.describe('Content Manager', () => {
 		authTest(
 			'should display table with correct structure',
 			async ({ page }) => {
-				await page.goto('/admin/content-manager/veterinarian')
+				await page.goto(adminPath('/content-manager/veterinarian'))
 				await page.waitForLoadState('networkidle')
 
 				const table = page.getByRole('table')
@@ -93,14 +94,16 @@ authTest.describe('Content Manager', () => {
 
 				cleanup.trackContent(authenticatedApiClient, 'veterinarian', documentId)
 
-				await page.goto(`/admin/content-manager/veterinarian/${documentId}`)
+				await page.goto(
+					adminPath(`/content-manager/veterinarian/${documentId}`),
+				)
 				await page.waitForLoadState('networkidle')
 
 				await expect(
 					page.getByRole('heading', { name: /veterinarian/i }),
 				).toBeVisible({ timeout: 5000 })
 
-				const nameInput = page.getByLabel(/name/i).first()
+				const nameInput = page.getByRole('textbox', { name: /name/i }).first()
 				await expect(nameInput).toHaveValue(vetData.name, { timeout: 5000 })
 			},
 		)
@@ -121,18 +124,16 @@ authTest.describe('Content Manager', () => {
 					created.documentId as string,
 				)
 
-				await page.goto('/admin/content-manager/veterinarian')
+				await page.goto(adminPath('/content-manager/veterinarian'))
 				await page.waitForLoadState('networkidle')
 
 				const dataRows = page.locator('tbody tr')
 				await expect(dataRows.first()).toBeVisible({ timeout: 5000 })
 
+				// Each row has direct Edit and Delete buttons (not a dropdown menu)
 				const firstRow = dataRows.first()
-				const actionsButton = firstRow.locator('button').last()
-				await actionsButton.click()
-
-				const editOption = page.getByRole('menuitem', { name: /edit/i })
-				await editOption.click()
+				const editButton = firstRow.getByRole('button', { name: /edit/i })
+				await editButton.click()
 
 				await page.waitForURL(/\/content-manager\/veterinarian\/[^/]+$/, {
 					timeout: 10000,
@@ -161,14 +162,14 @@ authTest.describe('Content Manager', () => {
 
 				cleanup.trackContent(authenticatedApiClient, 'owner', documentId)
 
-				await page.goto(`/admin/content-manager/owner/${documentId}`)
+				await page.goto(adminPath(`/content-manager/owner/${documentId}`))
 				await page.waitForLoadState('networkidle')
 
 				await expect(page.getByRole('heading', { name: /owner/i })).toBeVisible(
 					{ timeout: 5000 },
 				)
 
-				const nameInput = page.getByLabel(/name/i).first()
+				const nameInput = page.getByRole('textbox', { name: /name/i }).first()
 				await expect(nameInput).toHaveValue(ownerData.name, { timeout: 5000 })
 			},
 		)
@@ -194,7 +195,7 @@ authTest.describe('Content Manager', () => {
 				)
 
 				await page.goto(
-					`/admin/content-manager/veterinarian/${created.documentId}`,
+					adminPath(`/content-manager/veterinarian/${created.documentId}`),
 				)
 				await page.waitForLoadState('networkidle')
 
@@ -225,7 +226,7 @@ authTest.describe('Content Manager', () => {
 				const docId = created.documentId as string
 				cleanup.trackContent(authenticatedApiClient, 'veterinarian', docId)
 
-				await page.goto(`/admin/content-manager/veterinarian/${docId}`)
+				await page.goto(adminPath(`/content-manager/veterinarian/${docId}`))
 				await page.waitForLoadState('networkidle')
 
 				const publishButton = page.getByRole('button', { name: /publish/i })
@@ -245,14 +246,14 @@ authTest.describe('Content Manager', () => {
 				const docId = created.documentId as string
 				cleanup.trackContent(authenticatedApiClient, 'veterinarian', docId)
 
-				await page.goto(`/admin/content-manager/veterinarian/${docId}`)
+				await page.goto(adminPath(`/content-manager/veterinarian/${docId}`))
 				await page.waitForLoadState('networkidle')
 
 				const publishButton = page.getByRole('button', { name: /publish/i })
 				await expect(publishButton).toBeVisible({ timeout: 5000 })
 				await publishButton.click()
 
-				const successToast = page.getByText('Content published')
+				const successToast = page.getByText(/published successfully/i)
 				await expect(successToast).toBeVisible({ timeout: 5000 })
 			},
 		)
@@ -269,10 +270,14 @@ authTest.describe('Content Manager', () => {
 				const docId = created.documentId as string
 				cleanup.trackContent(authenticatedApiClient, 'veterinarian', docId)
 
-				await page.goto(`/admin/content-manager/veterinarian/${docId}/versions`)
+				await page.goto(
+					adminPath(`/content-manager/veterinarian/${docId}/versions`),
+				)
 				await page.waitForLoadState('networkidle')
 
-				await expect(page.getByText(/version history/i)).toBeVisible({
+				await expect(
+					page.getByRole('heading', { name: /version history/i }),
+				).toBeVisible({
 					timeout: 5000,
 				})
 			},
@@ -284,7 +289,7 @@ authTest.describe('Content Manager', () => {
 	// ==========================================
 	authTest.describe('Row Actions', () => {
 		authTest(
-			'should show row actions menu with Edit, Duplicate, Versions, Delete',
+			'should show row action buttons Edit and Delete',
 			async ({ page, authenticatedApiClient, cleanup }) => {
 				const vetData = testData.veterinarian.create()
 				const response = await authenticatedApiClient.createContent(
@@ -298,32 +303,21 @@ authTest.describe('Content Manager', () => {
 					created.documentId as string,
 				)
 
-				await page.goto('/admin/content-manager/veterinarian')
+				await page.goto(adminPath('/content-manager/veterinarian'))
 				await page.waitForLoadState('networkidle')
 
 				const dataRows = page.locator('tbody tr')
 				await expect(dataRows.first()).toBeVisible({ timeout: 5000 })
 
+				// Each row has direct Edit and Delete buttons
 				const firstRow = dataRows.first()
-				const actionsButton = firstRow.locator('button').last()
-
-				await actionsButton.click()
-
-				const editOption = page.getByRole('menuitem', { name: /edit/i })
-				const duplicateOption = page.getByRole('menuitem', {
-					name: /duplicate/i,
+				const editButton = firstRow.getByRole('button', { name: /edit/i })
+				const deleteButton = firstRow.getByRole('button', {
+					name: /delete/i,
 				})
-				const versionsOption = page.getByRole('menuitem', {
-					name: /versions/i,
-				})
-				const deleteOption = page.getByRole('menuitem', { name: /delete/i })
 
-				await expect(editOption).toBeVisible({ timeout: 3000 })
-				await expect(duplicateOption).toBeVisible({ timeout: 3000 })
-				await expect(versionsOption).toBeVisible({ timeout: 3000 })
-				await expect(deleteOption).toBeVisible({ timeout: 3000 })
-
-				await page.keyboard.press('Escape')
+				await expect(editButton).toBeVisible({ timeout: 3000 })
+				await expect(deleteButton).toBeVisible({ timeout: 3000 })
 			},
 		)
 	})
