@@ -2,6 +2,7 @@ import type {
 	HashiCorpVaultConfig,
 	VaultAdapter,
 	VaultAuthConfig,
+	VaultSecretMeta,
 } from '@magnet-cms/common'
 
 // ============================================================================
@@ -65,14 +66,16 @@ export class HashiCorpVaultAdapter implements VaultAdapter {
 		this.auth = config?.auth ?? this.detectAuth()
 	}
 
-	async get(key: string): Promise<Record<string, unknown> | null> {
+	async get(key: string): Promise<string | null> {
 		const client = await this.getClient()
 		const path = this.buildReadPath(key)
 		try {
 			const lease = await client.read(path)
 			const raw = lease.getData() as Record<string, unknown>
-			// KV v2 wraps data in a nested `data` key
-			return (raw.data as Record<string, unknown>) ?? raw
+			// KV v2 wraps the user payload in a nested `data` key
+			const payload = (raw.data as Record<string, unknown>) ?? raw
+			const value = payload.value
+			return typeof value === 'string' ? value : null
 		} catch (error: unknown) {
 			if (this.isNotFoundError(error)) {
 				return null
@@ -81,11 +84,11 @@ export class HashiCorpVaultAdapter implements VaultAdapter {
 		}
 	}
 
-	async set(key: string, data: Record<string, unknown>): Promise<void> {
+	async set(key: string, value: string, description?: string): Promise<void> {
 		const client = await this.getClient()
 		const path = this.buildReadPath(key)
 		// KV v2 expects data wrapped in a `data` key
-		await client.write(path, { data })
+		await client.write(path, { data: { value, _description: description } })
 	}
 
 	async delete(key: string): Promise<void> {
@@ -107,17 +110,19 @@ export class HashiCorpVaultAdapter implements VaultAdapter {
 			}
 			return
 		}
-		// Fallback: overwrite with empty data
-		await this.set(key, {})
+		// Fallback: overwrite with empty string
+		await this.set(key, '')
 	}
 
-	async list(prefix?: string): Promise<string[]> {
+	async list(prefix?: string): Promise<VaultSecretMeta[]> {
 		const client = await this.getClient()
 		const path = this.buildMetadataPath(prefix ?? '')
 		try {
 			const lease = await client.list(path)
 			const raw = lease.getData() as Record<string, unknown>
-			return (raw.keys as string[]) ?? []
+			const keys = (raw.keys as string[]) ?? []
+			// KV v2 list returns only key names; description is not available without N+1 reads
+			return keys.map((name) => ({ name }))
 		} catch (error: unknown) {
 			if (this.isNotFoundError(error)) {
 				return []

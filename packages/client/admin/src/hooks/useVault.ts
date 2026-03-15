@@ -13,13 +13,25 @@ export interface VaultStatus {
 	masterKeyConfigured?: boolean
 }
 
+export interface VaultSecretMeta {
+	name: string
+	description?: string
+	lastUpdated?: string
+}
+
 export interface VaultSecret {
-	key: string
-	data: Record<string, unknown>
+	name: string
+	value: string
 }
 
 export interface VaultSecretList {
-	keys: string[]
+	secrets: VaultSecretMeta[]
+}
+
+export interface VaultSetSecretPayload {
+	key: string
+	value: string
+	description?: string
 }
 
 // ============================================================================
@@ -68,7 +80,7 @@ export const useVaultSecrets = (prefix?: string) => {
 }
 
 /**
- * Fetch a single secret by key (returns decrypted data).
+ * Fetch a single secret by key (returns decrypted value).
  */
 export const useVaultSecret = (key: string) => {
 	const adapter = useAdapter()
@@ -92,11 +104,11 @@ export const useVaultSetSecret = () => {
 	const adapter = useAdapter()
 	const queryClient = useQueryClient()
 
-	return useMutation<{ success: boolean }, Error, VaultSecret>({
-		mutationFn: ({ key, data }) =>
+	return useMutation<{ success: boolean }, Error, VaultSetSecretPayload>({
+		mutationFn: ({ key, value, description }) =>
 			adapter.request<{ success: boolean }>(
 				`/vault/secrets/${encodeURIComponent(key)}`,
-				{ method: 'POST', body: { data } },
+				{ method: 'POST', body: { value, description } },
 			),
 		onSuccess: (_, { key }) => {
 			queryClient.invalidateQueries({ queryKey: VAULT_KEYS.secrets() })

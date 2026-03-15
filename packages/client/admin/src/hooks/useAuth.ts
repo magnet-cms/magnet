@@ -149,6 +149,7 @@ export const useStatus = () => {
 	return useQuery<AuthStatus, AuthError>({
 		queryKey: AUTH_STATUS_KEY,
 		queryFn: () => adapter.auth.getStatus(),
+		staleTime: 5 * 60 * 1000,
 	})
 }
 

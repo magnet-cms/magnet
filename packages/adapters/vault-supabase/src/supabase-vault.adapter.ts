@@ -1,9 +1,19 @@
-import type { SupabaseVaultConfig, VaultAdapter } from '@magnet-cms/common'
+import type {
+	SupabaseVaultConfig,
+	VaultAdapter,
+	VaultSecretMeta,
+} from '@magnet-cms/common'
 import { type SupabaseClient, createClient } from '@supabase/supabase-js'
 
 interface DecryptedSecretRow {
 	name: string
 	decrypted_secret: string
+}
+
+interface SecretRow {
+	name: string
+	description: string | null
+	updated_at?: string | null
 }
 
 /**
@@ -44,7 +54,7 @@ export class SupabaseVaultAdapter implements VaultAdapter {
 		return this.client.schema('vault')
 	}
 
-	async get(key: string): Promise<Record<string, unknown> | null> {
+	async get(key: string): Promise<string | null> {
 		const { data, error } = await this.vault()
 			.from('decrypted_secrets')
 			.select('name, decrypted_secret')
@@ -58,17 +68,10 @@ export class SupabaseVaultAdapter implements VaultAdapter {
 			return null
 		}
 
-		try {
-			return JSON.parse(data.decrypted_secret) as Record<string, unknown>
-		} catch {
-			// If not JSON, return as a single-value object
-			return { value: data.decrypted_secret }
-		}
+		return data.decrypted_secret
 	}
 
-	async set(key: string, data: Record<string, unknown>): Promise<void> {
-		const secretValue = JSON.stringify(data)
-
+	async set(key: string, value: string, description?: string): Promise<void> {
 		// Check if secret already exists
 		const { data: existing } = await this.vault()
 			.from('decrypted_secrets')
@@ -79,16 +82,18 @@ export class SupabaseVaultAdapter implements VaultAdapter {
 		if (existing?.id) {
 			const { error } = await this.vault().rpc('update_secret', {
 				secret_id: existing.id,
-				new_secret: secretValue,
+				new_secret: value,
 				new_name: key,
+				new_description: description ?? null,
 			})
 			if (error) {
 				throw new Error(`Supabase Vault update failed: ${error.message}`)
 			}
 		} else {
 			const { error } = await this.vault().rpc('create_secret', {
-				new_secret: secretValue,
+				new_secret: value,
 				new_name: key,
+				new_description: description ?? null,
 			})
 			if (error) {
 				throw new Error(`Supabase Vault create failed: ${error.message}`)
@@ -117,20 +122,26 @@ export class SupabaseVaultAdapter implements VaultAdapter {
 		}
 	}
 
-	async list(prefix?: string): Promise<string[]> {
-		let query = this.vault().from('decrypted_secrets').select('name')
+	async list(prefix?: string): Promise<VaultSecretMeta[]> {
+		let query = this.vault()
+			.from('secrets')
+			.select('name, description, updated_at')
 
 		if (prefix) {
 			query = query.like('name', `${prefix}%`)
 		}
 
-		const { data, error } = await query.returns<Array<{ name: string }>>()
+		const { data, error } = await query.returns<SecretRow[]>()
 
 		if (error) {
 			throw new Error(`Supabase Vault list failed: ${error.message}`)
 		}
 
-		return (data ?? []).map((row) => row.name)
+		return (data ?? []).map((row) => ({
+			name: row.name,
+			description: row.description ?? undefined,
+			lastUpdated: row.updated_at ?? undefined,
+		}))
 	}
 
 	async healthCheck(): Promise<boolean> {

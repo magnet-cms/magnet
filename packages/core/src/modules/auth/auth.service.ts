@@ -1,5 +1,10 @@
 import { createHash, randomBytes } from 'node:crypto'
-import type { AuthResult, AuthStrategy, AuthUser } from '@magnet-cms/common'
+import type {
+	AuthResult,
+	AuthStrategy,
+	AuthUser,
+	ExternalAuthInfo,
+} from '@magnet-cms/common'
 import {
 	DuplicateKeyError,
 	InjectModel,
@@ -636,6 +641,40 @@ export class AuthService {
 	 */
 	async getEnabledOAuthProviders(): Promise<string[]> {
 		return this.oauthService.getActiveProviders()
+	}
+
+	/**
+	 * Get information about the active auth strategy.
+	 * Delegates to the strategy's getAuthInfo() if implemented (external adapters).
+	 * Returns a default for built-in JWT strategy.
+	 * Result is cached since strategy config doesn't change at runtime.
+	 */
+	private cachedAuthInfo: ExternalAuthInfo | null = null
+
+	async getAuthInfo(): Promise<ExternalAuthInfo> {
+		if (this.cachedAuthInfo) {
+			return this.cachedAuthInfo
+		}
+
+		if (this.authStrategy.getAuthInfo) {
+			try {
+				this.cachedAuthInfo = await this.authStrategy.getAuthInfo()
+			} catch {
+				this.cachedAuthInfo = {
+					strategy: this.authStrategy.name,
+					isExternal: true,
+					providers: [],
+				}
+			}
+		} else {
+			this.cachedAuthInfo = {
+				strategy: this.authStrategy.name,
+				isExternal: false,
+				providers: [],
+			}
+		}
+
+		return this.cachedAuthInfo
 	}
 
 	// ============================================================================

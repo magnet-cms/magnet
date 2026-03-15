@@ -4,6 +4,7 @@ import type {
 	AuthResult,
 	AuthStrategy,
 	AuthUser,
+	ExternalAuthInfo,
 	LoginCredentials,
 	RegisterData,
 } from '@magnet-cms/common'
@@ -172,6 +173,53 @@ export class ClerkAuthStrategy
 			return result.totalCount > 0
 		} catch {
 			return false
+		}
+	}
+
+	/**
+	 * Get auth info by querying the Clerk Backend API for instance configuration.
+	 * Returns which social login providers are enabled.
+	 */
+	async getAuthInfo(): Promise<ExternalAuthInfo> {
+		const fallback: ExternalAuthInfo = {
+			strategy: 'clerk',
+			isExternal: true,
+			providers: [],
+		}
+
+		if (!this.config.secretKey) {
+			return fallback
+		}
+
+		try {
+			// Clerk SDK does not expose a direct "list social providers" method.
+			// Use the low-level fetch to get instance configuration.
+			const response = await fetch('https://api.clerk.com/v1/instance', {
+				headers: { Authorization: `Bearer ${this.config.secretKey}` },
+			})
+
+			if (!response.ok) {
+				return fallback
+			}
+
+			const instance = (await response.json()) as {
+				social_login_enabled?: boolean
+				social_providers?: string[]
+				[key: string]: unknown
+			}
+
+			const providers = instance.social_providers ?? []
+
+			return {
+				strategy: 'clerk',
+				isExternal: true,
+				providers,
+				providerSettings: {
+					socialLoginEnabled: instance.social_login_enabled,
+				},
+			}
+		} catch {
+			return fallback
 		}
 	}
 

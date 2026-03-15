@@ -78,15 +78,19 @@ export interface VaultConfig {
  */
 export abstract class VaultAdapter {
 	/**
-	 * Retrieve a secret by key.
-	 * @returns The secret data or null if not found
+	 * Retrieve a secret value by key.
+	 * @returns The decrypted string value or null if not found
 	 */
-	abstract get(key: string): Promise<Record<string, unknown> | null>
+	abstract get(key: string): Promise<string | null>
 
 	/**
 	 * Store or update a secret.
+	 *
+	 * @param key - Secret identifier
+	 * @param value - Plaintext value to encrypt and store
+	 * @param description - Optional human-readable description (stored unencrypted)
 	 */
-	abstract set(key: string, data: Record<string, unknown>): Promise<void>
+	abstract set(key: string, value: string, description?: string): Promise<void>
 
 	/**
 	 * Delete a secret by key.
@@ -94,14 +98,26 @@ export abstract class VaultAdapter {
 	abstract delete(key: string): Promise<void>
 
 	/**
-	 * List all secret keys, optionally filtered by prefix.
+	 * List all secrets with their metadata, optionally filtered by prefix.
 	 */
-	abstract list(prefix?: string): Promise<string[]>
+	abstract list(prefix?: string): Promise<VaultSecretMeta[]>
 
 	/**
 	 * Check the health of the vault backend.
 	 */
 	abstract healthCheck(): Promise<boolean>
+}
+
+// ============================================================================
+// Vault Secret Metadata
+// ============================================================================
+
+/** Lightweight metadata returned by list() — does not include the secret value. */
+export interface VaultSecretMeta {
+	name: string
+	description?: string
+	/** ISO date string when the secret was last updated (adapter-dependent) */
+	lastUpdated?: string
 }
 
 // ============================================================================
@@ -118,5 +134,5 @@ export interface VaultStatusResponse {
 }
 
 export interface VaultSecretListResponse {
-	keys: string[]
+	secrets: VaultSecretMeta[]
 }

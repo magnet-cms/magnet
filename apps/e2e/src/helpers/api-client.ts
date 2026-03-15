@@ -77,6 +77,15 @@ export interface AuthStatus {
 	message?: string
 	/** OAuth providers that are configured and enabled */
 	providers?: string[]
+	/** Active auth strategy name */
+	authStrategy?: string
+	/** External auth info — present when using third-party adapter */
+	externalAuthInfo?: {
+		strategy: string
+		isExternal: boolean
+		providers: string[]
+		providerSettings?: Record<string, unknown>
+	}
 	user?: {
 		id: string
 		email: string

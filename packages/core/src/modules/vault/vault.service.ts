@@ -1,11 +1,15 @@
-import { type VaultAdapter, type VaultAdapterType } from '@magnet-cms/common'
+import {
+	type VaultAdapter,
+	type VaultAdapterType,
+	type VaultSecretMeta,
+} from '@magnet-cms/common'
 import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common'
 import { DbVaultAdapter } from './adapters/db-vault.adapter'
 import { VAULT_ADAPTER, VAULT_CONFIG } from './vault.constants'
 import type { VaultModuleConfig } from './vault.module'
 
 interface CachedEntry {
-	data: Record<string, unknown>
+	value: string
 	expiresAt: number
 }
 
@@ -61,32 +65,30 @@ export class VaultService implements OnModuleInit {
 	}
 
 	/**
-	 * Retrieve a typed secret from the vault.
+	 * Retrieve a secret value from the vault.
 	 *
 	 * @param key - Secret key (e.g., 'database', 'sendgrid')
-	 * @returns The secret data cast to T, or null if not found
+	 * @returns The decrypted string value, or null if not found
 	 */
-	async get<T extends Record<string, unknown> = Record<string, unknown>>(
-		key: string,
-	): Promise<T | null> {
+	async get(key: string): Promise<string | null> {
 		const cached = this.cache.get(key)
 		if (cached && cached.expiresAt > Date.now()) {
-			return cached.data as T
+			return cached.value
 		}
 
-		const data = await this.adapter.get(key)
-		if (!data) {
+		const value = await this.adapter.get(key)
+		if (!value) {
 			return null
 		}
 
 		if (this.cacheTtl > 0) {
 			this.cache.set(key, {
-				data,
+				value,
 				expiresAt: Date.now() + this.cacheTtl * 1000,
 			})
 		}
 
-		return data as T
+		return value
 	}
 
 	/**
@@ -94,10 +96,11 @@ export class VaultService implements OnModuleInit {
 	 * Invalidates the cache entry for the key.
 	 *
 	 * @param key - Secret key
-	 * @param data - Secret data to store (will be encrypted)
+	 * @param value - Plaintext value to encrypt and store
+	 * @param description - Optional human-readable description (stored unencrypted)
 	 */
-	async set(key: string, data: Record<string, unknown>): Promise<void> {
-		await this.adapter.set(key, data)
+	async set(key: string, value: string, description?: string): Promise<void> {
+		await this.adapter.set(key, value, description)
 		this.cache.delete(key)
 	}
 
@@ -113,11 +116,11 @@ export class VaultService implements OnModuleInit {
 	}
 
 	/**
-	 * List all secret keys, optionally filtered by prefix.
+	 * List all secrets with metadata, optionally filtered by prefix.
 	 *
 	 * @param prefix - Optional prefix to filter keys
 	 */
-	async list(prefix?: string): Promise<string[]> {
+	async list(prefix?: string): Promise<VaultSecretMeta[]> {
 		return this.adapter.list(prefix)
 	}
 

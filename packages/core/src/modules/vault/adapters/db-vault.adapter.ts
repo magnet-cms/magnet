@@ -2,6 +2,7 @@ import { createCipheriv, createDecipheriv, randomBytes } from 'node:crypto'
 import {
 	type Model,
 	VaultAdapter,
+	type VaultSecretMeta,
 	getModelToken,
 	getRegisteredModel,
 } from '@magnet-cms/common'
@@ -68,7 +69,7 @@ export class DbVaultAdapter extends VaultAdapter {
 		this.logger.log('DB vault adapter initialized')
 	}
 
-	async get(key: string): Promise<Record<string, unknown> | null> {
+	async get(key: string): Promise<string | null> {
 		if (!this.configured) {
 			return null
 		}
@@ -81,13 +82,13 @@ export class DbVaultAdapter extends VaultAdapter {
 		return this.decrypt(record.encryptedData, record.iv, record.authTag)
 	}
 
-	async set(key: string, data: Record<string, unknown>): Promise<void> {
+	async set(key: string, value: string, description?: string): Promise<void> {
 		if (!this.configured) {
 			throw new Error(
 				'Vault is not configured. Set VAULT_MASTER_KEY to enable secret storage.',
 			)
 		}
-		const { encryptedData, iv, authTag } = this.encrypt(data)
+		const { encryptedData, iv, authTag } = this.encrypt(value)
 		const now = new Date()
 		const existing = await this.getModel().findOne({
 			key,
@@ -96,11 +97,18 @@ export class DbVaultAdapter extends VaultAdapter {
 		if (existing) {
 			await this.getModel().update(
 				{ key } as Partial<VaultSecret>,
-				{ encryptedData, iv, authTag, updatedAt: now } as Partial<VaultSecret>,
+				{
+					encryptedData,
+					iv,
+					authTag,
+					description,
+					updatedAt: now,
+				} as Partial<VaultSecret>,
 			)
 		} else {
 			await this.getModel().create({
 				key,
+				description,
 				encryptedData,
 				iv,
 				authTag,
@@ -117,11 +125,11 @@ export class DbVaultAdapter extends VaultAdapter {
 		await this.getModel().delete({ key } as Partial<VaultSecret>)
 	}
 
-	async list(prefix?: string): Promise<string[]> {
+	async list(prefix?: string): Promise<VaultSecretMeta[]> {
 		if (!this.configured) {
 			return []
 		}
-		let records: Array<{ key: string }>
+		let records: Array<{ key: string; description?: string; updatedAt?: Date }>
 
 		if (prefix) {
 			const builder = this.getModel().query()
@@ -130,12 +138,20 @@ export class DbVaultAdapter extends VaultAdapter {
 					typeof builder.where
 				>[0])
 				.exec()
-			records = results as Array<{ key: string }>
+			records = results as Array<{
+				key: string
+				description?: string
+				updatedAt?: Date
+			}>
 		} else {
 			records = await this.getModel().find()
 		}
 
-		return records.map((r) => r.key)
+		return records.map((r) => ({
+			name: r.key,
+			description: r.description,
+			lastUpdated: r.updatedAt?.toISOString(),
+		}))
 	}
 
 	async healthCheck(): Promise<boolean> {
@@ -175,7 +191,7 @@ export class DbVaultAdapter extends VaultAdapter {
 		return this.masterKey
 	}
 
-	private encrypt(data: Record<string, unknown>): {
+	private encrypt(value: string): {
 		encryptedData: string
 		iv: string
 		authTag: string
@@ -185,9 +201,8 @@ export class DbVaultAdapter extends VaultAdapter {
 			authTagLength: AUTH_TAG_LENGTH,
 		})
 
-		const plaintext = JSON.stringify(data)
 		const encrypted = Buffer.concat([
-			cipher.update(plaintext, 'utf8'),
+			cipher.update(value, 'utf8'),
 			cipher.final(),
 		])
 
@@ -198,11 +213,7 @@ export class DbVaultAdapter extends VaultAdapter {
 		}
 	}
 
-	private decrypt(
-		encryptedData: string,
-		iv: string,
-		authTag: string,
-	): Record<string, unknown> {
+	private decrypt(encryptedData: string, iv: string, authTag: string): string {
 		const decipher = createDecipheriv(
 			ALGORITHM,
 			this.getMasterKey(),
@@ -216,6 +227,6 @@ export class DbVaultAdapter extends VaultAdapter {
 			decipher.final(),
 		])
 
-		return JSON.parse(decrypted.toString('utf8')) as Record<string, unknown>
+		return decrypted.toString('utf8')
 	}
 }

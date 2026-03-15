@@ -1,4 +1,8 @@
-import type { VaultAdapterType, VaultStatusResponse } from '@magnet-cms/common'
+import type {
+	VaultAdapterType,
+	VaultSecretMeta,
+	VaultStatusResponse,
+} from '@magnet-cms/common'
 import {
 	Body,
 	Controller,
@@ -14,12 +18,13 @@ import { RestrictedRoute } from '~/decorators/restricted.route'
 import { VaultService } from './vault.service'
 
 interface SetSecretDto {
-	data: Record<string, unknown>
+	value: string
+	description?: string
 }
 
 interface VaultSecretResponse {
-	key: string
-	data: Record<string, unknown>
+	name: string
+	value: string
 }
 
 /**
@@ -58,27 +63,24 @@ export class VaultController {
 
 	/**
 	 * GET /vault/secrets
-	 * List all secret keys, optionally filtered by prefix.
+	 * List all secrets with metadata, optionally filtered by prefix.
 	 */
 	@Get('secrets')
 	async listSecrets(
 		@Query('prefix') prefix?: string,
-	): Promise<{ keys: string[] }> {
-		const keys = await this.vaultService.list(prefix)
-		return { keys }
+	): Promise<{ secrets: VaultSecretMeta[] }> {
+		const secrets = await this.vaultService.list(prefix)
+		return { secrets }
 	}
 
 	/**
 	 * GET /vault/secrets/:key
-	 * Retrieve a secret by key (decrypted).
+	 * Retrieve a secret value by key (decrypted).
 	 */
 	@Get('secrets/:key')
 	async getSecret(@Param('key') key: string): Promise<VaultSecretResponse> {
-		const data = await this.vaultService.get(key)
-		if (!data) {
-			return { key, data: {} }
-		}
-		return { key, data }
+		const value = await this.vaultService.get(key)
+		return { name: key, value: value ?? '' }
 	}
 
 	/**
@@ -91,7 +93,7 @@ export class VaultController {
 		@Param('key') key: string,
 		@Body() body: SetSecretDto,
 	): Promise<{ success: boolean }> {
-		await this.vaultService.set(key, body.data)
+		await this.vaultService.set(key, body.value, body.description)
 		return { success: true }
 	}
 

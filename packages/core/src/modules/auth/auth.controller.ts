@@ -1,4 +1,4 @@
-import type { AuthResult, AuthUser } from '@magnet-cms/common'
+import type { AuthResult, AuthUser, ExternalAuthInfo } from '@magnet-cms/common'
 import {
 	Body,
 	Controller,
@@ -148,8 +148,8 @@ export class AuthController {
 
 	/**
 	 * Get auth status (public endpoint).
-	 * Returns authentication state, setup requirement, and the list of
-	 * enabled OAuth providers so the admin UI can render provider buttons.
+	 * Returns authentication state, setup requirement, the list of
+	 * enabled OAuth providers, and the active auth strategy info.
 	 */
 	@Get('status')
 	async status(@Req() req: Request & { user?: AuthenticatedUser }): Promise<{
@@ -158,11 +158,21 @@ export class AuthController {
 		message?: string
 		user?: AuthenticatedUser
 		providers?: string[]
+		authStrategy: string
+		externalAuthInfo?: ExternalAuthInfo
 	}> {
-		const providers = await this.authService.getEnabledOAuthProviders()
+		const [providers, authInfo] = await Promise.all([
+			this.authService.getEnabledOAuthProviders(),
+			this.authService.getAuthInfo(),
+		])
+
+		const base = {
+			authStrategy: authInfo.strategy,
+			...(authInfo.isExternal ? { externalAuthInfo: authInfo } : {}),
+		}
 
 		if (req.user) {
-			return { authenticated: true, user: req.user, providers }
+			return { authenticated: true, user: req.user, providers, ...base }
 		}
 
 		const existingUser = await this.authService.exists()
@@ -174,6 +184,7 @@ export class AuthController {
 				? 'Authentication required.'
 				: 'No users found. Initial setup required.',
 			providers,
+			...base,
 		}
 	}
 

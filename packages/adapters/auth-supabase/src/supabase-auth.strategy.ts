@@ -3,6 +3,7 @@ import {
 	AuthResult,
 	AuthStrategy,
 	AuthUser,
+	ExternalAuthInfo,
 	LoginCredentials,
 	RegisterData,
 } from '@magnet-cms/common'
@@ -241,6 +242,56 @@ export class SupabaseAuthStrategy extends AuthStrategy {
 		} catch {
 			// If listUsers fails, return false to allow fallback
 			return false
+		}
+	}
+
+	/**
+	 * Get auth info by querying Supabase GoTrue's public settings endpoint.
+	 * Returns which OAuth providers are enabled and general auth settings.
+	 */
+	async getAuthInfo(): Promise<ExternalAuthInfo> {
+		const fallback: ExternalAuthInfo = {
+			strategy: 'supabase',
+			isExternal: true,
+			providers: [],
+		}
+
+		try {
+			const url = `${this.config.supabaseUrl}/auth/v1/settings`
+			const response = await fetch(url, {
+				headers: { apikey: this.config.supabaseKey },
+			})
+
+			if (!response.ok) {
+				return fallback
+			}
+
+			const settings = (await response.json()) as {
+				external?: Record<string, boolean>
+				disable_signup?: boolean
+				mailer_autoconfirm?: boolean
+				phone_autoconfirm?: boolean
+				mfa_enabled?: boolean
+			}
+
+			// Filter external providers that are enabled, excluding non-OAuth entries
+			const nonOAuthKeys = new Set(['email', 'phone', 'anonymous'])
+			const providers = Object.entries(settings.external ?? {})
+				.filter(([key, enabled]) => enabled && !nonOAuthKeys.has(key))
+				.map(([key]) => key)
+
+			return {
+				strategy: 'supabase',
+				isExternal: true,
+				providers,
+				providerSettings: {
+					disableSignup: settings.disable_signup,
+					autoconfirm: settings.mailer_autoconfirm,
+					mfaEnabled: settings.mfa_enabled,
+				},
+			}
+		} catch {
+			return fallback
 		}
 	}
 

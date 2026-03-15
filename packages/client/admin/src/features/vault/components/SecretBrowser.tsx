@@ -1,46 +1,119 @@
 'use client'
 
-import { Button, Skeleton } from '@magnet-cms/ui'
-import { Key, Plus, Search, Trash2 } from 'lucide-react'
+import {
+	Button,
+	DataTable,
+	type DataTableColumn,
+	type DataTableRenderContext,
+	Input,
+} from '@magnet-cms/ui'
+import { Key } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import {
+	type VaultSecretMeta,
 	useVaultDeleteSecret,
 	useVaultSecret,
 	useVaultSecrets,
 } from '~/hooks/useVault'
 import { useAppIntl } from '~/i18n'
+import { MaskedSecretCell } from './MaskedSecretCell'
 import { SecretDrawer } from './SecretDrawer'
 
-export function SecretBrowser() {
+const contentManagerStyles = `
+  .table-row-hover:hover td {
+    background-color: #F9FAFB;
+  }
+  .table-row-hover.group:hover td {
+    background-color: #F9FAFB;
+  }
+`
+
+function formatLastUpdated(iso: string | undefined): string {
+	if (!iso) return '—'
+	const date = new Date(iso)
+	if (Number.isNaN(date.getTime())) return '—'
+	const now = new Date()
+	const diffMs = now.getTime() - date.getTime()
+	const diffMins = Math.floor(diffMs / 60000)
+	const diffHours = Math.floor(diffMs / 3600000)
+	const diffDays = Math.floor(diffMs / 86400000)
+	if (diffMins < 1) return 'Just now'
+	if (diffMins < 60) return `${diffMins} min ago`
+	if (diffHours < 24) return `${diffHours} hr ago`
+	if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`
+	return date.toLocaleDateString()
+}
+
+const columns: DataTableColumn<VaultSecretMeta>[] = [
+	{
+		type: 'custom',
+		header: 'Name',
+		cell: (row) => (
+			<span className="font-mono text-sm text-gray-800">
+				{row.original.name}
+			</span>
+		),
+	},
+	{
+		type: 'custom',
+		header: 'Description',
+		cell: (row) => (
+			<span className="text-sm text-gray-500">
+				{row.original.description ?? <span className="text-gray-300">—</span>}
+			</span>
+		),
+	},
+	{
+		type: 'custom',
+		header: 'Secret',
+		cell: (row) => <MaskedSecretCell secretName={row.original.name} />,
+	},
+	{
+		type: 'custom',
+		header: 'Last updated',
+		cell: (row) => (
+			<span className="text-sm text-gray-500">
+				{formatLastUpdated(row.original.lastUpdated)}
+			</span>
+		),
+	},
+]
+
+interface SecretBrowserProps {
+	drawerOpen: boolean
+	editingKey: string | undefined
+	onDrawerOpenChange: (open: boolean) => void
+	onEdit: (key: string) => void
+}
+
+export function SecretBrowser({
+	drawerOpen,
+	editingKey,
+	onDrawerOpenChange,
+	onEdit,
+}: SecretBrowserProps) {
 	const intl = useAppIntl()
 	const [search, setSearch] = useState('')
-	const [drawerOpen, setDrawerOpen] = useState(false)
-	const [editingKey, setEditingKey] = useState<string | undefined>(undefined)
-	const [viewingKey, setViewingKey] = useState<string | undefined>(undefined)
 
-	const { data, isLoading, error, refetch } = useVaultSecrets()
+	const { data, refetch } = useVaultSecrets()
 	const { mutate: deleteSecret } = useVaultDeleteSecret()
-	const { data: secretDetail } = useVaultSecret(viewingKey ?? '')
+	const { data: secretDetail } = useVaultSecret(editingKey ?? '')
 
-	const allKeys = data?.keys ?? []
-	const filteredKeys = search
-		? allKeys.filter((k) => k.toLowerCase().includes(search.toLowerCase()))
-		: allKeys
+	const allSecrets = data?.secrets ?? []
+	const filteredSecrets = search
+		? allSecrets.filter(
+				(s) =>
+					s.name.toLowerCase().includes(search.toLowerCase()) ||
+					s.description?.toLowerCase().includes(search.toLowerCase()),
+			)
+		: allSecrets
 
-	const handleCreate = () => {
-		setEditingKey(undefined)
-		setViewingKey(undefined)
-		setDrawerOpen(true)
+	const handleEdit = (row: VaultSecretMeta) => {
+		onEdit(row.name)
 	}
 
-	const handleEdit = (key: string) => {
-		setViewingKey(key)
-		setEditingKey(key)
-		setDrawerOpen(true)
-	}
-
-	const handleDelete = (key: string) => {
+	const handleDelete = (row: VaultSecretMeta) => {
 		if (
 			!window.confirm(
 				intl.formatMessage(
@@ -48,14 +121,14 @@ export function SecretBrowser() {
 						id: 'vault.secrets.deleteConfirm',
 						defaultMessage: 'Delete secret "{key}"?',
 					},
-					{ key },
+					{ key: row.name },
 				),
 			)
 		) {
 			return
 		}
 
-		deleteSecret(key, {
+		deleteSecret(row.name, {
 			onSuccess: () => {
 				toast.success(
 					intl.formatMessage({
@@ -77,146 +150,187 @@ export function SecretBrowser() {
 		})
 	}
 
-	if (isLoading) {
-		return (
-			<div className="space-y-2">
-				{[1, 2, 3].map((i) => (
-					<Skeleton key={i} className="h-14 w-full" />
-				))}
+	const renderToolbar = () => (
+		<div className="px-6 py-4 flex flex-col sm:flex-row gap-3 items-center justify-between flex-none bg-white border-b border-gray-200">
+			<div className="relative w-full sm:w-80">
+				<div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+					<svg
+						className="text-gray-400"
+						width="16"
+						height="16"
+						viewBox="0 0 16 16"
+						fill="none"
+						xmlns="http://www.w3.org/2000/svg"
+						aria-hidden="true"
+					>
+						<path
+							d="M7.33333 12.6667C10.2789 12.6667 12.6667 10.2789 12.6667 7.33333C12.6667 4.38781 10.2789 2 7.33333 2C4.38781 2 2 4.38781 2 7.33333C2 10.2789 4.38781 12.6667 7.33333 12.6667Z"
+							stroke="currentColor"
+							strokeWidth="1.5"
+							strokeLinecap="round"
+							strokeLinejoin="round"
+						/>
+						<path
+							d="M14 14L11.1 11.1"
+							stroke="currentColor"
+							strokeWidth="1.5"
+							strokeLinecap="round"
+							strokeLinejoin="round"
+						/>
+					</svg>
+				</div>
+				<Input
+					type="text"
+					className="pl-9 pr-3 py-1.5 border border-gray-200 rounded-lg text-sm bg-gray-50 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-1 focus:ring-gray-900 focus:border-gray-900 transition-all shadow-sm"
+					placeholder={intl.formatMessage({
+						id: 'vault.secrets.searchPlaceholder',
+						defaultMessage: 'Search secrets...',
+					})}
+					value={search}
+					onChange={(e) => setSearch(e.target.value)}
+				/>
 			</div>
-		)
-	}
+			<div className="flex items-center gap-3 w-full sm:w-auto">
+				<div className="flex items-center border border-gray-200 rounded-lg p-0.5 bg-gray-50">
+					<Button
+						variant="ghost"
+						size="sm"
+						className="px-2 py-1 text-xs font-medium text-gray-600 hover:text-gray-900"
+						onClick={() => setSearch('')}
+					>
+						{intl.formatMessage({
+							id: 'common.actions.clearFilters',
+							defaultMessage: 'Clear Filters',
+						})}
+					</Button>
+				</div>
+			</div>
+		</div>
+	)
 
-	if (error) {
+	const renderPagination = (table: DataTableRenderContext<VaultSecretMeta>) => {
+		const { pageIndex, pageSize } = table.getState().pagination
+		const totalRows = table.getFilteredRowModel().rows.length
+		const startRow = pageIndex * pageSize + 1
+		const endRow = Math.min((pageIndex + 1) * pageSize, totalRows)
 		return (
-			<div className="rounded-lg border border-red-200 bg-red-50 p-4">
-				<p className="text-sm text-red-700">
-					{error.message || 'Failed to load secrets'}
-				</p>
-				<Button
-					variant="ghost"
-					size="sm"
-					onClick={() => refetch()}
-					className="mt-2"
-				>
-					Retry
-				</Button>
+			<div className="flex-none px-6 py-4 border-t border-gray-200 bg-white flex items-center justify-between">
+				<div className="text-xs text-gray-500">
+					{intl.formatMessage(
+						{
+							id: 'common.pagination.showing',
+							defaultMessage: 'Showing {start} to {end} of {total} results',
+						},
+						{
+							start: startRow,
+							end: endRow,
+							total: totalRows,
+						},
+					)}
+				</div>
+				<div className="flex items-center gap-2">
+					<Button
+						variant="outline"
+						size="sm"
+						className="px-3 py-1.5 border border-gray-200 rounded-md text-xs font-medium text-gray-400 cursor-not-allowed bg-gray-50"
+						disabled={!table.getCanPreviousPage()}
+						onClick={() => table.previousPage()}
+					>
+						{intl.formatMessage({
+							id: 'common.actions.previous',
+							defaultMessage: 'Previous',
+						})}
+					</Button>
+					<Button
+						variant="outline"
+						size="sm"
+						className="px-3 py-1.5 border border-gray-200 rounded-md text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+						disabled={!table.getCanNextPage()}
+						onClick={() => table.nextPage()}
+					>
+						{intl.formatMessage({
+							id: 'common.actions.next',
+							defaultMessage: 'Next',
+						})}
+					</Button>
+				</div>
 			</div>
 		)
 	}
 
 	return (
-		<div className="space-y-4">
-			{/* Toolbar */}
-			<div className="flex items-center gap-3">
-				<div className="relative flex-1">
-					<Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
-					<input
-						type="text"
-						value={search}
-						onChange={(e) => setSearch(e.target.value)}
-						placeholder={intl.formatMessage({
-							id: 'vault.secrets.searchPlaceholder',
-							defaultMessage: 'Search secrets...',
-						})}
-						className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg bg-gray-50 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-1 focus:ring-gray-900 focus:border-gray-900 transition-all"
-					/>
-				</div>
-				<Button size="sm" onClick={handleCreate}>
-					<Plus className="w-3.5 h-3.5 mr-1.5" />
-					{intl.formatMessage({
-						id: 'vault.secrets.createSecret',
-						defaultMessage: 'New Secret',
-					})}
-				</Button>
-			</div>
-
-			{/* Empty state */}
-			{filteredKeys.length === 0 && (
-				<div className="rounded-lg border border-dashed border-gray-200 bg-gray-50 py-12 flex flex-col items-center justify-center text-center">
-					<Key className="w-8 h-8 text-gray-300 mb-3" />
-					<p className="text-sm font-medium text-gray-500">
-						{search
-							? 'No secrets match your search'
-							: intl.formatMessage({
-									id: 'vault.secrets.empty',
-									defaultMessage: 'No secrets stored',
-								})}
-					</p>
-					{!search && (
-						<p className="text-xs text-gray-400 mt-1">
-							{intl.formatMessage({
-								id: 'vault.secrets.emptyDescription',
-								defaultMessage: 'Create your first secret to get started',
-							})}
+		<>
+			<style>{contentManagerStyles}</style>
+			<DataTable<VaultSecretMeta>
+				data={filteredSecrets}
+				columns={columns}
+				options={{
+					rowActions: {
+						items: [
+							{
+								label: intl.formatMessage({
+									id: 'common.actions.edit',
+									defaultMessage: 'Edit',
+								}),
+								onSelect: handleEdit,
+							},
+							{
+								label: intl.formatMessage({
+									id: 'common.actions.delete',
+									defaultMessage: 'Delete',
+								}),
+								onSelect: handleDelete,
+								destructive: true,
+							},
+						],
+					},
+				}}
+				getRowId={(row) => row.name}
+				renderToolbar={renderToolbar}
+				renderPagination={renderPagination}
+				enablePagination={true}
+				pageSizeOptions={[5, 10, 20, 30, 50]}
+				initialPagination={{ pageIndex: 0, pageSize: 10 }}
+				renderEmpty={() => (
+					<div className="py-16 flex flex-col items-center justify-center text-center">
+						<Key className="w-8 h-8 text-gray-300 mb-3" />
+						<p className="text-sm font-medium text-gray-500">
+							{search
+								? 'No secrets match your search'
+								: intl.formatMessage({
+										id: 'vault.secrets.empty',
+										defaultMessage: 'No secrets stored',
+									})}
 						</p>
-					)}
-					{!search && (
-						<Button
-							variant="outline"
-							size="sm"
-							onClick={handleCreate}
-							className="mt-4"
-						>
-							<Plus className="w-3.5 h-3.5 mr-1.5" />
-							New Secret
-						</Button>
-					)}
-				</div>
-			)}
+						{!search && (
+							<p className="text-xs text-gray-400 mt-1">
+								{intl.formatMessage({
+									id: 'vault.secrets.emptyDescription',
+									defaultMessage: 'Create your first secret to get started',
+								})}
+							</p>
+						)}
+					</div>
+				)}
+				enableColumnFilters={false}
+				showCount={false}
+				className="h-full flex flex-col"
+				variant="content-manager"
+			/>
 
-			{/* Secret list */}
-			{filteredKeys.length > 0 && (
-				<div className="rounded-lg border border-gray-200 bg-white divide-y divide-gray-100">
-					{filteredKeys.map((key) => (
-						<div
-							key={key}
-							className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors"
-						>
-							<div className="flex items-center gap-3 min-w-0">
-								<div className="flex-shrink-0 w-7 h-7 rounded-md bg-gray-100 flex items-center justify-center">
-									<Key className="w-3.5 h-3.5 text-gray-500" />
-								</div>
-								<span className="text-sm font-mono text-gray-800 truncate">
-									{key}
-								</span>
-							</div>
-							<div className="flex items-center gap-1 ml-3">
-								<Button
-									variant="ghost"
-									size="sm"
-									onClick={() => handleEdit(key)}
-									className="text-xs text-gray-500 hover:text-gray-900"
-								>
-									Edit
-								</Button>
-								<Button
-									variant="ghost"
-									size="sm"
-									onClick={() => handleDelete(key)}
-									className="text-red-400 hover:text-red-600 hover:bg-red-50"
-								>
-									<Trash2 className="w-3.5 h-3.5" />
-								</Button>
-							</div>
-						</div>
-					))}
-				</div>
-			)}
-
-			{/* Drawer */}
 			<SecretDrawer
 				open={drawerOpen}
-				onOpenChange={(open) => {
-					setDrawerOpen(open)
-					if (!open) {
-						setEditingKey(undefined)
-						setViewingKey(undefined)
-					}
-				}}
+				onOpenChange={onDrawerOpenChange}
 				editKey={editingKey}
-				initialData={editingKey && secretDetail ? secretDetail.data : undefined}
+				initialValue={
+					editingKey && secretDetail ? secretDetail.value : undefined
+				}
+				initialDescription={
+					editingKey
+						? allSecrets.find((s) => s.name === editingKey)?.description
+						: undefined
+				}
 			/>
-		</div>
+		</>
 	)
 }

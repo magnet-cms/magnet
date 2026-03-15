@@ -7,6 +7,7 @@ import { Loader2, Save } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { useAdapter } from '~/core/provider/MagnetProvider'
+import { useStatus } from '~/hooks/useAuth'
 import { useSettings } from '~/hooks/useDiscovery'
 import { useAppIntl } from '~/i18n'
 import { PageHeader } from '../../shared'
@@ -17,6 +18,7 @@ import {
 	DynamicSettingsForm,
 	type DynamicSettingsFormRef,
 } from './DynamicSettingsForm'
+import { ExternalAuthBanner } from './ExternalAuthBanner'
 import { LanguageSettingsCard } from './LanguageSettingsCard'
 import { SettingsDocumentationPanel } from './SettingsDocumentationPanel'
 
@@ -27,6 +29,7 @@ import { SettingsDocumentationPanel } from './SettingsDocumentationPanel'
 export function SettingsPage() {
 	const intl = useAppIntl()
 	const adapter = useAdapter()
+	const { data: authStatus } = useStatus()
 	const formRef = useRef<DynamicSettingsFormRef>(null)
 	const [saving, setSaving] = useState(false)
 	const [tabs, setTabs] = useState<SettingsTab[]>([])
@@ -93,6 +96,10 @@ export function SettingsPage() {
 	)
 
 	const isLoading = namesLoading || loadingTabs
+
+	// Determine if the active auth tab should show external auth banner
+	const isExternalAuth =
+		activeTab === 'auth' && authStatus?.externalAuthInfo?.isExternal === true
 
 	// Loading state
 	if (isLoading) {
@@ -186,35 +193,37 @@ export function SettingsPage() {
 							</p>
 						)}
 					</div>
-					<div className="flex items-center gap-3">
-						<Button
-							type="button"
-							variant="outline"
-							size="sm"
-							onClick={handleReset}
-						>
-							{intl.formatMessage({
-								id: 'common.actions.reset',
-								defaultMessage: 'Reset',
-							})}
-						</Button>
-						<Button
-							type="button"
-							size="sm"
-							onClick={handleSave}
-							disabled={saving}
-						>
-							{saving ? (
-								<Loader2 className="w-3.5 h-3.5 animate-spin" />
-							) : (
-								<Save className="w-3.5 h-3.5" />
-							)}
-							{intl.formatMessage({
-								id: 'common.actions.saveChanges',
-								defaultMessage: 'Save Changes',
-							})}
-						</Button>
-					</div>
+					{!isExternalAuth && (
+						<div className="flex items-center gap-3">
+							<Button
+								type="button"
+								variant="outline"
+								size="sm"
+								onClick={handleReset}
+							>
+								{intl.formatMessage({
+									id: 'common.actions.reset',
+									defaultMessage: 'Reset',
+								})}
+							</Button>
+							<Button
+								type="button"
+								size="sm"
+								onClick={handleSave}
+								disabled={saving}
+							>
+								{saving ? (
+									<Loader2 className="w-3.5 h-3.5 animate-spin" />
+								) : (
+									<Save className="w-3.5 h-3.5" />
+								)}
+								{intl.formatMessage({
+									id: 'common.actions.saveChanges',
+									defaultMessage: 'Save Changes',
+								})}
+							</Button>
+						</div>
+					)}
 				</div>
 			</PageHeader>
 
@@ -248,13 +257,23 @@ export function SettingsPage() {
 				<div className="flex-1 overflow-y-auto p-6">
 					<div className="space-y-8 pb-10">
 						{activeTab === 'general' && <LanguageSettingsCard />}
-						{activeTab && (
-							<DynamicSettingsForm ref={formRef} group={activeTab} />
+						{isExternalAuth && authStatus?.externalAuthInfo ? (
+							<ExternalAuthBanner
+								strategyName={authStatus.externalAuthInfo.strategy}
+								providers={authStatus.externalAuthInfo.providers}
+								providerSettings={authStatus.externalAuthInfo.providerSettings}
+							/>
+						) : (
+							activeTab && (
+								<DynamicSettingsForm ref={formRef} group={activeTab} />
+							)
 						)}
 					</div>
 				</div>
 				{/* Fixed Right Sidebar - Documentation */}
-				<SettingsDocumentationPanel activeSection={activeTab} />
+				{!isExternalAuth && (
+					<SettingsDocumentationPanel activeSection={activeTab} />
+				)}
 			</div>
 		</div>
 	)

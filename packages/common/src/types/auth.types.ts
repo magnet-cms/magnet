@@ -93,6 +93,27 @@ export interface AuthConfig {
 }
 
 // ============================================================================
+// External Auth Info
+// ============================================================================
+
+/**
+ * Information about the active authentication strategy, including
+ * whether it's an external provider and what OAuth providers it has configured.
+ *
+ * Returned by `AuthStrategy.getAuthInfo()` for external adapters (Supabase, Clerk, etc.).
+ */
+export interface ExternalAuthInfo {
+	/** Strategy identifier (e.g., 'supabase', 'clerk', 'jwt') */
+	strategy: string
+	/** Whether authentication is handled by an external provider */
+	isExternal: boolean
+	/** List of OAuth provider names configured in the external service (e.g., ['google', 'github']) */
+	providers: string[]
+	/** Additional provider-specific settings (e.g., disable_signup, autoconfirm) */
+	providerSettings?: Record<string, unknown>
+}
+
+// ============================================================================
 // Auth Strategy Abstract Class
 // ============================================================================
 
@@ -186,6 +207,15 @@ export abstract class AuthStrategy {
 	 * @returns true if users exist, false otherwise
 	 */
 	async hasUsers?(): Promise<boolean>
+
+	/**
+	 * Get information about the auth strategy and its configured providers (optional).
+	 * External adapters (Supabase, Clerk) implement this to report which OAuth
+	 * providers are configured on their side. If not implemented, the strategy
+	 * is assumed to be built-in (JWT).
+	 * @returns Auth info including strategy name, external flag, and provider list
+	 */
+	async getAuthInfo?(): Promise<ExternalAuthInfo>
 
 	/**
 	 * Get the Passport strategy name (for guards)

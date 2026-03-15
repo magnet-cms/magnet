@@ -106,8 +106,17 @@ export interface AuthStatus {
 	authenticated: boolean
 	requiresSetup: boolean
 	message: string
-	/** OAuth providers that are configured and enabled. Used to render provider buttons. */
+	/** OAuth providers that are configured and enabled. Used to render provider buttons on login page. */
 	providers?: string[]
+	/** Active auth strategy name (e.g., 'jwt', 'supabase', 'clerk') */
+	authStrategy?: string
+	/** External auth info — present only when using a third-party adapter. Used by settings page banner. */
+	externalAuthInfo?: {
+		strategy: string
+		isExternal: boolean
+		providers: string[]
+		providerSettings?: Record<string, unknown>
+	}
 }
 
 // ============================================================================

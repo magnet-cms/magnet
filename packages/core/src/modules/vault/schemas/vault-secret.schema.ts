@@ -11,7 +11,11 @@ export class VaultSecret {
 	@Field.Text({ required: true, unique: true })
 	key!: string
 
-	/** AES-256-GCM encrypted JSON payload (hex string) */
+	/** Optional human-readable description (stored unencrypted) */
+	@Field.Text({ required: false })
+	description?: string
+
+	/** AES-256-GCM encrypted string value (hex) */
 	@Field.Text({ required: true })
 	encryptedData!: string
 
