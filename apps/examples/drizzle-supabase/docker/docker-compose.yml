@@ -1,12 +1,16 @@
 # Local Supabase stack for development
 # Based on: https://supabase.com/docs/guides/self-hosting/docker
+#
+# IMPORTANT: requires a fresh volume on first run or after upgrades:
+#   docker compose -f docker/docker-compose.yml down -v
+#   docker compose -f docker/docker-compose.yml --env-file .env up -d
 
 name: drizzle-supabase
 
 services:
   # PostgreSQL Database
   db:
-    image: supabase/postgres:15.1.1.78
+    image: supabase/postgres:15.8.1.085
     container_name: drizzle-supabase-db
     restart: unless-stopped
     ports:
@@ -16,6 +20,10 @@ services:
       POSTGRES_DB: postgres
     volumes:
       - supabase-db-data:/var/lib/postgresql/data
+      # Persists the pgsodium master key across restarts (required for Vault)
+      - db-config:/etc/postgresql-custom
+      # Sets passwords for Supabase-specific roles to match POSTGRES_PASSWORD
+      - ./init-roles.sh:/docker-entrypoint-initdb.d/yyy-init-roles.sh:ro
       - ./init-vault.sql:/docker-entrypoint-initdb.d/zzz-init-vault.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
@@ -25,7 +33,7 @@ services:
 
   # Supabase Studio (Admin UI)
   studio:
-    image: supabase/studio:20240422-5cf8f30
+    image: supabase/studio:2026.02.16-sha-26c615c
     container_name: supabase-studio
     restart: unless-stopped
     ports:
@@ -39,13 +47,16 @@ services:
       SUPABASE_PUBLIC_URL: http://localhost:8000
       SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY}
       SUPABASE_SERVICE_KEY: ${SUPABASE_SERVICE_KEY}
+      AUTH_JWT_SECRET: ${JWT_SECRET}
+      PGRST_DB_SCHEMAS: public,storage,graphql_public,vault
+      PG_META_CRYPTO_KEY: ${PG_META_CRYPTO_KEY}
     depends_on:
       - db
       - meta
 
   # PostgreSQL Meta (for Studio)
   meta:
-    image: supabase/postgres-meta:v0.83.2
+    image: supabase/postgres-meta:v0.95.2
     container_name: supabase-meta
     restart: unless-stopped
     environment:
@@ -53,15 +64,16 @@ services:
       PG_META_DB_HOST: db
       PG_META_DB_PORT: 5432
       PG_META_DB_NAME: postgres
-      PG_META_DB_USER: postgres
+      PG_META_DB_USER: supabase_admin
       PG_META_DB_PASSWORD: postgres
+      CRYPTO_KEY: ${PG_META_CRYPTO_KEY}
     depends_on:
       db:
         condition: service_healthy
 
   # GoTrue (Auth)
   auth:
-    image: supabase/gotrue:v2.158.1
+    image: supabase/gotrue:v2.186.0
     container_name: supabase-auth
     restart: unless-stopped
     environment:
@@ -69,10 +81,12 @@ services:
       GOTRUE_API_PORT: 9999
       API_EXTERNAL_URL: http://localhost:8000
       GOTRUE_DB_DRIVER: postgres
-      GOTRUE_DB_DATABASE_URL: postgres://postgres:postgres@db:5432/postgres?search_path=auth
+      GOTRUE_DB_DATABASE_URL: postgres://supabase_auth_admin:postgres@db:5432/postgres
       GOTRUE_SITE_URL: http://localhost:3000
       GOTRUE_URI_ALLOW_LIST: "*"
       GOTRUE_DISABLE_SIGNUP: "false"
+      GOTRUE_JWT_ADMIN_ROLES: service_role
+      GOTRUE_JWT_AUD: authenticated
       GOTRUE_JWT_SECRET: ${JWT_SECRET}
       GOTRUE_JWT_EXP: 3600
       GOTRUE_JWT_DEFAULT_GROUP_NAME: authenticated
@@ -84,7 +98,7 @@ services:
 
   # Storage API
   storage:
-    image: supabase/storage-api:v1.0.6
+    image: supabase/storage-api:v1.37.8
     container_name: supabase-storage
     restart: unless-stopped
     environment:
@@ -92,7 +106,8 @@ services:
       SERVICE_KEY: ${SUPABASE_SERVICE_KEY}
       POSTGREST_URL: http://rest:3000
       PGRST_JWT_SECRET: ${JWT_SECRET}
-      DATABASE_URL: postgres://postgres:postgres@db:5432/postgres
+      DATABASE_URL: postgres://supabase_storage_admin:postgres@db:5432/postgres
+      REQUEST_ALLOW_X_FORWARDED_PATH: "true"
       FILE_SIZE_LIMIT: 52428800
       STORAGE_BACKEND: file
       FILE_STORAGE_BACKEND_PATH: /var/lib/storage
@@ -100,7 +115,7 @@ services:
       REGION: stub
       GLOBAL_S3_BUCKET: stub
       ENABLE_IMAGE_TRANSFORMATION: "true"
-      IMGPROXY_URL: http://imgproxy:8080
+      IMGPROXY_URL: http://imgproxy:5001
     volumes:
       - supabase-storage-data:/var/lib/storage
     depends_on:
@@ -111,22 +126,22 @@ services:
 
   # Image Proxy (for image transformations)
   imgproxy:
-    image: darthsim/imgproxy:v3.8.0
+    image: darthsim/imgproxy:v3.30.1
     container_name: supabase-imgproxy
     restart: unless-stopped
     environment:
-      IMGPROXY_BIND: ":8080"
+      IMGPROXY_BIND: ":5001"
       IMGPROXY_LOCAL_FILESYSTEM_ROOT: /
       IMGPROXY_USE_ETAG: "true"
       IMGPROXY_ENABLE_WEBP_DETECTION: "true"
 
   # PostgREST (REST API for database)
   rest:
-    image: postgrest/postgrest:v12.2.0
+    image: postgrest/postgrest:v14.5
     container_name: supabase-rest
     restart: unless-stopped
     environment:
-      PGRST_DB_URI: postgres://postgres:postgres@db:5432/postgres
+      PGRST_DB_URI: postgres://authenticator:postgres@db:5432/postgres
       PGRST_DB_SCHEMAS: public,storage,graphql_public,vault
       PGRST_DB_ANON_ROLE: anon
       PGRST_JWT_SECRET: ${JWT_SECRET}
@@ -164,3 +179,4 @@ services:
 volumes:
   supabase-db-data:
   supabase-storage-data:
+  db-config:

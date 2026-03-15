@@ -77,10 +77,20 @@ export class StorageAdapterFactory {
 					StorageAdapterFactory.cachedAdapter = new SupabaseStorageAdapter(
 						config.supabase,
 					)
-				} catch {
-					throw new Error(
-						'Supabase storage adapter not found. Please install @magnet-cms/adapter-storage-supabase',
-					)
+				} catch (err) {
+					const message = err instanceof Error ? err.message : String(err)
+					const code =
+						err instanceof Error &&
+						'code' in err &&
+						typeof (err as NodeJS.ErrnoException).code === 'string'
+							? (err as NodeJS.ErrnoException).code
+							: undefined
+					if (code === 'MODULE_NOT_FOUND') {
+						throw new Error(
+							'Supabase storage adapter not found. Please install @magnet-cms/adapter-storage-supabase',
+						)
+					}
+					throw new Error(`Failed to load Supabase storage adapter: ${message}`)
 				}
 				break
 
