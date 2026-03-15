@@ -44,22 +44,25 @@ test.describe('OAuth Providers API', () => {
 		}
 	})
 
-	test('GET /auth/oauth/providers returns the same provider list as /auth/status', async ({
+	test('GET /auth/status is the authoritative source for active providers', async ({
 		request,
 		apiBaseURL,
 	}) => {
+		// There is no dedicated /auth/oauth/providers endpoint.
+		// The OAuth controller routes /auth/oauth/:provider, so "providers"
+		// would be interpreted as a provider name and return 404.
+		// The authoritative provider list comes from GET /auth/status.
 		const statusRes = await request.get(`${apiBaseURL}/auth/status`)
+		expect(statusRes.ok()).toBeTruthy()
+
 		const status = (await statusRes.json()) as { providers?: string[] }
+		expect(status).toHaveProperty('providers')
+		expect(Array.isArray(status.providers)).toBe(true)
 
+		// Verify the /auth/oauth/:provider route rejects unknown names
 		const providersRes = await request.get(`${apiBaseURL}/auth/oauth/providers`)
-		expect(providersRes.ok()).toBeTruthy()
-
-		const providersData = (await providersRes.json()) as { providers: string[] }
-		expect(providersData).toHaveProperty('providers')
-		expect(Array.isArray(providersData.providers)).toBe(true)
-
-		// Both endpoints must agree on which providers are currently active
-		expect(providersData.providers).toEqual(status.providers ?? [])
+		// "providers" is not a valid provider name, so it returns 404
+		expect(providersRes.status()).toBe(404)
 	})
 
 	test('GET /auth/oauth/:provider returns 404 when provider is not configured', async ({

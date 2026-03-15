@@ -19,7 +19,7 @@ test.describe('Database Migrations', () => {
 		apiBaseURL,
 	}) => {
 		// Users endpoint requires users table — confirms migration applied the schema
-		const response = await request.get(`${apiBaseURL}/api/users`, {
+		const response = await request.get(`${apiBaseURL}/users`, {
 			headers: { Authorization: 'Bearer invalid-token' },
 		})
 

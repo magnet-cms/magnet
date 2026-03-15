@@ -11,10 +11,17 @@ export class LoginPage {
 
 	constructor(page: Page) {
 		this.page = page
-		this.emailInput = page.getByLabel(/email/i)
-		// Use exact match to avoid matching "Verify Password"
-		this.passwordInput = page.getByLabel('Password', { exact: true })
-		this.verifyPasswordInput = page.getByLabel(/verify password/i)
+		// The login form uses custom label elements (not HTML <label>), so
+		// getByLabel won't work. Use placeholder text for email and positional
+		// matching for password.
+		this.emailInput = page.getByPlaceholder(/email|jane@example/i)
+		this.passwordInput = page
+			.getByRole('textbox')
+			.nth(1)
+			.or(page.getByLabel('Password', { exact: true }))
+		this.verifyPasswordInput = page
+			.getByPlaceholder(/verify|confirm/i)
+			.or(page.getByLabel(/verify password/i))
 		this.submitButton = page.getByRole('button', {
 			name: /sign in|create account|submit|login|setup/i,
 		})

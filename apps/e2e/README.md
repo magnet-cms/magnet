@@ -10,27 +10,38 @@ End-to-end tests for Magnet CMS covering all examples and database adapters.
 
 ## Quick Start
 
-### Run All Tests
+### Run all examples (mongoose, drizzle-neon, drizzle-supabase)
+
+Requires **Docker** (Docker Desktop with WSL integration on WSL2). The script starts Docker, then for each example: starts the app and admin UI, runs the full e2e suite, then cleans up.
 
 ```bash
-# Start all Docker containers
-bun run docker:start-all
-
-# Or use the setup script
-./scripts/setup-test-env.sh
-
-# Run tests
-bun run test
+cd apps/e2e && bun run test:all
 ```
 
-### Test Specific Example
+To test a single example:
 
 ```bash
-# Start Docker for a specific example
-bun run docker:start mongoose
+cd apps/e2e && bun run test:all -- --example=mongoose
+```
 
-# Run tests (servers should be running)
-bun run test
+By default the script **exits on first failure** (so you don't have to cancel it). To run all examples and use retries instead, pass `--no-fail-fast`.
+
+If Docker is not available, you'll see a clear error and this alternative:
+
+```bash
+# Run tests against servers you've already started (e.g. bun run dev:admin from an example)
+cd apps/e2e && bun run test:all -- --servers-already-running
+```
+
+### Run tests only (servers already running)
+
+```bash
+# Terminal 1: start Docker + app (e.g. from repo root or example)
+bun run docker:start mongoose
+# then from apps/examples/mongoose: bun run dev:admin
+
+# Terminal 2: run tests
+cd apps/e2e && bun run test
 ```
 
 ## Available Examples

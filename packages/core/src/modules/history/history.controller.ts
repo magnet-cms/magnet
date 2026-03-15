@@ -54,6 +54,7 @@ export class HistoryController {
 		const version = await this.historyService.findLatestVersion(
 			documentId,
 			collection,
+			locale ?? 'en',
 			status,
 		)
 		return version ? this.mapVersion(version) : null

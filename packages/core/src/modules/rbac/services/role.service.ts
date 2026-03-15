@@ -7,7 +7,7 @@ import {
 	type RoleWithPermissions,
 	type SystemRoleConfig,
 } from '@magnet-cms/common'
-import { Injectable, OnModuleInit } from '@nestjs/common'
+import { BadRequestException, Injectable, OnModuleInit } from '@nestjs/common'
 import { MagnetLogger } from '~/modules/logging/logger.service'
 import { EventService } from '../../events/event.service'
 import { UserService } from '../../user/user.service'
@@ -260,14 +260,14 @@ export class RoleService implements OnModuleInit {
 		}
 
 		if (existing.isSystem) {
-			throw new Error('Cannot delete system roles')
+			throw new BadRequestException('Cannot delete system roles')
 		}
 
 		// Check if any users have this role
 		const users = await this.userService.findAll()
 		const usersWithRole = users.filter((u) => u.role === existing.name)
 		if (usersWithRole.length > 0) {
-			throw new Error(
+			throw new BadRequestException(
 				`Cannot delete role "${existing.name}": ${usersWithRole.length} user(s) have this role assigned`,
 			)
 		}

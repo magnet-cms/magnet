@@ -215,7 +215,11 @@ export class AuthController {
 		@Body() forgotPasswordDto: ForgotPasswordDto,
 	): Promise<{ message: string }> {
 		// Always return same message to prevent email enumeration
-		await this.authService.requestPasswordReset(forgotPasswordDto.email)
+		try {
+			await this.authService.requestPasswordReset(forgotPasswordDto.email)
+		} catch {
+			// Swallow errors to prevent email enumeration
+		}
 		return {
 			message:
 				'If an account exists with that email, a password reset link has been sent.',

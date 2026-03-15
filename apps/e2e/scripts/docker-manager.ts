@@ -23,7 +23,7 @@ interface ExampleConfig {
 	service: string
 	/** Additional services to health-check after the primary service */
 	additionalChecks?: ServiceHealthCheck[]
-	/** Max seconds to wait for all services */
+	/** Max seconds to wait for primary (and each additional) service */
 	maxAttempts?: number
 }
 
@@ -38,8 +38,8 @@ const examples: Record<string, ExampleConfig> = {
 		additionalChecks: [
 			{
 				container: 'mongoose-vault',
-				type: 'exec',
-				check: 'vault status',
+				type: 'http',
+				check: 'http://localhost:8200/v1/sys/health',
 			},
 			{
 				container: 'mongoose-mailpit',
@@ -47,7 +47,7 @@ const examples: Record<string, ExampleConfig> = {
 				check: 'http://localhost:8025/api/v1/messages',
 			},
 		],
-		maxAttempts: 30,
+		maxAttempts: 90,
 	},
 	'drizzle-neon': {
 		composeFile: resolve(
@@ -144,6 +144,9 @@ async function startTemplate(template: ExampleName): Promise<void> {
 
 	console.log(`Starting Docker containers for ${template}...`)
 	await $`docker compose -f ${config.composeFile} up -d`.quiet()
+
+	// Give containers a moment to start before we poll
+	await new Promise((resolve) => setTimeout(resolve, 5_000))
 
 	const maxAttempts = config.maxAttempts ?? 30
 
@@ -258,7 +261,6 @@ async function main() {
 	}
 }
 
-// @ts-expect-error - Bun-specific import.meta.main
 if (import.meta.main) {
 	main().catch((error) => {
 		console.error('Error:', error.message)

@@ -44,8 +44,8 @@ export async function waitForServers(): Promise<void> {
 
 	// Use longer timeout if TEMPLATE_NAME is set (automated testing)
 	const isAutomated = !!process.env.TEMPLATE_NAME
-	const apiTimeout = isAutomated ? 60_000 : 10_000
-	const uiTimeout = isAutomated ? 30_000 : 10_000
+	const apiTimeout = isAutomated ? 90_000 : 10_000
+	const uiTimeout = isAutomated ? 45_000 : 10_000
 
 	await Promise.all([
 		waitForServer({

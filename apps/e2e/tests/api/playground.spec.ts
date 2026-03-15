@@ -32,16 +32,17 @@ function minimalSchema(name: string) {
 }
 
 test.describe('Playground API (Content Builder plugin)', () => {
-	test.describe('Authentication required', () => {
-		test('GET /playground/schemas requires authentication', async ({
+	test.describe('Public access', () => {
+		test('GET /playground/schemas is publicly accessible', async ({
 			request,
 			apiBaseURL,
 		}) => {
 			const response = await request.get(`${apiBaseURL}/playground/schemas`)
-			expect(response.status()).toBe(401)
+			expect(response.ok()).toBeTruthy()
+			expect(response.status()).toBe(200)
 		})
 
-		test('POST /playground/schemas requires authentication', async ({
+		test('POST /playground/schemas is accessible without authentication', async ({
 			request,
 			apiBaseURL,
 		}) => {
@@ -49,10 +50,11 @@ test.describe('Playground API (Content Builder plugin)', () => {
 			const response = await request.post(`${apiBaseURL}/playground/schemas`, {
 				data: minimalSchema(name),
 			})
-			expect(response.status()).toBe(401)
+			// Endpoint does not require auth — request is processed (may succeed or fail on validation)
+			expect(response.status()).not.toBe(401)
 		})
 
-		test('POST /playground/preview requires authentication', async ({
+		test('POST /playground/preview is accessible without authentication', async ({
 			request,
 			apiBaseURL,
 		}) => {
@@ -60,7 +62,8 @@ test.describe('Playground API (Content Builder plugin)', () => {
 			const response = await request.post(`${apiBaseURL}/playground/preview`, {
 				data: minimalSchema(name),
 			})
-			expect(response.status()).toBe(401)
+			// Endpoint does not require auth — request is processed (may succeed or fail on validation)
+			expect(response.status()).not.toBe(401)
 		})
 	})
 

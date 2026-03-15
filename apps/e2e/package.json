@@ -10,6 +10,7 @@
     "test:headed": "playwright test --headed",
     "test:debug": "playwright test --debug",
     "test:report": "playwright show-report",
+    "test:one": "playwright test",
     "test:all": "bun scripts/test-all-templates-robust.ts",
     "verify": "./scripts/verify-setup.sh",
     "docker:start": "bun scripts/docker-manager.ts start",

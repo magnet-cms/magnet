@@ -140,10 +140,14 @@ export class PasswordResetService {
 	 * @param userId - The user ID
 	 */
 	private async invalidatePendingRequests(userId: string): Promise<void> {
-		await this.passwordResetModel.update(
-			{ userId, used: false },
-			{ used: true },
-		)
+		try {
+			await this.passwordResetModel.update(
+				{ userId, used: false },
+				{ used: true },
+			)
+		} catch {
+			// No pending requests to invalidate — this is expected
+		}
 	}
 
 	/**

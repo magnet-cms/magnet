@@ -60,7 +60,7 @@ test.describe('RBAC API', () => {
 				name: `test-role-${Date.now()}`,
 				displayName: 'Test Role',
 				description: 'A test role for E2E testing',
-				permissions: ['content.cats.find', 'content.cats.findOne'],
+				permissions: ['content.cat.find', 'content.cat.findOne'],
 			}
 
 			const response = await apiClient.createRole(roleData)
@@ -170,7 +170,7 @@ test.describe('RBAC API', () => {
 			const roleData = {
 				name: `duplicate-source-${Date.now()}`,
 				displayName: 'Duplicate Source',
-				permissions: ['content.cats.find'],
+				permissions: ['content.cat.find'],
 			}
 			const createResponse = await apiClient.createRole(roleData)
 			const sourceRole = await createResponse.json()
@@ -203,11 +203,27 @@ test.describe('RBAC API', () => {
 			// Get available permissions first to use valid ones
 			const permRes = await authenticatedApiClient.getPermissions()
 			const permData = await permRes.json()
-			const allPerms: string[] = Array.isArray(permData)
-				? (permData as { id: string }[]).map((p) => p.id)
-				: Object.values(permData as Record<string, { id: string }[]>)
-						.flat()
-						.map((p) => p.id)
+			// Permissions response is { collectionTypes: [...], controllers: [{permissions: [{id}]}] }
+			const allPerms: string[] = []
+			if (
+				permData &&
+				typeof permData === 'object' &&
+				!Array.isArray(permData)
+			) {
+				for (const category of Object.values(
+					permData as Record<string, { permissions?: { id: string }[] }[]>,
+				)) {
+					if (Array.isArray(category)) {
+						for (const entry of category) {
+							if (entry.permissions) {
+								allPerms.push(
+									...entry.permissions.map((p: { id: string }) => p.id),
+								)
+							}
+						}
+					}
+				}
+			}
 
 			// Use first available permissions (or wildcard)
 			const basePerms =
@@ -289,7 +305,7 @@ test.describe('RBAC API', () => {
 			const auth = await apiClient.register(userData)
 			apiClient.setToken(auth.access_token)
 
-			const response = await apiClient.checkPermission('content.cats.find')
+			const response = await apiClient.checkPermission('content.cat.find')
 			expect(response.ok()).toBeTruthy()
 
 			const result = await response.json()
@@ -318,7 +334,7 @@ test.describe('RBAC API', () => {
 			const roleData = {
 				name: `assign-test-${Date.now()}`,
 				displayName: 'Assignment Test Role',
-				permissions: ['content.cats.find'],
+				permissions: ['content.cat.find'],
 			}
 			const createResponse = await apiClient.createRole(roleData)
 			const role = await createResponse.json()

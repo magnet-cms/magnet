@@ -35,11 +35,11 @@ import * as __fd_glob_34 from '../content/docs/migrations/best-practices.mdx?col
 import * as __fd_glob_35 from '../content/docs/migrations/cli-commands.mdx?collection=docs'
 import * as __fd_glob_36 from '../content/docs/migrations/configuration.mdx?collection=docs'
 import * as __fd_glob_37 from '../content/docs/migrations/index.mdx?collection=docs'
-import { default as __fd_glob_8 } from '../content/docs/migrations/meta.json?collection=docs'
+import { default as __fd_glob_7 } from '../content/docs/migrations/meta.json?collection=docs'
 import * as __fd_glob_38 from '../content/docs/migrations/migration-files.mdx?collection=docs'
 import * as __fd_glob_39 from '../content/docs/plugins/content-builder.mdx?collection=docs'
 import * as __fd_glob_40 from '../content/docs/plugins/index.mdx?collection=docs'
-import { default as __fd_glob_7 } from '../content/docs/plugins/meta.json?collection=docs'
+import { default as __fd_glob_8 } from '../content/docs/plugins/meta.json?collection=docs'
 import * as __fd_glob_41 from '../content/docs/plugins/seo.mdx?collection=docs'
 // @ts-nocheck
 import * as __fd_glob_42 from '../content/docs/plugins/vault.mdx?collection=docs'
@@ -63,8 +63,8 @@ export const docs = await create.docs(
 		'core/meta.json': __fd_glob_4,
 		'getting-started/meta.json': __fd_glob_5,
 		'guides/meta.json': __fd_glob_6,
-		'plugins/meta.json': __fd_glob_7,
-		'migrations/meta.json': __fd_glob_8,
+		'migrations/meta.json': __fd_glob_7,
+		'plugins/meta.json': __fd_glob_8,
 	},
 	{
 		'index.mdx': __fd_glob_9,

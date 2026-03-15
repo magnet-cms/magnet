@@ -16,6 +16,11 @@ function makeVersionData(): Record<string, unknown> {
 	}
 }
 
+/** Extract the history versionId from a create response (not MongoDB _id) */
+function getVersionId(created: Record<string, unknown>): string {
+	return (created.versionId ?? created._id ?? created.id) as string
+}
+
 test.describe('History API', () => {
 	test.describe('Version CRUD', () => {
 		test('POST /history/version creates a version entry', async ({
@@ -38,7 +43,7 @@ test.describe('History API', () => {
 			expect(version.status).toBe('draft')
 
 			cleanup.register(() =>
-				authenticatedApiClient.deleteVersion(version._id ?? version.id),
+				authenticatedApiClient.deleteVersion(getVersionId(version)),
 			)
 		})
 
@@ -57,7 +62,7 @@ test.describe('History API', () => {
 			})
 			const v1 = await v1Res.json()
 			cleanup.register(() =>
-				authenticatedApiClient.deleteVersion(v1._id ?? v1.id),
+				authenticatedApiClient.deleteVersion(getVersionId(v1)),
 			)
 
 			const v2Res = await authenticatedApiClient.createVersion({
@@ -68,7 +73,7 @@ test.describe('History API', () => {
 			})
 			const v2 = await v2Res.json()
 			cleanup.register(() =>
-				authenticatedApiClient.deleteVersion(v2._id ?? v2.id),
+				authenticatedApiClient.deleteVersion(getVersionId(v2)),
 			)
 
 			const response = await authenticatedApiClient.getVersions(
@@ -96,7 +101,7 @@ test.describe('History API', () => {
 			})
 			const created = await createRes.json()
 			cleanup.register(() =>
-				authenticatedApiClient.deleteVersion(created._id ?? created.id),
+				authenticatedApiClient.deleteVersion(getVersionId(created)),
 			)
 
 			const response = await authenticatedApiClient.getLatestVersion(
@@ -122,7 +127,7 @@ test.describe('History API', () => {
 				status: 'draft',
 			})
 			const created = await createRes.json()
-			const versionId = created._id ?? created.id
+			const versionId = getVersionId(created)
 			cleanup.register(() => authenticatedApiClient.deleteVersion(versionId))
 
 			const response = await authenticatedApiClient.getVersionById(versionId)
@@ -144,7 +149,7 @@ test.describe('History API', () => {
 				status: 'draft',
 			})
 			const created = await createRes.json()
-			const versionId = created._id ?? created.id
+			const versionId = getVersionId(created)
 			cleanup.register(() => authenticatedApiClient.deleteVersion(versionId))
 
 			const publishRes = await authenticatedApiClient.publishVersion(versionId)
@@ -166,7 +171,7 @@ test.describe('History API', () => {
 				status: 'draft',
 			})
 			const created = await createRes.json()
-			const versionId = created._id ?? created.id
+			const versionId = getVersionId(created)
 			cleanup.register(() => authenticatedApiClient.deleteVersion(versionId))
 
 			const archiveRes = await authenticatedApiClient.archiveVersion(versionId)
@@ -187,7 +192,7 @@ test.describe('History API', () => {
 				status: 'draft',
 			})
 			const created = await createRes.json()
-			const versionId = created._id ?? created.id
+			const versionId = getVersionId(created)
 
 			const deleteRes = await authenticatedApiClient.deleteVersion(versionId)
 			expect(deleteRes.ok()).toBeTruthy()

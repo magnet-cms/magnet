@@ -10,20 +10,21 @@ const projectRoot = resolve(__dirname, '..')
 process.env.NODE_ENV = 'development'
 
 // Set example-specific environment variables
-process.env.DATABASE_URL =
-	'postgresql://postgres:postgres@localhost:5432/postgres'
-process.env.SUPABASE_URL = 'http://localhost:8000'
-process.env.SUPABASE_ANON_KEY =
-	'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0'
-process.env.SUPABASE_SERVICE_KEY =
-	'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU'
-process.env.JWT_SECRET =
-	'super-secret-jwt-token-with-at-least-32-characters-long'
+process.env.MONGODB_URI = 'mongodb://localhost:27017/cats-example'
+process.env.JWT_SECRET = 'test-secret-key'
+process.env.VAULT_ADDR = 'http://localhost:8200'
+process.env.VAULT_TOKEN = 'dev-token'
+process.env.SMTP_HOST = 'localhost'
+process.env.SMTP_PORT = '1025'
+process.env.EMAIL_FROM = 'noreply@magnet.local'
+process.env.TEMPLATE_NAME = 'mongoose'
+process.env.MAGNET_PLAYGROUND_MODULES_PATH =
+	'/tmp/magnet-e2e-playground-modules'
 
-console.log('Starting admin development environment for drizzle-supabase...')
+console.log('Starting admin development environment for mongoose...')
 
 const nestjs = spawn('bun', ['run', 'dev'], {
-	cwd: resolve(projectRoot, 'apps', 'examples', 'drizzle-supabase'),
+	cwd: resolve(projectRoot, 'apps', 'examples', 'mongoose'),
 	stdio: 'inherit',
 	shell: true,
 	env: { ...process.env, NODE_ENV: 'development' },

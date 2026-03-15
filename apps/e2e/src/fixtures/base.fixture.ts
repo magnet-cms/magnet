@@ -8,15 +8,15 @@ export const test = base.extend<{
 	uiBaseURL: string
 	cleanup: CleanupManager
 }>({
-	apiBaseURL: async (_deps, use) => {
+	apiBaseURL: async ({ request }, use) => {
 		await use(process.env.API_BASE_URL || 'http://localhost:3000')
 	},
 
-	uiBaseURL: async (_deps, use) => {
+	uiBaseURL: async ({ request }, use) => {
 		await use(process.env.UI_BASE_URL || 'http://localhost:3001')
 	},
 
-	cleanup: async (_deps, use) => {
+	cleanup: async ({ request }, use) => {
 		const manager = new CleanupManager()
 		await use(manager)
 		await manager.cleanup()

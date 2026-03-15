@@ -1,5 +1,6 @@
 #!/usr/bin/env bun
 import { ChildProcess, spawn } from 'node:child_process'
+import { readdirSync, rmSync } from 'node:fs'
 import { writeFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -9,6 +10,22 @@ import {
 	stopAllTemplates,
 	stopTemplate,
 } from './docker-manager'
+
+/** Check if Docker is available (e.g. Docker Desktop with WSL integration enabled). */
+async function isDockerAvailable(): Promise<boolean> {
+	return new Promise((resolvePromise) => {
+		const proc = spawn('docker', ['version'], {
+			stdio: 'ignore',
+			shell: true,
+		})
+		proc.on('close', (code) => resolvePromise(code === 0))
+		proc.on('error', () => resolvePromise(false))
+		setTimeout(() => {
+			proc.kill('SIGTERM')
+			resolvePromise(false)
+		}, 5000)
+	})
+}
 
 // @ts-expect-error - Bun-specific import.meta.dir
 const __dirname = import.meta.dir ?? dirname(fileURLToPath(import.meta.url))
@@ -164,13 +181,24 @@ async function waitForUI(url: string, timeout = 60_000): Promise<boolean> {
 	return false
 }
 
-function killProcess(process: ChildProcess | null): void {
-	if (process) {
-		try {
-			process.kill('SIGTERM')
-		} catch {
-			// Process may already be dead
-		}
+/** Max time to wait for the test process to exit before forcing exit. */
+const TEST_RUN_TIMEOUT_MS = 15 * 60 * 1000 // 15 minutes
+
+function killProcess(proc: ChildProcess | null): void {
+	if (!proc?.pid) return
+	try {
+		proc.kill('SIGTERM')
+	} catch {
+		// Process may already be dead
+	}
+}
+
+function killProcessForcibly(proc: ChildProcess | null): void {
+	if (!proc?.pid) return
+	try {
+		proc.kill('SIGKILL')
+	} catch {
+		// Ignore
 	}
 }
 
@@ -184,6 +212,7 @@ async function runTestsForExample(
 
 	let backendProcess: ChildProcess | null = null
 	let adminProcess: ChildProcess | null = null
+	let testProcess: ChildProcess | null = null
 
 	try {
 		// Start Docker containers
@@ -211,10 +240,28 @@ async function runTestsForExample(
 		// Update dev-admin.js
 		updateDevAdmin(example, envVars)
 
-		// Start the backend server
+		// Remove leftover playground test* modules so backend compiles (e.g. mongoose)
 		const examplePath = resolve(__dirname, `../../examples/${example}`)
+		const modulesDir = resolve(examplePath, 'src', 'modules')
+		try {
+			const entries = readdirSync(modulesDir, { withFileTypes: true })
+			for (const e of entries) {
+				if (e.isDirectory() && e.name.startsWith('test')) {
+					rmSync(resolve(modulesDir, e.name), { recursive: true })
+				}
+			}
+		} catch {
+			// modules dir may not exist
+		}
+
+		// Start the backend server
 
 		console.log('\n🚀 Starting backend server...')
+		const backendLog: string[] = []
+		const pushLog = (label: string, data: Buffer | string) => {
+			const line = data.toString().trim()
+			if (line) backendLog.push(`[${label}] ${line}`)
+		}
 		backendProcess = spawn('bun', ['run', 'dev'], {
 			cwd: examplePath,
 			env,
@@ -222,9 +269,10 @@ async function runTestsForExample(
 			shell: true,
 		})
 
-		// Log backend output
+		// Log backend output and keep last 200 lines for failure diagnosis
 		backendProcess.stdout?.on('data', (data) => {
 			const output = data.toString()
+			pushLog('stdout', data)
 			if (output.includes('Nest application successfully started')) {
 				console.log('✅ Backend server started')
 			}
@@ -232,6 +280,7 @@ async function runTestsForExample(
 
 		backendProcess.stderr?.on('data', (data) => {
 			const output = data.toString()
+			pushLog('stderr', data)
 			if (!output.includes('DeprecationWarning')) {
 				process.stderr.write(data)
 			}
@@ -239,12 +288,18 @@ async function runTestsForExample(
 
 		// Wait for backend to be ready
 		console.log(
-			'⏳ Waiting for backend server to be ready (up to 120 seconds)...',
+			'⏳ Waiting for backend server to be ready (up to 180 seconds)...',
 		)
-		const backendReady = await waitForHealth('http://localhost:3000', 120_000)
+		const backendReady = await waitForHealth('http://localhost:3000', 180_000)
 
 		if (!backendReady) {
 			console.error('❌ Backend server did not become ready')
+			const lastLines = backendLog.slice(-80)
+			if (lastLines.length > 0) {
+				console.error('\n--- Last backend output ---')
+				lastLines.forEach((line) => console.error(line))
+				console.error('--- End backend output ---\n')
+			}
 			return false
 		}
 		console.log('✅ Backend server is ready!')
@@ -277,22 +332,32 @@ async function runTestsForExample(
 		}
 		console.log('✅ Admin UI is ready!')
 
-		// Give servers a moment to stabilize
-		console.log('\n⏳ Waiting for servers to stabilize (5 seconds)...')
-		await new Promise((resolve) => setTimeout(resolve, 5_000))
+		// Give servers a moment to stabilize before Playwright's global setup runs
+		console.log('\n⏳ Waiting for servers to stabilize (10 seconds)...')
+		await new Promise((resolve) => setTimeout(resolve, 10_000))
 
 		// Run tests
 		console.log('\n🧪 Running tests...')
-		const testProcess = spawn('bun', ['run', 'test', ...testArgs], {
+		testProcess = spawn('bun', ['run', 'test', ...testArgs], {
 			cwd: resolve(__dirname, '..'),
 			env,
 			stdio: 'inherit',
 			shell: true,
 		})
 
-		// Wait for tests to complete
+		// Wait for tests to complete, with a hard timeout so we never hang
 		const testExitCode = await new Promise<number>((resolve) => {
-			testProcess.on('exit', (code) => resolve(code ?? 0))
+			const timeoutId = setTimeout(() => {
+				console.error(
+					`\n❌ Test run timed out after ${TEST_RUN_TIMEOUT_MS / 60_000} minutes — killing test process`,
+				)
+				killProcessForcibly(testProcess)
+				resolve(1)
+			}, TEST_RUN_TIMEOUT_MS)
+			testProcess?.on('exit', (code) => {
+				clearTimeout(timeoutId)
+				resolve(code ?? 0)
+			})
 		})
 
 		if (testExitCode !== 0) {
@@ -308,15 +373,19 @@ async function runTestsForExample(
 		console.error(`\n❌ Error testing ${example}:`, error)
 		return false
 	} finally {
-		// Cleanup
+		// Cleanup: kill test process first so it doesn't outlive backend/admin
 		console.log('\n🧹 Cleaning up...')
+		killProcess(testProcess)
 		killProcess(backendProcess)
 		killProcess(adminProcess)
 
-		// Wait a bit for processes to die
-		await new Promise((resolve) => setTimeout(resolve, 3_000))
+		// Wait for processes to die, then force-kill if needed
+		await new Promise((resolve) => setTimeout(resolve, 2_000))
+		killProcessForcibly(testProcess)
+		killProcessForcibly(backendProcess)
+		killProcessForcibly(adminProcess)
+		await new Promise((resolve) => setTimeout(resolve, 1_000))
 
-		// Kill any remaining processes
 		try {
 			await stopTemplate(example)
 		} catch (error) {
@@ -328,11 +397,55 @@ async function runTestsForExample(
 async function main() {
 	const args = process.argv.slice(2)
 	const exampleArg = args.find((arg) => arg.startsWith('--example='))
+	const serversAlreadyRunning = args.includes('--servers-already-running')
+	// Exit on first failure by default so the script doesn't run on; use --no-fail-fast to run all examples and retry
+	const failFast = !args.includes('--no-fail-fast')
 	const example = exampleArg
 		? (exampleArg.split('=')[1] as ExampleName)
 		: undefined
 
-	const testArgs = args.filter((arg) => !arg.startsWith('--example='))
+	const testArgs = args.filter(
+		(arg) =>
+			!arg.startsWith('--example=') &&
+			arg !== '--servers-already-running' &&
+			arg !== '--no-fail-fast',
+	)
+
+	// If servers are already running, just run Playwright once (no Docker, no process spawn).
+	if (serversAlreadyRunning) {
+		console.log(
+			'🧪 Running e2e tests (servers assumed already running on 3000/3001)...\n',
+		)
+		const testProcess = spawn('bun', ['run', 'test', ...testArgs], {
+			cwd: resolve(__dirname, '..'),
+			stdio: 'inherit',
+			shell: true,
+			env: process.env,
+		})
+		const code = await new Promise<number>((resolve) => {
+			testProcess.on('exit', (c) => resolve(c ?? 0))
+		})
+		process.exit(code)
+	}
+
+	// Otherwise we need Docker to start DBs and then we start backend/admin.
+	const dockerOk = await isDockerAvailable()
+	if (!dockerOk) {
+		console.error('❌ Docker is not available.')
+		console.error(
+			'   test:all needs Docker to start databases for each example. Install Docker and ensure',
+		)
+		console.error(
+			'   the Docker CLI is in PATH (e.g. enable "WSL integration" in Docker Desktop settings).',
+		)
+		console.error('   See: https://docs.docker.com/desktop/wsl/')
+		console.error('')
+		console.error(
+			'   To run tests against already-running servers instead, use:',
+		)
+		console.error('   bun run test:all -- --servers-already-running')
+		process.exit(1)
+	}
 
 	if (example) {
 		// Test single example
@@ -377,6 +490,13 @@ async function main() {
 				if (!success) {
 					allPassed = false
 					failedExamples.push(exampleName)
+					if (failFast) {
+						console.error(
+							'\n❌ Exiting after first failure (use --no-fail-fast to run all examples and retry).',
+						)
+						await stopAllTemplates()
+						process.exit(1)
+					}
 				}
 
 				// Wait between examples
@@ -420,7 +540,6 @@ async function main() {
 	}
 }
 
-// @ts-expect-error - Bun-specific import.meta.main
 if (import.meta.main) {
 	main().catch(async (error) => {
 		console.error('Error:', error)

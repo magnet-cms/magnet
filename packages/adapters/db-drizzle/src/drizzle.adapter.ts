@@ -408,11 +408,156 @@ class DrizzleAdapter extends DatabaseAdapter {
 	}
 
 	/**
-	 * Create a Model class from raw model data.
-	 * Called by core's DatabaseModule to wrap the model instance.
+	 * Create a Model class from raw model data or a factory (for lazy init).
+	 * Core's DatabaseModule passes an async factory; we support both.
 	 */
-	model<T>(modelData: { db: DrizzleDB; table: any; schemaClass: Type }): any {
-		return createModel<T>(modelData.db, modelData.table, modelData.schemaClass)
+	model<T>(
+		modelDataOrFactory:
+			| { db: DrizzleDB; table: PgTable; schemaClass: Type }
+			| (() => Promise<{ db: DrizzleDB; table: PgTable; schemaClass: Type }>),
+	): any {
+		if (typeof modelDataOrFactory === 'function') {
+			return this.createLazyModel<T>(modelDataOrFactory)
+		}
+		return createModel<T>(
+			modelDataOrFactory.db,
+			modelDataOrFactory.table,
+			modelDataOrFactory.schemaClass,
+		)
+	}
+
+	/**
+	 * Create a model class that lazily resolves the factory (used by core's DatabaseModule).
+	 */
+	private createLazyModel<T>(
+		factory: () => Promise<{
+			db: DrizzleDB
+			table: PgTable
+			schemaClass: Type
+		}>,
+	): any {
+		// Plain class then cast to Model<T> so query()/native() can return thenables
+		return class LazyDrizzleModelAdapter {
+			private _instance: InstanceType<
+				ReturnType<typeof createModel<T>>
+			> | null = null
+			private _initPromise: Promise<void> | null = null
+			private _factory = factory
+			currentLocale?: string
+			currentVersion?: string
+
+			private async _ensureInstance(): Promise<
+				InstanceType<ReturnType<typeof createModel<T>>>
+			> {
+				if (this._instance) return this._instance
+				if (this._initPromise) {
+					await this._initPromise
+					if (!this._instance) throw new Error('Drizzle adapter init failed')
+					return this._instance
+				}
+				this._initPromise = (async () => {
+					const data = await this._factory()
+					const AdapterClass = createModel<T>(
+						data.db,
+						data.table,
+						data.schemaClass,
+					)
+					this._instance = new AdapterClass()
+					if (this.currentLocale) this._instance.locale(this.currentLocale)
+					if (this.currentVersion) this._instance.version(this.currentVersion)
+				})()
+				await this._initPromise
+				if (!this._instance) throw new Error('Drizzle adapter init failed')
+				return this._instance
+			}
+
+			locale(locale: string): this {
+				this.currentLocale = locale
+				if (this._instance) this._instance.locale(locale)
+				return this
+			}
+			version(versionId: string): this {
+				this.currentVersion = versionId
+				if (this._instance) this._instance.version(versionId)
+				return this
+			}
+			async create(
+				data: Parameters<
+					InstanceType<ReturnType<typeof createModel<T>>>['create']
+				>[0],
+				options?: Parameters<
+					InstanceType<ReturnType<typeof createModel<T>>>['create']
+				>[1],
+			) {
+				const inst = await this._ensureInstance()
+				return inst.create(data, options)
+			}
+			async find() {
+				const inst = await this._ensureInstance()
+				return inst.find()
+			}
+			async findById(id: string) {
+				const inst = await this._ensureInstance()
+				return inst.findById(id)
+			}
+			async findOne(
+				query: Parameters<
+					InstanceType<ReturnType<typeof createModel<T>>>['findOne']
+				>[0],
+			) {
+				const inst = await this._ensureInstance()
+				return inst.findOne(query)
+			}
+			async findMany(
+				query: Parameters<
+					InstanceType<ReturnType<typeof createModel<T>>>['findMany']
+				>[0],
+			) {
+				const inst = await this._ensureInstance()
+				return inst.findMany(query)
+			}
+			async update(
+				query: Parameters<
+					InstanceType<ReturnType<typeof createModel<T>>>['update']
+				>[0],
+				data: Parameters<
+					InstanceType<ReturnType<typeof createModel<T>>>['update']
+				>[1],
+				options?: Parameters<
+					InstanceType<ReturnType<typeof createModel<T>>>['update']
+				>[2],
+			) {
+				const inst = await this._ensureInstance()
+				return inst.update(query, data, options)
+			}
+			async delete(
+				query: Parameters<
+					InstanceType<ReturnType<typeof createModel<T>>>['delete']
+				>[0],
+			) {
+				const inst = await this._ensureInstance()
+				return inst.delete(query)
+			}
+			async findVersions(documentId: string) {
+				const inst = await this._ensureInstance()
+				return inst.findVersions(documentId)
+			}
+			async findVersionById(versionId: string) {
+				const inst = await this._ensureInstance()
+				return inst.findVersionById(versionId)
+			}
+			async restoreVersion(versionId: string) {
+				const inst = await this._ensureInstance()
+				return inst.restoreVersion(versionId)
+			}
+			query() {
+				// Sync API expects QueryBuilder; we return a thenable so await model.query() works
+				return this._ensureInstance().then((inst) => inst.query())
+			}
+			native() {
+				return this._ensureInstance().then((inst) => inst.native())
+			}
+		} as unknown as new () => import('@magnet-cms/common').Model<T>
 	}
 
 	/**

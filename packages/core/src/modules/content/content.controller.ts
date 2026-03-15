@@ -75,8 +75,13 @@ export class ContentController {
 				documentId,
 				{ locale, status },
 			)
-			if (!result) {
+			if (!result || (Array.isArray(result) && result.length === 0)) {
 				throw new HttpException('Document not found', HttpStatus.NOT_FOUND)
+			}
+			// When no locale/status filter, findByDocumentId returns an array of all
+			// locale versions. Return the first (default) document for the single-get endpoint.
+			if (Array.isArray(result)) {
+				return result[0]
 			}
 			return result
 		} catch (error) {

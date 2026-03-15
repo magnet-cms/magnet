@@ -1,6 +1,8 @@
 # Local Supabase stack for development
 # Based on: https://supabase.com/docs/guides/self-hosting/docker
 
+name: drizzle-supabase
+
 services:
   # PostgreSQL Database
   db:
