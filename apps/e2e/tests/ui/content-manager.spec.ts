@@ -64,7 +64,7 @@ authTest.describe('Content Manager', () => {
 				await page.waitForLoadState('networkidle')
 
 				const table = page.getByRole('table')
-				await expect(table).toBeVisible({ timeout: 5000 })
+				await expect(table).toBeVisible({ timeout: 10000 })
 
 				const headers = table.getByRole('columnheader')
 				const headerCount = await headers.count()

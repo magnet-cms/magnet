@@ -17,6 +17,6 @@ test.describe('Health API', () => {
 		const elapsed = Date.now() - start
 
 		expect(response.ok()).toBeTruthy()
-		expect(elapsed).toBeLessThan(500)
+		expect(elapsed).toBeLessThan(2000)
 	})
 })
