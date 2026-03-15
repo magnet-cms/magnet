@@ -14,6 +14,7 @@ import { Pool } from 'pg'
 
 import { createNeonWebSocketConnection } from './dialects/neon'
 import { createModel } from './drizzle.model'
+import { LazyQueryBuilder } from './drizzle.query-builder'
 import { AutoMigration } from './migrations/auto-migration'
 import { MigrationGenerator } from './migrations/migration-generator'
 import { MigrationRunner } from './migrations/migration-runner'
@@ -579,8 +580,10 @@ class DrizzleAdapter extends DatabaseAdapter {
 				return inst.restoreVersion(versionId)
 			}
 			query() {
-				// Sync API expects QueryBuilder; we return a thenable so await model.query() works
-				return this._ensureInstance().then((inst) => inst.query())
+				return new LazyQueryBuilder<T>(async () => {
+					const inst = await this._ensureInstance()
+					return inst.query()
+				})
 			}
 			native() {
 				return this._ensureInstance().then((inst) => inst.native())

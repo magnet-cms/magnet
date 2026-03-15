@@ -12,8 +12,25 @@ import {
 	getSchemaOptions,
 } from '@magnet-cms/common'
 import { toCamelCase } from '@magnet-cms/utils'
+import { toSnakeCase } from '@magnet-cms/utils'
 import type { Type } from '@nestjs/common'
-import { and, eq, sql } from 'drizzle-orm'
+import {
+	and,
+	eq,
+	gt,
+	gte,
+	ilike,
+	inArray,
+	isNotNull,
+	isNull,
+	like,
+	lt,
+	lte,
+	ne,
+	notInArray,
+	or,
+	sql,
+} from 'drizzle-orm'
 import type { PgTable } from 'drizzle-orm/pg-core'
 
 import { DrizzleQueryBuilder } from './drizzle.query-builder'
@@ -486,7 +503,8 @@ export function createModel<T>(
 		}
 
 		/**
-		 * Build conditions array from a query object
+		 * Build conditions array from a query object.
+		 * Supports MongoDB-style operators ($regex, $in, $or, $and, etc.)
 		 * @internal
 		 */
 		_buildConditions(query: Partial<BaseSchema<T>>): DrizzleCondition[] {
@@ -494,13 +512,98 @@ export function createModel<T>(
 			const conditions: DrizzleCondition[] = []
 
 			for (const [key, value] of Object.entries(query)) {
-				// Try camelCase first (matches table column definitions)
-				if (key in dynamicTable) {
-					conditions.push(eq(dynamicTable[key], value))
+				// Handle $and logical operator
+				if (key === '$and' && Array.isArray(value)) {
+					const andConds = value
+						.flatMap((f) => this._buildConditions(f as Partial<BaseSchema<T>>))
+						.filter((c): c is NonNullable<typeof c> => c !== undefined)
+					if (andConds.length > 0) conditions.push(and(...andConds))
+					continue
 				}
+
+				// Handle $or logical operator
+				if (key === '$or' && Array.isArray(value)) {
+					const orConds = value
+						.map((f) => {
+							const conds = this._buildConditions(
+								f as Partial<BaseSchema<T>>,
+							).filter((c): c is NonNullable<typeof c> => c !== undefined)
+							return conds.length > 1 ? and(...conds) : conds[0]
+						})
+						.filter((c): c is NonNullable<typeof c> => c !== undefined)
+					if (orConds.length > 0) conditions.push(or(...orConds))
+					continue
+				}
+
+				// Resolve column: try camelCase key first, then snake_case
+				const column = dynamicTable[key] || dynamicTable[toSnakeCase(key)]
+				if (!column || typeof column !== 'object') continue
+
+				// Handle operator objects like { $regex: 'x', $in: [...] }
+				if (
+					value !== null &&
+					typeof value === 'object' &&
+					!Array.isArray(value)
+				) {
+					const ops = value as Record<string, unknown>
+					// Check if it's an operator object (has $ keys)
+					const hasOperators = Object.keys(ops).some((k) => k.startsWith('$'))
+					if (hasOperators) {
+						for (const [op, opVal] of Object.entries(ops)) {
+							if (op === '$options') continue
+							const cond = this._mapOperator(column, op, opVal)
+							if (cond) conditions.push(cond)
+						}
+						continue
+					}
+				}
+
+				// Simple equality
+				conditions.push(eq(column, value))
 			}
 
 			return conditions
+		}
+
+		/**
+		 * Map a MongoDB-style operator to a Drizzle condition
+		 * @internal
+		 */
+		_mapOperator(
+			column: DynamicTableColumn,
+			operator: string,
+			value: unknown,
+		): DrizzleCondition {
+			switch (operator) {
+				case '$eq':
+					return eq(column, value)
+				case '$ne':
+					return ne(column, value)
+				case '$gt':
+					return gt(column, value)
+				case '$gte':
+					return gte(column, value)
+				case '$lt':
+					return lt(column, value)
+				case '$lte':
+					return lte(column, value)
+				case '$in':
+					return inArray(column, value as unknown[])
+				case '$nin':
+					return notInArray(column, value as unknown[])
+				case '$regex':
+					return ilike(column, `%${value}%`)
+				case '$like':
+					return like(column, value as string)
+				case '$ilike':
+					return ilike(column, value as string)
+				case '$null':
+					return value ? isNull(column) : isNotNull(column)
+				case '$exists':
+					return value ? isNotNull(column) : isNull(column)
+				default:
+					return undefined
+			}
 		}
 
 		/**
@@ -569,8 +672,13 @@ export function createModel<T>(
 				if (key === 'id') continue // Skip id, it's auto-generated
 				if (key === 'createdAt') continue // Skip createdAt - handled above or irrelevant for updates
 
-				if (value === undefined || value === null) {
-					// Skip undefined/null - let database defaults handle it
+				if (value === undefined) {
+					// Skip undefined - let database defaults handle it
+					continue
+				}
+				// Allow explicit null values (e.g., publishedAt: null for drafts)
+				if (value === null) {
+					result[key] = null
 					continue
 				}
 
@@ -579,6 +687,18 @@ export function createModel<T>(
 				if (value instanceof Date) {
 					result[key] = value
 					continue
+				}
+
+				// Convert ISO date strings to Date objects for timestamp columns
+				if (
+					typeof value === 'string' &&
+					/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(value)
+				) {
+					const dateValue = new Date(value)
+					if (!Number.isNaN(dateValue.getTime())) {
+						result[key] = dateValue
+						continue
+					}
 				}
 
 				// Handle JSONB values: if value is a string that looks like JSON, parse it

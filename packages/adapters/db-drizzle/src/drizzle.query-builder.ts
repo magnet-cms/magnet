@@ -76,6 +76,87 @@ type DrizzleCondition = any
  *   .exec()
  * ```
  */
+/**
+ * Lazy query builder that buffers chainable operations synchronously
+ * and replays them on the real DrizzleQueryBuilder when a terminal
+ * method (exec, execOne, count, exists, paginate) is called.
+ *
+ * This solves the problem where LazyDrizzleModelAdapter.query() needs
+ * to return a synchronous, chainable object even though the underlying
+ * model requires async initialization.
+ */
+export class LazyQueryBuilder<T> extends QueryBuilder<T> {
+	private operations: Array<{ method: string; args: unknown[] }> = []
+
+	constructor(private readonly factory: () => Promise<DrizzleQueryBuilder<T>>) {
+		super()
+	}
+
+	where(filter: FilterQuery<T>): this {
+		this.operations.push({ method: 'where', args: [filter] })
+		return this
+	}
+	and(filter: FilterQuery<T>): this {
+		this.operations.push({ method: 'and', args: [filter] })
+		return this
+	}
+	or(filters: FilterQuery<T>[]): this {
+		this.operations.push({ method: 'or', args: [filters] })
+		return this
+	}
+	sort(sort: SortQuery<T>): this {
+		this.operations.push({ method: 'sort', args: [sort] })
+		return this
+	}
+	limit(count: number): this {
+		this.operations.push({ method: 'limit', args: [count] })
+		return this
+	}
+	skip(count: number): this {
+		this.operations.push({ method: 'skip', args: [count] })
+		return this
+	}
+	select(projection: ProjectionQuery<T>): this {
+		this.operations.push({ method: 'select', args: [projection] })
+		return this
+	}
+	locale(loc: string): this {
+		this.operations.push({ method: 'locale', args: [loc] })
+		return this
+	}
+	version(versionId: string): this {
+		this.operations.push({ method: 'version', args: [versionId] })
+		return this
+	}
+
+	async exec(): Promise<BaseSchema<T>[]> {
+		return (await this.buildChain()).exec()
+	}
+	async execOne(): Promise<BaseSchema<T> | null> {
+		return (await this.buildChain()).execOne()
+	}
+	async count(): Promise<number> {
+		return (await this.buildChain()).count()
+	}
+	async exists(): Promise<boolean> {
+		return (await this.buildChain()).exists()
+	}
+	async paginate(): Promise<PaginatedResult<BaseSchema<T>>> {
+		return (await this.buildChain()).paginate()
+	}
+
+	private async buildChain(): Promise<DrizzleQueryBuilder<T>> {
+		const builder = await this.factory()
+		for (const op of this.operations) {
+			const fn = (builder as unknown as Record<string, Function>)[op.method]
+			if (typeof fn === 'function') {
+				fn.call(builder, ...op.args)
+			}
+		}
+		return builder
+	}
+}
+
 export class DrizzleQueryBuilder<T> extends QueryBuilder<T> {
 	private filterConditions: DrizzleCondition[] = []
 	private sortSpecs: { column: DrizzleColumn; direction: 'asc' | 'desc' }[] = []
