@@ -19,10 +19,27 @@ const EXAMPLE_ENV_VARS: Record<ExampleName, Record<string, string>> = {
 	mongoose: {
 		MONGODB_URI: 'mongodb://localhost:27017/cats-example',
 		JWT_SECRET: 'test-secret-key',
+		VAULT_ADDR: 'http://localhost:8200',
+		VAULT_TOKEN: 'dev-token',
+		SMTP_HOST: 'localhost',
+		SMTP_PORT: '1025',
+		EMAIL_FROM: 'noreply@magnet.local',
+		TEMPLATE_NAME: 'mongoose',
 	},
 	'drizzle-neon': {
 		DATABASE_URL: 'postgresql://postgres:postgres@localhost:5433/neon-example',
 		JWT_SECRET: 'test-secret-key',
+		S3_BUCKET: 'magnet-media',
+		S3_REGION: 'us-east-1',
+		S3_ACCESS_KEY: 'minioadmin',
+		S3_SECRET_KEY: 'minioadmin',
+		S3_ENDPOINT: 'http://localhost:9000',
+		SMTP_HOST: 'localhost',
+		SMTP_PORT: '1025',
+		EMAIL_FROM: 'noreply@magnet.local',
+		VAULT_MASTER_KEY:
+			'0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
+		TEMPLATE_NAME: 'drizzle-neon',
 	},
 	'drizzle-supabase': {
 		DATABASE_URL: 'postgresql://postgres:postgres@localhost:5432/postgres',
@@ -32,6 +49,8 @@ const EXAMPLE_ENV_VARS: Record<ExampleName, Record<string, string>> = {
 		SUPABASE_SERVICE_KEY:
 			'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU',
 		JWT_SECRET: 'super-secret-jwt-token-with-at-least-32-characters-long',
+		SUPABASE_STORAGE_BUCKET: 'media',
+		TEMPLATE_NAME: 'drizzle-supabase',
 	},
 }
 

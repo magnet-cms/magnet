@@ -1,9 +1,15 @@
 import { expect, test } from '../../src/fixtures/auth.fixture'
+import { MailPitClient } from '../../src/helpers/mailpit-client'
+
+const TEMPLATE_NAME = process.env.TEMPLATE_NAME || ''
+const HAS_MAILPIT =
+	TEMPLATE_NAME === 'mongoose' || TEMPLATE_NAME === 'drizzle-neon'
+
+// ============================================================================
+// Existing Email API Tests (run for all templates)
+// ============================================================================
 
 test.describe('Email System API', () => {
-	// ============================================================================
-	// Password Reset Flow
-	// ============================================================================
 	test.describe('Password Reset', () => {
 		test('POST /auth/forgot-password returns success message', async ({
 			request,
@@ -39,9 +45,6 @@ test.describe('Email System API', () => {
 		})
 	})
 
-	// ============================================================================
-	// Email Verification Flow
-	// ============================================================================
 	test.describe('Email Verification', () => {
 		test('GET /email/verify returns error without token', async ({
 			request,
@@ -66,9 +69,6 @@ test.describe('Email System API', () => {
 		})
 	})
 
-	// ============================================================================
-	// Email Settings
-	// ============================================================================
 	test.describe('Email Settings', () => {
 		test('GET /settings/email returns email settings', async ({
 			authenticatedApiClient,
@@ -105,5 +105,82 @@ test.describe('Email System API', () => {
 				expect(body.fromAddress).toBe('test@example.com')
 			}
 		})
+	})
+})
+
+// ============================================================================
+// MailPit Email Delivery Verification (only for templates with MailPit)
+// ============================================================================
+
+test.describe('Email Delivery via MailPit', () => {
+	test.skip(!HAS_MAILPIT, 'MailPit not available for this template')
+
+	const mailpit = new MailPitClient()
+
+	test.beforeAll(async ({ authenticatedApiClient }) => {
+		// Enable email channel in notification settings
+		await authenticatedApiClient.updateSettings('notifications', {
+			emailChannelEnabled: true,
+		})
+	})
+
+	test.beforeEach(async () => {
+		// Clear inbox between tests
+		await mailpit.deleteAllMessages()
+	})
+
+	test.afterAll(async ({ authenticatedApiClient }) => {
+		// Restore default: disable email channel
+		await authenticatedApiClient.updateSettings('notifications', {
+			emailChannelEnabled: false,
+		})
+	})
+
+	test('notification with email channel delivers to MailPit', async ({
+		request,
+		apiBaseURL,
+		testUser,
+	}) => {
+		// Send notification via the notifications API with JWT auth
+		const response = await request.post(`${apiBaseURL}/notifications`, {
+			headers: {
+				'Content-Type': 'application/json',
+				Authorization: `Bearer ${testUser.token}`,
+			},
+			data: {
+				userId: testUser.email,
+				channels: ['email'],
+				type: 'test.e2e',
+				title: 'E2E Test Notification',
+				message: 'This is an automated E2E test email',
+			},
+		})
+
+		// The notification endpoint should accept the request
+		// (even if email delivery fails, the API should return 200)
+		expect([200, 201]).toContain(response.status())
+
+		// Wait for email to arrive in MailPit — fail if not delivered
+		const message = await mailpit.waitForMessage(
+			'subject:E2E Test Notification',
+			10_000,
+		)
+		expect(message.Subject).toContain('E2E Test Notification')
+	})
+
+	test('password reset sends email to MailPit', async ({
+		request,
+		apiBaseURL,
+		testUser,
+	}) => {
+		const response = await request.post(`${apiBaseURL}/auth/forgot-password`, {
+			data: { email: testUser.email },
+		})
+		expect(response.ok()).toBe(true)
+
+		// Wait for password reset email — fail if not delivered
+		const message = await mailpit.waitForMessage(`to:${testUser.email}`, 10_000)
+		expect(message.To[0].Address).toBe(testUser.email)
+		expect(message.Subject.toLowerCase()).toContain('password')
 	})
 })

@@ -1,0 +1,335 @@
+# E2E Tests — all credentials below are dev-mode/demo values for isolated CI environments.
+name: E2E Tests
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e-mongoose:
+    name: E2E — Mongoose
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      mongodb:
+        image: mongo:7.0
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.adminCommand(\"ping\")'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      vault:
+        image: hashicorp/vault:1.17
+        ports:
+          - 8200:8200
+        env:
+          VAULT_DEV_ROOT_TOKEN_ID: dev-token
+          VAULT_DEV_LISTEN_ADDRESS: "0.0.0.0:8200"
+          VAULT_ADDR: "http://127.0.0.1:8200"
+        options: >-
+          --cap-add IPC_LOCK
+          --health-cmd "vault status"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      mailpit:
+        image: axllent/mailpit:latest
+        ports:
+          - 1025:1025
+          - 8025:8025
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.2.2"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build packages
+        run: bun run build
+
+      - name: Seed Vault secrets
+        run: |
+          docker exec ${{ job.services.vault.id }} vault kv put secret/magnet/database uri=mongodb://localhost:27017/cats-example
+          docker exec ${{ job.services.vault.id }} vault kv put secret/magnet/jwt secret=test-secret-key
+          docker exec ${{ job.services.vault.id }} vault kv put secret/magnet/email host=localhost port=1025 fromAddress=noreply@magnet.local fromName="Magnet CMS"
+        env:
+          VAULT_ADDR: http://localhost:8200
+          VAULT_TOKEN: dev-token
+
+      - name: Start backend server
+        run: |
+          cd apps/examples/mongoose
+          bun run dev &
+          sleep 5
+        env:
+          MONGODB_URI: mongodb://localhost:27017/cats-example
+          JWT_SECRET: test-secret-key
+          VAULT_ADDR: http://localhost:8200
+          VAULT_TOKEN: dev-token
+          SMTP_HOST: localhost
+          SMTP_PORT: "1025"
+          EMAIL_FROM: noreply@magnet.local
+
+      - name: Start admin UI
+        run: |
+          cd packages/client/admin
+          bun run dev &
+          sleep 3
+
+      - name: Wait for servers
+        run: |
+          for i in $(seq 1 60); do
+            curl -sf http://localhost:3000/health && break
+            sleep 2
+          done
+          curl -sf http://localhost:3000/health || exit 1
+
+      - name: Install Playwright browsers
+        run: cd apps/e2e && npx playwright install --with-deps chromium
+
+      - name: Run E2E tests
+        run: cd apps/e2e && bun run test
+        env:
+          API_BASE_URL: http://localhost:3000
+          UI_BASE_URL: http://localhost:3001
+          TEMPLATE_NAME: mongoose
+          CI: true
+
+      - name: Upload test results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-mongoose-results
+          path: |
+            apps/e2e/test-results/
+            apps/e2e/playwright-report/
+          retention-days: 7
+
+  e2e-drizzle-neon:
+    name: E2E — Drizzle/PostgreSQL
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        ports:
+          - 5433:5432
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: neon-example
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      minio:
+        image: minio/minio:latest
+        ports:
+          - 9000:9000
+          - 9001:9001
+        env:
+          MINIO_ROOT_USER: minioadmin
+          MINIO_ROOT_PASSWORD: minioadmin
+        options: >-
+          --health-cmd "curl -sf http://localhost:9000/minio/health/live"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      mailpit:
+        image: axllent/mailpit:latest
+        ports:
+          - 1025:1025
+          - 8025:8025
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.2.2"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build packages
+        run: bun run build
+
+      - name: Create MinIO bucket
+        run: |
+          docker run --rm --network host --entrypoint /bin/sh minio/mc:latest -c \
+            'mc alias set local http://localhost:9000 minioadmin minioadmin && mc mb local/magnet-media --ignore-existing'
+
+      - name: Start backend server
+        run: |
+          cd apps/examples/drizzle-neon
+          bun run dev &
+          sleep 5
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5433/neon-example
+          JWT_SECRET: test-secret-key
+          S3_BUCKET: magnet-media
+          S3_REGION: us-east-1
+          S3_ACCESS_KEY: minioadmin
+          S3_SECRET_KEY: minioadmin
+          S3_ENDPOINT: http://localhost:9000
+          SMTP_HOST: localhost
+          SMTP_PORT: "1025"
+          EMAIL_FROM: noreply@magnet.local
+          VAULT_MASTER_KEY: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+
+      - name: Start admin UI
+        run: |
+          cd packages/client/admin
+          bun run dev &
+          sleep 3
+
+      - name: Wait for servers
+        run: |
+          for i in $(seq 1 60); do
+            curl -sf http://localhost:3000/health && break
+            sleep 2
+          done
+          curl -sf http://localhost:3000/health || exit 1
+
+      - name: Install Playwright browsers
+        run: cd apps/e2e && npx playwright install --with-deps chromium
+
+      - name: Run E2E tests
+        run: cd apps/e2e && bun run test
+        env:
+          API_BASE_URL: http://localhost:3000
+          UI_BASE_URL: http://localhost:3001
+          TEMPLATE_NAME: drizzle-neon
+          CI: true
+
+      - name: Upload test results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-drizzle-neon-results
+          path: |
+            apps/e2e/test-results/
+            apps/e2e/playwright-report/
+          retention-days: 7
+
+  e2e-drizzle-supabase:
+    name: E2E — Drizzle/Supabase
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.2.2"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build packages
+        run: bun run build
+
+      - name: Start Supabase Docker stack
+        run: |
+          cd apps/examples/drizzle-supabase
+          docker compose -f docker/docker-compose.yml up -d
+          echo "Waiting for Supabase stack to be ready..."
+          for i in $(seq 1 90); do
+            docker exec drizzle-supabase-db pg_isready -U postgres 2>/dev/null && break
+            sleep 2
+          done
+          # Extra wait for GoTrue and Kong
+          sleep 15
+
+      - name: Start backend server
+        run: |
+          cd apps/examples/drizzle-supabase
+          bun run dev &
+          sleep 5
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
+          SUPABASE_URL: http://localhost:8000
+          SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0"
+          SUPABASE_SERVICE_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU"
+          JWT_SECRET: super-secret-jwt-token-with-at-least-32-characters-long
+          SUPABASE_STORAGE_BUCKET: media
+
+      - name: Start admin UI
+        run: |
+          cd packages/client/admin
+          bun run dev &
+          sleep 3
+
+      - name: Wait for servers
+        run: |
+          for i in $(seq 1 60); do
+            curl -sf http://localhost:3000/health && break
+            sleep 2
+          done
+          curl -sf http://localhost:3000/health || exit 1
+
+      - name: Install Playwright browsers
+        run: cd apps/e2e && npx playwright install --with-deps chromium
+
+      - name: Run E2E tests
+        run: cd apps/e2e && bun run test
+        env:
+          API_BASE_URL: http://localhost:3000
+          UI_BASE_URL: http://localhost:3001
+          TEMPLATE_NAME: drizzle-supabase
+          CI: true
+
+      - name: Upload test results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-drizzle-supabase-results
+          path: |
+            apps/e2e/test-results/
+            apps/e2e/playwright-report/
+          retention-days: 7
+
+      - name: Stop Supabase stack
+        if: always()
+        run: |
+          cd apps/examples/drizzle-supabase
+          docker compose -f docker/docker-compose.yml down

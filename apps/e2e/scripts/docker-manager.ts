@@ -8,7 +8,26 @@ import { $ } from 'bun'
 // @ts-expect-error - Bun-specific import.meta.dir
 const __dirname = import.meta.dir ?? dirname(fileURLToPath(import.meta.url))
 
-const examples = {
+interface ServiceHealthCheck {
+	/** Container name to check */
+	container: string
+	/** Shell command to run inside the container, or 'http' for HTTP check */
+	type: 'exec' | 'http'
+	/** For exec: command args. For http: URL to check. */
+	check: string
+}
+
+interface ExampleConfig {
+	composeFile: string
+	port: number
+	service: string
+	/** Additional services to health-check after the primary service */
+	additionalChecks?: ServiceHealthCheck[]
+	/** Max seconds to wait for all services */
+	maxAttempts?: number
+}
+
+const examples: Record<string, ExampleConfig> = {
 	mongoose: {
 		composeFile: resolve(
 			__dirname,
@@ -16,6 +35,19 @@ const examples = {
 		),
 		port: 27017,
 		service: 'mongodb',
+		additionalChecks: [
+			{
+				container: 'mongoose-vault',
+				type: 'exec',
+				check: 'vault status',
+			},
+			{
+				container: 'mongoose-mailpit',
+				type: 'http',
+				check: 'http://localhost:8025/api/v1/messages',
+			},
+		],
+		maxAttempts: 30,
 	},
 	'drizzle-neon': {
 		composeFile: resolve(
@@ -24,6 +56,19 @@ const examples = {
 		),
 		port: 5433,
 		service: 'postgres',
+		additionalChecks: [
+			{
+				container: 'drizzle-neon-minio',
+				type: 'http',
+				check: 'http://localhost:9000/minio/health/live',
+			},
+			{
+				container: 'drizzle-neon-mailpit',
+				type: 'http',
+				check: 'http://localhost:8025/api/v1/messages',
+			},
+		],
+		maxAttempts: 45,
 	},
 	'drizzle-supabase': {
 		composeFile: resolve(
@@ -32,8 +77,9 @@ const examples = {
 		),
 		port: 5432,
 		service: 'drizzle-supabase-db',
+		maxAttempts: 90,
 	},
-} as const
+}
 
 type ExampleName = keyof typeof examples
 
@@ -57,8 +103,40 @@ async function checkDockerCompose(): Promise<boolean> {
 	}
 }
 
+async function waitForService(
+	check: ServiceHealthCheck,
+	maxAttempts: number,
+): Promise<void> {
+	let attempts = 0
+	while (attempts < maxAttempts) {
+		try {
+			if (check.type === 'exec') {
+				await $`docker exec ${check.container} ${check.check}`.quiet()
+			} else {
+				const response = await fetch(check.check)
+				if (response.ok || response.status < 500) {
+					console.log(`  ✓ ${check.container} is ready`)
+					return
+				}
+			}
+			console.log(`  ✓ ${check.container} is ready`)
+			return
+		} catch {
+			attempts++
+			await new Promise((resolve) => setTimeout(resolve, 1000))
+		}
+	}
+	throw new Error(
+		`${check.container} did not become ready within ${maxAttempts} seconds`,
+	)
+}
+
 async function startTemplate(template: ExampleName): Promise<void> {
 	const config = examples[template]
+
+	if (!config) {
+		throw new Error(`Unknown example: ${template}`)
+	}
 
 	if (!existsSync(config.composeFile)) {
 		throw new Error(`Docker compose file not found: ${config.composeFile}`)
@@ -67,32 +145,25 @@ async function startTemplate(template: ExampleName): Promise<void> {
 	console.log(`Starting Docker containers for ${template}...`)
 	await $`docker compose -f ${config.composeFile} up -d`.quiet()
 
-	// Wait for service to be healthy
+	const maxAttempts = config.maxAttempts ?? 30
+
+	// Wait for primary database service
 	console.log(`Waiting for ${config.service} to be ready...`)
 	let attempts = 0
-	// PostgreSQL needs more time, especially for Supabase
-	const maxAttempts =
-		template === 'drizzle-supabase'
-			? 60
-			: template.includes('postgres') || template.includes('drizzle')
-				? 45
-				: 30
 
 	while (attempts < maxAttempts) {
 		try {
 			if (config.service === 'mongodb') {
-				// Check MongoDB
 				const containerName = `${template}-${config.service}`
 				await $`docker exec ${containerName} mongosh --eval "db.adminCommand('ping')"`.quiet()
-				console.log(`${template} MongoDB is ready!`)
-				return
+				console.log(`  ✓ ${template} MongoDB is ready!`)
+				break
 			}
 			if (
 				config.service === 'postgres' ||
 				config.service.includes('postgres') ||
 				config.service.includes('db')
 			) {
-				// Check PostgreSQL - use proper container name
 				let containerName = config.service
 				if (template === 'drizzle-supabase') {
 					containerName = 'drizzle-supabase-db'
@@ -102,8 +173,8 @@ async function startTemplate(template: ExampleName): Promise<void> {
 					containerName = `${template}-${config.service}`
 				}
 				await $`docker exec ${containerName} pg_isready -U postgres`.quiet()
-				console.log(`${template} PostgreSQL is ready!`)
-				return
+				console.log(`  ✓ ${template} PostgreSQL is ready!`)
+				break
 			}
 		} catch {
 			attempts++
@@ -111,15 +182,27 @@ async function startTemplate(template: ExampleName): Promise<void> {
 		}
 	}
 
-	throw new Error(
-		`${template} ${config.service} did not become ready within ${maxAttempts} seconds`,
-	)
+	if (attempts >= maxAttempts) {
+		throw new Error(
+			`${template} ${config.service} did not become ready within ${maxAttempts} seconds`,
+		)
+	}
+
+	// Wait for additional services
+	if (config.additionalChecks) {
+		for (const check of config.additionalChecks) {
+			console.log(`Waiting for ${check.container}...`)
+			await waitForService(check, maxAttempts)
+		}
+	}
+
+	console.log(`All Docker services for ${template} are ready!`)
 }
 
 async function stopTemplate(template: ExampleName): Promise<void> {
 	const config = examples[template]
 
-	if (!existsSync(config.composeFile)) {
+	if (!config || !existsSync(config.composeFile)) {
 		return
 	}
 
@@ -129,7 +212,7 @@ async function stopTemplate(template: ExampleName): Promise<void> {
 
 async function stopAllTemplates(): Promise<void> {
 	console.log('Stopping all example Docker containers...')
-	for (const template of Object.keys(examples) as ExampleName[]) {
+	for (const template of Object.keys(examples)) {
 		await stopTemplate(template).catch(() => {
 			// Ignore errors if containers aren't running
 		})

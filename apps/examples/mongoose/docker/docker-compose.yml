@@ -49,8 +49,21 @@ services:
       - |
         vault kv put secret/magnet/database uri=mongodb://mongodb:27017/cats-example
         vault kv put secret/magnet/jwt secret=development-secret-key
-        vault kv put secret/magnet/email host=localhost port=1025 fromAddress=noreply@localhost fromName="Magnet CMS"
+        vault kv put secret/magnet/email host=mailpit port=1025 fromAddress=noreply@magnet.local fromName="Magnet CMS"
         echo "Vault secrets seeded successfully"
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: mongoose-mailpit
+    restart: unless-stopped
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "--quiet", "http://localhost:8025/api/v1/messages"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   mongoose-data:

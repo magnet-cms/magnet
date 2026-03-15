@@ -19,6 +19,7 @@
     "@magnet-cms/adapter-db-mongoose": "workspace:*",
     "@magnet-cms/common": "workspace:*",
     "@magnet-cms/core": "workspace:*",
+    "@magnet-cms/email-nodemailer": "workspace:*",
     "@magnet-cms/plugin-content-builder": "workspace:*",
     "@nestjs/common": "^11.1.12",
     "@nestjs/config": "^4.0.0",

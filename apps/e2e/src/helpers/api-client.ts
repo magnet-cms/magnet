@@ -999,6 +999,44 @@ export class ApiClient {
 		})
 	}
 
+	// Vault endpoints
+	async getVaultStatus() {
+		return this.request.get(`${this.baseURL}/vault/status`, {
+			headers: this.getHeaders(),
+		})
+	}
+
+	async listVaultSecrets(prefix?: string) {
+		const query = prefix ? `?prefix=${encodeURIComponent(prefix)}` : ''
+		return this.request.get(`${this.baseURL}/vault/secrets${query}`, {
+			headers: this.getHeaders(),
+		})
+	}
+
+	async getVaultSecret(key: string) {
+		return this.request.get(
+			`${this.baseURL}/vault/secrets/${encodeURIComponent(key)}`,
+			{ headers: this.getHeaders() },
+		)
+	}
+
+	async setVaultSecret(key: string, data: Record<string, unknown>) {
+		return this.request.post(
+			`${this.baseURL}/vault/secrets/${encodeURIComponent(key)}`,
+			{
+				headers: this.getHeaders(),
+				data: { data },
+			},
+		)
+	}
+
+	async deleteVaultSecret(key: string) {
+		return this.request.delete(
+			`${this.baseURL}/vault/secrets/${encodeURIComponent(key)}`,
+			{ headers: this.getHeaders() },
+		)
+	}
+
 	// Playground (Content Builder plugin) endpoints
 	async listPlaygroundSchemas() {
 		return this.request.get(`${this.baseURL}/playground/schemas`, {

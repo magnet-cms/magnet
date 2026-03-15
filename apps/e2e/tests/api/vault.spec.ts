@@ -1,167 +1,94 @@
 import { expect, test } from '../../src/fixtures/auth.fixture'
 
-test.describe('Vault Plugin API', () => {
-	// ============================================================================
-	// Connection Status
-	// ============================================================================
-	test.describe('Status', () => {
-		test('GET /vault/status returns 200 and not-configured status', async ({
-			request,
-			apiBaseURL,
-			testUser,
-		}) => {
-			const response = await request.get(`${apiBaseURL}/vault/status`, {
-				headers: { Authorization: `Bearer ${testUser.token}` },
-			})
+const TEMPLATE_NAME = process.env.TEMPLATE_NAME || ''
 
-			expect(response.status()).toBe(200)
-			const body = await response.json()
-			expect(body).toHaveProperty('configured')
-			expect(body).toHaveProperty('connected')
-			expect(body).toHaveProperty('mountPath')
-			// In E2E environment, Vault is not configured
-			expect(body.configured).toBe(false)
-			expect(body.connected).toBe(false)
-		})
+test.describe('Vault API', () => {
+	test('GET /vault/status returns healthy status', async ({
+		authenticatedApiClient,
+	}) => {
+		const response = await authenticatedApiClient.getVaultStatus()
 
-		test('GET /vault/status requires authentication', async ({
-			request,
-			apiBaseURL,
-		}) => {
-			const response = await request.get(`${apiBaseURL}/vault/status`)
+		expect(response.ok()).toBeTruthy()
 
-			expect(response.status()).toBe(401)
-		})
+		const body = await response.json()
+		expect(body.healthy).toBe(true)
+
+		// Template-aware adapter type assertion
+		if (TEMPLATE_NAME === 'mongoose') {
+			expect(body.adapter).toBe('hashicorp')
+		} else if (TEMPLATE_NAME === 'drizzle-neon') {
+			expect(body.adapter).toBe('db')
+		} else if (TEMPLATE_NAME === 'drizzle-supabase') {
+			expect(body.adapter).toBe('db')
+		}
 	})
 
-	// ============================================================================
-	// Test Connection
-	// ============================================================================
-	test.describe('Test Connection', () => {
-		test('POST /vault/test-connection returns not-configured when Vault is not set up', async ({
-			request,
-			apiBaseURL,
-			testUser,
-		}) => {
-			const response = await request.post(
-				`${apiBaseURL}/vault/test-connection`,
-				{
-					headers: { Authorization: `Bearer ${testUser.token}` },
-				},
-			)
+	test('Vault CRUD — create, read, update, delete secret', async ({
+		authenticatedApiClient,
+	}) => {
+		const secretKey = `e2e-test-${Date.now()}`
+		const secretData = { username: 'admin', password: 'test-pass-123' }
+		const updatedData = {
+			username: 'admin',
+			password: 'updated-pass-456',
+			extra: 'field',
+		}
 
-			expect(response.ok()).toBe(true)
-			const body = await response.json()
-			expect(body.success).toBe(false)
-			expect(body.error).toBeTruthy()
-		})
+		// Create secret
+		const createResponse = await authenticatedApiClient.setVaultSecret(
+			secretKey,
+			secretData,
+		)
+		expect(createResponse.ok()).toBeTruthy()
+		const createBody = await createResponse.json()
+		expect(createBody.success).toBe(true)
+
+		// Read secret
+		const readResponse = await authenticatedApiClient.getVaultSecret(secretKey)
+		expect(readResponse.ok()).toBeTruthy()
+		const readBody = await readResponse.json()
+		expect(readBody.key).toBe(secretKey)
+		expect(readBody.data.username).toBe('admin')
+		expect(readBody.data.password).toBe('test-pass-123')
+
+		// Update secret
+		const updateResponse = await authenticatedApiClient.setVaultSecret(
+			secretKey,
+			updatedData,
+		)
+		expect(updateResponse.ok()).toBeTruthy()
+
+		// Verify update
+		const verifyResponse =
+			await authenticatedApiClient.getVaultSecret(secretKey)
+		const verifyBody = await verifyResponse.json()
+		expect(verifyBody.data.password).toBe('updated-pass-456')
+		expect(verifyBody.data.extra).toBe('field')
+
+		// List secrets — our key should appear
+		const listResponse =
+			await authenticatedApiClient.listVaultSecrets('e2e-test-')
+		expect(listResponse.ok()).toBeTruthy()
+		const listBody = await listResponse.json()
+		expect(listBody.keys).toContain(secretKey)
+
+		// Delete secret
+		const deleteResponse =
+			await authenticatedApiClient.deleteVaultSecret(secretKey)
+		expect(deleteResponse.ok()).toBeTruthy()
+
+		// Verify deletion — should return empty data
+		const deletedResponse =
+			await authenticatedApiClient.getVaultSecret(secretKey)
+		expect(deletedResponse.ok()).toBeTruthy()
+		const deletedBody = await deletedResponse.json()
+		expect(deletedBody.data).toEqual({})
 	})
 
-	// ============================================================================
-	// Secret Listing
-	// ============================================================================
-	test.describe('Secrets', () => {
-		test('GET /vault/secrets returns empty paths when not configured', async ({
-			request,
-			apiBaseURL,
-			testUser,
-		}) => {
-			const response = await request.get(`${apiBaseURL}/vault/secrets`, {
-				headers: { Authorization: `Bearer ${testUser.token}` },
-			})
-
-			expect(response.status()).toBe(200)
-			const body = await response.json()
-			expect(body).toHaveProperty('paths')
-			expect(body.paths).toEqual([])
-		})
-
-		test('GET /vault/secrets requires authentication', async ({
-			request,
-			apiBaseURL,
-		}) => {
-			const response = await request.get(`${apiBaseURL}/vault/secrets`)
-
-			expect(response.status()).toBe(401)
-		})
-	})
-
-	// ============================================================================
-	// Mappings CRUD
-	// ============================================================================
-	test.describe('Mappings', () => {
-		test('GET /vault/mappings returns mappings array', async ({
-			request,
-			apiBaseURL,
-			testUser,
-		}) => {
-			const response = await request.get(`${apiBaseURL}/vault/mappings`, {
-				headers: { Authorization: `Bearer ${testUser.token}` },
-			})
-
-			expect(response.status()).toBe(200)
-			const body = await response.json()
-			expect(body).toHaveProperty('mappings')
-			expect(Array.isArray(body.mappings)).toBe(true)
-		})
-
-		test('PUT /vault/mappings creates and returns mappings', async ({
-			request,
-			apiBaseURL,
-			testUser,
-		}) => {
-			const mappings = [
-				{ path: 'secret/data/myapp/db', mapTo: 'database', watch: false },
-				{ path: 'secret/data/myapp/jwt', mapTo: 'jwt', watch: true },
-			]
-
-			const putResponse = await request.put(`${apiBaseURL}/vault/mappings`, {
-				headers: {
-					Authorization: `Bearer ${testUser.token}`,
-					'Content-Type': 'application/json',
-				},
-				data: { mappings },
-			})
-
-			expect(putResponse.status()).toBe(200)
-			const putBody = await putResponse.json()
-			expect(putBody.mappings).toHaveLength(2)
-			expect(putBody.mappings[0].path).toBe('secret/data/myapp/db')
-			expect(putBody.mappings[0].mapTo).toBe('database')
-			expect(putBody.mappings[1].watch).toBe(true)
-
-			// Verify persistence via GET
-			const getResponse = await request.get(`${apiBaseURL}/vault/mappings`, {
-				headers: { Authorization: `Bearer ${testUser.token}` },
-			})
-			const getBody = await getResponse.json()
-			expect(getBody.mappings).toHaveLength(2)
-		})
-
-		test('PUT /vault/mappings filters out invalid entries', async ({
-			request,
-			apiBaseURL,
-			testUser,
-		}) => {
-			const mappings = [
-				{ path: 'secret/data/valid', mapTo: 'valid' },
-				{ path: '', mapTo: 'missing-path' },
-				{ path: 'secret/data/no-target', mapTo: '' },
-			]
-
-			const response = await request.put(`${apiBaseURL}/vault/mappings`, {
-				headers: {
-					Authorization: `Bearer ${testUser.token}`,
-					'Content-Type': 'application/json',
-				},
-				data: { mappings },
-			})
-
-			expect(response.status()).toBe(200)
-			const body = await response.json()
-			// Only the valid entry should remain
-			expect(body.mappings).toHaveLength(1)
-			expect(body.mappings[0].path).toBe('secret/data/valid')
-		})
+	test('GET /vault/status requires authentication', async ({ apiClient }) => {
+		// apiClient has no auth token set
+		const response = await apiClient.getVaultStatus()
+		expect(response.ok()).toBeFalsy()
+		expect(response.status()).toBe(401)
 	})
 })

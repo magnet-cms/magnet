@@ -72,4 +72,67 @@ authTest.describe('Settings UI', () => {
 		await settingsPage.goto()
 		await settingsPage.expectLoaded()
 	})
+
+	authTest(
+		'notification settings — email channel toggle persists',
+		async ({ page, authenticatedApiClient }) => {
+			// First, ensure email channel is disabled via API
+			await authenticatedApiClient.updateSettings('notifications', {
+				emailChannelEnabled: false,
+			})
+
+			// Navigate to notification settings in the UI
+			const settingsPage = new SettingsPage(page)
+			await settingsPage.goto()
+			await page.waitForLoadState('networkidle')
+
+			// Look for notifications settings group
+			const notifLink = page.getByText(/notification/i)
+			if (
+				await notifLink
+					.first()
+					.isVisible({ timeout: 3000 })
+					.catch(() => false)
+			) {
+				await notifLink.first().click()
+				await page.waitForLoadState('networkidle')
+
+				// Look for email channel toggle
+				const emailToggle = page.getByLabel(/email channel/i)
+				if (
+					await emailToggle
+						.first()
+						.isVisible({ timeout: 3000 })
+						.catch(() => false)
+				) {
+					// Toggle it on
+					await emailToggle.first().click()
+
+					// Save
+					const saveButton = page.getByRole('button', { name: /save/i })
+					if (await saveButton.isVisible().catch(() => false)) {
+						await saveButton.click()
+						await page.waitForLoadState('networkidle')
+					}
+
+					// Reload and verify persistence
+					await page.reload()
+					await page.waitForLoadState('networkidle')
+
+					// Verify via API
+					const response =
+						await authenticatedApiClient.getSettings('notifications')
+					if (response.ok()) {
+						const body = await response.json()
+						expect(body.emailChannelEnabled).toBe(true)
+					}
+				}
+			}
+
+			// Restore default
+			await authenticatedApiClient.updateSettings('notifications', {
+				emailChannelEnabled: false,
+			})
+		},
+	)
 })

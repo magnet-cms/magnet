@@ -7,6 +7,23 @@ import { MedicalRecordsModule } from './modules/medical-records/medical-records.
 import { OwnersModule } from './modules/owners/owners.module'
 import { VeterinariansModule } from './modules/veterinarians/veterinarians.module'
 
+/**
+ * Example application using Magnet CMS with MongoDB (Mongoose).
+ *
+ * This demonstrates:
+ * - Mongoose database adapter
+ * - JWT authentication (built-in)
+ * - Local file storage
+ * - HashiCorp Vault for secrets management
+ * - Nodemailer email adapter (MailPit for dev)
+ * - Content Builder plugin
+ * - Admin UI serving
+ *
+ * To run this example:
+ * 1. Copy .env.example to .env
+ * 2. Run: bun run docker:up
+ * 3. Run: bun run dev
+ */
 @Module({
 	imports: [
 		ConfigModule.forRoot({ isGlobal: true }),
@@ -19,9 +36,31 @@ import { VeterinariansModule } from './modules/veterinarians/veterinarians.modul
 				secret: process.env.JWT_SECRET || 'development-secret-key',
 			},
 			admin: true,
-			// Vault is now a core module — always enabled with the built-in DB adapter.
-			// Set VAULT_MASTER_KEY env var to enable encrypted secret storage.
-			vault: { adapter: 'db' },
+			storage: {
+				adapter: 'local',
+				local: {
+					uploadDir: './uploads',
+					publicPath: '/media',
+				},
+			},
+			vault: {
+				adapter: 'hashicorp',
+				hashicorp: {
+					url: process.env.VAULT_ADDR || 'http://localhost:8200',
+				},
+			},
+			email: {
+				adapter: 'nodemailer',
+				nodemailer: {
+					host: process.env.SMTP_HOST || 'localhost',
+					port: Number(process.env.SMTP_PORT || 1025),
+					secure: false,
+					auth: { user: '', pass: '' },
+				},
+				defaults: {
+					from: process.env.EMAIL_FROM || 'noreply@magnet.local',
+				},
+			},
 			plugins: [{ plugin: ContentBuilderPlugin }],
 		}),
 		CatsModule,

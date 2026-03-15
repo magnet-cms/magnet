@@ -18,8 +18,10 @@
   "dependencies": {
     "@magnet-cms/adapter-auth-supabase": "workspace:*",
     "@magnet-cms/adapter-db-drizzle": "workspace:*",
+    "@magnet-cms/adapter-storage-supabase": "workspace:*",
     "@magnet-cms/common": "workspace:*",
     "@magnet-cms/core": "workspace:*",
+    "@magnet-cms/plugin-content-builder": "workspace:*",
     "@nestjs/common": "^11.1.12",
     "@nestjs/config": "^4.0.0",
     "@nestjs/core": "^11.1.12",
