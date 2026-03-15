@@ -65,12 +65,13 @@ export class DashboardPage {
 	async navigateToAccount() {
 		await this.userMenuButton.click()
 		await this.accountMenuItem.click()
-		await this.page.waitForURL('**/account**')
+		await this.page.waitForURL(/settings\/profile|account/, { timeout: 5000 })
 	}
 
 	async navigateToHome() {
 		await this.page.getByRole('link', { name: /home|dashboard/i }).click()
-		await this.page.waitForURL(/^\/$|\/dashboard/)
+		// Admin app is mounted at /admin; dashboard home is /admin or /admin/
+		await this.page.waitForURL(/\/admin\/?$/)
 	}
 
 	async expectUserMenuVisible() {

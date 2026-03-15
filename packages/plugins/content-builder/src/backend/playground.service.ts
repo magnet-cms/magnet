@@ -38,9 +38,15 @@ export class PlaygroundService {
 	) {}
 
 	/**
-	 * Get the modules directory path from options or use default
+	 * Get the modules directory path from options or use default.
+	 * When MAGNET_PLAYGROUND_MODULES_PATH is set (e.g. for e2e), use it so
+	 * generated modules are not written into the app's src/modules.
 	 */
 	private getModulesDir(): string {
+		const envPath = process.env.MAGNET_PLAYGROUND_MODULES_PATH
+		if (envPath?.trim()) {
+			return path.resolve(envPath.trim())
+		}
 		// Check plugin-specific options first
 		if (this.pluginOptions?.modulesPath) {
 			return this.pluginOptions.modulesPath
@@ -341,20 +347,16 @@ export class PlaygroundService {
 	}
 
 	/**
-	 * Delete a schema file (not the whole module)
+	 * Delete a schema and its entire module directory (controller, service, dto, etc.)
 	 */
 	async deleteSchema(name: string): Promise<boolean> {
 		const modulesDir = this.getModulesDir()
 		const lowerName = name.toLowerCase()
+		const moduleDir = path.join(modulesDir, lowerName)
 
-		const schemaFile = path.join(
-			modulesDir,
-			lowerName,
-			`${lowerName}.schema.ts`,
-		)
+		const schemaFile = path.join(moduleDir, `${lowerName}.schema.ts`)
 		const schemaFileAlt = path.join(
-			modulesDir,
-			lowerName,
+			moduleDir,
 			'schemas',
 			`${lowerName}.schema.ts`,
 		)
@@ -369,8 +371,11 @@ export class PlaygroundService {
 			return false
 		}
 
-		fs.unlinkSync(filePath)
-		this.logger.log(`Schema deleted: ${filePath}`)
+		// Remove the entire module directory so no generated files remain
+		if (fs.existsSync(moduleDir)) {
+			fs.rmSync(moduleDir, { recursive: true })
+			this.logger.log(`Module deleted: ${moduleDir}`)
+		}
 		return true
 	}
 

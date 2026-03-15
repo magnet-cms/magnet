@@ -15,12 +15,12 @@ export class SettingsPage {
 	}
 
 	async goto() {
-		await this.page.goto('settings')
+		await this.page.goto('/admin/settings')
 		await this.expectLoaded()
 	}
 
 	async gotoGroup(groupName: string) {
-		await this.page.goto(`/settings/${groupName}`)
+		await this.page.goto(`/admin/settings/${groupName}`)
 		await this.expectGroupLoaded()
 	}
 

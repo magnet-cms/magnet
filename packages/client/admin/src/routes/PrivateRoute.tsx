@@ -7,7 +7,7 @@ type PrivateRouteProps = {
 }
 
 export const PrivateRoute: React.FC<PrivateRouteProps> = ({
-	redirectTo = '/login',
+	redirectTo = '/auth',
 }) => {
 	const { isAuthenticated, isLoading } = useAuth()
 	const { data: status, isLoading: isStatusLoading } = useStatus()

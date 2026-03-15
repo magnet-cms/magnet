@@ -19,15 +19,15 @@ export class ContentManagerPage {
 	}
 
 	async goto() {
-		await this.page.goto('/content-manager')
+		await this.page.goto('/admin/content-manager')
 	}
 
 	async gotoSchema(schemaName: string) {
-		await this.page.goto(`/content-manager/${schemaName}`)
+		await this.page.goto(`/admin/content-manager/${schemaName}`)
 	}
 
 	async gotoItem(schemaName: string, itemId: string) {
-		await this.page.goto(`/content-manager/${schemaName}/${itemId}`)
+		await this.page.goto(`/admin/content-manager/${schemaName}/${itemId}`)
 	}
 
 	async selectSchema(schemaName: string) {

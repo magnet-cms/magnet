@@ -3,43 +3,71 @@ import {
 	Controller,
 	Delete,
 	Get,
+	NotFoundException,
 	Param,
 	Post,
 	Put,
 	Query,
+	UseGuards,
 } from '@nestjs/common'
 import { RestrictedRoute } from '~/decorators/restricted.route'
+import { DynamicAuthGuard } from '~/modules/auth/guards/dynamic-auth.guard'
 import type { VersionDiff } from './dto/version-diff.dto'
 import { HistoryService } from './history.service'
 import { History } from './schemas/history.schema'
 
 @Controller('history')
 @RestrictedRoute()
+@UseGuards(DynamicAuthGuard)
 export class HistoryController {
 	constructor(private readonly historyService: HistoryService) {}
+
+	private mapVersion(
+		version: History,
+	): History & { collection: string; version: number } {
+		return {
+			...version,
+			collection: version.schemaName,
+			version: version.versionNumber,
+		}
+	}
 
 	@Get('versions/:documentId')
 	async getVersions(
 		@Param('documentId') documentId: string,
 		@Query('collection') collection: string,
-	): Promise<History[]> {
-		return this.historyService.findVersions(documentId, collection)
+	): Promise<(History & { collection: string; version: number })[]> {
+		const versions = await this.historyService.findVersions(
+			documentId,
+			collection,
+		)
+		return versions.map((v) => this.mapVersion(v))
 	}
 
 	@Get('versions/:documentId/latest')
 	async getLatestVersion(
 		@Param('documentId') documentId: string,
 		@Query('collection') collection: string,
+		@Query('locale') locale?: string,
 		@Query('status') status: 'draft' | 'published' | 'archived' = 'published',
-	): Promise<History | null> {
-		return this.historyService.findLatestVersion(documentId, collection, status)
+	): Promise<(History & { collection: string; version: number }) | null> {
+		const version = await this.historyService.findLatestVersion(
+			documentId,
+			collection,
+			status,
+		)
+		return version ? this.mapVersion(version) : null
 	}
 
 	@Get('version/:versionId')
 	async getVersionById(
 		@Param('versionId') versionId: string,
-	): Promise<History | null> {
-		return this.historyService.findVersionById(versionId)
+	): Promise<(History & { collection: string; version: number }) | null> {
+		const version = await this.historyService.findVersionById(versionId)
+		if (!version) {
+			throw new NotFoundException('Version not found')
+		}
+		return this.mapVersion(version)
 	}
 
 	@Post('version')
@@ -60,8 +88,8 @@ export class HistoryController {
 			createdBy?: string
 			notes?: string
 		},
-	): Promise<History> {
-		return this.historyService.createVersion(
+	): Promise<History & { collection: string; version: number }> {
+		const version = await this.historyService.createVersion(
 			documentId,
 			collection,
 			data,
@@ -69,6 +97,7 @@ export class HistoryController {
 			createdBy,
 			notes,
 		)
+		return this.mapVersion(version)
 	}
 
 	@Put('version/:versionId/publish')

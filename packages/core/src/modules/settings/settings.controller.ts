@@ -6,6 +6,7 @@ import {
 	Get,
 	HttpException,
 	HttpStatus,
+	NotFoundException,
 	Param,
 	Put,
 } from '@nestjs/common'
@@ -21,11 +22,19 @@ export class SettingsController {
 	}
 
 	/**
-	 * Get all settings for a group as an array
+	 * Get all settings for a group as a flat key-value object.
+	 * Returns 404 if no settings found for the group.
 	 */
 	@Get(':group')
 	async getSettings(@Param('group') group: string) {
-		return this.settingsService.getSettingsByGroup(group)
+		const settings = await this.settingsService.getSettingsByGroup(group)
+		if (settings.length === 0) {
+			throw new NotFoundException(`No settings found for group: ${group}`)
+		}
+		return settings.reduce<Record<string, unknown>>((acc, s) => {
+			acc[s.key] = s.value
+			return acc
+		}, {})
 	}
 
 	@Get(':group/:key')
@@ -45,7 +54,7 @@ export class SettingsController {
 
 	@Put(':group')
 	async updateSettingsByGroup(
-		@Param('group') _group: string,
+		@Param('group') group: string,
 		@Body() data: SettingsRecord,
 	) {
 		try {
@@ -56,7 +65,11 @@ export class SettingsController {
 				string,
 				SettingValue,
 			][]) {
-				const updated = await this.settingsService.updateSetting(key, value)
+				const updated = await this.settingsService.updateSetting(
+					key,
+					value,
+					group,
+				)
 				if (updated) {
 					results[key] = updated.value
 				}

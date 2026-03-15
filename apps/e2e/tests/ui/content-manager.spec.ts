@@ -7,7 +7,7 @@ authTest.describe('Content Manager', () => {
 		const loginPage = new LoginPage(page)
 		await loginPage.goto()
 		await loginPage.login(testUser.email, testUser.password)
-		await page.waitForURL(/\/admin/, { timeout: 10000 })
+		await page.waitForURL(/\/admin\/(?!auth)/, { timeout: 10000 })
 	})
 
 	// ==========================================
@@ -15,7 +15,7 @@ authTest.describe('Content Manager', () => {
 	// ==========================================
 	authTest.describe('Navigation', () => {
 		authTest('should list available schemas in sidebar', async ({ page }) => {
-			await page.goto('/content-manager/veterinarian')
+			await page.goto('/admin/content-manager/veterinarian')
 			await page.waitForLoadState('networkidle')
 
 			// Expand Content Manager if collapsed
@@ -29,7 +29,7 @@ authTest.describe('Content Manager', () => {
 				}
 			}
 
-			const schemaLinks = page.locator('a[href*="/content-manager/"]')
+			const schemaLinks = page.locator('a[href*="/admin/content-manager/"]')
 			await expect(schemaLinks.first()).toBeVisible({ timeout: 5000 })
 
 			const schemaCount = await schemaLinks.count()
@@ -37,19 +37,19 @@ authTest.describe('Content Manager', () => {
 		})
 
 		authTest('should navigate between different schemas', async ({ page }) => {
-			await page.goto('/content-manager/veterinarian')
+			await page.goto('/admin/content-manager/veterinarian')
 			await page.waitForLoadState('networkidle')
 			await expect(
 				page.getByRole('heading', { name: /veterinarian/i }),
 			).toBeVisible({ timeout: 5000 })
 
-			await page.goto('/content-manager/owner')
+			await page.goto('/admin/content-manager/owner')
 			await page.waitForLoadState('networkidle')
 			await expect(page.getByRole('heading', { name: /owner/i })).toBeVisible({
 				timeout: 5000,
 			})
 
-			await page.goto('/content-manager/cat')
+			await page.goto('/admin/content-manager/cat')
 			await page.waitForLoadState('networkidle')
 			await expect(page.getByRole('heading', { name: /cat/i })).toBeVisible({
 				timeout: 5000,
@@ -59,7 +59,7 @@ authTest.describe('Content Manager', () => {
 		authTest(
 			'should display table with correct structure',
 			async ({ page }) => {
-				await page.goto('/content-manager/veterinarian')
+				await page.goto('/admin/content-manager/veterinarian')
 				await page.waitForLoadState('networkidle')
 
 				const table = page.getByRole('table')
@@ -93,7 +93,7 @@ authTest.describe('Content Manager', () => {
 
 				cleanup.trackContent(authenticatedApiClient, 'veterinarian', documentId)
 
-				await page.goto(`/content-manager/veterinarian/${documentId}`)
+				await page.goto(`/admin/content-manager/veterinarian/${documentId}`)
 				await page.waitForLoadState('networkidle')
 
 				await expect(
@@ -121,7 +121,7 @@ authTest.describe('Content Manager', () => {
 					created.documentId as string,
 				)
 
-				await page.goto('/content-manager/veterinarian')
+				await page.goto('/admin/content-manager/veterinarian')
 				await page.waitForLoadState('networkidle')
 
 				const dataRows = page.locator('tbody tr')
@@ -161,7 +161,7 @@ authTest.describe('Content Manager', () => {
 
 				cleanup.trackContent(authenticatedApiClient, 'owner', documentId)
 
-				await page.goto(`/content-manager/owner/${documentId}`)
+				await page.goto(`/admin/content-manager/owner/${documentId}`)
 				await page.waitForLoadState('networkidle')
 
 				await expect(page.getByRole('heading', { name: /owner/i })).toBeVisible(
@@ -193,7 +193,9 @@ authTest.describe('Content Manager', () => {
 					created.documentId as string,
 				)
 
-				await page.goto(`/content-manager/veterinarian/${created.documentId}`)
+				await page.goto(
+					`/admin/content-manager/veterinarian/${created.documentId}`,
+				)
 				await page.waitForLoadState('networkidle')
 
 				const editTab = page.getByRole('tab', { name: /^edit$/i })
@@ -223,7 +225,7 @@ authTest.describe('Content Manager', () => {
 				const docId = created.documentId as string
 				cleanup.trackContent(authenticatedApiClient, 'veterinarian', docId)
 
-				await page.goto(`/content-manager/veterinarian/${docId}`)
+				await page.goto(`/admin/content-manager/veterinarian/${docId}`)
 				await page.waitForLoadState('networkidle')
 
 				const publishButton = page.getByRole('button', { name: /publish/i })
@@ -243,7 +245,7 @@ authTest.describe('Content Manager', () => {
 				const docId = created.documentId as string
 				cleanup.trackContent(authenticatedApiClient, 'veterinarian', docId)
 
-				await page.goto(`/content-manager/veterinarian/${docId}`)
+				await page.goto(`/admin/content-manager/veterinarian/${docId}`)
 				await page.waitForLoadState('networkidle')
 
 				const publishButton = page.getByRole('button', { name: /publish/i })
@@ -267,7 +269,7 @@ authTest.describe('Content Manager', () => {
 				const docId = created.documentId as string
 				cleanup.trackContent(authenticatedApiClient, 'veterinarian', docId)
 
-				await page.goto(`/content-manager/veterinarian/${docId}/versions`)
+				await page.goto(`/admin/content-manager/veterinarian/${docId}/versions`)
 				await page.waitForLoadState('networkidle')
 
 				await expect(page.getByText(/version history/i)).toBeVisible({
@@ -296,7 +298,7 @@ authTest.describe('Content Manager', () => {
 					created.documentId as string,
 				)
 
-				await page.goto('/content-manager/veterinarian')
+				await page.goto('/admin/content-manager/veterinarian')
 				await page.waitForLoadState('networkidle')
 
 				const dataRows = page.locator('tbody tr')

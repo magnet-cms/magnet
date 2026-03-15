@@ -31,7 +31,7 @@ export class AccountPage {
 	}
 
 	async goto() {
-		await this.page.goto('account')
+		await this.page.goto('/admin/settings/profile')
 		await this.expectLoaded()
 	}
 

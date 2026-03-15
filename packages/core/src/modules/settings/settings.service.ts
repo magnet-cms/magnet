@@ -173,22 +173,31 @@ export class SettingsService implements OnApplicationBootstrap {
 	async updateSetting(
 		key: string,
 		value: SettingValue,
+		group?: string,
 	): Promise<Setting | null> {
-		const setting = await this.getSetting(key)
+		// Find setting scoped to group when provided, else fall back to key-only
+		const resolvedGroup = group ? this.resolveGroup(group) : undefined
+		const setting = resolvedGroup
+			? await this.getSettingsByGroupAndKey(resolvedGroup, key)
+			: await this.getSetting(key)
+
 		if (!setting) {
 			throw new Error(`Setting with key "${key}" not found`)
 		}
 
 		// Validate the setting value against the registered schema
-		const [group] = this.findGroupByKey(key)
-		if (group) {
-			const schema = this.registeredSchemas.get(group)
+		const schemaGroup = resolvedGroup ?? this.findGroupByKey(key)[0]
+		if (schemaGroup) {
+			const schema = this.registeredSchemas.get(schemaGroup)
 			if (schema) {
 				await this.validateSettingValue(key, value, schema)
 			}
 		}
 
-		return this.settingModel.update({ key }, { value })
+		const filter = resolvedGroup
+			? ({ key, group: resolvedGroup } as Partial<Setting>)
+			: ({ key } as Partial<Setting>)
+		return this.settingModel.update(filter, { value })
 	}
 
 	private findGroupByKey(key: string): [string, Setting] | [] {
@@ -249,23 +258,22 @@ export class SettingsService implements OnApplicationBootstrap {
 		settings: SchemaSetting[],
 	): Promise<void> {
 		for (const setting of settings) {
+			// Search by both key AND group to avoid cross-group collisions
 			const existingSetting = await this.settingModel.findOne({
 				key: setting.key,
+				group,
 			})
 
 			if (existingSetting) {
-				// Only update type/group if changed, but preserve user's value
-				if (
-					existingSetting.type !== setting.type ||
-					existingSetting.group !== group
-				) {
+				// Only update type if changed, but preserve user's value
+				if (existingSetting.type !== setting.type) {
 					await this.settingModel.update(
-						{ key: setting.key },
-						{ type: setting.type, group },
+						{ key: setting.key, group } as Partial<Setting>,
+						{ type: setting.type } as Partial<Setting>,
 					)
 				}
 			} else {
-				// Only create with default value if setting doesn't exist
+				// Only create with default value if setting doesn't exist in this group
 				await this.settingModel.create({ group, ...setting })
 			}
 		}

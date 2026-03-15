@@ -7,7 +7,7 @@ authTest.describe('Settings UI', () => {
 		const loginPage = new LoginPage(page)
 		await loginPage.goto()
 		await loginPage.login(testUser.email, testUser.password)
-		await page.waitForURL(/\/admin/, { timeout: 10000 })
+		await page.waitForURL(/\/admin\/(?!auth)/, { timeout: 10000 })
 	})
 
 	authTest('can navigate to settings', async ({ page }) => {

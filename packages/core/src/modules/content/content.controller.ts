@@ -390,7 +390,14 @@ export class ContentController {
 		@Param('documentId') documentId: string,
 	) {
 		try {
-			return await this.contentService.getLocaleStatuses(schema, documentId)
+			const statuses = await this.contentService.getLocaleStatuses(
+				schema,
+				documentId,
+			)
+			return Object.entries(statuses).map(([locale, status]) => ({
+				locale,
+				...status,
+			}))
 		} catch (error) {
 			throw new HttpException(
 				error instanceof Error

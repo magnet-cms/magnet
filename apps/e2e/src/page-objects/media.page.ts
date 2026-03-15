@@ -31,7 +31,7 @@ export class MediaPage {
 	}
 
 	async goto() {
-		await this.page.goto('media')
+		await this.page.goto('/admin/media-library')
 	}
 
 	async expectLoaded() {

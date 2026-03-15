@@ -45,7 +45,8 @@ authTest.describe('Dashboard UI', () => {
 		await dashboard.goto()
 		await dashboard.navigateToAccount()
 
-		await expect(page).toHaveURL(/account/)
+		// Account menu links to /settings/profile
+		await expect(page).toHaveURL(/settings\/profile/)
 	})
 
 	authTest('sidebar navigation is visible', async ({ page }) => {

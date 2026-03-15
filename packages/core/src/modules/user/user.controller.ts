@@ -13,6 +13,7 @@ import {
 import { RestrictedRoute } from '~/decorators/restricted.route'
 import { DynamicAuthGuard } from '~/modules/auth/guards/dynamic-auth.guard'
 import { CreateUserDto } from './dto/create-user.dto'
+import { UpdateUserDto } from './dto/update-user.dto'
 import { User } from './schemas/user.schema'
 import { UserService } from './user.service'
 
@@ -46,7 +47,7 @@ export class UserController {
 	@Resolve(() => Boolean)
 	async update(
 		@Param('id') id: string,
-		@Body() updateUserDto: CreateUserDto,
+		@Body() updateUserDto: UpdateUserDto,
 	): Promise<boolean> {
 		const result = await this.userService.update(id, updateUserDto)
 		return !!result

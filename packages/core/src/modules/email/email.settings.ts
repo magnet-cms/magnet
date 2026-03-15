@@ -65,4 +65,13 @@ export class EmailSettings {
 		order: 3,
 	})
 	replyTo = ''
+
+	@SettingField.Text({
+		label: 'Application URL',
+		description: 'Base URL of the application (used in email links)',
+		default: '',
+		section: 'general',
+		order: 2,
+	})
+	appUrl = ''
 }

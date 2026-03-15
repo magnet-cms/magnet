@@ -1,4 +1,4 @@
-import { expect, test } from '../../src/fixtures/base.fixture'
+import { expect, test } from '../../src/fixtures/auth.fixture'
 import { testData } from '../../src/helpers/test-data'
 
 test.describe('RBAC API', () => {
@@ -198,31 +198,35 @@ test.describe('RBAC API', () => {
 		})
 
 		test('PUT /rbac/roles/:id/permissions updates role permissions', async ({
-			apiClient,
+			authenticatedApiClient,
 		}) => {
-			const status = await apiClient.getAuthStatus()
-			test.skip(status.requiresSetup === true, 'Setup required first')
+			// Get available permissions first to use valid ones
+			const permRes = await authenticatedApiClient.getPermissions()
+			const permData = await permRes.json()
+			const allPerms: string[] = Array.isArray(permData)
+				? (permData as { id: string }[]).map((p) => p.id)
+				: Object.values(permData as Record<string, { id: string }[]>)
+						.flat()
+						.map((p) => p.id)
 
-			const userData = testData.user.create()
-			const auth = await apiClient.register(userData)
-			apiClient.setToken(auth.access_token)
+			// Use first available permissions (or wildcard)
+			const basePerms =
+				allPerms.slice(0, 2).length > 0 ? allPerms.slice(0, 2) : ['*']
+			const newPermissions =
+				allPerms.slice(0, 3).length > 0 ? allPerms.slice(0, 3) : ['*']
 
 			// Create a role
 			const roleData = {
 				name: `perm-test-${Date.now()}`,
 				displayName: 'Permission Test Role',
-				permissions: ['content.cats.find'],
+				permissions: basePerms,
 			}
-			const createResponse = await apiClient.createRole(roleData)
+			const createResponse = await authenticatedApiClient.createRole(roleData)
+			expect(createResponse.ok()).toBeTruthy()
 			const createdRole = await createResponse.json()
 
 			// Update permissions
-			const newPermissions = [
-				'content.cats.find',
-				'content.cats.create',
-				'content.cats.update',
-			]
-			const updateResponse = await apiClient.updateRolePermissions(
+			const updateResponse = await authenticatedApiClient.updateRolePermissions(
 				createdRole.id,
 				newPermissions,
 			)
@@ -232,7 +236,7 @@ test.describe('RBAC API', () => {
 			expect(updatedRole.permissions).toEqual(newPermissions)
 
 			// Cleanup
-			await apiClient.deleteRole(createdRole.id)
+			await authenticatedApiClient.deleteRole(createdRole.id)
 		})
 	})
 

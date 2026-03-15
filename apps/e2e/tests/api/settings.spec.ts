@@ -20,13 +20,15 @@ test.describe('Settings API', () => {
 			expect(response.ok()).toBeTruthy()
 
 			const settings = await response.json()
-			expect(Array.isArray(settings)).toBe(true)
-			expect(settings.length).toBeGreaterThan(0)
+			// Settings may be returned as flat object {key: value} or array [{key, value}]
+			const isArray = Array.isArray(settings)
+			const isObject = typeof settings === 'object' && settings !== null
+			expect(isArray || isObject).toBe(true)
 
-			// Each item should have key and value fields
-			const firstSetting = settings[0]
-			expect(firstSetting).toHaveProperty('key')
-			expect(firstSetting).toHaveProperty('value')
+			const keys = isArray
+				? (settings as { key: string }[]).map((s) => s.key)
+				: Object.keys(settings as Record<string, unknown>)
+			expect(keys.length).toBeGreaterThan(0)
 		})
 
 		test('GET /settings/auth includes known auth setting keys', async ({
@@ -35,7 +37,9 @@ test.describe('Settings API', () => {
 			const response = await authenticatedApiClient.getSettings('auth')
 			const settings = await response.json()
 
-			const keys = settings.map((s: { key: string }) => s.key)
+			const keys = Array.isArray(settings)
+				? (settings as { key: string }[]).map((s) => s.key)
+				: Object.keys(settings as Record<string, unknown>)
 			// These keys come from AuthSettings schema
 			expect(keys).toContain('minPasswordLength')
 			expect(keys).toContain('requireUppercase')
@@ -142,9 +146,15 @@ test.describe('Settings API', () => {
 			const response = await authenticatedApiClient.getSettings('auth')
 			const settings = await response.json()
 
-			const byKey = Object.fromEntries(
-				settings.map((s: { key: string; value: unknown }) => [s.key, s.value]),
-			)
+			// Settings may be returned as flat object {key: value} or array [{key, value}]
+			const byKey = Array.isArray(settings)
+				? Object.fromEntries(
+						(settings as { key: string; value: unknown }[]).map((s) => [
+							s.key,
+							s.value,
+						]),
+					)
+				: (settings as Record<string, unknown>)
 
 			// Verify defaults from AuthSettings schema
 			expect(byKey.sessionDuration).toBe(24)

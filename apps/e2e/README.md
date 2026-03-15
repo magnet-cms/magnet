@@ -115,6 +115,19 @@ DATABASE_URL=postgresql://postgres:postgres@localhost:5433/neon-example \
 bun run test
 ```
 
+### Playground / Content Builder tests
+
+API tests for the Content Builder plugin (Playground) create schema modules on disk. By default they are written into the example app’s `src/modules/`, which can leave `test*` directories (e.g. `test33a9dbf1`) in the repo.
+
+To avoid that, start the server with a dedicated modules path **before** running e2e:
+
+```bash
+# From the example app (e.g. apps/examples/mongoose)
+MAGNET_PLAYGROUND_MODULES_PATH=/tmp/magnet-e2e-modules bun run dev:admin
+```
+
+Then run tests from another terminal. Generated modules are written to `/tmp/magnet-e2e-modules` instead of `src/modules/`. You can use any path outside the repo (e.g. `./.e2e-modules` if you prefer a local dir). Any existing `test*` directories in the example are ignored via `.gitignore`.
+
 ## CI/CD
 
 For CI environments, use the setup scripts:

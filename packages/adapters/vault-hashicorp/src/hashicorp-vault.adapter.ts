@@ -89,10 +89,26 @@ export class HashiCorpVaultAdapter implements VaultAdapter {
 	}
 
 	async delete(key: string): Promise<void> {
-		const client = await this.getClient()
-		// KV v2 delete uses the metadata path
+		// node-vault-client has no DELETE method; use fetch to call the metadata endpoint
 		const path = this.buildMetadataPath(key)
-		await client.write(`${path}`, { versions: [] })
+		const token =
+			this.auth.type === 'token' && this.auth.token
+				? this.auth.token
+				: process.env.VAULT_TOKEN
+
+		if (token) {
+			const url = new URL(`/v1/${path}`, this.url).toString()
+			const response = await fetch(url, {
+				method: 'DELETE',
+				headers: { 'X-Vault-Token': token },
+			})
+			if (!response.ok && response.status !== 404) {
+				throw new Error(`Failed to delete vault secret: ${response.status}`)
+			}
+			return
+		}
+		// Fallback: overwrite with empty data
+		await this.set(key, {})
 	}
 
 	async list(prefix?: string): Promise<string[]> {

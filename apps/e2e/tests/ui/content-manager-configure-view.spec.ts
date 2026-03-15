@@ -9,8 +9,8 @@ authTest.describe('Content Manager — Configure View', () => {
 		const loginPage = new LoginPage(page)
 		await loginPage.goto()
 		await loginPage.login(testUser.email, testUser.password)
-		await page.waitForURL(/\/admin/, { timeout: 10000 })
-		await page.goto(`/content-manager/${SCHEMA}`)
+		await page.waitForURL(/\/admin\/(?!auth)/, { timeout: 10000 })
+		await page.goto(`/admin/content-manager/${SCHEMA}`)
 		await page.waitForLoadState('networkidle')
 		// Clear any saved view config so tests start from a clean state
 		await page.evaluate(

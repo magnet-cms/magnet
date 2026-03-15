@@ -3,7 +3,7 @@ import { Field, Setting } from '@magnet-cms/common'
 @Setting()
 export class Versioning {
 	@Field.Number({ required: true, default: 10, tab: 'Versioning' })
-	maxVersions!: number
+	maxVersions = 10
 
 	@Field.Select({
 		required: true,
@@ -14,7 +14,7 @@ export class Versioning {
 			{ label: 'Disabled', value: 'false' },
 		],
 	})
-	draftsEnabled!: string
+	draftsEnabled = 'true'
 
 	@Field.Select({
 		required: true,
@@ -25,7 +25,7 @@ export class Versioning {
 			{ label: 'Not Required', value: 'false' },
 		],
 	})
-	requireApproval!: string
+	requireApproval = 'false'
 
 	@Field.Select({
 		required: true,
@@ -36,5 +36,5 @@ export class Versioning {
 			{ label: 'Disabled', value: 'false' },
 		],
 	})
-	autoPublish!: string
+	autoPublish = 'false'
 }

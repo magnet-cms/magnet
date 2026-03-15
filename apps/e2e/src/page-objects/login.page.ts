@@ -18,7 +18,11 @@ export class LoginPage {
 		this.submitButton = page.getByRole('button', {
 			name: /sign in|create account|submit|login|setup/i,
 		})
-		this.errorMessage = page.getByRole('alert')
+		// Sonner uses data-sonner-toast with data-type="error"
+		this.errorMessage = page
+			.locator('[data-sonner-toast][data-type="error"]')
+			.or(page.locator('[data-type="error"]'))
+			.or(page.getByRole('alert'))
 	}
 
 	async goto() {

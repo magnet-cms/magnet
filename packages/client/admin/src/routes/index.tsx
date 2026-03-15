@@ -390,7 +390,13 @@ export const routes: RouteObject[] = [
 			},
 			{
 				path: '/auth',
-				element: <Navigate to="/login" replace />,
+				element: <PublicRoute />,
+				children: [
+					{
+						element: <AuthLayoutWrapper />,
+						children: [{ path: '', element: <LoginPage /> }],
+					},
+				],
 			},
 			{
 				// OAuth callback: NestJS backend redirects here with tokens in query params
@@ -399,13 +405,7 @@ export const routes: RouteObject[] = [
 			},
 			{
 				path: '/login',
-				element: <PublicRoute />,
-				children: [
-					{
-						element: <AuthLayoutWrapper />,
-						children: [{ path: '', element: <LoginPage /> }],
-					},
-				],
+				element: <Navigate to="/auth" replace />,
 			},
 			{
 				path: '/signup',
@@ -426,6 +426,10 @@ export const routes: RouteObject[] = [
 						children: [{ path: '', element: <ProfileSetupPage /> }],
 					},
 				],
+			},
+			{
+				path: '/account',
+				element: <Navigate to="/settings/profile" replace />,
 			},
 			{
 				path: '*',
