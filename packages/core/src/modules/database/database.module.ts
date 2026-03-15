@@ -3,6 +3,7 @@ import {
 	MagnetModuleOptions,
 	getModelToken,
 	getSchemaToken,
+	registerModel,
 } from '@magnet-cms/common'
 import { DynamicModule, Module, Scope, Type } from '@nestjs/common'
 import { ModuleRef } from '@nestjs/core'
@@ -47,7 +48,9 @@ export class DatabaseModule {
 								strict: false,
 							})
 						}
-						return new (adapter.model(modelFactory))()
+						const instance = new (adapter.model(modelFactory))()
+						registerModel(getModelToken(schema), instance)
+						return instance
 					},
 					inject: [ModuleRef],
 					scope: Scope.DEFAULT,

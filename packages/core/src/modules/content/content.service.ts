@@ -1,5 +1,5 @@
 import type { AuthStrategy } from '@magnet-cms/common'
-import { Model } from '@magnet-cms/common'
+import { Model, getRegisteredModel } from '@magnet-cms/common'
 import { Inject, Injectable, Optional } from '@nestjs/common'
 import { ModuleRef } from '@nestjs/core'
 import { DocumentService } from '~/modules/document/document.service'
@@ -106,21 +106,13 @@ export class ContentService {
 		)
 
 		// If found, use the original class name from metadata with correct token pattern
+		// Build the list of tokens to try
+		const tokens: string[] = []
 		if (found?.className) {
-			// Use the MAGNET_MODEL_* token pattern that DatabaseModule.forFeature uses
-			const token = `MAGNET_MODEL_${found.className.toUpperCase()}`
-			try {
-				return this.moduleRef.get<Model<T>>(token, { strict: false })
-			} catch {
-				// Fall through to try other patterns
-			}
+			tokens.push(`MAGNET_MODEL_${found.className.toUpperCase()}`)
 		}
-
-		// Fallback: Try multiple token patterns
 		const patterns = [
-			// Pattern 1: Direct PascalCase conversion
 			this.toPascalCase(normalizedName),
-			// Pattern 2: Kebab-case to PascalCase
 			normalizedName.includes('-')
 				? normalizedName
 						.split('-')
@@ -128,18 +120,36 @@ export class ContentService {
 						.join('')
 				: null,
 		].filter(Boolean) as string[]
+		for (const p of patterns) {
+			const t = `MAGNET_MODEL_${p.toUpperCase()}`
+			if (!tokens.includes(t)) tokens.push(t)
+		}
 
-		// Try each pattern with the correct token format
-		for (const pattern of patterns) {
-			const token = `MAGNET_MODEL_${pattern.toUpperCase()}`
+		// Try each token — first via moduleRef, then via global registry
+		for (const token of tokens) {
+			// Try global model registry first (populated by DatabaseModule.forFeature)
+			const registeredModel = getRegisteredModel<Model<T>>(token)
+			if (registeredModel) {
+				return registeredModel
+			}
+
+			// Fallback: NestJS moduleRef (works for same-module access)
 			try {
-				return this.moduleRef.get<Model<T>>(token, { strict: false })
+				const model = this.moduleRef.get<Model<T>>(token, {
+					strict: false,
+				})
+				if (
+					model &&
+					typeof (model as unknown as Record<string, unknown>).findMany ===
+						'function'
+				) {
+					return model
+				}
 			} catch {
-				// Continue to next pattern
+				// Continue to next token
 			}
 		}
 
-		// If all patterns fail, throw error
 		throw new Error(
 			`Model '${schemaName}' not found. Make sure it's registered.`,
 		)

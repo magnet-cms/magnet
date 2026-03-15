@@ -58,11 +58,33 @@ export class JwtAuthStrategy
 			'sub' in payload &&
 			'email' in payload
 		) {
-			const jwtPayload = payload as { sub: string; email: string; role: string }
+			const jwtPayload = payload as {
+				sub: string
+				email: string
+				role: string
+				user_metadata?: { role?: string; name?: string }
+			}
+			// External auth providers (Supabase, Clerk) may store the application
+			// role in user_metadata rather than the top-level role claim.
+			const role = jwtPayload.user_metadata?.role || jwtPayload.role || 'viewer'
+
+			// Resolve local user ID — external auth providers use provider-specific
+			// IDs that may not match the local database. Look up by email to get
+			// the correct local ID for downstream operations.
+			let userId = jwtPayload.sub
+			if (jwtPayload.user_metadata) {
+				const localUser = await this.userService.findOne({
+					email: jwtPayload.email,
+				})
+				if (localUser) {
+					userId = localUser.id
+				}
+			}
+
 			return {
-				id: jwtPayload.sub,
+				id: userId,
 				email: jwtPayload.email,
-				role: jwtPayload.role || 'viewer',
+				role,
 			}
 		}
 		return null
