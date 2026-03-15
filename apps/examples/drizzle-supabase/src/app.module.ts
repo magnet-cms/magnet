@@ -9,7 +9,9 @@ import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { ArticlesModule } from './modules/articles/articles.module'
 import { CatsModule } from './modules/cats/cats.module'
+import { MedicalRecordsModule } from './modules/medical-records/medical-records.module'
 import { OwnersModule } from './modules/owners/owners.module'
+import { VeterinariansModule } from './modules/veterinarians/veterinarians.module'
 
 // Register Supabase auth strategy before module initialization
 AuthStrategyFactory.registerStrategy('supabase', SupabaseAuthStrategy)
@@ -80,6 +82,8 @@ AuthStrategyFactory.registerStrategy('supabase', SupabaseAuthStrategy)
 		}),
 		CatsModule,
 		OwnersModule,
+		VeterinariansModule,
+		MedicalRecordsModule,
 		ArticlesModule,
 	],
 })

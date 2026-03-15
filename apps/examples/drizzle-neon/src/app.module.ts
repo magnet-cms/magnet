@@ -7,8 +7,10 @@ import { ContentBuilderPlugin } from '@magnet-cms/plugin-content-builder'
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { CatsModule } from './modules/cats/cats.module'
+import { MedicalRecordsModule } from './modules/medical-records/medical-records.module'
 import { OwnersModule } from './modules/owners/owners.module'
 import { PostsModule } from './modules/posts/posts.module'
+import { VeterinariansModule } from './modules/veterinarians/veterinarians.module'
 
 /**
  * Example application using Magnet CMS with PostgreSQL (Drizzle ORM).
@@ -71,6 +73,8 @@ import { PostsModule } from './modules/posts/posts.module'
 		}),
 		CatsModule,
 		OwnersModule,
+		VeterinariansModule,
+		MedicalRecordsModule,
 		PostsModule,
 	],
 })

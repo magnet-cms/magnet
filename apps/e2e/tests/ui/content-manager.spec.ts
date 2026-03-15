@@ -17,7 +17,7 @@ authTest.describe('Content Manager', () => {
 	authTest.describe('Navigation', () => {
 		authTest('should list available schemas in sidebar', async ({ page }) => {
 			await page.goto(adminPath('/content-manager/veterinarian'))
-			await page.waitForLoadState('networkidle')
+			await page.waitForLoadState('domcontentloaded')
 
 			// Expand Content Manager if collapsed
 			const contentManagerButton = page.getByRole('button', {
@@ -39,19 +39,19 @@ authTest.describe('Content Manager', () => {
 
 		authTest('should navigate between different schemas', async ({ page }) => {
 			await page.goto(adminPath('/content-manager/veterinarian'))
-			await page.waitForLoadState('networkidle')
+			await page.waitForLoadState('domcontentloaded')
 			await expect(
 				page.getByRole('heading', { name: /veterinarian/i }),
 			).toBeVisible({ timeout: 5000 })
 
 			await page.goto(adminPath('/content-manager/owner'))
-			await page.waitForLoadState('networkidle')
+			await page.waitForLoadState('domcontentloaded')
 			await expect(page.getByRole('heading', { name: /owner/i })).toBeVisible({
 				timeout: 5000,
 			})
 
 			await page.goto(adminPath('/content-manager/cat'))
-			await page.waitForLoadState('networkidle')
+			await page.waitForLoadState('domcontentloaded')
 			await expect(page.getByRole('heading', { name: /cat/i })).toBeVisible({
 				timeout: 5000,
 			})
@@ -59,9 +59,13 @@ authTest.describe('Content Manager', () => {
 
 		authTest(
 			'should display table with correct structure',
-			async ({ page }) => {
+			async ({ page, authenticatedApiClient }) => {
+				// Create an entry first so the table renders
+				const vetData = testData.veterinarian.create()
+				await authenticatedApiClient.createContent('veterinarian', vetData)
+
 				await page.goto(adminPath('/content-manager/veterinarian'))
-				await page.waitForLoadState('networkidle')
+				await page.waitForLoadState('domcontentloaded')
 
 				const table = page.getByRole('table')
 				await expect(table).toBeVisible({ timeout: 10000 })
@@ -97,7 +101,7 @@ authTest.describe('Content Manager', () => {
 				await page.goto(
 					adminPath(`/content-manager/veterinarian/${documentId}`),
 				)
-				await page.waitForLoadState('networkidle')
+				await page.waitForLoadState('domcontentloaded')
 
 				await expect(
 					page.getByRole('heading', { name: /veterinarian/i }),
@@ -125,7 +129,7 @@ authTest.describe('Content Manager', () => {
 				)
 
 				await page.goto(adminPath('/content-manager/veterinarian'))
-				await page.waitForLoadState('networkidle')
+				await page.waitForLoadState('domcontentloaded')
 
 				const dataRows = page.locator('tbody tr')
 				await expect(dataRows.first()).toBeVisible({ timeout: 5000 })
@@ -163,7 +167,7 @@ authTest.describe('Content Manager', () => {
 				cleanup.trackContent(authenticatedApiClient, 'owner', documentId)
 
 				await page.goto(adminPath(`/content-manager/owner/${documentId}`))
-				await page.waitForLoadState('networkidle')
+				await page.waitForLoadState('domcontentloaded')
 
 				await expect(page.getByRole('heading', { name: /owner/i })).toBeVisible(
 					{ timeout: 5000 },
@@ -197,7 +201,7 @@ authTest.describe('Content Manager', () => {
 				await page.goto(
 					adminPath(`/content-manager/veterinarian/${created.documentId}`),
 				)
-				await page.waitForLoadState('networkidle')
+				await page.waitForLoadState('domcontentloaded')
 
 				const editTab = page.getByRole('tab', { name: /^edit$/i })
 				const versionsTab = page.getByRole('tab', { name: /versions/i })
@@ -227,7 +231,7 @@ authTest.describe('Content Manager', () => {
 				cleanup.trackContent(authenticatedApiClient, 'veterinarian', docId)
 
 				await page.goto(adminPath(`/content-manager/veterinarian/${docId}`))
-				await page.waitForLoadState('networkidle')
+				await page.waitForLoadState('domcontentloaded')
 
 				const publishButton = page.getByRole('button', { name: /publish/i })
 				await expect(publishButton).toBeVisible({ timeout: 5000 })
@@ -247,7 +251,7 @@ authTest.describe('Content Manager', () => {
 				cleanup.trackContent(authenticatedApiClient, 'veterinarian', docId)
 
 				await page.goto(adminPath(`/content-manager/veterinarian/${docId}`))
-				await page.waitForLoadState('networkidle')
+				await page.waitForLoadState('domcontentloaded')
 
 				const publishButton = page.getByRole('button', { name: /publish/i })
 				await expect(publishButton).toBeVisible({ timeout: 5000 })
@@ -273,7 +277,7 @@ authTest.describe('Content Manager', () => {
 				await page.goto(
 					adminPath(`/content-manager/veterinarian/${docId}/versions`),
 				)
-				await page.waitForLoadState('networkidle')
+				await page.waitForLoadState('domcontentloaded')
 
 				await expect(
 					page.getByRole('heading', { name: /version history/i }),
@@ -304,7 +308,7 @@ authTest.describe('Content Manager', () => {
 				)
 
 				await page.goto(adminPath('/content-manager/veterinarian'))
-				await page.waitForLoadState('networkidle')
+				await page.waitForLoadState('domcontentloaded')
 
 				const dataRows = page.locator('tbody tr')
 				await expect(dataRows.first()).toBeVisible({ timeout: 5000 })

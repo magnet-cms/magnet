@@ -12,7 +12,7 @@ authTest.describe('Storage Upload UI', () => {
 
 	authTest('can navigate to media library', async ({ page }) => {
 		await page.goto(adminPath('/media-library'))
-		await page.waitForLoadState('networkidle')
+		await page.waitForLoadState('domcontentloaded')
 
 		// Media page should load with either a grid/list or empty state
 		const mediaHeading = page.getByRole('heading', { name: /media/i })
@@ -21,7 +21,7 @@ authTest.describe('Storage Upload UI', () => {
 
 	authTest('can upload a file via the media library', async ({ page }) => {
 		await page.goto(adminPath('/media-library'))
-		await page.waitForLoadState('networkidle')
+		await page.waitForLoadState('domcontentloaded')
 
 		// Look for upload button/area
 		const uploadButton = page.getByRole('button', { name: /upload/i })
@@ -52,7 +52,7 @@ authTest.describe('Storage Upload UI', () => {
 				})
 
 				// Wait for upload to complete
-				await page.waitForLoadState('networkidle')
+				await page.waitForLoadState('domcontentloaded')
 
 				// Verify the file appears in the media grid
 				await page.waitForTimeout(2000)
@@ -88,7 +88,7 @@ authTest.describe('Storage Upload UI', () => {
 
 			// Navigate to media library and verify the file appears
 			await page.goto(adminPath('/media-library'))
-			await page.waitForLoadState('networkidle')
+			await page.waitForLoadState('domcontentloaded')
 
 			// Wait for the grid to load
 			await page.waitForTimeout(2000)

@@ -68,7 +68,7 @@ authTest.describe('Media Library UI', () => {
 	authTest('media page shows empty state or media items', async ({ page }) => {
 		const mediaPage = new MediaPage(page)
 		await mediaPage.goto()
-		await page.waitForLoadState('networkidle')
+		await page.waitForLoadState('domcontentloaded')
 
 		// Media page shows either folder/asset headings or content
 		// Use first() because both "Folders" and "Assets" headings can be present
@@ -108,7 +108,7 @@ authTest.describe('Media Library UI', () => {
 		await mediaPage.goto()
 
 		await mediaPage.searchMedia('test')
-		await page.waitForLoadState('networkidle')
+		await page.waitForLoadState('domcontentloaded')
 
 		// After searching, the page shows filtered assets or a "no results" message
 		await expect(page.locator('main')).toBeVisible()
