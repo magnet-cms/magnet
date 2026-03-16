@@ -387,7 +387,7 @@ export interface MagnetApiAdapter {
 	 * Settings operations
 	 */
 	settings: {
-		getByGroup<T = ContentData>(group: string): Promise<T[]>
+		getByGroup<T = ContentData>(group: string): Promise<T>
 		updateByGroup<T = ContentData>(group: string, data: Partial<T>): Promise<T>
 		getLocales(): Promise<LocalesConfig>
 	}

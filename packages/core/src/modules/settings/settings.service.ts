@@ -188,6 +188,52 @@ export class SettingsService implements OnApplicationBootstrap {
 		return setting
 	}
 
+	/**
+	 * Get default values for a settings group from the registered schema.
+	 * Returns null if no schema is registered for the group.
+	 */
+	getDefaultsByGroup(group: string): Record<string, unknown> | null {
+		const resolvedGroup = this.resolveGroup(group)
+		const schema = this.registeredSchemas.get(resolvedGroup)
+		if (!schema) return null
+
+		const instance = new schema()
+		const settingFieldMetadata: SettingFieldMetadata[] =
+			getSettingFields(schema)
+
+		if (settingFieldMetadata.length > 0) {
+			const result: Record<string, unknown> = {}
+			for (const field of settingFieldMetadata) {
+				const key = String(field.propertyKey)
+				let value = (instance as Record<string, unknown>)[key]
+				if (value === undefined && field.options.default !== undefined) {
+					value = field.options.default
+				}
+				result[key] = value
+			}
+			return result
+		}
+
+		// Legacy @Prop path
+		const propMetadataArray: Array<{
+			propertyKey: string | symbol
+			options: PropOptions
+		}> = Reflect.getMetadata(PROP_METADATA_KEY, schema.prototype) || []
+
+		if (propMetadataArray.length === 0) return null
+
+		const result: Record<string, unknown> = {}
+		for (const prop of propMetadataArray) {
+			const key = String(prop.propertyKey)
+			let value = (instance as Record<string, unknown>)[key]
+			if (value === undefined && prop.options?.default !== undefined) {
+				value = prop.options.default
+			}
+			result[key] = value
+		}
+		return result
+	}
+
 	async getSetting(key: string): Promise<Setting | null> {
 		const modelReady = await this.waitForModel()
 		if (!modelReady) return null
@@ -213,12 +259,34 @@ export class SettingsService implements OnApplicationBootstrap {
 			? await this.getSettingsByGroupAndKey(resolvedGroup, key)
 			: await this.getSetting(key)
 
-		if (!setting) {
-			throw new Error(`Setting with key "${key}" not found`)
-		}
-
 		// Validate the setting value against the registered schema
 		const schemaGroup = resolvedGroup ?? this.findGroupByKey(key)[0]
+
+		if (!setting) {
+			// If the setting doesn't exist in DB but is valid for a registered schema, create it
+			if (schemaGroup) {
+				const schema = this.registeredSchemas.get(schemaGroup)
+				if (schema) {
+					await this.validateSettingValue(key, value, schema)
+					const instance = new schema()
+					if (key in instance) {
+						const typeMap: Record<string, string> = {
+							string: 'string',
+							number: 'number',
+							boolean: 'boolean',
+							object: 'object',
+						}
+						return this.settingModel.create({
+							group: schemaGroup,
+							key,
+							value,
+							type: typeMap[typeof value] || 'string',
+						})
+					}
+				}
+			}
+			throw new Error(`Setting with key "${key}" not found`)
+		}
 		if (schemaGroup) {
 			const schema = this.registeredSchemas.get(schemaGroup)
 			if (schema) {

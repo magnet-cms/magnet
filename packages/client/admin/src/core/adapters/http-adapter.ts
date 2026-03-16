@@ -400,8 +400,8 @@ export function createHttpAdapter(config: HttpAdapterConfig): MagnetApiAdapter {
 		},
 
 		settings: {
-			async getByGroup<T = ContentData>(group: string): Promise<T[]> {
-				return request<T[]>(`/settings/${group}`)
+			async getByGroup<T = ContentData>(group: string): Promise<T> {
+				return request<T>(`/settings/${group}`)
 			},
 
 			async updateByGroup<T = ContentData>(
@@ -435,23 +435,15 @@ export function createHttpAdapter(config: HttpAdapterConfig): MagnetApiAdapter {
 
 				// Fetch from the canonical general settings group
 				const settings =
-					await request<Array<{ key: string; value: unknown }>>(
-						'/settings/general',
-					)
-				const localesSetting = settings.find((s) => s.key === 'locales')
-				const defaultLocaleSetting = settings.find(
-					(s) => s.key === 'defaultLocale',
-				)
+					await request<Record<string, unknown>>('/settings/general')
 
 				const configured =
-					Array.isArray(localesSetting?.value) &&
-					localesSetting.value.length > 0
-						? (localesSetting.value as string[])
+					Array.isArray(settings.locales) && settings.locales.length > 0
+						? (settings.locales as string[])
 						: ['en']
 				const defaultLocale =
-					typeof defaultLocaleSetting?.value === 'string' &&
-					defaultLocaleSetting.value
-						? defaultLocaleSetting.value
+					typeof settings.defaultLocale === 'string' && settings.defaultLocale
+						? settings.defaultLocale
 						: (configured[0] ?? 'en')
 
 				return {

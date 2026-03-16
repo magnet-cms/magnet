@@ -23,18 +23,26 @@ export class SettingsController {
 
 	/**
 	 * Get all settings for a group as a flat key-value object.
-	 * Returns 404 if no settings found for the group.
+	 * Falls back to schema defaults when no DB entries exist.
+	 * Returns 404 only if no schema is registered for the group.
 	 */
 	@Get(':group')
 	async getSettings(@Param('group') group: string) {
 		const settings = await this.settingsService.getSettingsByGroup(group)
 		if (settings.length === 0) {
+			const defaults = this.settingsService.getDefaultsByGroup(group)
+			if (defaults) {
+				return defaults
+			}
 			throw new NotFoundException(`No settings found for group: ${group}`)
 		}
-		return settings.reduce<Record<string, unknown>>((acc, s) => {
+		// Merge DB values with schema defaults to include any new fields
+		const defaults = this.settingsService.getDefaultsByGroup(group)
+		const dbValues = settings.reduce<Record<string, unknown>>((acc, s) => {
 			acc[s.key] = s.value
 			return acc
 		}, {})
+		return defaults ? { ...defaults, ...dbValues } : dbValues
 	}
 
 	@Get(':group/:key')

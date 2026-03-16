@@ -10,7 +10,7 @@ export const useSettingData = <T extends Record<string, unknown>>(
 ) => {
 	const adapter = useAdapter()
 
-	return useQuery<T[], Error>({
+	return useQuery<T, Error>({
 		queryKey: ['settings', group],
 		queryFn: () => adapter.settings.getByGroup<T>(group),
 		enabled: !!group,

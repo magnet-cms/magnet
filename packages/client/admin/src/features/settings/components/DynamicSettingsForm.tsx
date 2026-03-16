@@ -2,7 +2,7 @@
 
 import type { SettingValue } from '@magnet-cms/common'
 import { Card, CardContent, Skeleton } from '@magnet-cms/ui'
-import { forwardRef, useEffect, useImperativeHandle, useMemo } from 'react'
+import { forwardRef, useImperativeHandle, useMemo } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 
@@ -76,9 +76,22 @@ export const DynamicSettingsForm = forwardRef<
 		return defaults
 	}, [parsedSchema])
 
-	// Form setup
+	// Merge schema defaults with API data for form values
+	const formValues = useMemo(() => {
+		if (settingsData && Object.keys(settingsData).length > 0) {
+			return { ...defaultValues, ...settingsData }
+		}
+		if (Object.keys(defaultValues).length > 0) {
+			return defaultValues
+		}
+		return undefined
+	}, [defaultValues, settingsData])
+
+	// Form setup — use `values` for reactive sync (no useEffect/reset needed)
 	const methods = useForm<SettingsFormValues>({
 		defaultValues,
+		values: formValues,
+		resetOptions: { keepDirtyValues: true },
 	})
 
 	const {
@@ -86,11 +99,6 @@ export const DynamicSettingsForm = forwardRef<
 		handleSubmit,
 		formState: { isDirty },
 	} = methods
-
-	// Reset form immediately when group changes to avoid stale values
-	useEffect(() => {
-		reset(defaultValues)
-	}, [group, reset]) // eslint-disable-line react-hooks/exhaustive-deps
 
 	// Derive allowed field keys from parsed schema for safe payload filtering
 	const schemaFieldKeys = useMemo(() => {
@@ -103,24 +111,6 @@ export const DynamicSettingsForm = forwardRef<
 		}
 		return keys
 	}, [parsedSchema])
-
-	// Map Setting[] array (each item is { key, value, group, type, ... }) to { [key]: value }
-	const mergeSettingsData = (data: SettingsFormValues[]): SettingsFormValues =>
-		data.reduce<SettingsFormValues>((acc, item) => {
-			const setting = item as unknown as { key: string; value: SettingValue }
-			if (typeof setting.key === 'string') {
-				return { ...acc, [setting.key]: setting.value }
-			}
-			return acc
-		}, {})
-
-	// Sync form with loaded data
-	useEffect(() => {
-		if (settingsData && settingsData.length > 0) {
-			const merged = mergeSettingsData(settingsData)
-			reset({ ...defaultValues, ...merged })
-		}
-	}, [settingsData, reset, defaultValues])
 
 	// Handle save — only send keys that belong to this settings schema
 	const handleSave = async (data: SettingsFormValues): Promise<void> => {
@@ -157,12 +147,7 @@ export const DynamicSettingsForm = forwardRef<
 
 	// Handle reset
 	const handleReset = () => {
-		if (settingsData && settingsData.length > 0) {
-			const merged = mergeSettingsData(settingsData)
-			reset({ ...defaultValues, ...merged })
-		} else {
-			reset(defaultValues)
-		}
+		reset(formValues ?? defaultValues)
 	}
 
 	// Expose ref methods
