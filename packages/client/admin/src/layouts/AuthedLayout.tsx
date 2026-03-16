@@ -23,6 +23,7 @@ import {
 import { type ReactNode, useCallback, useMemo, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 
+import { ThemeSwitcher } from '~/components/ThemeSwitcher'
 import { usePluginSidebarItems } from '~/core/plugins/PluginRegistry'
 import { NotificationsDrawer } from '~/features/notifications'
 import { useAuth, useLogout } from '~/hooks/useAuth'
@@ -115,29 +116,6 @@ export function AuthedLayout({ children, header, sidebar }: AuthedLayoutProps) {
 				}),
 		[pluginSidebarItems],
 	)
-
-	// #region agent log
-	fetch('http://127.0.0.1:7573/ingest/43f773a7-bfd6-45ae-a2d1-03cf84c7466d', {
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json',
-			'X-Debug-Session-Id': '254f1b',
-		},
-		body: JSON.stringify({
-			sessionId: '254f1b',
-			location: 'AuthedLayout.tsx:render',
-			message: 'AuthedLayout plugin items',
-			data: {
-				pluginSidebarItemsCount: pluginSidebarItems.length,
-				pluginNavItemsCount: pluginNavItems.length,
-				pluginTitles: pluginNavItems.map((i: { title: string }) => i.title),
-			},
-			timestamp: Date.now(),
-			runId: 'post-fix',
-			hypothesisId: 'H3',
-		}),
-	}).catch(() => {})
-	// #endregion
 
 	// Default sidebar configuration for authenticated pages
 	const defaultSidebarConfig: SidebarConfig = useMemo(
@@ -283,6 +261,7 @@ export function AuthedLayout({ children, header, sidebar }: AuthedLayoutProps) {
 		...sidebar,
 		navMain: sidebar?.navMain ?? activeSidebarConfig.navMain,
 		userMenuActions: sidebar?.userMenuActions ?? userMenuActions,
+		footerActions: sidebar?.footerActions ?? <ThemeSwitcher />,
 	}
 
 	// Default breadcrumbs from current location (used when header has no breadcrumbs)

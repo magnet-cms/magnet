@@ -54,6 +54,7 @@
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
     "@magnet-cms/ui": "workspace:*",
+    "next-themes": "^0.4.6",
     "@magnet-cms/utils": "workspace:*",
     "lucide-react": "^0.562.0",
     "react-hook-form": "^7.71.1",

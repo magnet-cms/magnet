@@ -129,13 +129,19 @@ export function AppSidebar({ config, ...props }: AppSidebarProps) {
 			</SidebarContent>
 			{user && (
 				<SidebarFooter>
-					<NavUser
-						user={user}
-						menuActions={userMenuActions}
-						onLogout={onLogout}
-						rightActions={footerActions}
-						linkComponent={linkComponent}
-					/>
+					<div className="flex w-full items-center gap-2">
+						<div className="min-w-0 flex-1">
+							<NavUser
+								user={user}
+								menuActions={userMenuActions}
+								onLogout={onLogout}
+								linkComponent={linkComponent}
+							/>
+						</div>
+						{footerActions && (
+							<div className="flex shrink-0 items-center">{footerActions}</div>
+						)}
+					</div>
 				</SidebarFooter>
 			)}
 		</Sidebar>

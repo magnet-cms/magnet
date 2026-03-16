@@ -87,7 +87,7 @@ export interface SidebarConfig {
 	userMenuActions?: UserMenuAction[]
 	/** Callback for logout action */
 	onLogout?: () => void
-	/** Additional footer actions (rendered before user menu) */
+	/** Additional footer actions (rendered to the right of user menu) */
 	footerActions?: ReactNode
 	/**
 	 * Custom link component for router integration.

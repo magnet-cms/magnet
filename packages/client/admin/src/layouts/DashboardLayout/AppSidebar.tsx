@@ -21,27 +21,6 @@ export const AppSidebar = ({
 	const { schemas, settings } = useAdmin()
 	const pluginSidebarItems = usePluginSidebarItems()
 
-	// #region agent log
-	fetch('http://127.0.0.1:7573/ingest/43f773a7-bfd6-45ae-a2d1-03cf84c7466d', {
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json',
-			'X-Debug-Session-Id': '254f1b',
-		},
-		body: JSON.stringify({
-			sessionId: '254f1b',
-			location: 'AppSidebar.tsx:render',
-			message: 'AppSidebar rendering',
-			data: {
-				pluginSidebarItemsCount: pluginSidebarItems.length,
-				pluginTitles: pluginSidebarItems.map((i) => i.title),
-			},
-			timestamp: Date.now(),
-			hypothesisId: 'H3',
-		}),
-	}).catch(() => {})
-	// #endregion
-
 	// Filter out internal schemas like Media (has dedicated page)
 	const contentSchemas = schemas?.filter(
 		(item: string) => item.toLowerCase() !== 'media',
