@@ -1,0 +1,48 @@
+{
+  "name": "magnet-template-drizzle-mysql",
+  "version": "0.0.1",
+  "description": "Magnet CMS template with Drizzle ORM and MySQL",
+  "author": "",
+  "private": true,
+  "license": "UNLICENSED",
+  "scripts": {
+    "build": "nest build",
+    "start": "nest start",
+    "start:prod": "cross-env NODE_ENV=production nest start",
+    "dev": "nest start --watch",
+    "dev:debug": "nest start --debug --watch",
+    "docker:up": "docker compose -f docker/docker-compose.yml up -d",
+    "docker:down": "docker compose -f docker/docker-compose.yml down",
+    "docker:logs": "docker compose -f docker/docker-compose.yml logs -f"
+  },
+  "dependencies": {
+    "@magnet-cms/adapter-db-drizzle": "workspace:*",
+    "@magnet-cms/adapter-storage-s3": "workspace:*",
+    "@magnet-cms/common": "workspace:*",
+    "@magnet-cms/core": "workspace:*",
+    "@magnet-cms/email-nodemailer": "workspace:*",
+    "@magnet-cms/plugin-content-builder": "workspace:*",
+    "@nestjs/common": "^11.1.12",
+    "@nestjs/config": "^4.0.0",
+    "@nestjs/core": "^11.1.12",
+    "@nestjs/platform-express": "^11.1.12",
+    "class-validator": "^0.14.1",
+    "drizzle-orm": "^0.38.0",
+    "mysql2": "^3.11.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^11.0.16",
+    "@nestjs/schematics": "^11.0.9",
+    "@repo/biome": "workspace:*",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.13.1",
+    "cross-env": "^7.0.3",
+    "source-map-support": "^0.5.21",
+    "ts-loader": "^9.4.3",
+    "ts-node": "^10.9.1",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.7.3"
+  }
+}

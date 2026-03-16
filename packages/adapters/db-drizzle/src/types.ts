@@ -1,5 +1,5 @@
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres'
-import type { PgDatabase } from 'drizzle-orm/pg-core'
+import type { PgDatabase, PgQueryResultHKT } from 'drizzle-orm/pg-core'
 import type { MigrationConfig } from './migrations/types'
 
 /**
@@ -21,9 +21,12 @@ export interface DrizzleConfig {
 }
 
 /**
- * Supported Drizzle database types
+ * Supported Drizzle database types.
+ * MySQL and SQLite connections are cast to this type at runtime for API compatibility.
  */
-export type DrizzleDB = NodePgDatabase | PgDatabase<any>
+export type DrizzleDB =
+	| NodePgDatabase
+	| PgDatabase<PgQueryResultHKT, Record<string, never>>
 
 /**
  * Schema metadata stored via decorators

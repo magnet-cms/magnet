@@ -56,7 +56,10 @@ class DrizzleFeatureModule {}
 class DrizzleAdapter extends DatabaseAdapter {
 	readonly name: AdapterName = 'drizzle'
 	private db: DrizzleDB | null = null
-	private pool: Pool | null = null
+	private pool:
+		| Pool
+		| { end?: () => Promise<void>; close?: () => void }
+		| null = null
 	private options: MagnetModuleOptions | null = null
 	private schemaRegistry: Map<string, { table: PgTable; tableName: string }> =
 		new Map()
@@ -139,10 +142,13 @@ class DrizzleAdapter extends DatabaseAdapter {
 			return
 		}
 
+		const drizzleConfig = this.options?.db as DrizzleConfig | undefined
+		const dialect = drizzleConfig?.dialect ?? 'postgresql'
+
 		try {
-			for (const [schemaName, { table }] of this.schemaRegistry.entries()) {
+			for (const [, { table }] of this.schemaRegistry.entries()) {
 				const config = getTableConfig(table)
-				await this.createTableFromConfig(config)
+				await this.createTableFromConfig(config, dialect)
 			}
 		} catch (error) {
 			// Log error but don't fail startup - tables might already exist
@@ -154,32 +160,49 @@ class DrizzleAdapter extends DatabaseAdapter {
 	}
 
 	/**
+	 * Quote identifier for the given dialect.
+	 */
+	private quoteIdent(name: string, dialect: string): string {
+		if (dialect === 'mysql') {
+			return `\`${name.replace(/`/g, '``')}\``
+		}
+		return `"${name.replace(/"/g, '""')}"`
+	}
+
+	/**
 	 * Generate and execute CREATE TABLE IF NOT EXISTS statement from table config.
 	 */
-	private async createTableFromConfig(config: any): Promise<void> {
+	private async createTableFromConfig(
+		config: Record<string, unknown>,
+		dialect: string,
+	): Promise<void> {
 		if (!this.db) return
 
-		const tableName = config.name
+		const tableName = config.name as string
+		const q = (n: string) => this.quoteIdent(n, dialect)
 		const columns: string[] = []
 
 		// Generate column definitions
-		// config.columns is an array — use column.name for the SQL column name
 		const columnsArray = Array.isArray(config.columns)
 			? config.columns
-			: Object.values(config.columns)
+			: Object.values(config.columns as Record<string, unknown>)
 		for (const col of columnsArray) {
-			const column = col as any
-			const colName = column.name
-			const colDef: string[] = [`"${colName}"`]
+			const column = col as Record<string, unknown>
+			const colName = column.name as string
+			const colDef: string[] = [q(colName)]
 
 			// Get SQL type using getSQLType() method on the column builder
 			let sqlType: string
 			if (typeof column.getSQLType === 'function') {
-				sqlType = column.getSQLType()
+				sqlType = (column.getSQLType as () => string)()
 			} else {
-				// Fallback: try to infer from column properties
-				sqlType = this.inferSQLType(column) || 'TEXT'
+				sqlType =
+					this.inferSQLType(column, dialect) ||
+					(dialect === 'mysql' ? 'VARCHAR(255)' : 'TEXT')
 			}
+
+			// Map PostgreSQL types to dialect-specific types
+			sqlType = this.mapSQLTypeForDialect(sqlType, dialect)
 
 			colDef.push(sqlType)
 
@@ -191,7 +214,11 @@ class DrizzleAdapter extends DatabaseAdapter {
 			// Add DEFAULT constraint
 			if (column.default !== undefined) {
 				const defaultValue = column.default
-				const defaultSQL = this.formatDefaultValue(defaultValue, sqlType)
+				const defaultSQL = this.formatDefaultValue(
+					defaultValue,
+					sqlType,
+					dialect,
+				)
 				if (defaultSQL) {
 					colDef.push(`DEFAULT ${defaultSQL}`)
 				}
@@ -200,61 +227,93 @@ class DrizzleAdapter extends DatabaseAdapter {
 			columns.push(colDef.join(' '))
 		}
 
-		// Add primary key constraint (composite keys handled separately from column-level)
-		if (config.primaryKeys && config.primaryKeys.length > 0) {
-			const pkColumns = config.primaryKeys
-				.map((pk: string) => `"${pk}"`)
-				.join(', ')
+		// Add primary key constraint
+		const primaryKeys = config.primaryKeys as string[] | undefined
+		if (primaryKeys && primaryKeys.length > 0) {
+			const pkColumns = primaryKeys.map((pk) => q(pk)).join(', ')
 			columns.push(`PRIMARY KEY (${pkColumns})`)
 		}
 
 		// Generate and execute CREATE TABLE IF NOT EXISTS
 		const createTableSQL = sql.raw(`
-			CREATE TABLE IF NOT EXISTS "${tableName}" (
+			CREATE TABLE IF NOT EXISTS ${q(tableName)} (
 				${columns.join(',\n				')}
 			)
 		`)
 
-		await (this.db as any).execute(createTableSQL)
+		await (this.db as { execute: (s: unknown) => Promise<unknown> }).execute(
+			createTableSQL,
+		)
 
 		// Create indexes separately (they might already exist)
-		if (config.indexes) {
-			for (const index of Object.values(config.indexes)) {
-				const indexConfig = index as any
+		const indexes = config.indexes as Record<string, unknown> | undefined
+		if (indexes) {
+			for (const index of Object.values(indexes)) {
+				const indexConfig = index as Record<string, unknown>
 				const indexName =
-					indexConfig.name ||
+					(indexConfig.name as string) ||
 					`${tableName}_${Math.random().toString(36).slice(2)}_idx`
 
-				// Get column names from index - could be array or object with .columns property
 				let indexColumns: string[] = []
 				if (Array.isArray(indexConfig.columns)) {
-					indexColumns = indexConfig.columns
-				} else if (indexConfig.columns) {
-					indexColumns = Object.keys(indexConfig.columns)
+					indexColumns = indexConfig.columns as string[]
+				} else if (
+					indexConfig.columns &&
+					typeof indexConfig.columns === 'object'
+				) {
+					indexColumns = Object.keys(indexConfig.columns as object)
 				}
 
 				if (indexColumns.length > 0) {
 					const uniqueKeyword = indexConfig.unique ? 'UNIQUE' : ''
-					const columnsStr = indexColumns
-						.map((col: string) => `"${col}"`)
-						.join(', ')
+					const columnsStr = indexColumns.map((col) => q(col)).join(', ')
 					const createIndexSQL = sql.raw(`
-						CREATE ${uniqueKeyword} INDEX IF NOT EXISTS "${indexName}"
-						ON "${tableName}" (${columnsStr})
+						CREATE ${uniqueKeyword} INDEX IF NOT EXISTS ${q(indexName)}
+						ON ${q(tableName)} (${columnsStr})
 					`)
-					await (this.db as any).execute(createIndexSQL).catch(() => {
-						// Index might already exist, ignore error
-					})
+					await (this.db as { execute: (s: unknown) => Promise<unknown> })
+						.execute(createIndexSQL)
+						.catch(() => {
+							// Index might already exist, ignore error
+						})
 				}
 			}
 		}
 	}
 
 	/**
+	 * Map PostgreSQL SQL types to dialect-specific types.
+	 */
+	private mapSQLTypeForDialect(pgType: string, dialect: string): string {
+		const upper = pgType.toUpperCase()
+		if (dialect === 'mysql') {
+			if (upper.includes('UUID')) return 'CHAR(36)'
+			if (upper.includes('JSONB') || upper.includes('JSON')) return 'JSON'
+			if (upper.includes('TIMESTAMP')) return 'DATETIME(6)'
+			if (upper.includes('DOUBLE PRECISION') || upper.includes('NUMERIC'))
+				return 'DOUBLE'
+			if (upper.includes('BOOLEAN')) return 'TINYINT(1)'
+			return pgType
+		}
+		if (dialect === 'sqlite') {
+			if (upper.includes('UUID')) return 'TEXT'
+			if (upper.includes('JSONB') || upper.includes('JSON')) return 'TEXT'
+			if (upper.includes('TIMESTAMP')) return 'TEXT'
+			if (upper.includes('DOUBLE PRECISION') || upper.includes('NUMERIC'))
+				return 'REAL'
+			if (upper.includes('BOOLEAN')) return 'INTEGER'
+			return pgType
+		}
+		return pgType
+	}
+
+	/**
 	 * Infer SQL type from column definition when getSQLType() is not available.
 	 */
-	private inferSQLType(column: any): string | null {
-		// Try to infer from column builder type or properties
+	private inferSQLType(
+		column: Record<string, unknown>,
+		dialect: string,
+	): string | null {
 		const columnStr = String(column)
 		if (columnStr.includes('uuid')) return 'UUID'
 		if (columnStr.includes('timestamp')) return 'TIMESTAMP'
@@ -271,14 +330,19 @@ class DrizzleAdapter extends DatabaseAdapter {
 	/**
 	 * Format default value for SQL DEFAULT clause.
 	 */
-	private formatDefaultValue(value: unknown, colType?: string): string | null {
+	private formatDefaultValue(
+		value: unknown,
+		colType?: string,
+		dialect = 'postgresql',
+	): string | null {
 		if (value === undefined || value === null) {
 			return null
 		}
 
+		const escapeStr = (s: string) => s.replace(/'/g, "''")
+
 		// Handle Drizzle SQL template literal objects (from sql`...`)
 		if (typeof value === 'object' && value !== null) {
-			// Drizzle SQL objects have queryChunks (e.g., sql`gen_random_uuid()`)
 			if ('queryChunks' in value) {
 				const chunks = (value as { queryChunks: unknown[] }).queryChunks
 				const rawSQL = chunks
@@ -294,9 +358,19 @@ class DrizzleAdapter extends DatabaseAdapter {
 						return String(chunk)
 					})
 					.join('')
+				// Map PostgreSQL-specific SQL to dialect
+				if (rawSQL.includes('gen_random_uuid')) {
+					if (dialect === 'mysql') return 'UUID()'
+					if (dialect === 'sqlite')
+						return "(lower(hex(randomblob(4))) || '-' || lower(hex(randomblob(2))) || '-4' || substr(lower(hex(randomblob(2))),2) || '-' || substr('89ab',abs(random()) % 4 + 1, 1) || lower(hex(randomblob(2))) || '-' || lower(hex(randomblob(6))))"
+					return 'gen_random_uuid()'
+				}
+				if (rawSQL.includes('now()') || rawSQL.includes('CURRENT_TIMESTAMP')) {
+					if (dialect === 'sqlite') return "(datetime('now'))"
+					return 'NOW()'
+				}
 				return rawSQL || null
 			}
-			// Legacy: plain { sql: string } objects
 			if ('sql' in value) {
 				return (value as { sql: string }).sql
 			}
@@ -306,7 +380,9 @@ class DrizzleAdapter extends DatabaseAdapter {
 		if (typeof value === 'function') {
 			const funcStr = value.toString()
 			if (funcStr.includes('gen_random_uuid')) {
-				// Cast to text when column type is TEXT/VARCHAR to avoid type mismatch
+				if (dialect === 'mysql') return 'UUID()'
+				if (dialect === 'sqlite')
+					return "(lower(hex(randomblob(4))) || '-' || lower(hex(randomblob(2))) || '-4' || substr(lower(hex(randomblob(2))),2) || '-' || substr('89ab',abs(random()) % 4 + 1, 1) || lower(hex(randomblob(2))) || '-' || lower(hex(randomblob(6))))"
 				const upperType = colType?.toUpperCase() ?? ''
 				if (upperType.includes('TEXT') || upperType.includes('VARCHAR')) {
 					return 'gen_random_uuid()::text'
@@ -314,6 +390,7 @@ class DrizzleAdapter extends DatabaseAdapter {
 				return 'gen_random_uuid()'
 			}
 			if (funcStr.includes('now') || funcStr.includes('CURRENT_TIMESTAMP')) {
+				if (dialect === 'sqlite') return "(datetime('now'))"
 				return 'NOW()'
 			}
 			return null
@@ -321,17 +398,21 @@ class DrizzleAdapter extends DatabaseAdapter {
 
 		// Handle arrays (JSONB default)
 		if (Array.isArray(value)) {
-			return `'${JSON.stringify(value).replace(/'/g, "''")}'::jsonb`
+			const json = `'${escapeStr(JSON.stringify(value))}'`
+			if (dialect === 'postgresql') return `${json}::jsonb`
+			return json
 		}
 
 		// Handle objects (JSONB default)
 		if (typeof value === 'object') {
-			return `'${JSON.stringify(value).replace(/'/g, "''")}'::jsonb`
+			const json = `'${escapeStr(JSON.stringify(value))}'`
+			if (dialect === 'postgresql') return `${json}::jsonb`
+			return json
 		}
 
 		// Handle strings
 		if (typeof value === 'string') {
-			return `'${value.replace(/'/g, "''")}'`
+			return `'${escapeStr(value)}'`
 		}
 
 		// Handle numbers and booleans
@@ -636,11 +717,11 @@ class DrizzleAdapter extends DatabaseAdapter {
 	}
 
 	/**
-	 * Create database connection based on config (synchronous, for pg driver).
+	 * Create database connection based on config (synchronous, for pg/mysql/sqlite drivers).
 	 */
 	private createConnection(config: DrizzleConfig): {
 		db: DrizzleDB
-		pool: Pool
+		pool: Pool | { end?: () => Promise<void>; close?: () => void }
 	} {
 		const dialect = config.dialect || 'postgresql'
 
@@ -654,11 +735,32 @@ class DrizzleAdapter extends DatabaseAdapter {
 				})
 				return { db: db as DrizzleDB, pool }
 			}
-			case 'mysql':
-			case 'sqlite':
-				throw new Error(
-					`Dialect "${dialect}" not yet implemented. PostgreSQL is currently supported.`,
+			case 'mysql': {
+				// eslint-disable-next-line @typescript-eslint/no-require-imports
+				const mysql = require('mysql2/promise') as typeof import(
+					'mysql2/promise',
 				)
+				// eslint-disable-next-line @typescript-eslint/no-require-imports
+				const { drizzle: drizzleMysql } =
+					require('drizzle-orm/mysql2') as typeof import('drizzle-orm/mysql2')
+				const pool = mysql.createPool({ uri: config.connectionString })
+				const db = drizzleMysql({ client: pool })
+				return { db: db as unknown as DrizzleDB, pool }
+			}
+			case 'sqlite': {
+				// eslint-disable-next-line @typescript-eslint/no-require-imports
+				const Database = require('better-sqlite3') as new (
+					path: string,
+				) => import('better-sqlite3').Database
+				// eslint-disable-next-line @typescript-eslint/no-require-imports
+				const { drizzle: drizzleSqlite } =
+					require('drizzle-orm/better-sqlite3') as typeof import(
+						'drizzle-orm/better-sqlite3',
+					)
+				const sqlite = new Database(config.connectionString)
+				const db = drizzleSqlite({ client: sqlite })
+				return { db: db as unknown as DrizzleDB, pool: sqlite }
+			}
 			default:
 				throw new Error(`Unknown dialect: ${dialect}`)
 		}
@@ -706,7 +808,15 @@ class DrizzleAdapter extends DatabaseAdapter {
 	 */
 	async onModuleDestroy(): Promise<void> {
 		if (this.pool) {
-			await this.pool.end()
+			if (
+				typeof (this.pool as { end?: () => Promise<void> }).end === 'function'
+			) {
+				await (this.pool as { end: () => Promise<void> }).end()
+			} else if (
+				typeof (this.pool as { close?: () => void }).close === 'function'
+			) {
+				;(this.pool as { close: () => void }).close()
+			}
 			this.pool = null
 			this.db = null
 		}
