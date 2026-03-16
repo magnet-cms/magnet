@@ -736,11 +736,8 @@ class DrizzleAdapter extends DatabaseAdapter {
 				return { db: db as DrizzleDB, pool }
 			}
 			case 'mysql': {
-				// eslint-disable-next-line @typescript-eslint/no-require-imports
-				const mysql = require('mysql2/promise') as typeof import(
-					'mysql2/promise',
-				)
-				// eslint-disable-next-line @typescript-eslint/no-require-imports
+				// biome-ignore format: multiline typeof import breaks DTS build
+				const mysql = require('mysql2/promise') as typeof import('mysql2/promise')
 				const { drizzle: drizzleMysql } =
 					require('drizzle-orm/mysql2') as typeof import('drizzle-orm/mysql2')
 				const pool = mysql.createPool({ uri: config.connectionString })
@@ -748,15 +745,12 @@ class DrizzleAdapter extends DatabaseAdapter {
 				return { db: db as unknown as DrizzleDB, pool }
 			}
 			case 'sqlite': {
-				// eslint-disable-next-line @typescript-eslint/no-require-imports
 				const Database = require('better-sqlite3') as new (
 					path: string,
 				) => import('better-sqlite3').Database
-				// eslint-disable-next-line @typescript-eslint/no-require-imports
+				// biome-ignore format: multiline typeof import breaks DTS build
 				const { drizzle: drizzleSqlite } =
-					require('drizzle-orm/better-sqlite3') as typeof import(
-						'drizzle-orm/better-sqlite3',
-					)
+					require('drizzle-orm/better-sqlite3') as typeof import('drizzle-orm/better-sqlite3')
 				const sqlite = new Database(config.connectionString)
 				const db = drizzleSqlite({ client: sqlite })
 				return { db: db as unknown as DrizzleDB, pool: sqlite }
