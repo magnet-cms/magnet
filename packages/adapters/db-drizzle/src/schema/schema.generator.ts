@@ -179,10 +179,11 @@ function generateColumn(columnName: string, options: PropOptions): any {
 		column = text(snakeCaseName)
 	}
 
-	// Apply constraints
-	if (options.required && !options.nullable) {
-		column = column.notNull()
-	}
+	// `required` is an application-level concern validated on publish,
+	// NOT a database constraint. Drafts start empty and get filled via
+	// auto-save; NOT NULL would prevent creating empty drafts.
+	// System columns (id, documentId, locale, status, timestamps) set
+	// notNull directly in generateSchema(), not here.
 
 	if (options.default !== undefined) {
 		column = column.default(options.default)
