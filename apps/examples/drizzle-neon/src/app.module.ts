@@ -40,6 +40,10 @@ import { VeterinariansModule } from './modules/veterinarians/veterinarians.modul
 				dialect: 'postgresql',
 				driver: 'pg',
 				debug: process.env.NODE_ENV === 'development',
+				migrations: {
+					mode: 'auto',
+					directory: './migrations',
+				},
 			},
 			jwt: {
 				secret: process.env.JWT_SECRET || 'development-secret-key',

@@ -19,6 +19,19 @@ export type DrizzleConfig = {
 	driver?: 'pg' | 'neon' | 'mysql2' | 'better-sqlite3'
 	/** Enable debug logging */
 	debug?: boolean
+	/**
+	 * Migration configuration. If omitted, falls back to legacy CREATE TABLE IF NOT EXISTS behavior.
+	 */
+	migrations?: {
+		/** Migration mode — 'auto' for development, 'manual' for production */
+		mode?: 'auto' | 'manual'
+		/** Directory where migration files are stored (default: './migrations') */
+		directory?: string
+		/** Table name for tracking applied migrations (default: '_magnet_migrations') */
+		tableName?: string
+		/** Whether to run each migration in a transaction (default: true) */
+		transactional?: boolean
+	}
 }
 
 export type DBConfig = MongooseConfig | DrizzleConfig

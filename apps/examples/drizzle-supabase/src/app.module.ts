@@ -46,6 +46,10 @@ AuthStrategyFactory.registerStrategy('supabase', SupabaseAuthStrategy)
 				dialect: 'postgresql',
 				driver: 'pg',
 				debug: process.env.NODE_ENV === 'development',
+				migrations: {
+					mode: 'auto',
+					directory: './migrations',
+				},
 			},
 			// JWT configuration (required)
 			jwt: {
