@@ -6,6 +6,7 @@ import type {
 	UserMenuAction,
 } from '@magnet-cms/ui/components/organisms/app-layout'
 import { AppLayout } from '@magnet-cms/ui/components/organisms/app-layout'
+import { names } from '@magnet-cms/utils'
 import {
 	Activity,
 	Bell,
@@ -284,9 +285,40 @@ export function AuthedLayout({ children, header, sidebar }: AuthedLayoutProps) {
 		userMenuActions: sidebar?.userMenuActions ?? userMenuActions,
 	}
 
+	// Default breadcrumbs from current location (used when header has no breadcrumbs)
+	const locationBreadcrumbs = useMemo(() => {
+		const pathnames = location.pathname.split('/').filter(Boolean)
+		const crumbs: { label: string; href?: string }[] = [
+			{ label: 'Home', href: '/' },
+		]
+		for (let i = 0; i < pathnames.length; i++) {
+			const segment = pathnames[i]
+			const href = `/${pathnames.slice(0, i + 1).join('/')}`
+			const cName = names(segment)
+			crumbs.push({
+				label: decodeURIComponent(cName.title),
+				href: i < pathnames.length - 1 ? href : undefined,
+			})
+		}
+		return crumbs
+	}, [location.pathname])
+
+	// Merge header: use provided header but ensure breadcrumbs + linkComponent
+	const mergedHeader: HeaderConfig = useMemo(
+		() => ({
+			...header,
+			breadcrumbs:
+				header?.breadcrumbs && header.breadcrumbs.length > 0
+					? header.breadcrumbs
+					: locationBreadcrumbs,
+			linkComponent: header?.linkComponent ?? Link,
+		}),
+		[header, locationBreadcrumbs],
+	)
+
 	return (
 		<>
-			<AppLayout sidebar={mergedSidebar} header={header}>
+			<AppLayout sidebar={mergedSidebar} header={mergedHeader}>
 				{children}
 			</AppLayout>
 			<NotificationsDrawer
