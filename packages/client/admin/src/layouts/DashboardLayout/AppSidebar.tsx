@@ -21,6 +21,27 @@ export const AppSidebar = ({
 	const { schemas, settings } = useAdmin()
 	const pluginSidebarItems = usePluginSidebarItems()
 
+	// #region agent log
+	fetch('http://127.0.0.1:7573/ingest/43f773a7-bfd6-45ae-a2d1-03cf84c7466d', {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			'X-Debug-Session-Id': '254f1b',
+		},
+		body: JSON.stringify({
+			sessionId: '254f1b',
+			location: 'AppSidebar.tsx:render',
+			message: 'AppSidebar rendering',
+			data: {
+				pluginSidebarItemsCount: pluginSidebarItems.length,
+				pluginTitles: pluginSidebarItems.map((i) => i.title),
+			},
+			timestamp: Date.now(),
+			hypothesisId: 'H3',
+		}),
+	}).catch(() => {})
+	// #endregion
+
 	// Filter out internal schemas like Media (has dedicated page)
 	const contentSchemas = schemas?.filter(
 		(item: string) => item.toLowerCase() !== 'media',
@@ -102,21 +123,18 @@ export const AppSidebar = ({
 	]
 
 	// Convert plugin sidebar items to the format expected by NavMain
-	const pluginItems = pluginSidebarItems.map((item) => ({
-		title: item.title,
-		url: item.url,
-		icon: item.icon,
-		order: item.order,
-		items: item.items?.map((sub) => ({
-			title: sub.title,
-			url: sub.url,
-		})),
-	}))
-
-	// Merge and sort all sidebar items by order
-	const sidebarMenus = [...coreSidebarItems, ...pluginItems].sort(
-		(a, b) => (a.order || 50) - (b.order || 50),
-	)
+	const pluginItems = pluginSidebarItems
+		.map((item) => ({
+			title: item.title,
+			url: item.url,
+			icon: item.icon,
+			order: item.order,
+			items: item.items?.map((sub) => ({
+				title: sub.title,
+				url: sub.url,
+			})),
+		}))
+		.sort((a, b) => (a.order || 50) - (b.order || 50))
 
 	return (
 		<Sidebar collapsible="icon" variant="inset" {...props}>
@@ -124,7 +142,16 @@ export const AppSidebar = ({
 				<EnvSwitcher />
 			</SidebarHeader>
 			<SidebarContent>
-				<NavMain items={sidebarMenus} />
+				<NavMain items={coreSidebarItems} />
+				{pluginItems.length > 0 && (
+					<NavMain
+						label={intl.formatMessage({
+							id: 'nav.plugins',
+							defaultMessage: 'Plugins',
+						})}
+						items={pluginItems}
+					/>
+				)}
 			</SidebarContent>
 			<SidebarFooter>
 				<NavUser />

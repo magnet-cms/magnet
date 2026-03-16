@@ -101,7 +101,6 @@ export function PluginRegistryProvider({
 					await adapter.request('/plugins/manifests')
 
 				console.log('[Magnet] Plugin manifests:', manifests)
-
 				// 2. Load each plugin bundle
 				const bundleUrls = manifests
 					.filter((m) => m.bundleUrl)
@@ -115,7 +114,7 @@ export function PluginRegistryProvider({
 				const registrations = getRegisteredPlugins()
 				console.log('[Magnet] Registered plugins:', registrations)
 
-				// 4. Resolve routes and components
+				// 4. Resolve routes and components from bundle registrations
 				const resolvedPlugins = new Map<string, ResolvedPlugin>()
 
 				for (const registration of registrations) {
@@ -130,6 +129,22 @@ export function PluginRegistryProvider({
 							`[Magnet] Failed to resolve plugin ${registration.manifest.pluginName}:`,
 							err,
 						)
+					}
+				}
+
+				// 5. For manifests whose bundles didn't register, still resolve
+				//    sidebar items so they appear in the menu
+				for (const manifest of manifests) {
+					if (!resolvedPlugins.has(manifest.pluginName)) {
+						console.warn(
+							`[Magnet] Plugin "${manifest.pluginName}" bundle did not register. Sidebar resolved from manifest.`,
+						)
+						resolvedPlugins.set(manifest.pluginName, {
+							manifest,
+							components: new Map(),
+							routes: [],
+							sidebarItems: (manifest.sidebar || []).map(resolveSidebarItem),
+						})
 					}
 				}
 
@@ -279,7 +294,10 @@ function resolveRoute(
 function resolveSidebarItem(item: PluginSidebarItem): ResolvedSidebarItem {
 	// Resolve icon from lucide-react
 	// Cast through unknown since LucideIcons contains both icons and helper utilities
-	const iconMap = LucideIcons as unknown as Record<string, LucideIcon | undefined>
+	const iconMap = LucideIcons as unknown as Record<
+		string,
+		LucideIcon | undefined
+	>
 	const Icon = iconMap[item.icon] ?? LucideIcons.Puzzle
 
 	return {

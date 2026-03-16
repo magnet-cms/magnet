@@ -44,18 +44,21 @@ export class VaultAdapterFactory {
 			}
 
 			case 'hashicorp': {
+				let HashiCorpVaultAdapter: new (
+					config?: VaultConfig['hashicorp'],
+				) => VaultAdapter
 				try {
-					const {
+					;({
 						HashiCorpVaultAdapter,
-					} = require('@magnet-cms/adapter-vault-hashicorp')
-					VaultAdapterFactory.cachedAdapter = new HashiCorpVaultAdapter(
-						config?.hashicorp,
-					)
+					} = require('@magnet-cms/adapter-vault-hashicorp'))
 				} catch {
 					throw new Error(
 						'HashiCorp Vault adapter not found. Install @magnet-cms/adapter-vault-hashicorp',
 					)
 				}
+				VaultAdapterFactory.cachedAdapter = new HashiCorpVaultAdapter(
+					config?.hashicorp,
+				)
 				break
 			}
 

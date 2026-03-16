@@ -15,8 +15,10 @@ import { ChevronRight, type LucideIcon } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 export const NavMain = ({
+	label = 'Platform',
 	items,
 }: {
+	label?: string
 	items: {
 		title: string
 		url: string
@@ -30,7 +32,7 @@ export const NavMain = ({
 }) => {
 	return (
 		<SidebarGroup>
-			<SidebarGroupLabel>Platform</SidebarGroupLabel>
+			<SidebarGroupLabel>{label}</SidebarGroupLabel>
 			<SidebarMenu>
 				{items.map((item) =>
 					item.items && item.items.length > 0 ? (

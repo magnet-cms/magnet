@@ -1,5 +1,6 @@
 import { MagnetModule } from '@magnet-cms/core'
 import { ContentBuilderPlugin } from '@magnet-cms/plugin-content-builder'
+import { StripePlugin } from '@magnet-cms/plugin-stripe'
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { CatsModule } from './modules/cats/cats.module'
@@ -61,7 +62,22 @@ import { VeterinariansModule } from './modules/veterinarians/veterinarians.modul
 					from: process.env.EMAIL_FROM || 'noreply@magnet.local',
 				},
 			},
-			plugins: [{ plugin: ContentBuilderPlugin }],
+			plugins: [
+				{ plugin: ContentBuilderPlugin },
+				{
+					plugin: StripePlugin,
+					options: {
+						secretKey: process.env.STRIPE_SECRET_KEY || '',
+						webhookSecret: process.env.STRIPE_WEBHOOK_SECRET || '',
+						publishableKey: process.env.STRIPE_PUBLISHABLE_KEY || '',
+						currency: 'usd',
+						features: {
+							pro: ['unlimited-servers', 'priority-support'],
+							basic: ['5-servers'],
+						},
+					},
+				},
+			],
 		}),
 		CatsModule,
 		OwnersModule,

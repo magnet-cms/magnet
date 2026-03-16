@@ -1,0 +1,251 @@
+import { PageHeader, useAdapter } from '@magnet-cms/admin'
+import {
+	Badge,
+	Button,
+	DataTable,
+	type DataTableColumn,
+	type DataTableRenderContext,
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+	Skeleton,
+} from '@magnet-cms/ui/components'
+import { useEffect, useState } from 'react'
+
+const contentManagerStyles = `
+  .table-row-hover:hover td {
+    background-color: #F9FAFB;
+  }
+  .table-row-hover.group:hover td {
+    background-color: #F9FAFB;
+  }
+`
+
+interface Subscription {
+	id: string
+	stripeSubscriptionId: string
+	customerId: string
+	priceId: string
+	status: string
+	currentPeriodStart: string
+	currentPeriodEnd: string
+	cancelAtPeriodEnd: boolean
+}
+
+function getStatusVariant(
+	status: string,
+): 'default' | 'secondary' | 'destructive' | 'outline' {
+	switch (status) {
+		case 'active':
+		case 'trialing':
+			return 'default'
+		case 'past_due':
+		case 'unpaid':
+			return 'destructive'
+		case 'canceled':
+			return 'secondary'
+		default:
+			return 'outline'
+	}
+}
+
+const SubscriptionsPage = () => {
+	const adapter = useAdapter()
+	const [subscriptions, setSubscriptions] = useState<Subscription[]>([])
+	const [statusFilter, setStatusFilter] = useState<string>('all')
+	const [loading, setLoading] = useState(true)
+
+	useEffect(() => {
+		async function fetch() {
+			try {
+				const data = await adapter.request<Subscription[]>(
+					'/stripe/admin/subscriptions',
+				)
+				setSubscriptions(data)
+			} catch (error) {
+				console.error('[Stripe] Failed to fetch subscriptions:', error)
+			} finally {
+				setLoading(false)
+			}
+		}
+		fetch()
+	}, [adapter])
+
+	const filtered =
+		statusFilter === 'all'
+			? subscriptions
+			: subscriptions.filter((s) => s.status === statusFilter)
+
+	const handleCancel = async (stripeSubscriptionId: string) => {
+		try {
+			await adapter.request(
+				`/stripe/admin/subscriptions/${stripeSubscriptionId}/cancel`,
+				{ method: 'POST' },
+			)
+			setSubscriptions((prev) =>
+				prev.map((s) =>
+					s.stripeSubscriptionId === stripeSubscriptionId
+						? { ...s, status: 'canceled' }
+						: s,
+				),
+			)
+		} catch (error) {
+			console.error('[Stripe] Failed to cancel subscription:', error)
+		}
+	}
+
+	const columns: DataTableColumn<Subscription>[] = [
+		{
+			type: 'text',
+			header: 'Customer',
+			accessorKey: 'customerId',
+			format: (value) => (
+				<span className="font-mono text-sm">{value as string}</span>
+			),
+		},
+		{
+			type: 'text',
+			header: 'Price',
+			accessorKey: 'priceId',
+			format: (value) => (
+				<span className="font-mono text-sm">{value as string}</span>
+			),
+		},
+		{
+			type: 'custom',
+			header: 'Status',
+			cell: (row) => (
+				<Badge variant={getStatusVariant(row.original.status)}>
+					{row.original.status}
+					{row.original.cancelAtPeriodEnd && ' (canceling)'}
+				</Badge>
+			),
+		},
+		{
+			type: 'custom',
+			header: 'Period',
+			cell: (row) => (
+				<span className="text-sm text-muted-foreground">
+					{new Date(row.original.currentPeriodStart).toLocaleDateString()}
+					{' — '}
+					{new Date(row.original.currentPeriodEnd).toLocaleDateString()}
+				</span>
+			),
+		},
+		{
+			type: 'custom',
+			header: 'Actions',
+			cell: (row) =>
+				row.original.status === 'active' && !row.original.cancelAtPeriodEnd ? (
+					<Button
+						variant="destructive"
+						size="sm"
+						onClick={() => handleCancel(row.original.stripeSubscriptionId)}
+					>
+						Cancel
+					</Button>
+				) : null,
+		},
+	]
+
+	const renderToolbar = () => (
+		<div className="px-6 py-4 flex flex-col sm:flex-row gap-3 items-center justify-between flex-none bg-white border-b border-gray-200">
+			<div className="max-w-[200px]">
+				<Select value={statusFilter} onValueChange={setStatusFilter}>
+					<SelectTrigger>
+						<SelectValue placeholder="Filter by status" />
+					</SelectTrigger>
+					<SelectContent>
+						<SelectItem value="all">All Statuses</SelectItem>
+						<SelectItem value="active">Active</SelectItem>
+						<SelectItem value="trialing">Trialing</SelectItem>
+						<SelectItem value="past_due">Past Due</SelectItem>
+						<SelectItem value="canceled">Canceled</SelectItem>
+						<SelectItem value="unpaid">Unpaid</SelectItem>
+					</SelectContent>
+				</Select>
+			</div>
+			<Button variant="ghost" size="sm" onClick={() => setStatusFilter('all')}>
+				Clear Filters
+			</Button>
+		</div>
+	)
+
+	const renderPagination = (table: DataTableRenderContext<Subscription>) => {
+		const { pageIndex, pageSize } = table.getState().pagination
+		const totalRows = table.getFilteredRowModel().rows.length
+		const startRow = pageIndex * pageSize + 1
+		const endRow = Math.min((pageIndex + 1) * pageSize, totalRows)
+		return (
+			<div className="flex-none px-6 py-4 border-t border-gray-200 bg-white flex items-center justify-between">
+				<div className="text-xs text-gray-500">
+					Showing <span className="font-medium text-gray-900">{startRow}</span>{' '}
+					to <span className="font-medium text-gray-900">{endRow}</span> of{' '}
+					<span className="font-medium text-gray-900">{totalRows}</span> results
+				</div>
+				<div className="flex items-center gap-2">
+					<Button
+						variant="outline"
+						size="sm"
+						disabled={!table.getCanPreviousPage()}
+						onClick={() => table.previousPage()}
+					>
+						Previous
+					</Button>
+					<Button
+						variant="outline"
+						size="sm"
+						disabled={!table.getCanNextPage()}
+						onClick={() => table.nextPage()}
+					>
+						Next
+					</Button>
+				</div>
+			</div>
+		)
+	}
+
+	if (loading) {
+		return (
+			<div className="flex-1 flex flex-col min-w-0 bg-white h-full relative overflow-hidden">
+				<PageHeader title="Subscriptions" />
+				<div className="flex-1 p-6">
+					<Skeleton className="h-96 w-full" />
+				</div>
+			</div>
+		)
+	}
+
+	return (
+		<div className="flex-1 flex flex-col min-w-0 bg-white h-full relative overflow-hidden">
+			<style>{contentManagerStyles}</style>
+			<PageHeader
+				title="Subscriptions"
+				description={`${subscriptions.length} subscription(s) total.`}
+			/>
+			<div className="flex-1 flex flex-col overflow-hidden bg-gray-50">
+				<div className="flex-1 overflow-hidden relative">
+					<div className="absolute inset-0 overflow-auto">
+						<DataTable
+							data={filtered}
+							columns={columns}
+							getRowId={(row) => row.id}
+							renderToolbar={renderToolbar}
+							renderPagination={renderPagination}
+							enablePagination
+							pageSizeOptions={[10, 20, 50]}
+							initialPagination={{ pageIndex: 0, pageSize: 10 }}
+							showCount={false}
+							className="h-full flex flex-col"
+							variant="content-manager"
+						/>
+					</div>
+				</div>
+			</div>
+		</div>
+	)
+}
+
+export default SubscriptionsPage

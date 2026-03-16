@@ -17,10 +17,13 @@
   },
   "dependencies": {
     "@magnet-cms/adapter-db-mongoose": "workspace:*",
+    "@magnet-cms/adapter-vault-hashicorp": "workspace:*",
     "@magnet-cms/common": "workspace:*",
     "@magnet-cms/core": "workspace:*",
     "@magnet-cms/email-nodemailer": "workspace:*",
     "@magnet-cms/plugin-content-builder": "workspace:*",
+    "@magnet-cms/plugin-stripe": "workspace:*",
+    "stripe": "^17.0.0",
     "@nestjs/common": "^11.1.12",
     "@nestjs/config": "^4.0.0",
     "@nestjs/core": "^11.1.12",

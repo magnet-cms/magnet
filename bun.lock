@@ -125,10 +125,12 @@
       "version": "0.0.1",
       "dependencies": {
         "@magnet-cms/adapter-db-mongoose": "workspace:*",
+        "@magnet-cms/adapter-vault-hashicorp": "workspace:*",
         "@magnet-cms/common": "workspace:*",
         "@magnet-cms/core": "workspace:*",
         "@magnet-cms/email-nodemailer": "workspace:*",
         "@magnet-cms/plugin-content-builder": "workspace:*",
+        "@magnet-cms/plugin-stripe": "workspace:*",
         "@nestjs/common": "^11.1.12",
         "@nestjs/config": "^4.0.0",
         "@nestjs/core": "^11.1.12",
@@ -136,6 +138,7 @@
         "class-validator": "^0.14.1",
         "reflect-metadata": "^0.2.2",
         "rxjs": "^7.8.1",
+        "stripe": "^17.0.0",
       },
       "devDependencies": {
         "@nestjs/cli": "^11.0.16",
@@ -354,16 +357,22 @@
       },
       "dependencies": {
         "@inquirer/prompts": "^7.5.0",
-        "@magnet-cms/adapter-db-drizzle": "workspace:*",
         "ansis": "^3.17.0",
         "commander": "^13.1.0",
       },
       "devDependencies": {
+        "@magnet-cms/adapter-db-drizzle": "workspace:*",
         "@repo/biome": "workspace:*",
         "@repo/tsup": "workspace:*",
         "@repo/typescript-config": "workspace:*",
         "@types/node": "^22.13.1",
       },
+      "peerDependencies": {
+        "@magnet-cms/adapter-db-drizzle": "workspace:*",
+      },
+      "optionalPeers": [
+        "@magnet-cms/adapter-db-drizzle",
+      ],
     },
     "packages/client/admin": {
       "name": "@magnet-cms/admin",
@@ -618,6 +627,25 @@
         "reflect-metadata": "0.2.2",
       },
     },
+    "packages/plugins/polar": {
+      "name": "@magnet-cms/plugin-polar",
+      "version": "0.1.0",
+      "devDependencies": {
+        "@magnet-cms/common": "workspace:*",
+        "@magnet-cms/core": "workspace:*",
+        "@nestjs/common": "^11.1.12",
+        "@repo/biome": "workspace:*",
+        "@repo/tsup": "workspace:*",
+        "@repo/typescript-config": "workspace:*",
+        "reflect-metadata": "0.2.2",
+      },
+      "peerDependencies": {
+        "@magnet-cms/common": "^0.1.0",
+        "@magnet-cms/core": "^1.0.2",
+        "@nestjs/common": "^11.1.12",
+        "reflect-metadata": "0.2.2",
+      },
+    },
     "packages/plugins/seo": {
       "name": "@magnet-cms/plugin-seo",
       "version": "0.1.1",
@@ -631,6 +659,43 @@
       "peerDependencies": {
         "@nestjs/common": "^11.1.12",
         "reflect-metadata": "0.2.2",
+      },
+    },
+    "packages/plugins/stripe": {
+      "name": "@magnet-cms/plugin-stripe",
+      "version": "0.1.0",
+      "devDependencies": {
+        "@magnet-cms/admin": "workspace:*",
+        "@magnet-cms/common": "workspace:*",
+        "@magnet-cms/core": "workspace:*",
+        "@magnet-cms/ui": "workspace:*",
+        "@magnet-cms/utils": "workspace:*",
+        "@nestjs/common": "^11.1.12",
+        "@repo/biome": "workspace:*",
+        "@repo/tsup": "workspace:*",
+        "@repo/typescript-config": "workspace:*",
+        "@types/react": "^19.0.1",
+        "@vitejs/plugin-react": "^4.3.4",
+        "lucide-react": "^0.468.0",
+        "react": "^19.0.0",
+        "react-router-dom": "^7.1.1",
+        "recharts": "^2.15.0",
+        "reflect-metadata": "0.2.2",
+        "stripe": "^17.0.0",
+        "vite": "^6.0.7",
+      },
+      "peerDependencies": {
+        "@magnet-cms/admin": "^0.1.2",
+        "@magnet-cms/common": "^0.1.0",
+        "@magnet-cms/core": "^1.0.2",
+        "@magnet-cms/ui": "^0.1.0",
+        "@magnet-cms/utils": "^0.1.0",
+        "@nestjs/common": "^11.1.12",
+        "lucide-react": ">=0.400.0",
+        "react": ">=18.0.0",
+        "react-router-dom": ">=6.0.0",
+        "reflect-metadata": "0.2.2",
+        "stripe": "^17.0.0",
       },
     },
     "packages/tooling/biome": {
@@ -1219,7 +1284,11 @@
 
     "@magnet-cms/plugin-content-builder": ["@magnet-cms/plugin-content-builder@workspace:packages/plugins/content-builder"],
 
+    "@magnet-cms/plugin-polar": ["@magnet-cms/plugin-polar@workspace:packages/plugins/polar"],
+
     "@magnet-cms/plugin-seo": ["@magnet-cms/plugin-seo@workspace:packages/plugins/seo"],
+
+    "@magnet-cms/plugin-stripe": ["@magnet-cms/plugin-stripe@workspace:packages/plugins/stripe"],
 
     "@magnet-cms/ui": ["@magnet-cms/ui@workspace:packages/client/ui"],
 
@@ -3079,7 +3148,7 @@
 
     "punycode": ["punycode@2.3.1", "", {}, "sha512-vYt7UD1U9Wg6138shLtLOvdAu+8DsC/ilFtEVHcH+wydcSpNE20AfSOduf6MkRFahL5FY7X1oU7nKVZFtfq8Fg=="],
 
-    "qs": ["qs@6.5.5", "", {}, "sha512-mzR4sElr1bfCaPJe7m8ilJ6ZXdDaGoObcYR0ZHSsktM/Lt21MVHj5De30GQH2eiZ1qGRTO7LCAzQsUeXTNexWQ=="],
+    "qs": ["qs@6.14.1", "", { "dependencies": { "side-channel": "^1.1.0" } }, "sha512-4EK3+xJl8Ts67nLYNwqw/dsFVnCf+qR7RgXSK9jEEm9unao3njwMDdmsdvoKBKHzxd7tCYz5e5M+SnMjdtXGQQ=="],
 
     "quansync": ["quansync@0.2.11", "", {}, "sha512-AifT7QEbW9Nri4tAwR5M/uzpBuqfZf+zwaEM/QkzEjj7NBuFD2rBuy0K3dE+8wltbezDV7JMA0WfnCPYRSYbXA=="],
 
@@ -3312,6 +3381,8 @@
     "strip-bom": ["strip-bom@3.0.0", "", {}, "sha512-vavAMRXOgBVNF6nyEEmL3DBK19iRpDcoIwW+swQ+CbGiu7lju6t+JklA1MHweoWtadgt4ISVUsXLyDq34ddcwA=="],
 
     "strip-json-comments": ["strip-json-comments@3.1.1", "", {}, "sha512-6fPc+R4ihwqP6N/aIv2f1gMH8lOVtWQHoqC4yK6oSDVVocumAsfCqjkXnqiYMhmMwS/mEHLp7Vehlt3ql6lEig=="],
+
+    "stripe": ["stripe@17.7.0", "", { "dependencies": { "@types/node": ">=8.1.0", "qs": "^6.11.0" } }, "sha512-aT2BU9KkizY9SATf14WhhYVv2uOapBWX0OFWF4xvcj1mPaNotlSc2CsxpS4DS46ZueSppmCF5BX1sNYBtwBvfw=="],
 
     "strnum": ["strnum@2.2.0", "", {}, "sha512-Y7Bj8XyJxnPAORMZj/xltsfo55uOiyHcU2tnAVzHUnSJR/KsEX+9RoDeXEnsXtl/CX4fAcrt64gZ13aGaWPeBg=="],
 
@@ -3621,6 +3692,10 @@
 
     "@magnet-cms/plugin-content-builder/vite": ["vite@6.4.1", "", { "dependencies": { "esbuild": "^0.25.0", "fdir": "^6.4.4", "picomatch": "^4.0.2", "postcss": "^8.5.3", "rollup": "^4.34.9", "tinyglobby": "^0.2.13" }, "optionalDependencies": { "fsevents": "~2.3.3" }, "peerDependencies": { "@types/node": "^18.0.0 || ^20.0.0 || >=22.0.0", "jiti": ">=1.21.0", "less": "*", "lightningcss": "^1.21.0", "sass": "*", "sass-embedded": "*", "stylus": "*", "sugarss": "*", "terser": "^5.16.0", "tsx": "^4.8.1", "yaml": "^2.4.2" }, "optionalPeers": ["@types/node", "jiti", "less", "lightningcss", "sass", "sass-embedded", "stylus", "sugarss", "terser", "tsx", "yaml"], "bin": { "vite": "bin/vite.js" } }, "sha512-+Oxm7q9hDoLMyJOYfUYBuHQo+dkAloi33apOPP56pzj+vsdJDzr+j1NISE5pyaAuKL4A3UD34qd0lx5+kfKp2g=="],
 
+    "@magnet-cms/plugin-stripe/lucide-react": ["lucide-react@0.468.0", "", { "peerDependencies": { "react": "^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0-rc" } }, "sha512-6koYRhnM2N0GGZIdXzSeiNwguv1gt/FAjZOiPl76roBi3xKEXa4WmfpxgQwTTL4KipXjefrnf3oV4IsYhi4JFA=="],
+
+    "@magnet-cms/plugin-stripe/vite": ["vite@6.4.1", "", { "dependencies": { "esbuild": "^0.25.0", "fdir": "^6.4.4", "picomatch": "^4.0.2", "postcss": "^8.5.3", "rollup": "^4.34.9", "tinyglobby": "^0.2.13" }, "optionalDependencies": { "fsevents": "~2.3.3" }, "peerDependencies": { "@types/node": "^18.0.0 || ^20.0.0 || >=22.0.0", "jiti": ">=1.21.0", "less": "*", "lightningcss": "^1.21.0", "sass": "*", "sass-embedded": "*", "stylus": "*", "sugarss": "*", "terser": "^5.16.0", "tsx": "^4.8.1", "yaml": "^2.4.2" }, "optionalPeers": ["@types/node", "jiti", "less", "lightningcss", "sass", "sass-embedded", "stylus", "sugarss", "terser", "tsx", "yaml"], "bin": { "vite": "bin/vite.js" } }, "sha512-+Oxm7q9hDoLMyJOYfUYBuHQo+dkAloi33apOPP56pzj+vsdJDzr+j1NISE5pyaAuKL4A3UD34qd0lx5+kfKp2g=="],
+
     "@magnet-cms/ui/typescript": ["typescript@5.9.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw=="],
 
     "@manypkg/find-root/@types/node": ["@types/node@12.20.55", "", {}, "sha512-J8xLz7q2OFulZ2cyGTLE1TbbZcjpno7FaN6zdJNrgAdrJ+DZzh/uFR6YrTb4C+nXakvud8Q4+rbhoIWlYQbUFQ=="],
@@ -3793,8 +3868,6 @@
 
     "body-parser/debug": ["debug@4.4.3", "", { "dependencies": { "ms": "^2.1.3" } }, "sha512-RGwwWnwQvkVfavKVt22FGLw+xYSdzARwm0ru6DhTVA3umU5hZc28V3kO4stgYryrTlLpuvgI9GiijltAjNbcqA=="],
 
-    "body-parser/qs": ["qs@6.14.1", "", { "dependencies": { "side-channel": "^1.1.0" } }, "sha512-4EK3+xJl8Ts67nLYNwqw/dsFVnCf+qR7RgXSK9jEEm9unao3njwMDdmsdvoKBKHzxd7tCYz5e5M+SnMjdtXGQQ=="],
-
     "boxen/chalk": ["chalk@4.1.2", "", { "dependencies": { "ansi-styles": "^4.1.0", "supports-color": "^7.1.0" } }, "sha512-oKnbhFyRIXpUuez8iBMmyEa4nbj4IOQyuhc/wy9kY7/WVPcwIO9VA668Pu8RkO7+0G76SLROeyw9CpQ061i4mA=="],
 
     "boxen/string-width": ["string-width@4.2.3", "", { "dependencies": { "emoji-regex": "^8.0.0", "is-fullwidth-code-point": "^3.0.0", "strip-ansi": "^6.0.1" } }, "sha512-wKyQRQpjJ0sIp62ErSZdGsjMJWsap5oRNihHhu6G7JVO/9jIB6UyevL+tXuOqrng8j/cxKTWyWUwvSTriiZz/g=="],
@@ -3922,6 +3995,8 @@
     "react-phone-number-input/libphonenumber-js": ["libphonenumber-js@1.12.34", "", {}, "sha512-v/Ip8k8eYdp7bINpzqDh46V/PaQ8sK+qi97nMQgjZzFlb166YFqlR/HVI+MzsI9JqcyyVWCOipmmretiaSyQyw=="],
 
     "read-yaml-file/js-yaml": ["js-yaml@3.14.2", "", { "dependencies": { "argparse": "^1.0.7", "esprima": "^4.0.0" }, "bin": { "js-yaml": "bin/js-yaml.js" } }, "sha512-PMSmkqxr106Xa156c2M265Z+FTrPl+oxd/rgOQy2tijQeK5TxQ43psO1ZCwhVOSdnn+RzkzlRz/eY4BgJBYVpg=="],
+
+    "request/qs": ["qs@6.5.5", "", {}, "sha512-mzR4sElr1bfCaPJe7m8ilJ6ZXdDaGoObcYR0ZHSsktM/Lt21MVHj5De30GQH2eiZ1qGRTO7LCAzQsUeXTNexWQ=="],
 
     "router/debug": ["debug@4.4.3", "", { "dependencies": { "ms": "^2.1.3" } }, "sha512-RGwwWnwQvkVfavKVt22FGLw+xYSdzARwm0ru6DhTVA3umU5hZc28V3kO4stgYryrTlLpuvgI9GiijltAjNbcqA=="],
 

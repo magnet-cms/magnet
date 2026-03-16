@@ -9,7 +9,6 @@ import { AppLayout } from '@magnet-cms/ui/components/organisms/app-layout'
 import {
 	Activity,
 	Bell,
-	FlaskConical,
 	Image,
 	Key,
 	KeyRound,
@@ -23,6 +22,7 @@ import {
 import { type ReactNode, useCallback, useMemo, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 
+import { usePluginSidebarItems } from '~/core/plugins/PluginRegistry'
 import { NotificationsDrawer } from '~/features/notifications'
 import { useAuth, useLogout } from '~/hooks/useAuth'
 import { useSchemas } from '~/hooks/useDiscovery'
@@ -51,6 +51,9 @@ export function AuthedLayout({ children, header, sidebar }: AuthedLayoutProps) {
 
 	// Get schemas for dynamic nav
 	const { data: schemas } = useSchemas()
+
+	// Get plugin sidebar items
+	const pluginSidebarItems = usePluginSidebarItems()
 
 	// Handle logout
 	const handleLogout = useCallback(async () => {
@@ -87,6 +90,54 @@ export function AuthedLayout({ children, header, sidebar }: AuthedLayoutProps) {
 		}))
 	}, [schemas])
 
+	// Playground is special: it lives under Platform. All other plugins go to Plugins section.
+	const playgroundItem = pluginSidebarItems.find((p) => p.id === 'playground')
+	const pluginNavItems = useMemo(
+		() =>
+			pluginSidebarItems
+				.filter((item) => item.id !== 'playground')
+				.map((item) => ({
+					title: item.title,
+					url: item.url,
+					icon: item.icon,
+					items: item.items?.map((sub) => ({
+						title: sub.title,
+						url: sub.url,
+					})),
+				}))
+				.sort((a, b) => {
+					const orderA =
+						pluginSidebarItems.find((p) => p.title === a.title)?.order ?? 50
+					const orderB =
+						pluginSidebarItems.find((p) => p.title === b.title)?.order ?? 50
+					return orderA - orderB
+				}),
+		[pluginSidebarItems],
+	)
+
+	// #region agent log
+	fetch('http://127.0.0.1:7573/ingest/43f773a7-bfd6-45ae-a2d1-03cf84c7466d', {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			'X-Debug-Session-Id': '254f1b',
+		},
+		body: JSON.stringify({
+			sessionId: '254f1b',
+			location: 'AuthedLayout.tsx:render',
+			message: 'AuthedLayout plugin items',
+			data: {
+				pluginSidebarItemsCount: pluginSidebarItems.length,
+				pluginNavItemsCount: pluginNavItems.length,
+				pluginTitles: pluginNavItems.map((i: { title: string }) => i.title),
+			},
+			timestamp: Date.now(),
+			runId: 'post-fix',
+			hypothesisId: 'H3',
+		}),
+	}).catch(() => {})
+	// #endregion
+
 	// Default sidebar configuration for authenticated pages
 	const defaultSidebarConfig: SidebarConfig = useMemo(
 		() => ({
@@ -106,11 +157,15 @@ export function AuthedLayout({ children, header, sidebar }: AuthedLayoutProps) {
 					icon: Layers,
 					items: contentManagerItems,
 				},
-				{
-					title: 'Playground',
-					url: '/playground',
-					icon: FlaskConical,
-				},
+				...(playgroundItem
+					? [
+							{
+								title: playgroundItem.title,
+								url: playgroundItem.url,
+								icon: playgroundItem.icon,
+							},
+						]
+					: []),
 				{
 					title: 'Media Library',
 					url: '/media-library',
@@ -118,6 +173,8 @@ export function AuthedLayout({ children, header, sidebar }: AuthedLayoutProps) {
 				},
 			],
 			navMainLabel: 'Platform',
+			navPlugins: pluginNavItems,
+			navPluginsLabel: 'Plugins',
 			navSecondary: [
 				{
 					title: 'Users',
@@ -155,7 +212,13 @@ export function AuthedLayout({ children, header, sidebar }: AuthedLayoutProps) {
 			user: authUser,
 			onLogout: handleLogout,
 		}),
-		[contentManagerItems, authUser, handleLogout],
+		[
+			contentManagerItems,
+			playgroundItem,
+			pluginNavItems,
+			authUser,
+			handleLogout,
+		],
 	)
 
 	// User menu actions with notifications item

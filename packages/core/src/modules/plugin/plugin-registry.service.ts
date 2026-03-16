@@ -108,7 +108,7 @@ export class PluginRegistryService implements OnModuleInit {
 			.filter((p) => p.frontendManifest)
 			.map((p) => ({
 				...p.frontendManifest,
-				bundleUrl: `/plugins/assets/${p.metadata.name}/bundle.iife.js`,
+				bundleUrl: `/plugins/assets/${p.metadata.name}/bundle.iife.js?v=${p.metadata.version ?? '0'}`,
 			})) as EnrichedPluginManifest[]
 	}
 
