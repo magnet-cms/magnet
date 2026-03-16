@@ -1,3 +1,5 @@
+import { ThemeProvider, useTheme } from 'next-themes'
+import type { ReactNode } from 'react'
 import { BrowserRouter, useRoutes } from 'react-router-dom'
 import { DialogProvider } from './core/dialog'
 import { MagnetProvider } from './core/provider/MagnetProvider'
@@ -20,6 +22,23 @@ const AppRoutes = () => {
 }
 
 /**
+ * Wraps the app with the active theme class so Tailwind dark: variants apply.
+ * next-themes sets the class on html, but we also apply it here as a fallback
+ * for environments where that may not work reliably.
+ */
+function ThemeClassWrapper({ children }: { children: ReactNode }) {
+	const { resolvedTheme } = useTheme()
+	return (
+		<div
+			className={resolvedTheme === 'dark' ? 'dark' : ''}
+			style={{ minHeight: '100vh' }}
+		>
+			{children}
+		</div>
+	)
+}
+
+/**
  * App component for development mode
  * Uses BrowserRouter with useRoutes for hot-reloading support
  *
@@ -28,15 +47,19 @@ const AppRoutes = () => {
  */
 const App = () => {
 	return (
-		<AppIntlProvider>
-			<MagnetProvider config={{ apiBaseUrl, basePath }}>
-				<DialogProvider>
-					<BrowserRouter basename={basePath}>
-						<AppRoutes />
-					</BrowserRouter>
-				</DialogProvider>
-			</MagnetProvider>
-		</AppIntlProvider>
+		<ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+			<ThemeClassWrapper>
+				<AppIntlProvider>
+					<MagnetProvider config={{ apiBaseUrl, basePath }}>
+						<DialogProvider>
+							<BrowserRouter basename={basePath}>
+								<AppRoutes />
+							</BrowserRouter>
+						</DialogProvider>
+					</MagnetProvider>
+				</AppIntlProvider>
+			</ThemeClassWrapper>
+		</ThemeProvider>
 	)
 }
 

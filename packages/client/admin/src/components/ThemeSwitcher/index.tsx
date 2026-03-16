@@ -38,7 +38,7 @@ export function ThemeSwitcher() {
 	}
 
 	return (
-		<DropdownMenu>
+		<DropdownMenu modal={false}>
 			<DropdownMenuTrigger asChild>
 				<Button
 					variant="ghost"
@@ -55,7 +55,6 @@ export function ThemeSwitcher() {
 				align="end"
 				side={isMobile ? 'top' : 'right'}
 				sideOffset={8}
-				onClick={(e) => e.stopPropagation()}
 			>
 				{themes.map(({ value, label, icon: Icon }) => (
 					<DropdownMenuItem
