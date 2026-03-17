@@ -14,3 +14,4 @@ export {
 } from './modules/plugin/decorators/plugin.decorator'
 export { Hook } from './modules/plugin/decorators/hook.decorator'
 export { InjectPluginOptions } from './modules/plugin/decorators/inject-plugin-options.decorator'
+export { AuthStrategyFactory } from './modules/auth/auth-strategy.factory'

@@ -27,6 +27,9 @@ out/
 build
 dist
 
+# Drizzle auto-migration snapshot (local state, not committed)
+**/.schema_snapshot.json
+
 
 # Debug
 npm-debug.log*

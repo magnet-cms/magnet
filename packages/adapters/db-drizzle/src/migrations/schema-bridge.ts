@@ -1,5 +1,12 @@
+import { mkdir, readFile, writeFile } from 'node:fs/promises'
+import { join } from 'node:path'
 import { getRegisteredSchemas } from '../schema/schema.generator'
 import type { MigrationDialect } from './types'
+
+/**
+ * Default filename for persisted schema snapshot (used by auto-migration).
+ */
+export const SNAPSHOT_FILENAME = '.schema_snapshot.json'
 
 /**
  * A drizzle snapshot JSON (opaque to us — owned by drizzle-kit)
@@ -77,6 +84,33 @@ export class SchemaBridge {
 	): Promise<string[]> {
 		const fn = generateSQLFn ?? (await this.resolveGenerateSQLFn(dialect))
 		return fn(prev, cur)
+	}
+
+	/**
+	 * Load a previously saved snapshot from disk.
+	 * Returns null if the file does not exist or is invalid.
+	 */
+	async loadSnapshot(directory: string): Promise<SnapshotJSON | null> {
+		const path = join(directory, SNAPSHOT_FILENAME)
+		try {
+			const content = await readFile(path, 'utf-8')
+			const parsed = JSON.parse(content) as SnapshotJSON
+			if (parsed && typeof parsed === 'object' && 'tables' in parsed) {
+				return parsed
+			}
+			return null
+		} catch {
+			return null
+		}
+	}
+
+	/**
+	 * Save a snapshot to disk for use as prevSnapshot on the next run.
+	 */
+	async saveSnapshot(directory: string, snapshot: SnapshotJSON): Promise<void> {
+		await mkdir(directory, { recursive: true })
+		const path = join(directory, SNAPSHOT_FILENAME)
+		await writeFile(path, JSON.stringify(snapshot, null, 0), 'utf-8')
 	}
 
 	/**

@@ -1,4 +1,4 @@
-import { SupabaseAuthAdapter } from '@magnet-cms/adapter-auth-supabase'
+import { SupabaseAuthStrategy } from '@magnet-cms/adapter-auth-supabase'
 import { DrizzleDatabaseAdapter } from '@magnet-cms/adapter-db-drizzle'
 import { SupabaseStorageAdapter } from '@magnet-cms/adapter-storage-supabase'
 import { SupabaseVaultAdapter } from '@magnet-cms/adapter-vault-supabase'
@@ -6,11 +6,7 @@ import { MagnetModule } from '@magnet-cms/core'
 import { ContentBuilderPlugin } from '@magnet-cms/plugin-content-builder'
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
-import { ArticlesModule } from './modules/articles/articles.module'
-import { CatsModule } from './modules/cats/cats.module'
-import { MedicalRecordsModule } from './modules/medical-records/medical-records.module'
-import { OwnersModule } from './modules/owners/owners.module'
-import { VeterinariansModule } from './modules/veterinarians/veterinarians.module'
+import { FeaturesModule } from './modules/features.module'
 
 /**
  * Example application using Magnet CMS with full Supabase integration.
@@ -33,29 +29,24 @@ import { VeterinariansModule } from './modules/veterinarians/veterinarians.modul
 @Module({
 	imports: [
 		ConfigModule.forRoot({ isGlobal: true }),
-		MagnetModule.forRoot(
-			[
-				DrizzleDatabaseAdapter.forRoot({
-					dialect: 'postgresql',
-					driver: 'pg',
-					debug: process.env.NODE_ENV === 'development',
-					migrations: {
-						mode: 'auto',
-						directory: './migrations',
-					},
-				}),
-				SupabaseAuthAdapter.forRoot(),
-				SupabaseStorageAdapter.forRoot(),
-				SupabaseVaultAdapter.forRoot(),
-				ContentBuilderPlugin.forRoot(),
-			],
-			{ admin: true },
+		FeaturesModule.forRoot(
+			MagnetModule.forRoot(
+				[
+					DrizzleDatabaseAdapter.forRoot({
+						dialect: 'postgresql',
+						driver: 'pg',
+						debug: process.env.NODE_ENV === 'development',
+						// No migrations config: uses CREATE TABLE IF NOT EXISTS.
+						// Supabase Auth creates its own tables; auto-migration can conflict.
+					}),
+					SupabaseAuthStrategy.forRoot(),
+					SupabaseStorageAdapter.forRoot(),
+					SupabaseVaultAdapter.forRoot(),
+					ContentBuilderPlugin.forRoot(),
+				],
+				{ admin: true },
+			),
 		),
-		CatsModule,
-		OwnersModule,
-		VeterinariansModule,
-		MedicalRecordsModule,
-		ArticlesModule,
 	],
 })
 export class AppModule {}
