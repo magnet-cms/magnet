@@ -1,7 +1,7 @@
 import type { VaultAdapter } from '@magnet-cms/common'
+import { DatabaseModule } from '@magnet-cms/core'
 import { DynamicModule, Module } from '@nestjs/common'
 import { ModuleRef } from '@nestjs/core'
-import { DatabaseModule } from '~/modules/database'
 import { SettingsModule } from '~/modules/settings'
 import { DbVaultAdapter } from './adapters/db-vault.adapter'
 import { VaultSecret } from './schemas/vault-secret.schema'

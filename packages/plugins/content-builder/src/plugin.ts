@@ -1,6 +1,5 @@
 import type { PluginMagnetProvider } from '@magnet-cms/common'
 import { Plugin } from '@magnet-cms/core'
-import { ContentBuilderModule } from './backend/content-builder.module'
 
 /**
  * Content Builder Plugin
@@ -18,7 +17,8 @@ import { ContentBuilderModule } from './backend/content-builder.module'
 	name: 'content-builder',
 	description: 'Visual schema builder and code generator for Magnet CMS',
 	version: '1.0.0',
-	module: ContentBuilderModule,
+	module: () =>
+		require('./backend/content-builder.module').ContentBuilderModule,
 	frontend: {
 		routes: [
 			{

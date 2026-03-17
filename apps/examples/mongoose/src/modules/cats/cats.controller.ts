@@ -1,5 +1,5 @@
 import { RequirePermission, Resolve } from '@magnet-cms/common'
-import { JwtAuthGuard, PermissionGuard } from '@magnet-cms/core'
+import { JwtAuthGuard } from '@magnet-cms/core/modules'
 import {
 	Body,
 	Controller,
@@ -17,7 +17,7 @@ import { CreateCatDto } from './dto/create-cat.dto'
 import { Cat } from './schemas/cat.schema'
 
 @Controller('cats')
-@UseGuards(JwtAuthGuard, PermissionGuard)
+@UseGuards(JwtAuthGuard)
 export class CatsController {
 	constructor(private readonly catsService: CatsService) {}
 

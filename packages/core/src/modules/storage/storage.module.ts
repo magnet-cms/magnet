@@ -1,6 +1,6 @@
 import type { StorageAdapter } from '@magnet-cms/common'
+import { DatabaseModule } from '@magnet-cms/core'
 import { DynamicModule, Module } from '@nestjs/common'
-import { DatabaseModule } from '~/modules/database'
 import { SettingsModule } from '~/modules/settings'
 import { LocalStorageAdapter } from './adapters/local-storage.adapter'
 import { MediaFolder } from './schemas/media-folder.schema'

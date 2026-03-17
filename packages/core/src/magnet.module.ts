@@ -19,34 +19,13 @@ import {
 } from '@nestjs/core'
 import { RestrictedGuard } from './guards/restricted.guard'
 import { GlobalExceptionFilter } from './handlers'
-import { ActivityModule } from './modules/activity/activity.module'
-import {
-	AdminServeModule,
-	type AdminServeOptions,
-} from './modules/admin-serve/admin-serve.module'
-import { AdminModule } from './modules/admin/admin.module'
-import { ApiKeysModule } from './modules/api-keys/api-keys.module'
-import { AuthModule } from './modules/auth/auth.module'
-import { ContentModule } from './modules/content/content.module'
+import { type AdminServeOptions } from './modules/admin-serve/admin-serve.module'
 import { DatabaseModule } from './modules/database/database.module'
-import { DocumentModule } from './modules/document/document.module'
-import { EmailModule } from './modules/email/email.module'
-import { EnvironmentModule } from './modules/environment/environment.module'
 import { EventContextInterceptor } from './modules/events/event-context.interceptor'
 import { EventsModule } from './modules/events/events.module'
-import { GeneralModule } from './modules/general/general.module'
 import { HealthModule } from './modules/health/health.module'
-import { HistoryModule } from './modules/history/history.module'
 import { LoggingInterceptor } from './modules/logging/logging.interceptor'
 import { LoggingModule } from './modules/logging/logging.module'
-import { NotificationModule } from './modules/notification/notification.module'
-import { PluginModule } from './modules/plugin/plugin.module'
-import { RBACModule } from './modules/rbac/rbac.module'
-import { SettingsModule } from './modules/settings/settings.module'
-import { StorageModule } from './modules/storage/storage.module'
-import { VaultModule } from './modules/vault/vault.module'
-import { ViewConfigModule } from './modules/view-config/view-config.module'
-import { WebhookModule } from './modules/webhook/webhook.module'
 import { validateEnvironment } from './utils'
 
 /**
@@ -188,66 +167,63 @@ export class MagnetModule {
 		// 4. Build legacy options for DI backward compatibility
 		const legacyOptions = buildLegacyOptions(categorized, globalOptions)
 
-		// 5. Build module imports — pass providers directly to modules
+		// 5. Register database FIRST — magnet-module-imports loads modules that call
+		// DatabaseModule.forFeature(), so register() must run before that require().
 		const DBModule = DatabaseModule.register(
 			categorized.database.adapter,
 			categorized.database.config,
 		)
-		const StorageModuleConfig = StorageModule.forRoot(
-			categorized.storage?.adapter,
-			categorized.storage?.config,
-		)
-		const VaultModuleConfig = VaultModule.forRoot(
-			categorized.vault?.adapter,
-			categorized.vault?.adapterFactory,
-			categorized.vault?.config,
-		)
-		const AuthModuleConfig = AuthModule.forRoot(
-			categorized.auth?.config ?? { strategy: 'jwt' },
-		)
-
-		const pluginConfigs = categorized.plugins.map((p) => ({
-			plugin: p.plugin,
-			options: p.options,
-		}))
-
 		const adminConfig = normalizeAdminConfig(globalOptions?.admin)
-		const imports: Array<DynamicModule | Type> = [
-			LoggingModule,
-			ActivityModule,
-			AdminModule,
+		const {
+			buildMagnetImports,
 			ApiKeysModule,
-			AuthModuleConfig,
 			ContentModule,
-			DBModule,
-			DiscoveryModule,
 			DocumentModule,
-			EmailModule.forRoot(
-				categorized.email?.adapter,
-				categorized.email?.defaults,
-			),
-			EnvironmentModule,
-			GeneralModule,
-			EventsModule,
 			HistoryModule,
-			HealthModule,
-			NotificationModule.forRoot(),
-			PluginModule.forRoot({ plugins: pluginConfigs }),
-			RBACModule.forRoot(globalOptions?.rbac),
-			SettingsModule.forRoot(),
+			NotificationModule,
+			PluginModule,
+			RBACModule,
+			SettingsModule,
+		} = require('./magnet-module-imports') as {
+			buildMagnetImports: (params: {
+				categorized: ReturnType<typeof categorizeProviders>
+				globalOptions: MagnetGlobalOptions | undefined
+				adminConfig: ReturnType<typeof normalizeAdminConfig>
+				DBModule: DynamicModule
+			}) => {
+				imports: Array<DynamicModule | Type>
+				DBModule: DynamicModule
+				StorageModuleConfig: DynamicModule
+				VaultModuleConfig: DynamicModule
+			}
+			ApiKeysModule: Type
+			ContentModule: Type
+			DocumentModule: Type
+			HistoryModule: Type
+			NotificationModule: Type
+			PluginModule: Type
+			RBACModule: Type
+			SettingsModule: Type
+		}
+
+		const {
+			imports: lazyImports,
 			StorageModuleConfig,
 			VaultModuleConfig,
-			WebhookModule.forRoot(),
-			ViewConfigModule,
-		]
+		} = buildMagnetImports({
+			categorized,
+			globalOptions,
+			adminConfig,
+			DBModule,
+		})
 
-		// Add AdminServeModule if enabled
-		if (adminConfig.enabled) {
-			const adminModule = AdminServeModule.forRoot(adminConfig)
-			if (adminModule) {
-				imports.push(adminModule)
-			}
-		}
+		const imports: Array<DynamicModule | Type> = [
+			LoggingModule,
+			DiscoveryModule,
+			EventsModule,
+			HealthModule,
+			...lazyImports,
+		]
 
 		return {
 			module: MagnetModule,
@@ -273,6 +249,7 @@ export class MagnetModule {
 				HealthModule,
 				NotificationModule,
 				PluginModule,
+				RBACModule,
 				StorageModuleConfig,
 				VaultModuleConfig,
 			],

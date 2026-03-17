@@ -1,15 +1,11 @@
 import { MongooseDatabaseAdapter } from '@magnet-cms/adapter-db-mongoose'
 import { HashiCorpVaultAdapter } from '@magnet-cms/adapter-vault-hashicorp'
 import { MagnetModule } from '@magnet-cms/core'
-import { NodemailerEmailAdapter } from '@magnet-cms/email-nodemailer'
 import { ContentBuilderPlugin } from '@magnet-cms/plugin-content-builder'
 import { StripePlugin } from '@magnet-cms/plugin-stripe'
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
-import { CatsModule } from './modules/cats/cats.module'
-import { MedicalRecordsModule } from './modules/medical-records/medical-records.module'
-import { OwnersModule } from './modules/owners/owners.module'
-import { VeterinariansModule } from './modules/veterinarians/veterinarians.module'
+import { FeaturesModule } from './modules/features.module'
 
 /**
  * Example application using Magnet CMS with MongoDB (Mongoose).
@@ -19,7 +15,7 @@ import { VeterinariansModule } from './modules/veterinarians/veterinarians.modul
  * - JWT authentication (built-in)
  * - Local file storage (default)
  * - HashiCorp Vault for secrets management
- * - Nodemailer email adapter (MailPit for dev)
+ * - Built-in email (console-only; add NodemailerEmailAdapter for SMTP)
  * - Content Builder plugin
  * - Stripe plugin
  * - Admin UI serving
@@ -32,30 +28,23 @@ import { VeterinariansModule } from './modules/veterinarians/veterinarians.modul
 @Module({
 	imports: [
 		ConfigModule.forRoot({ isGlobal: true }),
-		MagnetModule.forRoot(
-			[
-				MongooseDatabaseAdapter.forRoot(),
-				HashiCorpVaultAdapter.forRoot(),
-				NodemailerEmailAdapter.forRoot({
-					secure: false,
-					auth: { user: '', pass: '' },
-					defaults: { from: process.env.EMAIL_FROM || 'noreply@magnet.local' },
-				}),
-				ContentBuilderPlugin.forRoot(),
-				StripePlugin.forRoot({
-					currency: 'usd',
-					features: {
-						pro: ['unlimited-servers', 'priority-support'],
-						basic: ['5-servers'],
-					},
-				}),
-			],
-			{ admin: true },
+		FeaturesModule.forRoot(
+			MagnetModule.forRoot(
+				[
+					MongooseDatabaseAdapter.forRoot(),
+					HashiCorpVaultAdapter.forRoot(),
+					ContentBuilderPlugin.forRoot(),
+					StripePlugin.forRoot({
+						currency: 'usd',
+						features: {
+							pro: ['unlimited-servers', 'priority-support'],
+							basic: ['5-servers'],
+						},
+					}),
+				],
+				{ admin: true },
+			),
 		),
-		CatsModule,
-		OwnersModule,
-		VeterinariansModule,
-		MedicalRecordsModule,
 	],
 })
 export class AppModule {}

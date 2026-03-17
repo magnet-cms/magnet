@@ -10,8 +10,11 @@ import {
 export interface PluginDecoratorOptions extends Omit<PluginMetadata, 'module'> {
 	/** Frontend manifest for this plugin */
 	frontend?: Omit<PluginFrontendManifest, 'pluginName'>
-	/** NestJS module containing controllers/services (auto-imported) */
-	module?: Type<unknown>
+	/**
+	 * NestJS module containing controllers/services (auto-imported).
+	 * Use a getter () => MyModule to defer loading until after DatabaseModule.register().
+	 */
+	module?: Type<unknown> | (() => Type<unknown>)
 }
 
 /**

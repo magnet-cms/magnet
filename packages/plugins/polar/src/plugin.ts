@@ -3,7 +3,6 @@ import type {
 	PluginMagnetProvider,
 } from '@magnet-cms/common'
 import { Plugin } from '@magnet-cms/core'
-import { PolarModule } from './polar.module'
 import type { PolarPluginConfig } from './types'
 
 /**
@@ -21,7 +20,7 @@ import type { PolarPluginConfig } from './types'
 	name: 'polar',
 	description: 'Polar.sh payments plugin for Magnet CMS',
 	version: '0.1.0',
-	module: PolarModule,
+	module: () => require('./polar.module').PolarModule,
 	frontend: {
 		routes: [
 			{

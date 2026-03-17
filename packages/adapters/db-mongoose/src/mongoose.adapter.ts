@@ -70,6 +70,9 @@ export class MongooseDatabaseAdapter extends DatabaseAdapter {
 			// Apply document plugin based on schema options and intl properties
 			this.applyDocumentPlugin(mongooseSchema, schemaClass)
 
+			// Apply custom indexes from schema options
+			this.applySchemaIndexes(mongooseSchema, schemaClass)
+
 			return {
 				name: schemaClass.name,
 				schema: mongooseSchema,
@@ -138,6 +141,22 @@ export class MongooseDatabaseAdapter extends DatabaseAdapter {
 	 * @param schema The Mongoose schema to apply the plugin to
 	 * @param schemaClass The schema class to read options from
 	 */
+	private applySchemaIndexes(schema: Schema, schemaClass: Type) {
+		const options = getSchemaOptions(schemaClass)
+		const indexes = (
+			options as {
+				indexes?: { keys: Record<string, 1 | -1>; unique?: boolean }[]
+			}
+		).indexes
+		if (indexes?.length) {
+			for (const idx of indexes) {
+				schema.index(idx.keys as { [key: string]: 1 | -1 }, {
+					unique: idx.unique,
+				})
+			}
+		}
+	}
+
 	private applyDocumentPlugin(schema: Schema, schemaClass: Type) {
 		const options = getSchemaOptions(schemaClass)
 

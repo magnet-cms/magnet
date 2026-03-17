@@ -8,7 +8,7 @@
     "check-types": "turbo run check-types",
     "dev:admin": "node scripts/dev-admin.js",
     "dev:docs": "turbo run dev --filter=@magnet/docs",
-    "test:e2e": "turbo run test --filter=@magnet/e2e",
+    "test:e2e": "turbo run test --filter=@magnet-cms/e2e",
     "test:all": "bun apps/e2e/scripts/test-all-templates-robust.ts",
     "prepare": "husky",
     "changeset": "changeset",

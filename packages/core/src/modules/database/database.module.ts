@@ -5,11 +5,18 @@ import {
 	getSchemaToken,
 	registerModel,
 } from '@magnet-cms/common'
-import { DynamicModule, Module, Scope, Type } from '@nestjs/common'
+import { DynamicModule, Module, Scope, Type, forwardRef } from '@nestjs/common'
 import { ModuleRef } from '@nestjs/core'
-import { InternationalizationModule } from './modules/internationalization/internationalization.module'
 
-const modules = [InternationalizationModule]
+// Use forwardRef to avoid loading InternationalizationModule (and its
+// SettingsModule.forFeature) until after DatabaseModule.register() has run.
+const modules = [
+	forwardRef(
+		() =>
+			require('./modules/internationalization/internationalization.module')
+				.InternationalizationModule,
+	),
+]
 
 @Module({
 	imports: modules,

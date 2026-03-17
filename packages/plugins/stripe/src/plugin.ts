@@ -3,7 +3,6 @@ import type {
 	PluginMagnetProvider,
 } from '@magnet-cms/common'
 import { Plugin } from '@magnet-cms/core'
-import { StripeModule } from './stripe.module'
 import type { StripePluginConfig } from './types'
 
 /**
@@ -20,7 +19,7 @@ import type { StripePluginConfig } from './types'
 	name: 'stripe',
 	description: 'Stripe payments plugin for Magnet CMS',
 	version: '0.1.0',
-	module: StripeModule,
+	module: () => require('./stripe.module').StripeModule,
 	frontend: {
 		routes: [
 			{

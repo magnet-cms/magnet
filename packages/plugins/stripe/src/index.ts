@@ -1,8 +1,5 @@
-// Plugin definition
+// Plugin definition (StripeModule loaded lazily via @Plugin decorator)
 export { StripePlugin } from './plugin'
-
-// Module
-export { StripeModule } from './stripe.module'
 
 // Types
 export type {
