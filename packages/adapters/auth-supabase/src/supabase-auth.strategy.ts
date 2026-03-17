@@ -1,8 +1,10 @@
 import {
 	AuthConfig,
+	type AuthMagnetProvider,
 	AuthResult,
 	AuthStrategy,
 	AuthUser,
+	type EnvVarRequirement,
 	ExternalAuthInfo,
 	LoginCredentials,
 	RegisterData,
@@ -323,5 +325,54 @@ export class SupabaseAuthStrategy extends AuthStrategy {
 			role: user.user_metadata?.role || this.config.defaultRole || 'user',
 			name: user.user_metadata?.name,
 		}))
+	}
+
+	/** Environment variables used by this adapter */
+	static readonly envVars: EnvVarRequirement[] = [
+		{
+			name: 'SUPABASE_URL',
+			required: true,
+			description: 'Supabase project URL',
+		},
+		{
+			name: 'SUPABASE_ANON_KEY',
+			required: true,
+			description: 'Supabase anon/public key',
+		},
+		{
+			name: 'SUPABASE_SERVICE_KEY',
+			required: false,
+			description: 'Supabase service role key',
+		},
+	]
+
+	/**
+	 * Create a configured auth provider for MagnetModule.forRoot().
+	 * Auto-resolves config values from environment variables if not provided.
+	 * Registers the Supabase strategy internally — no need to call AuthStrategyFactory.registerStrategy().
+	 */
+	static forRoot(config?: Partial<SupabaseAuthConfig>): AuthMagnetProvider {
+		const resolvedConfig: AuthConfig = {
+			strategy: 'supabase',
+			supabaseUrl: config?.supabaseUrl ?? process.env.SUPABASE_URL ?? '',
+			supabaseKey: config?.supabaseKey ?? process.env.SUPABASE_ANON_KEY ?? '',
+			supabaseServiceKey:
+				config?.supabaseServiceKey ?? process.env.SUPABASE_SERVICE_KEY,
+			defaultRole: config?.defaultRole,
+		}
+
+		// Register strategy so AuthModule finds it — lazy import to avoid circular deps
+		try {
+			const { AuthStrategyFactory } = require('@magnet-cms/core')
+			AuthStrategyFactory.registerStrategy('supabase', SupabaseAuthStrategy)
+		} catch {
+			// Core not available — strategy will be registered when AuthModule loads
+		}
+
+		return {
+			type: 'auth',
+			config: resolvedConfig,
+			envVars: SupabaseAuthStrategy.envVars,
+		}
 	}
 }

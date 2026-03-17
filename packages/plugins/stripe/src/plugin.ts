@@ -1,5 +1,10 @@
+import type {
+	EnvVarRequirement,
+	PluginMagnetProvider,
+} from '@magnet-cms/common'
 import { Plugin } from '@magnet-cms/core'
 import { StripeModule } from './stripe.module'
+import type { StripePluginConfig } from './types'
 
 /**
  * Stripe Plugin
@@ -74,4 +79,54 @@ import { StripeModule } from './stripe.module'
 		],
 	},
 })
-export class StripePlugin {}
+export class StripePlugin {
+	/** Environment variables used by this plugin */
+	static readonly envVars: EnvVarRequirement[] = [
+		{
+			name: 'STRIPE_SECRET_KEY',
+			required: true,
+			description: 'Stripe API secret key',
+		},
+		{
+			name: 'STRIPE_WEBHOOK_SECRET',
+			required: true,
+			description: 'Stripe webhook signing secret',
+		},
+		{
+			name: 'STRIPE_PUBLISHABLE_KEY',
+			required: false,
+			description: 'Stripe publishable key',
+		},
+	]
+
+	/**
+	 * Create a configured plugin provider for MagnetModule.forRoot().
+	 * Auto-resolves secret values from environment variables if not provided.
+	 *
+	 * @example
+	 * ```typescript
+	 * MagnetModule.forRoot([
+	 *   StripePlugin.forRoot({ currency: 'usd' }),
+	 * ])
+	 * ```
+	 */
+	static forRoot(config?: Partial<StripePluginConfig>): PluginMagnetProvider {
+		const resolvedConfig: StripePluginConfig = {
+			secretKey: config?.secretKey ?? process.env.STRIPE_SECRET_KEY,
+			webhookSecret: config?.webhookSecret ?? process.env.STRIPE_WEBHOOK_SECRET,
+			publishableKey:
+				config?.publishableKey ?? process.env.STRIPE_PUBLISHABLE_KEY,
+			syncProducts: config?.syncProducts,
+			portalEnabled: config?.portalEnabled,
+			currency: config?.currency,
+			features: config?.features,
+		}
+
+		return {
+			type: 'plugin',
+			plugin: StripePlugin,
+			options: resolvedConfig as unknown as Record<string, unknown>,
+			envVars: StripePlugin.envVars,
+		}
+	}
+}

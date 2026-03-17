@@ -17,10 +17,16 @@ function isPackageInstalled(packageName: string): boolean {
 /**
  * Detect the database adapter based on configuration or installed packages.
  *
+ * With the provider-based API, the adapter is typically auto-registered:
+ * importing `@magnet-cms/adapter-db-mongoose` or `@magnet-cms/adapter-db-drizzle`
+ * calls `setDatabaseAdapter()` as a module-level side effect, so detection
+ * happens automatically before any `@Schema()` decorators evaluate.
+ *
  * Detection priority:
- * 1. Configuration-based: If `connectionString` or `dialect` is present, use drizzle
- * 2. Configuration-based: If `uri` is present, use mongoose
- * 3. Package-based: Check which adapter packages are installed (mongoose > drizzle)
+ * 1. Cached value from `setDatabaseAdapter()` (set by adapter package import side effect)
+ * 2. Configuration-based: If `connectionString` or `dialect` is present, use drizzle
+ * 3. Configuration-based: If `uri` is present, use mongoose
+ * 4. Package-based: Check which adapter packages are installed (mongoose > drizzle)
  *
  * @param dbConfig - Optional database configuration to determine adapter from
  */
@@ -56,17 +62,12 @@ export function detectDatabaseAdapter(dbConfig?: DBConfig): SupportedAdapter {
 
 /**
  * Explicitly set the database adapter.
- * Call this at the very start of your application, before importing any schemas.
  *
- * @example
- * ```typescript
- * // main.ts or app.module.ts (at the top, before other imports)
- * import { setDatabaseAdapter } from '@magnet-cms/common'
- * setDatabaseAdapter('drizzle')
+ * With the provider-based API, this is called automatically as a side effect
+ * when importing an adapter package (e.g., `@magnet-cms/adapter-db-drizzle`).
+ * Manual calls are no longer needed in typical user code.
  *
- * // Then import your modules
- * import { MagnetModule } from '@magnet-cms/core'
- * ```
+ * @internal Called by adapter package index.ts as module-level side effect
  */
 export function setDatabaseAdapter(adapter: SupportedAdapter): void {
 	cachedAdapter = adapter

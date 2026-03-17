@@ -1,4 +1,14 @@
-import { MagnetModuleOptions } from '@magnet-cms/common'
+import {
+	type AuthMagnetProvider,
+	type DatabaseMagnetProvider,
+	type EmailMagnetProvider,
+	type MagnetGlobalOptions,
+	MagnetModuleOptions,
+	type MagnetProvider,
+	type PluginMagnetProvider,
+	type StorageMagnetProvider,
+	type VaultMagnetProvider,
+} from '@magnet-cms/common'
 import { DynamicModule, Module, Type, ValidationPipe } from '@nestjs/common'
 import {
 	APP_FILTER,
@@ -37,7 +47,7 @@ import { StorageModule } from './modules/storage/storage.module'
 import { VaultModule } from './modules/vault/vault.module'
 import { ViewConfigModule } from './modules/view-config/view-config.module'
 import { WebhookModule } from './modules/webhook/webhook.module'
-import { initOptions } from './utils'
+import { validateEnvironment } from './utils'
 
 /**
  * Normalizes admin configuration to AdminServeOptions
@@ -58,20 +68,150 @@ function normalizeAdminConfig(
 	}
 }
 
+/**
+ * Categorize providers by type from the flat array.
+ */
+function categorizeProviders(providers: MagnetProvider[]): {
+	database?: DatabaseMagnetProvider
+	storage?: StorageMagnetProvider
+	email?: EmailMagnetProvider
+	vault?: VaultMagnetProvider
+	auth?: AuthMagnetProvider
+	plugins: PluginMagnetProvider[]
+} {
+	let database: DatabaseMagnetProvider | undefined
+	let storage: StorageMagnetProvider | undefined
+	let email: EmailMagnetProvider | undefined
+	let vault: VaultMagnetProvider | undefined
+	let auth: AuthMagnetProvider | undefined
+	const plugins: PluginMagnetProvider[] = []
+
+	for (const provider of providers) {
+		switch (provider.type) {
+			case 'database':
+				database = provider
+				break
+			case 'storage':
+				storage = provider
+				break
+			case 'email':
+				email = provider
+				break
+			case 'vault':
+				vault = provider
+				break
+			case 'auth':
+				auth = provider
+				break
+			case 'plugin':
+				plugins.push(provider)
+				break
+		}
+	}
+
+	return { database, storage, email, vault, auth, plugins }
+}
+
+/**
+ * Build a legacy MagnetModuleOptions from resolved providers and global options.
+ * This maintains backward compatibility for services that inject MagnetModuleOptions.
+ */
+function buildLegacyOptions(
+	categorized: ReturnType<typeof categorizeProviders>,
+	globalOptions?: MagnetGlobalOptions,
+): MagnetModuleOptions {
+	const jwtSecret = globalOptions?.jwt?.secret || process.env.JWT_SECRET || ''
+
+	return new MagnetModuleOptions({
+		db: categorized.database?.config ?? { uri: '' },
+		jwt: {
+			secret: jwtSecret,
+		},
+		auth: categorized.auth?.config ?? { strategy: 'jwt' },
+		internationalization: globalOptions?.internationalization ?? {
+			locales: ['en'],
+			defaultLocale: 'en',
+		},
+		playground: globalOptions?.playground,
+		storage: undefined,
+		email: undefined,
+		plugins: categorized.plugins.map((p) => ({
+			plugin: p.plugin,
+			options: p.options,
+		})),
+		admin: globalOptions?.admin,
+		rbac: globalOptions?.rbac,
+		vault: undefined,
+	})
+}
+
 @Module({})
 export class MagnetModule {
-	static forRoot(options?: MagnetModuleOptions): DynamicModule {
-		const defaultOptions: MagnetModuleOptions = initOptions(options)
-		const plugins = defaultOptions.plugins || []
+	/**
+	 * Configure the Magnet CMS module with provider-based API.
+	 *
+	 * Each adapter/plugin provides a static `.forRoot()` that returns a typed provider.
+	 * Environment variables are validated upfront before NestJS bootstraps.
+	 *
+	 * @param providers - Array of MagnetProvider objects from adapter/plugin `.forRoot()` calls
+	 * @param globalOptions - Cross-cutting options (JWT, admin, RBAC, i18n)
+	 *
+	 * @example
+	 * ```typescript
+	 * import { MongooseDatabaseAdapter } from '@magnet-cms/adapter-db-mongoose'
+	 * import { StripePlugin } from '@magnet-cms/plugin-stripe'
+	 *
+	 * MagnetModule.forRoot([
+	 *   MongooseDatabaseAdapter.forRoot(),
+	 *   StripePlugin.forRoot({ currency: 'usd' }),
+	 * ], { admin: true })
+	 * ```
+	 */
+	static forRoot(
+		providers: MagnetProvider[],
+		globalOptions?: MagnetGlobalOptions,
+	): DynamicModule {
+		// 1. Categorize providers by type
+		const categorized = categorizeProviders(providers)
 
-		const DBModule = DatabaseModule.register(defaultOptions)
-		const StorageModuleConfig = StorageModule.forRoot(defaultOptions.storage)
-		const VaultModuleConfig = VaultModule.forRoot(defaultOptions.vault)
+		// 2. Validate: at least one database provider required
+		if (!categorized.database) {
+			throw new Error(
+				'MagnetModule.forRoot() requires a database provider. ' +
+					'Add MongooseDatabaseAdapter.forRoot() or DrizzleDatabaseAdapter.forRoot() to the providers array.',
+			)
+		}
 
-		const AuthModuleConfig = AuthModule.forRoot(defaultOptions.auth)
+		// 3. Validate environment variables (fail fast)
+		validateEnvironment(providers, globalOptions)
 
-		// Normalize admin config and conditionally add AdminServeModule
-		const adminConfig = normalizeAdminConfig(defaultOptions.admin)
+		// 4. Build legacy options for DI backward compatibility
+		const legacyOptions = buildLegacyOptions(categorized, globalOptions)
+
+		// 5. Build module imports — pass providers directly to modules
+		const DBModule = DatabaseModule.register(
+			categorized.database.adapter,
+			categorized.database.config,
+		)
+		const StorageModuleConfig = StorageModule.forRoot(
+			categorized.storage?.adapter,
+			categorized.storage?.config,
+		)
+		const VaultModuleConfig = VaultModule.forRoot(
+			categorized.vault?.adapter,
+			categorized.vault?.adapterFactory,
+			categorized.vault?.config,
+		)
+		const AuthModuleConfig = AuthModule.forRoot(
+			categorized.auth?.config ?? { strategy: 'jwt' },
+		)
+
+		const pluginConfigs = categorized.plugins.map((p) => ({
+			plugin: p.plugin,
+			options: p.options,
+		}))
+
+		const adminConfig = normalizeAdminConfig(globalOptions?.admin)
 		const imports: Array<DynamicModule | Type> = [
 			LoggingModule,
 			ActivityModule,
@@ -82,15 +222,18 @@ export class MagnetModule {
 			DBModule,
 			DiscoveryModule,
 			DocumentModule,
-			EmailModule.forRoot(defaultOptions.email),
+			EmailModule.forRoot(
+				categorized.email?.adapter,
+				categorized.email?.defaults,
+			),
 			EnvironmentModule,
 			GeneralModule,
 			EventsModule,
 			HistoryModule,
 			HealthModule,
 			NotificationModule.forRoot(),
-			PluginModule.forRoot({ plugins }),
-			RBACModule.forRoot(defaultOptions.rbac),
+			PluginModule.forRoot({ plugins: pluginConfigs }),
+			RBACModule.forRoot(globalOptions?.rbac),
 			SettingsModule.forRoot(),
 			StorageModuleConfig,
 			VaultModuleConfig,
@@ -115,7 +258,7 @@ export class MagnetModule {
 				{ provide: APP_FILTER, useClass: GlobalExceptionFilter },
 				{ provide: APP_INTERCEPTOR, useClass: EventContextInterceptor },
 				{ provide: APP_INTERCEPTOR, useClass: LoggingInterceptor },
-				{ provide: MagnetModuleOptions, useValue: defaultOptions },
+				{ provide: MagnetModuleOptions, useValue: legacyOptions },
 				{ provide: APP_GUARD, useClass: RestrictedGuard },
 			],
 			exports: [

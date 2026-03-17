@@ -11,8 +11,10 @@ import {
 } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import {
+	type EnvVarRequirement,
 	type S3StorageConfig,
 	StorageAdapter,
+	type StorageMagnetProvider,
 	type TransformOptions,
 	type UploadOptions,
 	type UploadResult,
@@ -274,5 +276,50 @@ export class S3StorageAdapter extends StorageAdapter {
 			new GetObjectCommand({ Bucket: this.bucket, Key: key }),
 			{ expiresIn },
 		)
+	}
+
+	/** Environment variables used by this adapter */
+	static readonly envVars: EnvVarRequirement[] = [
+		{ name: 'S3_BUCKET', required: true, description: 'S3 bucket name' },
+		{ name: 'S3_REGION', required: false, description: 'AWS region' },
+		{
+			name: 'S3_ACCESS_KEY_ID',
+			required: true,
+			description: 'AWS access key ID',
+		},
+		{
+			name: 'S3_SECRET_ACCESS_KEY',
+			required: true,
+			description: 'AWS secret access key',
+		},
+		{
+			name: 'S3_ENDPOINT',
+			required: false,
+			description: 'Custom S3 endpoint URL',
+		},
+	]
+
+	/**
+	 * Create a configured storage provider for MagnetModule.forRoot().
+	 * Auto-resolves config values from environment variables if not provided.
+	 */
+	static forRoot(config?: Partial<S3StorageConfig>): StorageMagnetProvider {
+		const resolvedConfig: S3StorageConfig = {
+			bucket: config?.bucket ?? process.env.S3_BUCKET ?? '',
+			region: config?.region ?? process.env.S3_REGION ?? 'us-east-1',
+			accessKeyId: config?.accessKeyId ?? process.env.S3_ACCESS_KEY_ID ?? '',
+			secretAccessKey:
+				config?.secretAccessKey ?? process.env.S3_SECRET_ACCESS_KEY ?? '',
+			endpoint: config?.endpoint ?? process.env.S3_ENDPOINT,
+			publicUrl: config?.publicUrl ?? process.env.S3_PUBLIC_URL,
+			forcePathStyle: config?.forcePathStyle,
+		}
+
+		return {
+			type: 'storage',
+			adapter: new S3StorageAdapter(resolvedConfig),
+			config: resolvedConfig as unknown as Record<string, unknown>,
+			envVars: S3StorageAdapter.envVars,
+		}
 	}
 }

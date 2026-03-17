@@ -27,13 +27,16 @@ export class PolarWebhookController {
 	): Promise<{ received: boolean }> {
 		this.polarService.verifyRawBodyAvailable(req)
 
+		const { webhookSecret } = this.polarService.pluginConfig
+		if (!webhookSecret) {
+			throw new Error(
+				'[PolarPlugin] webhookSecret is required for webhook verification',
+			)
+		}
+
 		let event: ReturnType<typeof validateEvent>
 		try {
-			event = validateEvent(
-				req.rawBody.toString(),
-				headers,
-				this.polarService.pluginConfig.webhookSecret,
-			)
+			event = validateEvent(req.rawBody.toString(), headers, webhookSecret)
 		} catch (error) {
 			if (error instanceof WebhookVerificationError) {
 				throw error

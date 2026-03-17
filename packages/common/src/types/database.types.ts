@@ -1,6 +1,5 @@
 import { DynamicModule, OnModuleDestroy, Type } from '@nestjs/common'
 import type { Model } from '../model'
-import { MagnetModuleOptions } from './config.types'
 
 export type MongooseConfig = {
 	uri: string
@@ -98,9 +97,10 @@ export abstract class DatabaseAdapter implements OnModuleDestroy {
 	abstract readonly name: AdapterName
 
 	/**
-	 * Connect to database and return NestJS dynamic module
+	 * Connect to database and return NestJS dynamic module.
+	 * @param config - Database configuration (MongooseConfig or DrizzleConfig)
 	 */
-	abstract connect(options: MagnetModuleOptions): DynamicModule
+	abstract connect(config: DBConfig): DynamicModule
 
 	/**
 	 * Register schemas as features

@@ -1,5 +1,10 @@
+import type {
+	EnvVarRequirement,
+	PluginMagnetProvider,
+} from '@magnet-cms/common'
 import { Plugin } from '@magnet-cms/core'
 import { PolarModule } from './polar.module'
+import type { PolarPluginConfig } from './types'
 
 /**
  * Polar Plugin
@@ -82,4 +87,53 @@ import { PolarModule } from './polar.module'
 		],
 	},
 })
-export class PolarPlugin {}
+export class PolarPlugin {
+	/** Environment variables used by this plugin */
+	static readonly envVars: EnvVarRequirement[] = [
+		{
+			name: 'POLAR_ACCESS_TOKEN',
+			required: true,
+			description: 'Polar API access token',
+		},
+		{
+			name: 'POLAR_WEBHOOK_SECRET',
+			required: true,
+			description: 'Polar webhook signing secret',
+		},
+		{
+			name: 'POLAR_ORGANIZATION_ID',
+			required: false,
+			description: 'Polar organization ID',
+		},
+	]
+
+	/**
+	 * Create a configured plugin provider for MagnetModule.forRoot().
+	 * Auto-resolves secret values from environment variables if not provided.
+	 *
+	 * @example
+	 * ```typescript
+	 * MagnetModule.forRoot([
+	 *   PolarPlugin.forRoot({ currency: 'usd' }),
+	 * ])
+	 * ```
+	 */
+	static forRoot(config?: Partial<PolarPluginConfig>): PluginMagnetProvider {
+		const resolvedConfig: PolarPluginConfig = {
+			accessToken: config?.accessToken ?? process.env.POLAR_ACCESS_TOKEN,
+			webhookSecret: config?.webhookSecret ?? process.env.POLAR_WEBHOOK_SECRET,
+			organizationId:
+				config?.organizationId ?? process.env.POLAR_ORGANIZATION_ID,
+			syncProducts: config?.syncProducts,
+			currency: config?.currency,
+			features: config?.features,
+		}
+
+		return {
+			type: 'plugin',
+			plugin: PolarPlugin,
+			options: resolvedConfig as unknown as Record<string, unknown>,
+			envVars: PolarPlugin.envVars,
+		}
+	}
+}

@@ -25,73 +25,49 @@ For standard PostgreSQL:
 bun add @magnet-cms/adapter-drizzle postgres
 ```
 
-## Important: Adapter Initialization Order
-
-**You must call `setDatabaseAdapter('drizzle')` before importing any schema files.** This is because schema decorators resolve at import time, and the adapter must be set before they execute.
-
-```typescript
-// app.module.ts — IMPORTANT: setDatabaseAdapter MUST be first
-import { setDatabaseAdapter } from '@magnet-cms/common'
-setDatabaseAdapter('drizzle')
-
-// Only import schemas AFTER the adapter is set
-import { MagnetModule } from '@magnet-cms/core'
-import { Module } from '@nestjs/common'
-import { CatsModule } from './modules/cats/cats.module'
-```
-
 ## Configuration
+
+The Drizzle adapter auto-registers itself when imported — no `setDatabaseAdapter()` call is needed.
 
 ### Neon (serverless PostgreSQL)
 
 ```typescript
-import { setDatabaseAdapter } from '@magnet-cms/common'
-setDatabaseAdapter('drizzle')
-
 import { MagnetModule } from '@magnet-cms/core'
+import { DrizzleDatabaseAdapter } from '@magnet-cms/adapter-db-drizzle'
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    MagnetModule.forRoot({
-      db: {
-        connectionString: process.env.DATABASE_URL || '',
+    MagnetModule.forRoot([
+      DrizzleDatabaseAdapter.forRoot({
         dialect: 'postgresql',
         driver: 'neon',
         debug: process.env.NODE_ENV === 'development',
-      },
-      jwt: {
-        secret: process.env.JWT_SECRET || 'development-secret-key',
-      },
-    }),
+      }),
+    ], { admin: true }),
   ],
 })
 export class AppModule {}
 ```
 
+`DATABASE_URL` and `JWT_SECRET` are auto-resolved from `process.env`.
+
 ### Standard PostgreSQL
 
 ```typescript
-import { setDatabaseAdapter } from '@magnet-cms/common'
-setDatabaseAdapter('drizzle')
-
 import { MagnetModule } from '@magnet-cms/core'
+import { DrizzleDatabaseAdapter } from '@magnet-cms/adapter-db-drizzle'
 import { Module } from '@nestjs/common'
 
 @Module({
   imports: [
-    MagnetModule.forRoot({
-      db: {
-        connectionString: process.env.DATABASE_URL || 'postgresql://localhost:5432/mydb',
+    MagnetModule.forRoot([
+      DrizzleDatabaseAdapter.forRoot({
         dialect: 'postgresql',
-        debug: false,
-      },
-      jwt: {
-        secret: process.env.JWT_SECRET || 'your-secret-key',
-      },
-    }),
+      }),
+    ], { admin: true }),
   ],
 })
 export class AppModule {}

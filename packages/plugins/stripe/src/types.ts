@@ -5,13 +5,13 @@
  * and injected in services via `@InjectPluginOptions('stripe')`.
  */
 export interface StripePluginConfig {
-	/** Stripe secret API key (sk_live_... or sk_test_...) */
-	secretKey: string
+	/** Stripe secret API key (sk_live_... or sk_test_...). Auto-resolved from STRIPE_SECRET_KEY env var. */
+	secretKey?: string
 
-	/** Stripe webhook signing secret (whsec_...) */
-	webhookSecret: string
+	/** Stripe webhook signing secret (whsec_...). Auto-resolved from STRIPE_WEBHOOK_SECRET env var. */
+	webhookSecret?: string
 
-	/** Stripe publishable key (pk_live_... or pk_test_...) — exposed to frontend */
+	/** Stripe publishable key (pk_live_... or pk_test_...) — exposed to frontend. Auto-resolved from STRIPE_PUBLISHABLE_KEY env var. */
 	publishableKey?: string
 
 	/** Whether to sync products/prices from Stripe via webhooks (default: true) */

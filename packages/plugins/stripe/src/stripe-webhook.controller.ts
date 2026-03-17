@@ -26,10 +26,17 @@ export class StripeWebhookController {
 	): Promise<{ received: boolean }> {
 		this.stripeService.verifyRawBodyAvailable(req)
 
+		const { webhookSecret } = this.stripeService.pluginConfig
+		if (!webhookSecret) {
+			throw new Error(
+				'[StripePlugin] webhookSecret is required for webhook verification',
+			)
+		}
+
 		const event = this.stripeService.client.webhooks.constructEvent(
 			req.rawBody,
 			signature,
-			this.stripeService.pluginConfig.webhookSecret,
+			webhookSecret,
 		)
 
 		await this.webhookService.processEvent(event)

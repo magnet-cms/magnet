@@ -21,20 +21,20 @@ Create your main application module:
 
 ```typescript
 import { Module } from '@nestjs/common'
-import { MagnetModule } from '@magnet/core'
-import { MongooseAdapter } from '@magnet/adapter-mongoose'
+import { MagnetModule } from '@magnet-cms/core'
+import { MongooseDatabaseAdapter } from '@magnet-cms/adapter-db-mongoose'
 
 @Module({
   imports: [
-    MagnetModule.forRoot({
-      adapter: new MongooseAdapter({
-        uri: 'mongodb://localhost:27017/magnet',
-      }),
-    }),
+    MagnetModule.forRoot([
+      MongooseDatabaseAdapter.forRoot(),
+    ], { admin: true }),
   ],
 })
 export class AppModule {}
 ```
+
+Environment variables like `MONGODB_URI` and `JWT_SECRET` are auto-resolved from `process.env` — no need to pass them explicitly.
 
 ## Running the Application
 

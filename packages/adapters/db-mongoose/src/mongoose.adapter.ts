@@ -3,10 +3,13 @@ import {
 	type AdapterFeature,
 	type AdapterName,
 	BaseSchema,
+	type DBConfig,
 	DatabaseAdapter,
-	MagnetModuleOptions,
+	type DatabaseMagnetProvider,
+	type EnvVarRequirement,
 	MongooseConfig,
 	getSchemaOptions,
+	setDatabaseAdapter,
 } from '@magnet-cms/common'
 import { DynamicModule, Injectable, Type } from '@nestjs/common'
 import { MongooseModule, SchemaFactory } from '@nestjs/mongoose'
@@ -15,10 +18,25 @@ import mongoose, { Document, Model as MongooseModel, Schema } from 'mongoose'
 import { DocumentPluginService } from './document/document.plugin'
 import { createModel } from './mongoose.model'
 
+/** Singleton adapter instance */
+let adapterInstance: MongooseDatabaseAdapter | null = null
+
+/**
+ * Mongoose database adapter for Magnet CMS.
+ * Provides MongoDB connectivity via Mongoose ODM.
+ *
+ * @example
+ * ```typescript
+ * MagnetModule.forRoot([
+ *   MongooseDatabaseAdapter.forRoot(),
+ *   // or with explicit config:
+ *   MongooseDatabaseAdapter.forRoot({ uri: 'mongodb://localhost:27017/mydb' }),
+ * ])
+ * ```
+ */
 @Injectable()
-class MongooseAdapter extends DatabaseAdapter {
+export class MongooseDatabaseAdapter extends DatabaseAdapter {
 	readonly name: AdapterName = 'mongoose'
-	private options: MagnetModuleOptions | null = null
 	private readonly documentPlugin: DocumentPluginService
 
 	constructor() {
@@ -26,9 +44,7 @@ class MongooseAdapter extends DatabaseAdapter {
 		this.documentPlugin = new DocumentPluginService()
 	}
 
-	connect(options: MagnetModuleOptions): DynamicModule {
-		this.options = options
-
+	connect(config: DBConfig): DynamicModule {
 		if (mongoose.connection.readyState === 1) {
 			return {
 				module: MongooseModule,
@@ -40,7 +56,7 @@ class MongooseAdapter extends DatabaseAdapter {
 
 		return MongooseModule.forRootAsync({
 			useFactory: () => ({
-				uri: (options.db as MongooseConfig).uri,
+				uri: (config as MongooseConfig).uri,
 			}),
 		})
 	}
@@ -146,6 +162,56 @@ class MongooseAdapter extends DatabaseAdapter {
 		// Apply document plugin for i18n/versioning support
 		this.documentPlugin.applyDocumentPlugin(schema, { hasIntl })
 	}
+
+	/** Environment variables required by this adapter */
+	static readonly envVars: EnvVarRequirement[] = [
+		{
+			name: 'MONGODB_URI',
+			required: true,
+			description: 'MongoDB connection URI',
+		},
+	]
+
+	/**
+	 * Create a configured database provider for MagnetModule.forRoot().
+	 * Auto-resolves the connection URI from MONGODB_URI env var if not provided.
+	 *
+	 * @param config - Optional Mongoose configuration. If omitted, reads from MONGODB_URI env var.
+	 * @returns A DatabaseMagnetProvider to pass to MagnetModule.forRoot()
+	 */
+	static forRoot(config?: Partial<MongooseConfig>): DatabaseMagnetProvider {
+		setDatabaseAdapter('mongoose')
+
+		const resolvedConfig: MongooseConfig = {
+			uri: config?.uri ?? process.env.MONGODB_URI ?? '',
+		}
+
+		if (!adapterInstance) {
+			adapterInstance = new MongooseDatabaseAdapter()
+		}
+
+		return {
+			type: 'database',
+			adapter: adapterInstance,
+			config: resolvedConfig,
+			envVars: MongooseDatabaseAdapter.envVars,
+		}
+	}
+
+	/**
+	 * Get the singleton adapter instance.
+	 * @internal Used by DatabaseModule for forFeature() calls.
+	 */
+	static getInstance(): MongooseDatabaseAdapter {
+		if (!adapterInstance) {
+			adapterInstance = new MongooseDatabaseAdapter()
+		}
+		return adapterInstance
+	}
 }
 
-export const Adapter = new MongooseAdapter()
+/**
+ * @deprecated Use MongooseDatabaseAdapter instead.
+ * Kept temporarily for internal compatibility during migration.
+ */
+export const Adapter = MongooseDatabaseAdapter.getInstance()

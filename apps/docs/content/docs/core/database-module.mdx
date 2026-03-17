@@ -31,58 +31,57 @@ The Database Module provides:
 ```typescript
 import { Module } from '@nestjs/common'
 import { MagnetModule } from '@magnet-cms/core'
+import { MongooseDatabaseAdapter } from '@magnet-cms/adapter-db-mongoose'
 
 @Module({
   imports: [
-    MagnetModule.forRoot({
-      db: {
-        uri: 'mongodb://localhost:27017/magnet',
-      },
-      jwt: { secret: process.env.JWT_SECRET },
-    }),
+    MagnetModule.forRoot([
+      MongooseDatabaseAdapter.forRoot(),
+    ], { admin: true }),
   ],
 })
 export class AppModule {}
 ```
 
+`MongooseDatabaseAdapter.forRoot()` auto-resolves `MONGODB_URI` from `process.env`.
+
 ### PostgreSQL (Drizzle)
 
 ```typescript
-MagnetModule.forRoot({
-  db: {
-    connectionString: process.env.DATABASE_URL,
+import { DrizzleDatabaseAdapter } from '@magnet-cms/adapter-db-drizzle'
+
+MagnetModule.forRoot([
+  DrizzleDatabaseAdapter.forRoot({
     dialect: 'postgresql',
     driver: 'neon',  // or 'pg'
-  },
-  jwt: { secret: process.env.JWT_SECRET },
-})
+  }),
+], { admin: true })
 ```
 
 ### MySQL (Drizzle)
 
 ```typescript
-MagnetModule.forRoot({
-  db: {
-    connectionString: process.env.DATABASE_URL,
+MagnetModule.forRoot([
+  DrizzleDatabaseAdapter.forRoot({
     dialect: 'mysql',
     driver: 'mysql2',
-  },
-  jwt: { secret: process.env.JWT_SECRET },
-})
+  }),
+], { admin: true })
 ```
 
 ### SQLite (Drizzle)
 
 ```typescript
-MagnetModule.forRoot({
-  db: {
+MagnetModule.forRoot([
+  DrizzleDatabaseAdapter.forRoot({
     connectionString: './data/database.sqlite',
     dialect: 'sqlite',
     driver: 'better-sqlite3',
-  },
-  jwt: { secret: process.env.JWT_SECRET },
-})
+  }),
+], { admin: true })
 ```
+
+`DrizzleDatabaseAdapter.forRoot()` auto-resolves `DATABASE_URL` from `process.env` for the connection string.
 
 ## Registering Schemas
 
@@ -118,7 +117,7 @@ All adapters implement the `DatabaseAdapter` interface:
 ```typescript
 abstract class DatabaseAdapter {
   // Initialize database connection
-  abstract connect(options: MagnetModuleOptions): DynamicModule
+  abstract connect(config: DBConfig): DynamicModule
 
   // Register schemas with the database
   abstract forFeature(schemas: Type | Type[]): DynamicModule
@@ -133,38 +132,28 @@ abstract class DatabaseAdapter {
 
 ## Auto-Detection
 
-The database adapter is auto-detected based on:
-
-1. Configuration type (uri vs connectionString)
-2. Installed packages (`@magnet-cms/adapter-mongoose` or `@magnet-cms/adapter-drizzle`)
+The database adapter is automatically registered when you import an adapter package. Each adapter's `index.ts` calls `setDatabaseAdapter()` as a side effect, so `@Schema()` decorators resolve correctly without any manual setup.
 
 ```typescript
-import { detectDatabaseAdapter } from '@magnet-cms/common'
+// Importing the adapter package auto-registers the adapter type
+import { MongooseDatabaseAdapter } from '@magnet-cms/adapter-db-mongoose'
+// → setDatabaseAdapter('mongoose') is called automatically
 
-// Auto-detect from installed packages
-const adapter = detectDatabaseAdapter()
-
-// Detect from config
-const adapter = detectDatabaseAdapter({
-  connectionString: '...',
-  dialect: 'postgresql'
-})
-// Returns 'drizzle'
-
-const adapter = detectDatabaseAdapter({
-  uri: 'mongodb://...'
-})
-// Returns 'mongoose'
+import { DrizzleDatabaseAdapter } from '@magnet-cms/adapter-db-drizzle'
+// → setDatabaseAdapter('drizzle') is called automatically
 ```
+
+No `setDatabaseAdapter()` call is needed in your application code.
 
 ## i18n Configuration
 
-Configure internationalization in `MagnetModule.forRoot()`:
+Configure internationalization in the global options:
 
 ```typescript
-MagnetModule.forRoot({
-  db: { uri: '...' },
-  jwt: { secret: '...' },
+MagnetModule.forRoot([
+  MongooseDatabaseAdapter.forRoot(),
+], {
+  admin: true,
   internationalization: {
     locales: ['en', 'pt-BR', 'es'],
     defaultLocale: 'en',

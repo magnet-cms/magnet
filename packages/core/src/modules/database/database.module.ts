@@ -1,13 +1,12 @@
 import {
+	type DBConfig,
 	DatabaseAdapter,
-	MagnetModuleOptions,
 	getModelToken,
 	getSchemaToken,
 	registerModel,
 } from '@magnet-cms/common'
 import { DynamicModule, Module, Scope, Type } from '@nestjs/common'
 import { ModuleRef } from '@nestjs/core'
-import { DatabaseAdapterFactory } from './database-adapter.factory'
 import { InternationalizationModule } from './modules/internationalization/internationalization.module'
 
 const modules = [InternationalizationModule]
@@ -17,11 +16,18 @@ const modules = [InternationalizationModule]
 	exports: modules,
 })
 export class DatabaseModule {
-	static register(options: MagnetModuleOptions): DynamicModule {
-		const adapter: DatabaseAdapter = DatabaseAdapterFactory.getAdapter(
-			options.db,
-		)
-		const adapterOptions = adapter.connect(options)
+	/** Cached adapter instance set during register(), used by forFeature() */
+	private static adapter: DatabaseAdapter | null = null
+
+	/**
+	 * Register the database module with an adapter and config.
+	 *
+	 * @param adapter - The database adapter instance (from provider.adapter)
+	 * @param config - Resolved database config (from provider.config)
+	 */
+	static register(adapter: DatabaseAdapter, config: DBConfig): DynamicModule {
+		DatabaseModule.adapter = adapter
+		const adapterOptions = adapter.connect(config)
 
 		return {
 			module: DatabaseModule,
@@ -32,7 +38,13 @@ export class DatabaseModule {
 	}
 
 	static forFeature(schemas: Type | Type[]): DynamicModule {
-		const adapter: DatabaseAdapter = DatabaseAdapterFactory.getAdapter()
+		const adapter = DatabaseModule.adapter
+		if (!adapter) {
+			throw new Error(
+				'DatabaseModule.register() must be called before DatabaseModule.forFeature(). ' +
+					'Ensure MagnetModule.forRoot() includes a database provider.',
+			)
+		}
 		const schemasArray = Array.isArray(schemas) ? schemas : [schemas]
 
 		const schemasProviders = schemasArray.map((schema) => ({
