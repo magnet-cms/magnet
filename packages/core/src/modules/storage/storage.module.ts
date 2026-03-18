@@ -1,10 +1,10 @@
-import { StorageConfig } from '@magnet-cms/common'
+import type { StorageAdapter } from '@magnet-cms/common'
+import { DatabaseModule } from '@magnet-cms/core'
 import { DynamicModule, Module } from '@nestjs/common'
-import { DatabaseModule } from '~/modules/database'
 import { SettingsModule } from '~/modules/settings'
+import { LocalStorageAdapter } from './adapters/local-storage.adapter'
 import { MediaFolder } from './schemas/media-folder.schema'
 import { Media } from './schemas/media.schema'
-import { StorageAdapterFactory } from './storage-adapter.factory'
 import { STORAGE_ADAPTER, STORAGE_CONFIG } from './storage.constants'
 import { StorageController } from './storage.controller'
 import { StorageService } from './storage.service'
@@ -14,11 +14,21 @@ import { TransformController } from './transform.controller'
 @Module({})
 export class StorageModule {
 	/**
-	 * Register the storage module with configuration
-	 * @param config - Storage configuration (optional, uses defaults if not provided)
+	 * Register the storage module with an adapter instance.
+	 *
+	 * @param adapter - Storage adapter instance (from provider), or null for default local storage
+	 * @param config - Optional adapter-specific config for DI consumers
 	 */
-	static forRoot(config?: StorageConfig): DynamicModule {
-		const storageAdapter = StorageAdapterFactory.getAdapter(config)
+	static forRoot(
+		adapter?: StorageAdapter | null,
+		config?: Record<string, unknown> | null,
+	): DynamicModule {
+		const storageAdapter =
+			adapter ??
+			new LocalStorageAdapter({
+				uploadDir: './uploads',
+				publicPath: '/media',
+			})
 
 		return {
 			module: StorageModule,
@@ -49,6 +59,5 @@ export class StorageModule {
 export { MediaFolder } from './schemas/media-folder.schema'
 export { Media } from './schemas/media.schema'
 export { LocalStorageAdapter } from './adapters/local-storage.adapter'
-export { StorageAdapterFactory } from './storage-adapter.factory'
 export { StorageService } from './storage.service'
 export { STORAGE_ADAPTER, STORAGE_CONFIG } from './storage.constants'

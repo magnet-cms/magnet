@@ -33,22 +33,23 @@ bun add @magnet-cms/plugin-seo
 
 ## Registering Plugins
 
-Add plugins to your `MagnetModule.forRoot()` configuration:
+Add plugins to your `MagnetModule.forRoot()` provider array:
 
 ```typescript
 import { Module } from '@nestjs/common'
 import { MagnetModule } from '@magnet-cms/core'
+import { MongooseDatabaseAdapter } from '@magnet-cms/adapter-db-mongoose'
 import { ContentBuilderPlugin } from '@magnet-cms/plugin-content-builder'
 
 @Module({
   imports: [
-    MagnetModule.forRoot({
-      db: { uri: process.env.MONGODB_URI },
-      jwt: { secret: process.env.JWT_SECRET },
-      plugins: [
-        { plugin: ContentBuilderPlugin },
+    MagnetModule.forRoot(
+      [
+        MongooseDatabaseAdapter.forRoot(),
+        ContentBuilderPlugin.forRoot(),
       ],
-    }),
+      { admin: true },
+    ),
   ],
 })
 export class AppModule {}
@@ -56,30 +57,34 @@ export class AppModule {}
 
 ### Plugin Configuration
 
-Pass options to plugins:
+Pass options via each plugin's `.forRoot()` method:
 
 ```typescript
-plugins: [
-  {
-    plugin: ContentBuilderPlugin,
-    options: {
+MagnetModule.forRoot(
+  [
+    MongooseDatabaseAdapter.forRoot(),
+    ContentBuilderPlugin.forRoot({
       modulesPath: './src/modules',
-    },
-  },
-]
+    }),
+  ],
+  { admin: true },
+)
 ```
 
 ### Conditional Registration
 
-Enable or disable plugins:
+Enable or disable plugins by conditionally including them in the provider array:
 
 ```typescript
-plugins: [
-  {
-    plugin: ContentBuilderPlugin,
-    enabled: process.env.NODE_ENV === 'development',
-  },
+const providers = [
+  MongooseDatabaseAdapter.forRoot(),
 ]
+
+if (process.env.NODE_ENV === 'development') {
+  providers.push(ContentBuilderPlugin.forRoot())
+}
+
+MagnetModule.forRoot(providers, { admin: true })
 ```
 
 ## Creating Custom Plugins

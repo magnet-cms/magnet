@@ -46,6 +46,11 @@ export type BaseSchemaOptions = {
 	timestamps?: boolean
 }
 
+export type SchemaIndexOption = {
+	keys: Record<string, 1 | -1>
+	unique?: boolean
+}
+
 export type SchemaOptions = {
 	versioning?: boolean
 	i18n?: boolean
@@ -55,4 +60,9 @@ export type SchemaOptions = {
 	 * @default true
 	 */
 	visible?: boolean
+	/**
+	 * Compound indexes (adapter-specific).
+	 * Mongoose: schema.index(keys, { unique })
+	 */
+	indexes?: SchemaIndexOption[]
 }

@@ -1,5 +1,5 @@
 import { RequirePermission, Resolve } from '@magnet-cms/common'
-import { JwtAuthGuard, PermissionGuard } from '@magnet-cms/core'
+import { JwtAuthGuard } from '@magnet-cms/core/modules'
 import {
 	Body,
 	Controller,
@@ -14,7 +14,7 @@ import { Veterinarian } from './schemas/veterinarian.schema'
 import { VeterinariansService } from './veterinarians.service'
 
 @Controller('veterinarians')
-@UseGuards(JwtAuthGuard, PermissionGuard)
+@UseGuards(JwtAuthGuard)
 export class VeterinariansController {
 	constructor(private readonly veterinariansService: VeterinariansService) {}
 

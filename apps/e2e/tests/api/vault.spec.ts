@@ -18,8 +18,9 @@ test.describe('Vault API', () => {
 			expect(body.adapter).toBe('hashicorp')
 		} else if (TEMPLATE_NAME === 'drizzle-supabase') {
 			expect(body.adapter).toBe('supabase')
+		} else if (TEMPLATE_NAME === 'drizzle-neon') {
+			expect(body.adapter).toBe('db')
 		} else {
-			// drizzle-neon and others use DB vault
 			expect(body.adapter).toBeDefined()
 		}
 	})

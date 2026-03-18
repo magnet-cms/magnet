@@ -1,9 +1,11 @@
 import { createClerkClient, verifyToken } from '@clerk/backend'
 import type {
 	AuthConfig,
+	AuthMagnetProvider,
 	AuthResult,
 	AuthStrategy,
 	AuthUser,
+	EnvVarRequirement,
 	ExternalAuthInfo,
 	LoginCredentials,
 	RegisterData,
@@ -242,5 +244,50 @@ export class ClerkAuthStrategy
 		}
 
 		return null
+	}
+
+	/** Environment variables used by this adapter */
+	static readonly envVars: EnvVarRequirement[] = [
+		{
+			name: 'CLERK_SECRET_KEY',
+			required: true,
+			description: 'Clerk secret key',
+		},
+		{
+			name: 'CLERK_PUBLISHABLE_KEY',
+			required: false,
+			description: 'Clerk publishable key',
+		},
+		{
+			name: 'CLERK_JWT_KEY',
+			required: false,
+			description: 'Clerk JWT public key (PEM) for networkless verification',
+		},
+	]
+
+	/**
+	 * Create a configured auth provider for MagnetModule.forRoot().
+	 * Auto-resolves config values from environment variables if not provided.
+	 * Registers the Clerk strategy internally.
+	 */
+	static forRoot(config?: Partial<ClerkAuthConfig>): AuthMagnetProvider {
+		const resolvedConfig: AuthConfig = {
+			strategy: 'clerk',
+			...(config ?? {}),
+		}
+
+		// Register strategy so AuthModule finds it — lazy import to avoid circular deps
+		try {
+			const { AuthStrategyFactory } = require('@magnet-cms/core')
+			AuthStrategyFactory.registerStrategy('clerk', ClerkAuthStrategy)
+		} catch {
+			// Core not available — strategy will be registered when AuthModule loads
+		}
+
+		return {
+			type: 'auth',
+			config: resolvedConfig,
+			envVars: ClerkAuthStrategy.envVars,
+		}
 	}
 }

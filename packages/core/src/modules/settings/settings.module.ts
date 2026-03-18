@@ -1,4 +1,5 @@
 import { getSettingsOptions } from '@magnet-cms/common'
+import { DatabaseModule } from '@magnet-cms/core'
 import {
 	DynamicModule,
 	Logger,
@@ -6,7 +7,6 @@ import {
 	OnApplicationBootstrap,
 	Type,
 } from '@nestjs/common'
-import { DatabaseModule } from '~/modules/database'
 import { Setting } from './schemas/setting.schema'
 import { SettingsController } from './settings.controller'
 import { SettingsService } from './settings.service'
@@ -33,9 +33,17 @@ class SettingsInitializer implements OnApplicationBootstrap {
 						schema,
 					)
 				} catch (error) {
-					this.logger.warn(
-						`Failed to initialize settings for ${options.group}: ${error instanceof Error ? error.message : 'Unknown error'}`,
-					)
+					const msg = error instanceof Error ? error.message : 'Unknown error'
+					// "already exists" is expected when settings were initialized in a prior run
+					if (msg.includes('already exists') || msg.includes('duplicate key')) {
+						this.logger.debug(
+							`Settings for ${options.group} already initialized`,
+						)
+					} else {
+						this.logger.warn(
+							`Failed to initialize settings for ${options.group}: ${msg}`,
+						)
+					}
 				}
 			}
 		}

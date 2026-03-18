@@ -56,10 +56,8 @@ describe('DrizzleAdapter.ensureTablesCreated', () => {
 		const a = Adapter as unknown as Record<string, unknown>
 		a.db = {}
 		a.options = {
-			db: {
-				connectionString: 'postgresql://localhost/test',
-				migrations: { mode: 'manual', directory: './migrations' },
-			},
+			connectionString: 'postgresql://localhost/test',
+			migrations: { mode: 'manual', directory: './migrations' },
 		}
 		;(a.schemaRegistry as Map<string, unknown>).set('Test', {
 			table: {},

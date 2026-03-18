@@ -38,9 +38,8 @@ export class StripeService implements OnModuleInit {
 		})
 
 		if (this.config.webhookSecret) {
-			this.logger.warn(
-				'Webhook secret configured. Ensure rawBody is enabled: ' +
-					'NestFactory.create(AppModule, { rawBody: true })',
+			this.logger.debug(
+				'Webhook secret configured. Ensure rawBody is enabled in NestFactory.create() for signature verification.',
 			)
 		}
 	}

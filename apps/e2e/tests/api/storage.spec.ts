@@ -209,7 +209,7 @@ test.describe('Storage API', () => {
 
 		// Template-specific URL assertions
 		if (TEMPLATE_NAME === 'mongoose') {
-			// Local storage: URL starts with /media/
+			// Mongoose uses local storage: URL starts with /media/
 			expect(uploaded.url).toMatch(/^\/media\//)
 		}
 		// S3/MinIO and Supabase URLs vary by configuration, just verify non-empty

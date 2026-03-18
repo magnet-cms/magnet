@@ -254,6 +254,31 @@ async function runTestsForExample(
 			// modules dir may not exist
 		}
 
+		// Kill any process using 3000/3001 to avoid hitting a stale server from a previous run
+		try {
+			await new Promise<void>((resolve) => {
+				const proc = spawn(
+					'sh',
+					[
+						'-c',
+						'for p in 3000 3001; do lsof -ti:$p 2>/dev/null | xargs kill -9 2>/dev/null; done; true',
+					],
+					{
+						stdio: 'ignore',
+					},
+				)
+				proc.on('close', () => resolve())
+				proc.on('error', () => resolve())
+				setTimeout(() => {
+					proc.kill('SIGTERM')
+					resolve()
+				}, 3000)
+			})
+			await new Promise((r) => setTimeout(r, 2000))
+		} catch {
+			// Ignore
+		}
+
 		// Start the backend server
 
 		console.log('\n🚀 Starting backend server...')

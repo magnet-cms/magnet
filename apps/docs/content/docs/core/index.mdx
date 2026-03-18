@@ -20,20 +20,20 @@ The core module includes:
 ## Configuration
 
 ```typescript
-import { MagnetModule } from '@magnet/core'
+import { MagnetModule } from '@magnet-cms/core'
+import { MongooseDatabaseAdapter } from '@magnet-cms/adapter-db-mongoose'
 
 @Module({
   imports: [
-    MagnetModule.forRoot({
-      adapter: yourDatabaseAdapter,
-      auth: {
-        secret: process.env.JWT_SECRET,
-      },
-    }),
+    MagnetModule.forRoot([
+      MongooseDatabaseAdapter.forRoot(),
+    ], { admin: true }),
   ],
 })
 export class AppModule {}
 ```
+
+Each adapter and plugin provides a static `.forRoot()` method that auto-resolves configuration from environment variables. Pass explicit values to override defaults.
 
 ## Modules
 

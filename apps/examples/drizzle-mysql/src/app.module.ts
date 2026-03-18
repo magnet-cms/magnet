@@ -1,8 +1,7 @@
-// IMPORTANT: Set database adapter FIRST, before any schema imports
-import { setDatabaseAdapter } from '@magnet-cms/common'
-setDatabaseAdapter('drizzle')
-
+import { DrizzleDatabaseAdapter } from '@magnet-cms/adapter-db-drizzle'
+import { S3StorageAdapter } from '@magnet-cms/adapter-storage-s3'
 import { MagnetModule } from '@magnet-cms/core'
+import { NodemailerEmailAdapter } from '@magnet-cms/email-nodemailer'
 import { ContentBuilderPlugin } from '@magnet-cms/plugin-content-builder'
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
@@ -19,7 +18,7 @@ import { VeterinariansModule } from './modules/veterinarians/veterinarians.modul
  * - Drizzle ORM adapter with mysql2 driver (local Docker MySQL)
  * - JWT authentication (built-in)
  * - S3 storage via MinIO (S3-compatible)
- * - DB vault for secrets management
+ * - DB vault for secrets management (default)
  * - Nodemailer email adapter (MailPit for dev)
  * - Content Builder plugin
  * - Admin UI serving
@@ -32,44 +31,25 @@ import { VeterinariansModule } from './modules/veterinarians/veterinarians.modul
 @Module({
 	imports: [
 		ConfigModule.forRoot({ isGlobal: true }),
-		MagnetModule.forRoot({
-			db: {
-				connectionString:
-					process.env.DATABASE_URL || 'mysql://root:root@localhost:3307/magnet',
-				dialect: 'mysql',
-				driver: 'mysql2',
-				debug: process.env.NODE_ENV === 'development',
-			},
-			jwt: {
-				secret: process.env.JWT_SECRET || 'development-secret-key',
-			},
-			admin: true,
-			storage: {
-				adapter: 's3',
-				s3: {
-					bucket: process.env.S3_BUCKET || 'magnet-media',
-					region: process.env.S3_REGION || 'us-east-1',
-					accessKeyId: process.env.S3_ACCESS_KEY || 'minioadmin',
-					secretAccessKey: process.env.S3_SECRET_KEY || 'minioadmin',
-					endpoint: process.env.S3_ENDPOINT || 'http://localhost:9000',
+		MagnetModule.forRoot(
+			[
+				DrizzleDatabaseAdapter.forRoot({
+					dialect: 'mysql',
+					driver: 'mysql2',
+					debug: process.env.NODE_ENV === 'development',
+				}),
+				S3StorageAdapter.forRoot({
 					forcePathStyle: true,
-				},
-			},
-			vault: { adapter: 'db' },
-			email: {
-				adapter: 'nodemailer',
-				nodemailer: {
-					host: process.env.SMTP_HOST || 'localhost',
-					port: Number(process.env.SMTP_PORT || 1025),
+				}),
+				NodemailerEmailAdapter.forRoot({
 					secure: false,
 					auth: { user: '', pass: '' },
-				},
-				defaults: {
-					from: process.env.EMAIL_FROM || 'noreply@magnet.local',
-				},
-			},
-			plugins: [{ plugin: ContentBuilderPlugin }],
-		}),
+					defaults: { from: process.env.EMAIL_FROM || 'noreply@magnet.local' },
+				}),
+				ContentBuilderPlugin.forRoot(),
+			],
+			{ admin: true },
+		),
 		CatsModule,
 		OwnersModule,
 		VeterinariansModule,

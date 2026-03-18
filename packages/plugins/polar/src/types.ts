@@ -5,13 +5,13 @@
  * and injected in services via `@InjectPluginOptions('polar')`.
  */
 export interface PolarPluginConfig {
-	/** Polar access token (polar_at_...) */
-	accessToken: string
+	/** Polar access token (polar_at_...). Auto-resolved from POLAR_ACCESS_TOKEN env var. */
+	accessToken?: string
 
-	/** Polar webhook signing secret */
-	webhookSecret: string
+	/** Polar webhook signing secret. Auto-resolved from POLAR_WEBHOOK_SECRET env var. */
+	webhookSecret?: string
 
-	/** Polar organization ID (optional — scoped by access token) */
+	/** Polar organization ID. Auto-resolved from POLAR_ORGANIZATION_ID env var. */
 	organizationId?: string
 
 	/** Whether to sync products from Polar via webhooks (default: true) */

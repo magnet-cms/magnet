@@ -16,6 +16,7 @@
     }
   },
   "types": "./dist/index.d.ts",
+  "sideEffects": true,
   "files": [
     "dist"
   ],

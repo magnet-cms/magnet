@@ -43,8 +43,8 @@ export class EmailService implements OnModuleInit {
 		this.logger.setContext(EmailService.name)
 
 		if (!this.adapter.hasInnerAdapter()) {
-			this.logger.warn(
-				'No email adapter configured. Emails will be logged to console only. Configure email in MagnetModuleOptions to enable delivery.',
+			this.logger.debug(
+				'No email adapter configured. Emails will be logged to console only.',
 			)
 		}
 	}

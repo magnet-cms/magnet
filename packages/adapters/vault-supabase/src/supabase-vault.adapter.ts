@@ -1,6 +1,8 @@
 import type {
+	EnvVarRequirement,
 	SupabaseVaultConfig,
 	VaultAdapter,
+	VaultMagnetProvider,
 	VaultSecretMeta,
 } from '@magnet-cms/common'
 import { type SupabaseClient, createClient } from '@supabase/supabase-js'
@@ -42,6 +44,50 @@ interface SecretRow {
  */
 export class SupabaseVaultAdapter implements VaultAdapter {
 	private readonly client: SupabaseClient
+
+	/** Environment variables used by this adapter */
+	static readonly envVars: EnvVarRequirement[] = [
+		{
+			name: 'SUPABASE_URL',
+			required: true,
+			description: 'Supabase project URL',
+		},
+		{
+			name: 'SUPABASE_SERVICE_KEY',
+			required: true,
+			description: 'Supabase service role key',
+		},
+	]
+
+	/**
+	 * Create a configured vault provider for MagnetModule.forRoot().
+	 * Auto-resolves config values from environment variables if not provided.
+	 *
+	 * @example
+	 * ```typescript
+	 * MagnetModule.forRoot([
+	 *   SupabaseVaultAdapter.forRoot(),
+	 *   // or with explicit config:
+	 *   SupabaseVaultAdapter.forRoot({
+	 *     supabaseUrl: 'https://xxx.supabase.co',
+	 *     supabaseServiceKey: 'service-role-key',
+	 *   }),
+	 * ])
+	 * ```
+	 */
+	static forRoot(config?: Partial<SupabaseVaultConfig>): VaultMagnetProvider {
+		const resolvedConfig: SupabaseVaultConfig = {
+			supabaseUrl: config?.supabaseUrl ?? process.env.SUPABASE_URL ?? '',
+			supabaseServiceKey:
+				config?.supabaseServiceKey ?? process.env.SUPABASE_SERVICE_KEY ?? '',
+		}
+
+		return {
+			type: 'vault',
+			adapter: new SupabaseVaultAdapter(resolvedConfig),
+			envVars: SupabaseVaultAdapter.envVars,
+		}
+	}
 
 	constructor(config: SupabaseVaultConfig) {
 		this.client = createClient(config.supabaseUrl, config.supabaseServiceKey, {
