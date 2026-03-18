@@ -18,11 +18,11 @@ The Database Module provides:
 
 | Database | Adapter Package | Description |
 |----------|-----------------|-------------|
-| MongoDB | `@magnet-cms/adapter-mongoose` | Full-featured MongoDB adapter |
-| PostgreSQL | `@magnet-cms/adapter-drizzle` | Via Drizzle ORM |
-| MySQL | `@magnet-cms/adapter-drizzle` | Via Drizzle ORM |
-| SQLite | `@magnet-cms/adapter-drizzle` | Via Drizzle ORM |
-| Supabase | `@magnet-cms/adapter-supabase` | PostgreSQL with auth/storage |
+| MongoDB | `@magnet-cms/adapter-db-mongoose` | Full-featured MongoDB adapter |
+| PostgreSQL | `@magnet-cms/adapter-db-drizzle` | Via Drizzle ORM |
+| MySQL | `@magnet-cms/adapter-db-drizzle` | Via Drizzle ORM |
+| SQLite | `@magnet-cms/adapter-db-drizzle` | Via Drizzle ORM |
+| Supabase | `@magnet-cms/adapter-db-drizzle` + auth/storage adapters | PostgreSQL via Drizzle; auth/storage via Supabase |
 
 ## Configuration
 
@@ -136,7 +136,7 @@ abstract class DatabaseAdapter {
 The database adapter is auto-detected based on:
 
 1. Configuration type (uri vs connectionString)
-2. Installed packages (`@magnet-cms/adapter-mongoose` or `@magnet-cms/adapter-drizzle`)
+2. Installed packages (`@magnet-cms/adapter-db-mongoose` or `@magnet-cms/adapter-db-drizzle`)
 
 ```typescript
 import { detectDatabaseAdapter } from '@magnet-cms/common'
@@ -224,10 +224,10 @@ Install the appropriate adapter:
 
 ```bash
 # For MongoDB
-bun add @magnet-cms/adapter-mongoose mongoose
+bun add @magnet-cms/adapter-db-mongoose mongoose
 
 # For PostgreSQL/MySQL/SQLite
-bun add @magnet-cms/adapter-drizzle drizzle-orm
+bun add @magnet-cms/adapter-db-drizzle drizzle-orm pg
 ```
 
 ### Connection Errors

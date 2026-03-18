@@ -12,15 +12,15 @@ This guide covers installing Magnet in your project.
 We recommend using Bun for the best experience:
 
 ```bash
-bun add @magnet/core
+bun add @magnet-cms/core
 ```
 
 You can also use npm or yarn:
 
 ```bash
-npm install @magnet/core
+npm install @magnet-cms/core
 # or
-yarn add @magnet/core
+yarn add @magnet-cms/core
 ```
 
 ## Additional Packages
@@ -29,13 +29,13 @@ Depending on your needs, you may want to install additional packages:
 
 ```bash
 # Database adapter (required)
-bun add @magnet/adapter-mongoose
+bun add @magnet-cms/adapter-db-mongoose mongoose
 
 # Common utilities and types
-bun add @magnet/common
+bun add @magnet-cms/common
 
-# Admin UI
-bun add @magnet/admin
+# Admin UI (bundled with core when admin: true)
+bun add @magnet-cms/admin
 ```
 
 ## Development Dependencies

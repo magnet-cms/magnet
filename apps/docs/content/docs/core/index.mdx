@@ -5,7 +5,7 @@ description: Learn about Magnet's core module
 
 # Core Module
 
-The `@magnet/core` package provides the main functionality for building a headless CMS with NestJS.
+The `@magnet-cms/core` package provides the main functionality for building a headless CMS with NestJS.
 
 ## Overview
 
@@ -20,15 +20,14 @@ The core module includes:
 ## Configuration
 
 ```typescript
-import { MagnetModule } from '@magnet/core'
+import { MagnetModule } from '@magnet-cms/core'
 
 @Module({
   imports: [
     MagnetModule.forRoot({
-      adapter: yourDatabaseAdapter,
-      auth: {
-        secret: process.env.JWT_SECRET,
-      },
+      db: { uri: process.env.MONGODB_URI || 'mongodb://localhost:27017/magnet' },
+      jwt: { secret: process.env.JWT_SECRET || 'dev-secret' },
+      admin: true,
     }),
   ],
 })

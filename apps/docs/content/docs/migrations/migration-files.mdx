@@ -11,7 +11,7 @@ Migration files are TypeScript modules stored in your `migrations/` directory. E
 
 ```typescript
 // migrations/0001_initial_schema.ts
-import type { Migration, MigrationDb } from '@magnet-cms/adapter-drizzle'
+import type { Migration, MigrationDb } from '@magnet-cms/adapter-db-drizzle'
 
 export const migration: Migration = {
   id: '0001_initial_schema',
@@ -116,12 +116,13 @@ async up(db: MigrationDb) {
 
 ## SQL by Dialect
 
-Migration SQL syntax varies by database. The SQL generator helpers in `@magnet-cms/adapter-drizzle` cover the most common operations:
+Migration SQL syntax varies by database. The SQL generator helpers in `@magnet-cms/adapter-db-drizzle` cover the most common operations:
 
 ### PostgreSQL
 
 ```typescript
-import * as pg from '@magnet-cms/adapter-drizzle/sql-generators/postgresql'
+import { sqlGenerators } from '@magnet-cms/adapter-db-drizzle'
+const pg = sqlGenerators.postgresql
 
 async up(db: MigrationDb) {
   // CREATE TABLE
@@ -152,7 +153,8 @@ async down(db: MigrationDb) {
 ### MySQL
 
 ```typescript
-import * as mysql from '@magnet-cms/adapter-drizzle/sql-generators/mysql'
+import { sqlGenerators } from '@magnet-cms/adapter-db-drizzle'
+const mysql = sqlGenerators.mysql
 
 async up(db: MigrationDb) {
   await db.execute(mysql.createTable('products', [
@@ -172,7 +174,8 @@ async up(db: MigrationDb) {
 ### SQLite
 
 ```typescript
-import * as sqlite from '@magnet-cms/adapter-drizzle/sql-generators/sqlite'
+import { sqlGenerators } from '@magnet-cms/adapter-db-drizzle'
+const sqlite = sqlGenerators.sqlite
 
 async up(db: MigrationDb) {
   await db.execute(sqlite.createTable('products', [

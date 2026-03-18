@@ -5,24 +5,24 @@ description: PostgreSQL database adapter using Drizzle ORM with support for Neon
 
 # Drizzle Adapter
 
-The `@magnet-cms/adapter-drizzle` package provides PostgreSQL support for Magnet CMS through [Drizzle ORM](https://orm.drizzle.team). It supports the Neon serverless driver and standard PostgreSQL connections, enabling deployment to serverless environments and managed databases.
+The `@magnet-cms/adapter-db-drizzle` package provides PostgreSQL support for Magnet CMS through [Drizzle ORM](https://orm.drizzle.team). It supports the Neon serverless driver and standard PostgreSQL connections (`pg`), enabling deployment to serverless environments and managed databases.
 
 ## Installation
 
 ```bash
-bun add @magnet-cms/adapter-drizzle
+bun add @magnet-cms/adapter-db-drizzle drizzle-orm
 ```
 
 For Neon serverless (recommended for Neon databases):
 
 ```bash
-bun add @magnet-cms/adapter-drizzle @neondatabase/serverless
+bun add @magnet-cms/adapter-db-drizzle @neondatabase/serverless
 ```
 
-For standard PostgreSQL:
+For standard PostgreSQL (including Supabase):
 
 ```bash
-bun add @magnet-cms/adapter-drizzle postgres
+bun add @magnet-cms/adapter-db-drizzle pg
 ```
 
 ## Important: Adapter Initialization Order
@@ -71,7 +71,7 @@ import { ConfigModule } from '@nestjs/config'
 export class AppModule {}
 ```
 
-### Standard PostgreSQL
+### Standard PostgreSQL (including Supabase)
 
 ```typescript
 import { setDatabaseAdapter } from '@magnet-cms/common'
@@ -86,7 +86,12 @@ import { Module } from '@nestjs/common'
       db: {
         connectionString: process.env.DATABASE_URL || 'postgresql://localhost:5432/mydb',
         dialect: 'postgresql',
-        debug: false,
+        driver: 'pg',
+        debug: process.env.NODE_ENV === 'development',
+        migrations: {
+          mode: 'auto',
+          directory: './migrations',
+        },
       },
       jwt: {
         secret: process.env.JWT_SECRET || 'your-secret-key',
@@ -103,8 +108,9 @@ export class AppModule {}
 |--------|------|----------|-------------|
 | `connectionString` | `string` | Yes | PostgreSQL connection string (`postgresql://user:pass@host/db`) |
 | `dialect` | `'postgresql'` | Yes | Database dialect (currently `postgresql` only) |
-| `driver` | `'neon'` \| `undefined` | No | Use `'neon'` for Neon serverless; omit for standard PostgreSQL |
+| `driver` | `'neon'` \| `'pg'` | No | Use `'neon'` for Neon serverless; use `'pg'` for standard PostgreSQL (node-postgres) |
 | `debug` | `boolean` | No | Enable SQL query logging |
+| `migrations` | `object` | No | `{ mode: 'auto' \| 'manual', directory: string }` — enable auto-migrations or specify migrations directory |
 
 ## Schema Definition
 
@@ -294,7 +300,7 @@ volumes:
 | Database | PostgreSQL | MongoDB |
 | IDs | UUID strings | ObjectId strings |
 | Relations | UUID foreign keys | ObjectId references |
-| Driver | `neon` or standard `postgres` | Mongoose ODM |
+| Driver | `neon` or `pg` (node-postgres) | Mongoose ODM |
 | `setDatabaseAdapter` | **Required** (call first) | Not needed |
 | Serverless | Supported (Neon driver) | Not recommended |
 

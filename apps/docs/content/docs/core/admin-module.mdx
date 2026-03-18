@@ -5,6 +5,20 @@ description: Serving the Admin UI and providing configuration endpoints
 
 The Admin Module serves the Magnet CMS admin interface and provides configuration endpoints for the frontend.
 
+## Enabling and Disabling Admin
+
+Control admin UI serving via `MagnetModule.forRoot()`:
+
+```typescript
+// Enable admin UI (default when admin: true)
+MagnetModule.forRoot({ db: {...}, jwt: {...}, admin: true })
+
+// API-only / headless mode — no admin UI served
+MagnetModule.forRoot({ db: {...}, jwt: {...}, admin: false })
+```
+
+When `admin: false`, the CMS runs in headless mode: REST APIs are available but no admin static files are served.
+
 ## Overview
 
 The Admin Module handles:

@@ -1,249 +1,143 @@
 ---
-title: Vault Plugin
-description: Integrate HashiCorp Vault for secrets management in Magnet CMS
+title: Vault
+description: Encrypted secrets management with HashiCorp Vault, Supabase Vault, or built-in DB storage
 ---
 
 ## Overview
 
-The Vault plugin integrates [HashiCorp Vault](https://www.vaultproject.io/) with Magnet CMS for centralized secrets management. It supports both remote Vault servers and local development with environment variable fallback.
+The Vault module provides encrypted secrets management in Magnet CMS. It is built into `@magnet-cms/core` and supports three adapters:
 
-**Key features:**
-- Boot-time secret resolution via `VaultBootstrap.resolve()`
-- Runtime secret resolution via `VaultService` with caching and rotation
-- Convention-based path mapping with explicit overrides
-- Admin UI for connection config, secret browsing, and mapping management
-- Token and AppRole authentication methods
-
-## Installation
-
-```bash
-bun add @magnet-cms/plugin-vault
-```
-
-## Quick Start
-
-### 1. Register the plugin
-
-```typescript
-import { MagnetModule } from '@magnet-cms/core'
-import { VaultPlugin } from '@magnet-cms/plugin-vault'
-
-@Module({
-  imports: [
-    MagnetModule.forRoot({
-      db: { uri: process.env.MONGODB_URI || 'mongodb://localhost:27017/myapp' },
-      jwt: { secret: process.env.JWT_SECRET || 'dev-secret' },
-      plugins: [{ plugin: VaultPlugin }],
-    }),
-  ],
-})
-export class AppModule {}
-```
-
-### 2. Boot-time secrets (optional)
-
-For production, use `VaultBootstrap.resolve()` to fetch secrets from Vault before NestJS boots:
-
-```typescript
-import { MagnetModule } from '@magnet-cms/core'
-import { VaultBootstrap, VaultPlugin } from '@magnet-cms/plugin-vault'
-
-// Resolve secrets before module initialization
-const secrets = await VaultBootstrap.resolve({
-  fallbackToEnv: true,
-  paths: {
-    db: { vaultPath: 'secret/data/magnet/database', envPrefix: 'DB_' },
-    jwt: { vaultPath: 'secret/data/magnet/jwt', envPrefix: 'JWT_' },
-  },
-})
-
-@Module({
-  imports: [
-    MagnetModule.forRoot({
-      db: { uri: secrets.db.uri as string },
-      jwt: { secret: secrets.jwt.secret as string },
-      plugins: [{ plugin: VaultPlugin }],
-    }),
-  ],
-})
-export class AppModule {}
-```
+- **DB** (default) — Stores encrypted secrets in your database (requires `VAULT_MASTER_KEY`)
+- **HashiCorp** — Uses [HashiCorp Vault](https://www.vaultproject.io/) for centralized secrets
+- **Supabase** — Uses Supabase Vault (pgsodium) for encrypted storage
 
 ## Configuration
 
-### Environment Variables
+Configure the vault in `MagnetModule.forRoot()`:
 
-| Variable | Description |
-|----------|-------------|
-| `VAULT_ADDR` | Vault server URL (e.g., `https://vault.example.com:8200`) |
-| `VAULT_TOKEN` | Vault authentication token |
-| `VAULT_ROLE_ID` | AppRole role ID (when using AppRole auth) |
-| `VAULT_SECRET_ID` | AppRole secret ID (when using AppRole auth) |
+### Built-in DB Adapter (default)
 
-### Authentication Methods
+Secrets are stored encrypted in your database. Requires `VAULT_MASTER_KEY` environment variable (min 32 characters).
 
-**Token authentication** (simplest):
+```typescript
+MagnetModule.forRoot({
+  db: { uri: process.env.MONGODB_URI || '...' },
+  jwt: { secret: process.env.JWT_SECRET || '...' },
+  vault: { adapter: 'db' },
+})
+```
+
 ```bash
-export VAULT_ADDR=https://vault.example.com:8200
-export VAULT_TOKEN=hvs.your-token-here
+# .env
+VAULT_MASTER_KEY=your-master-key-with-at-least-32-characters
 ```
 
-**AppRole authentication** (recommended for production):
+### HashiCorp Vault
+
 ```typescript
-const secrets = await VaultBootstrap.resolve({
-  url: 'https://vault.example.com:8200',
-  auth: {
-    type: 'appRole',
-    roleId: process.env.VAULT_ROLE_ID!,
-    secretId: process.env.VAULT_SECRET_ID,
-  },
-  paths: {
-    db: {},
-    jwt: {},
+MagnetModule.forRoot({
+  db: { uri: '...' },
+  jwt: { secret: '...' },
+  vault: {
+    adapter: 'hashicorp',
+    hashicorp: {
+      url: process.env.VAULT_ADDR || 'http://localhost:8200',
+      auth: { type: 'token', token: process.env.VAULT_TOKEN || '' },
+    },
   },
 })
 ```
 
-### Path Mapping
+Install the adapter:
 
-**Convention-based** (zero config):
+```bash
+bun add @magnet-cms/adapter-vault-hashicorp
+```
 
-By default, secrets are read from `secret/data/magnet/{module}`:
-- `secret/data/magnet/database` → database config
-- `secret/data/magnet/jwt` → JWT config
-- `secret/data/magnet/email` → email config
-
-**Explicit overrides:**
-
-Override specific paths when your Vault layout differs:
+### Supabase Vault
 
 ```typescript
-const secrets = await VaultBootstrap.resolve({
-  paths: {
-    db: { vaultPath: 'secret/data/myapp/prod/database' },
-    jwt: { vaultPath: 'kv/shared/jwt-keys' },
-    email: {}, // uses convention: secret/data/magnet/email
+MagnetModule.forRoot({
+  db: { connectionString: process.env.DATABASE_URL, dialect: 'postgresql', driver: 'pg' },
+  jwt: { secret: process.env.JWT_SECRET || '' },
+  vault: {
+    adapter: 'supabase',
+    supabase: {
+      supabaseUrl: process.env.SUPABASE_URL || '',
+      supabaseServiceKey: process.env.SUPABASE_SERVICE_KEY || '',
+    },
   },
 })
+```
+
+Install the adapter:
+
+```bash
+bun add @magnet-cms/adapter-vault-supabase
 ```
 
 ## Runtime Usage
 
-Inject `VaultService` for dynamic secret resolution with caching:
+Inject `VaultService` from `@magnet-cms/core` for secret resolution:
 
 ```typescript
 import { Injectable } from '@nestjs/common'
-import { VaultService } from '@magnet-cms/plugin-vault'
+import { VaultService } from '@magnet-cms/core'
 
 @Injectable()
 export class MyService {
   constructor(private readonly vault: VaultService) {}
 
-  async getApiKey(): Promise<string | undefined> {
-    const secret = await this.vault.get<{ apiKey: string }>('magnet/api-keys')
-    return secret?.apiKey
+  async getApiKey(): Promise<string | null> {
+    return this.vault.get('api-keys')
+  }
+
+  async storeSecret(key: string, value: string, description?: string): Promise<void> {
+    await this.vault.set(key, value, description)
+  }
+
+  async refreshCachedSecret(key: string): Promise<void> {
+    await this.vault.refresh(key)
   }
 }
 ```
 
-### Watching for Rotation
+### VaultService Methods
 
-For secrets that rotate (API keys, tokens), use `watch()` to periodically refresh:
+| Method | Description |
+|--------|-------------|
+| `get(key)` | Retrieve a secret (cached). Returns `string \| null` |
+| `set(key, value, description?)` | Store or update a secret |
+| `delete(key)` | Delete a secret |
+| `list(prefix?)` | List secrets with metadata |
+| `refresh(key)` | Clear cache and re-fetch a secret |
+| `healthCheck()` | Test vault backend connectivity |
+| `getAdapterType()` | Get current adapter (`'db' \| 'hashicorp' \| 'supabase'`) |
 
-```typescript
-// In your module's onModuleInit
-vault.watch('magnet/api-keys', 60_000) // refresh every 60 seconds
-```
+## Environment Variables
 
-## Admin UI
-
-The plugin adds a **Vault** entry to the admin sidebar with:
-
-- **Connection Panel** — shows Vault status (connected/disconnected/not configured) and a "Test Connection" button
-- **Secret Browser** — tree view of secret paths at the configured mount (key names only, not values)
-- **Mappings Panel** — manage explicit path-to-config mappings with add/edit/delete
-
-Vault settings are also available in the Settings panel under the "Vault" tab.
+| Variable | Adapter | Description |
+|----------|---------|-------------|
+| `VAULT_MASTER_KEY` | DB | Master key for encryption (min 32 chars) |
+| `VAULT_ADDR` | HashiCorp | Vault server URL |
+| `VAULT_TOKEN` | HashiCorp | Authentication token |
+| `SUPABASE_URL` | Supabase | Supabase project URL |
+| `SUPABASE_SERVICE_KEY` | Supabase | Service role key |
 
 ## Local Development
 
-### Environment variable fallback (recommended)
+### DB Adapter (simplest)
 
-When `VAULT_ADDR` is not set, `VaultBootstrap.resolve()` falls back to reading environment variables:
+Set `VAULT_MASTER_KEY` in `.env` and use the default DB adapter. Secrets are stored in your database.
 
-```bash
-# .env file
-DB_URI=mongodb://localhost:27017/myapp
-DB_HOST=localhost
-JWT_SECRET=development-secret-key
-EMAIL_HOST=localhost
-EMAIL_PORT=1025
-```
-
-The env prefix is derived from the module name (`DB_` for `db`, `JWT_` for `jwt`) or set explicitly via `envPrefix`.
-
-### Local Vault dev server
-
-For teams wanting Vault parity in development:
+### HashiCorp Vault dev server
 
 ```bash
-# Start a dev Vault server
 vault server -dev -dev-root-token-id="dev-token"
-
-# Set environment
 export VAULT_ADDR=http://127.0.0.1:8200
 export VAULT_TOKEN=dev-token
-
-# Seed secrets
-vault kv put secret/magnet/database uri=mongodb://localhost:27017/myapp
-vault kv put secret/magnet/jwt secret=development-secret-key
 ```
 
-## Production Setup
+### Supabase Vault
 
-1. **Configure Vault access:**
-   - Create an AppRole for your Magnet CMS application
-   - Grant read access to `secret/data/magnet/*`
-   - Set `VAULT_ADDR`, `VAULT_ROLE_ID`, and `VAULT_SECRET_ID`
-
-2. **Store secrets in Vault:**
-   ```bash
-   vault kv put secret/magnet/database uri=$DATABASE_URL
-   vault kv put secret/magnet/jwt secret=$JWT_SECRET
-   vault kv put secret/magnet/email host=$SMTP_HOST port=$SMTP_PORT
-   ```
-
-3. **Use VaultBootstrap in your app module** to resolve secrets at boot time
-
-4. **Configure admin settings** via the Vault settings page in the admin panel
-
-## API Reference
-
-### VaultBootstrap
-
-| Method | Description |
-|--------|-------------|
-| `resolve(options)` | Fetch secrets from Vault or env vars before NestJS boots |
-
-### VaultService
-
-| Method | Description |
-|--------|-------------|
-| `get<T>(path)` | Read a secret with caching |
-| `getMany(paths)` | Read multiple secrets |
-| `refresh(path)` | Force-refresh a cached secret |
-| `watch(path, intervalMs?)` | Start periodic refresh for rotation |
-| `unwatch(path)` | Stop watching a secret |
-| `isConfigured()` | Check if Vault is connected |
-| `healthCheck()` | Test Vault server health |
-
-### REST Endpoints
-
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/vault/status` | Connection status |
-| POST | `/vault/test-connection` | Test connectivity |
-| GET | `/vault/secrets` | List secret paths |
-| GET | `/vault/secrets/:path` | Get secret key names |
-| GET | `/vault/mappings` | List configured mappings |
-| PUT | `/vault/mappings` | Update mappings |
+Use the [Supabase adapter](/docs/adapters/supabase) with the local Docker stack. The vault uses Supabase's pgsodium extension.

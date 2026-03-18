@@ -9,15 +9,15 @@ Magnet CMS uses an adapter pattern to support multiple databases. All adapters i
 
 | Adapter | Package | Databases | Features |
 |---------|---------|-----------|----------|
-| Mongoose | `@magnet-cms/adapter-mongoose` | MongoDB | Transactions, Full-text search, Geospatial, Change streams |
-| Drizzle | `@magnet-cms/adapter-drizzle` | PostgreSQL, MySQL, SQLite | Transactions, Full-text search, Migrations |
+| Mongoose | `@magnet-cms/adapter-db-mongoose` | MongoDB | Transactions, Full-text search, Geospatial, Change streams |
+| Drizzle | `@magnet-cms/adapter-db-drizzle` | PostgreSQL, MySQL, SQLite | Transactions, Full-text search, Migrations |
 
 ## Quick Start
 
 ### MongoDB (Mongoose)
 
 ```bash
-bun add @magnet-cms/adapter-mongoose mongoose
+bun add @magnet-cms/adapter-db-mongoose mongoose
 ```
 
 ```typescript
@@ -40,7 +40,7 @@ export class AppModule {}
 ### PostgreSQL (Drizzle)
 
 ```bash
-bun add @magnet-cms/adapter-drizzle drizzle-orm pg
+bun add @magnet-cms/adapter-db-drizzle drizzle-orm pg
 ```
 
 ```typescript

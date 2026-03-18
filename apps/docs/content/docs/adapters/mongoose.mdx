@@ -5,12 +5,12 @@ description: MongoDB database adapter using Mongoose ODM
 
 # Mongoose Adapter
 
-The `@magnet-cms/adapter-mongoose` package provides MongoDB support for Magnet CMS through Mongoose ODM. It includes schema decorators, a powerful query builder, and full support for internationalization and versioning.
+The `@magnet-cms/adapter-db-mongoose` package provides MongoDB support for Magnet CMS through Mongoose ODM. It includes schema decorators, a powerful query builder, and full support for internationalization and versioning.
 
 ## Installation
 
 ```bash
-bun add @magnet-cms/adapter-mongoose mongoose
+bun add @magnet-cms/adapter-db-mongoose mongoose
 ```
 
 ## Configuration
@@ -42,24 +42,27 @@ export class AppModule {}
 
 ## Schema Definition
 
+Use the `@Schema`, `@Field.*`, and `@Field.Validators` decorators — the same API as the Drizzle adapter. See [Field Decorators](/docs/common/field-decorators) for the full reference.
+
 ### Basic Schema
 
 ```typescript
-import { Schema, Prop, UI } from '@magnet-cms/common'
+import { Field, Schema } from '@magnet-cms/common'
+import { IsNumber, IsOptional, IsString } from 'class-validator'
 
 @Schema()
 export class Product {
-  @Prop({ required: true })
-  @UI({ label: 'Name', type: 'text' })
+  @Field.Text({ required: true, tab: 'General' })
+  @Field.Validators(IsString())
   name: string
 
-  @Prop({ type: Number, default: 0 })
-  @UI({ label: 'Price', type: 'number' })
+  @Field.Number({ required: true, tab: 'General' })
+  @Field.Validators(IsNumber())
   price: number
 
-  @Prop()
-  @UI({ label: 'Description', type: 'textarea' })
-  description: string
+  @Field.Text({ required: false, tab: 'General' })
+  @Field.Validators(IsOptional(), IsString())
+  description?: string
 }
 ```
 
@@ -70,48 +73,45 @@ Enable field-level internationalization with `intl: true`:
 ```typescript
 @Schema({ i18n: true })
 export class Article {
-  @Prop({ required: true, intl: true })
-  @UI({ label: 'Title', type: 'text' })
-  title: string  // Stored as { en: 'Title', es: 'Título', pt: 'Título' }
+  @Field.Text({ required: true, intl: true, tab: 'General' })
+  title: string  // Stored per locale
 
-  @Prop({ intl: true })
-  @UI({ label: 'Content', type: 'richText' })
-  content: string
+  @Field.RichText({ required: false, intl: true, tab: 'Content' })
+  content?: string
 
-  @Prop({ required: true })  // Not translated
-  @UI({ label: 'Slug', type: 'text' })
-  slug: string
+  @Field.Text({ required: true, tab: 'General' })
+  slug: string   // Shared across locales
 }
 ```
 
 ### Schema with Relations
 
 ```typescript
-import { Schema, Prop, UI } from '@magnet-cms/common'
-import { SchemaTypes } from 'mongoose'
+import { Field, Schema } from '@magnet-cms/common'
+import { IsNotEmpty, IsOptional } from 'class-validator'
 
 @Schema()
 export class Cat {
-  @Prop({ unique: true, required: true })
+  @Field.Text({ unique: true, required: true, tab: 'General' })
   tagID: string
 
-  @Prop({ required: true, intl: true })
+  @Field.Text({ required: true, intl: true, tab: 'General' })
   name: string
 
   // Many-to-One relation
-  @Prop({ type: SchemaTypes.ObjectId, ref: 'Owner', required: true })
-  @UI({ type: 'relationship', label: 'Owner' })
-  owner: string
+  @Field.Relationship({ ref: 'Owner', required: true, tab: 'Relations' })
+  @Field.Validators(IsNotEmpty())
+  owner!: string
 
   // Many-to-Many relation
-  @Prop({ type: [SchemaTypes.ObjectId], ref: 'Veterinarian', default: [] })
-  @UI({ type: 'relationship', label: 'Veterinarians' })
-  veterinarians: string[]
+  @Field.Relationship({ ref: 'Veterinarian', required: false, default: [], tab: 'Relations' })
+  @Field.Validators(IsOptional())
+  veterinarians?: string[]
 
   // One-to-One media relation
-  @Prop({ type: SchemaTypes.ObjectId, ref: 'Media' })
-  @UI({ type: 'upload', label: 'Photo' })
-  photo: string
+  @Field.Image({ required: false, tab: 'Media' })
+  @Field.Validators(IsOptional())
+  photo?: string
 }
 ```
 

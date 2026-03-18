@@ -12,7 +12,7 @@ Follow this guide to set up a basic Magnet application.
 First, install the required packages:
 
 ```bash
-bun add @magnet/core @magnet/adapter-mongoose @magnet/common
+bun add @magnet-cms/core @magnet-cms/adapter-db-mongoose @magnet-cms/common
 ```
 
 ## Basic Setup
@@ -21,15 +21,18 @@ Create your main application module:
 
 ```typescript
 import { Module } from '@nestjs/common'
-import { MagnetModule } from '@magnet/core'
-import { MongooseAdapter } from '@magnet/adapter-mongoose'
+import { MagnetModule } from '@magnet-cms/core'
 
 @Module({
   imports: [
     MagnetModule.forRoot({
-      adapter: new MongooseAdapter({
-        uri: 'mongodb://localhost:27017/magnet',
-      }),
+      db: {
+        uri: process.env.MONGODB_URI || 'mongodb://localhost:27017/magnet',
+      },
+      jwt: {
+        secret: process.env.JWT_SECRET || 'development-secret-key',
+      },
+      admin: true,
     }),
   ],
 })
