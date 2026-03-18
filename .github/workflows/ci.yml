@@ -55,10 +55,7 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Build packages (required for cross-package type resolution)
-        run: |
-          bun run --filter @magnet-cms/utils build
-          bun run --filter @magnet-cms/common build
-          bun run --filter @magnet-cms/core build
+        run: bunx turbo run build --filter=@magnet-cms/core...
 
       - name: Type check (core, common, e2e)
         run: |
@@ -87,13 +84,11 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Build packages
-        run: |
-          bun run --filter @magnet-cms/common build
-          bun run --filter @magnet-cms/core build
+        run: bunx turbo run build --filter=@magnet-cms/core...
 
       - name: Check admin bundle size
         run: |
-          bun run --filter @magnet-cms/admin build
+          bunx turbo run build --filter=@magnet-cms/admin...
           echo "Admin bundle size:"
           du -sh packages/client/admin/dist/
           # Fail if total JS exceeds 5MB (generous limit for initial baseline)
