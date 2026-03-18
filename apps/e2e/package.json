@@ -19,7 +19,7 @@
     "docker:start-all": "./scripts/start-all-docker.sh",
     "setup": "./scripts/setup-test-env.sh",
     "teardown": "./scripts/teardown-test-env.sh",
-    "lint": "biome check .",
+    "lint": "biome check tests scripts src",
     "check-types": "tsc --noEmit"
   },
   "devDependencies": {

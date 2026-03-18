@@ -129,11 +129,13 @@ export class AuthService {
 		// but don't create local database records.
 		const existingLocal = await this.userService.findOne({ email: user.email })
 		if (!existingLocal) {
+			const name = typeof user.name === 'string' ? user.name : registerDto.name
+			const roleValue = typeof user.role === 'string' ? user.role : role
 			await this.userService.create({
 				id: user.id,
 				email: user.email,
-				name: user.name || registerDto.name,
-				role: user.role || role,
+				name,
+				role: roleValue,
 			})
 		}
 

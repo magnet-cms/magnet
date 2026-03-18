@@ -30,9 +30,9 @@ jobs:
 
       - name: Run lint (core, common, e2e)
         run: |
-          bun run --filter @magnet-cms/core lint
-          bun run --filter @magnet-cms/common lint
-          bun run --filter @magnet-cms/e2e lint
+          bun run --cwd packages/core lint
+          bun run --cwd packages/common lint
+          bun run --cwd apps/e2e lint
 
   typecheck:
     name: Type Check
@@ -56,9 +56,9 @@ jobs:
 
       - name: Type check (core, common, e2e)
         run: |
-          bun run --filter @magnet-cms/core typecheck
-          bun run --filter @magnet-cms/common typecheck
-          bun run --filter @magnet-cms/e2e typecheck
+          bun run --cwd packages/core check-types
+          bun run --cwd packages/common check-types
+          bun run --cwd apps/e2e check-types
 
   build:
     name: Build

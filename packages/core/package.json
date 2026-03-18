@@ -33,7 +33,9 @@
   ],
   "scripts": {
     "build:dev": "tsup --watch",
-    "build": "tsup && cp -r src/modules/email/templates dist/templates"
+    "build": "tsup && cp -r src/modules/email/templates dist/templates",
+    "lint": "biome check src",
+    "check-types": "tsc --noEmit"
   },
   "dependencies": {
     "@nestjs/terminus": "^11.0.0",

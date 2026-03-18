@@ -1,3 +1,17 @@
 {
-	"extends": ["@repo/biome/base"]
+	"extends": ["@repo/biome/base"],
+	"files": {
+		"ignore": [
+			"dist",
+			"**/dist",
+			".next",
+			"**/.next",
+			".source",
+			"**/.source",
+			"playwright-report",
+			"**/playwright-report",
+			"test-results",
+			"**/test-results"
+		]
+	}
 }

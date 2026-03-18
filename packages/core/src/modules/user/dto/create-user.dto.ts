@@ -7,6 +7,10 @@ import {
 } from 'class-validator'
 
 export class CreateUserDto {
+	@IsString()
+	@IsOptional()
+	id?: string
+
 	@IsEmail()
 	@IsNotEmpty()
 	email!: string
