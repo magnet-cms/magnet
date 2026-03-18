@@ -2,9 +2,12 @@ import {
 	type AdapterCapabilities,
 	type AdapterFeature,
 	type AdapterName,
+	type DBConfig,
 	DatabaseAdapter,
-	MagnetModuleOptions,
+	type DatabaseMagnetProvider,
+	type EnvVarRequirement,
 	getModelToken,
+	setDatabaseAdapter,
 } from '@magnet-cms/common'
 import { DynamicModule, Injectable, Logger, Module, Type } from '@nestjs/common'
 import { sql } from 'drizzle-orm'
@@ -48,26 +51,32 @@ class DrizzleModule {}
 @Module({})
 class DrizzleFeatureModule {}
 
+/** Singleton adapter instance */
+let adapterInstance: DrizzleDatabaseAdapter | null = null
+
 /**
  * Drizzle ORM adapter for Magnet CMS.
  * Supports PostgreSQL, MySQL, and SQLite through Drizzle ORM.
+ *
+ * @example
+ * ```typescript
+ * MagnetModule.forRoot([
+ *   DrizzleDatabaseAdapter.forRoot({ dialect: 'postgresql' }),
+ * ])
+ * ```
  */
 @Injectable()
-class DrizzleAdapter extends DatabaseAdapter {
+export class DrizzleDatabaseAdapter extends DatabaseAdapter {
 	readonly name: AdapterName = 'drizzle'
 	private db: DrizzleDB | null = null
 	private pool:
 		| Pool
 		| { end?: () => Promise<void>; close?: () => void }
 		| null = null
-	private options: MagnetModuleOptions | null = null
+	private options: DBConfig | null = null
 	private schemaRegistry: Map<string, { table: PgTable; tableName: string }> =
 		new Map()
 	private tablesInitialized = false
-
-	constructor() {
-		super()
-	}
 
 	/**
 	 * Automatically create tables for all registered schemas.
@@ -81,7 +90,7 @@ class DrizzleAdapter extends DatabaseAdapter {
 		// Small delay to allow all schemas to be registered
 		await new Promise((resolve) => setTimeout(resolve, 200))
 
-		const drizzleConfig = this.options?.db as DrizzleConfig | undefined
+		const drizzleConfig = this.options as DrizzleConfig | undefined
 
 		if (drizzleConfig?.migrations) {
 			// Migration-aware mode: delegate to AutoMigration
@@ -142,7 +151,7 @@ class DrizzleAdapter extends DatabaseAdapter {
 			return
 		}
 
-		const drizzleConfig = this.options?.db as DrizzleConfig | undefined
+		const drizzleConfig = this.options as DrizzleConfig | undefined
 		const dialect = drizzleConfig?.dialect ?? 'postgresql'
 
 		try {
@@ -427,10 +436,10 @@ class DrizzleAdapter extends DatabaseAdapter {
 	 * Connect to the database and return a NestJS dynamic module.
 	 * Supports both synchronous (pg) and asynchronous (neon) drivers.
 	 */
-	connect(options: MagnetModuleOptions): DynamicModule {
-		this.options = options
-		const config = options.db as DrizzleConfig
-		const driver = config.driver || 'pg'
+	connect(config: DBConfig): DynamicModule {
+		this.options = config
+		const drizzleConfig = config as DrizzleConfig
+		const driver = drizzleConfig.driver || 'pg'
 
 		// If already connected, return empty module
 		if (this.db) {
@@ -450,13 +459,14 @@ class DrizzleAdapter extends DatabaseAdapter {
 					{
 						provide: DRIZZLE_DB,
 						useFactory: async () => {
-							const { db, pool } = await this.createConnectionAsync(config)
+							const { db, pool } =
+								await this.createConnectionAsync(drizzleConfig)
 							this.db = db
 							this.pool = pool
 							return db
 						},
 					},
-					{ provide: DRIZZLE_CONFIG, useValue: config },
+					{ provide: DRIZZLE_CONFIG, useValue: drizzleConfig },
 				],
 				exports: [DRIZZLE_DB, DRIZZLE_CONFIG],
 				global: true,
@@ -464,7 +474,7 @@ class DrizzleAdapter extends DatabaseAdapter {
 		}
 
 		// Synchronous connection for pg driver
-		const { db, pool } = this.createConnection(config)
+		const { db, pool } = this.createConnection(drizzleConfig)
 		this.db = db
 		this.pool = pool
 
@@ -472,7 +482,7 @@ class DrizzleAdapter extends DatabaseAdapter {
 			module: DrizzleModule,
 			providers: [
 				{ provide: DRIZZLE_DB, useValue: this.db },
-				{ provide: DRIZZLE_CONFIG, useValue: config },
+				{ provide: DRIZZLE_CONFIG, useValue: drizzleConfig },
 			],
 			exports: [DRIZZLE_DB, DRIZZLE_CONFIG],
 			global: true,
@@ -815,9 +825,61 @@ class DrizzleAdapter extends DatabaseAdapter {
 			this.db = null
 		}
 	}
+
+	/** Environment variables required by this adapter */
+	static readonly envVars: EnvVarRequirement[] = [
+		{
+			name: 'DATABASE_URL',
+			required: true,
+			description: 'Database connection string',
+		},
+	]
+
+	/**
+	 * Create a configured database provider for MagnetModule.forRoot().
+	 * Auto-resolves the connection string from DATABASE_URL env var if not provided.
+	 *
+	 * @param config - Optional Drizzle configuration. If omitted, reads from DATABASE_URL env var.
+	 * @returns A DatabaseMagnetProvider to pass to MagnetModule.forRoot()
+	 */
+	static forRoot(config?: Partial<DrizzleConfig>): DatabaseMagnetProvider {
+		setDatabaseAdapter('drizzle')
+
+		const resolvedConfig: DrizzleConfig = {
+			connectionString:
+				config?.connectionString ?? process.env.DATABASE_URL ?? '',
+			dialect: config?.dialect ?? 'postgresql',
+			driver: config?.driver,
+			debug: config?.debug,
+			migrations: config?.migrations,
+		}
+
+		if (!adapterInstance) {
+			adapterInstance = new DrizzleDatabaseAdapter()
+		}
+
+		return {
+			type: 'database',
+			adapter: adapterInstance,
+			config: resolvedConfig,
+			envVars: DrizzleDatabaseAdapter.envVars,
+		}
+	}
+
+	/**
+	 * Get the singleton adapter instance.
+	 * @internal Used by DatabaseModule for forFeature() calls.
+	 */
+	static getInstance(): DrizzleDatabaseAdapter {
+		if (!adapterInstance) {
+			adapterInstance = new DrizzleDatabaseAdapter()
+		}
+		return adapterInstance
+	}
 }
 
 /**
- * Singleton adapter instance exported for use by the framework.
+ * @deprecated Use DrizzleDatabaseAdapter instead.
+ * Kept temporarily for internal compatibility during migration.
  */
-export const Adapter = new DrizzleAdapter()
+export const Adapter = DrizzleDatabaseAdapter.getInstance()

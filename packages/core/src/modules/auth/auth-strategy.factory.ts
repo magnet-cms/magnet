@@ -8,19 +8,17 @@ type AuthStrategyConstructor = new (
 ) => AuthStrategy
 
 /**
- * Factory for creating auth strategy instances based on configuration.
- * The JWT strategy is built-in, while other strategies can be registered
- * dynamically or loaded from separate packages.
+ * Factory for creating auth strategy instances.
+ *
+ * The JWT strategy is built-in. Other strategies (supabase, clerk)
+ * register themselves via their adapter's `.forRoot()` method.
  *
  * @example
  * ```typescript
- * // Register a custom strategy before module initialization
- * AuthStrategyFactory.registerStrategy('custom', CustomAuthStrategy)
- *
- * // Later, in MagnetModule.forRoot()
- * MagnetModule.forRoot({
- *   auth: { strategy: 'custom', customOption: 'value' }
- * })
+ * // Strategies are auto-registered by adapter forRoot():
+ * MagnetModule.forRoot([
+ *   SupabaseAuthAdapter.forRoot(), // registers 'supabase' strategy internally
+ * ])
  * ```
  */
 export class AuthStrategyFactory {
@@ -31,18 +29,10 @@ export class AuthStrategyFactory {
 
 	/**
 	 * Register a custom auth strategy class.
-	 * Call this before MagnetModule.forRoot() to register custom strategies.
+	 * Called internally by auth adapter `.forRoot()` methods.
 	 *
 	 * @param name - Unique name for the strategy (used in config.strategy)
 	 * @param strategyClass - Class constructor implementing AuthStrategy
-	 *
-	 * @example
-	 * ```typescript
-	 * import { AuthStrategyFactory } from '@magnet-cms/core'
-	 * import { SupabaseAuthStrategy } from './strategies/supabase-auth.strategy'
-	 *
-	 * AuthStrategyFactory.registerStrategy('supabase', SupabaseAuthStrategy)
-	 * ```
 	 */
 	static registerStrategy(
 		name: string,
@@ -53,18 +43,17 @@ export class AuthStrategyFactory {
 
 	/**
 	 * Get or create an auth strategy based on configuration.
-	 * This is called internally by AuthModule.forRoot().
+	 * Called internally by AuthModule.forRoot().
 	 *
 	 * @param config - Auth configuration
 	 * @param userService - UserService for database operations
-	 * @param jwtSecret - JWT secret (fallback from jwt.secret)
+	 * @param jwtSecret - JWT secret (fallback from global options)
 	 */
 	static getStrategy(
 		config: AuthConfig | undefined,
 		userService: UserService,
 		jwtSecret: string,
 	): AuthStrategy {
-		// Return cached strategy if config hasn't changed
 		if (
 			AuthStrategyFactory.cachedStrategy &&
 			AuthStrategyFactory.configMatches(config)
@@ -76,7 +65,6 @@ export class AuthStrategyFactory {
 
 		switch (strategyName) {
 			case 'jwt': {
-				// Dynamically import to avoid circular dependencies
 				const { JwtAuthStrategy } = require('./strategies/jwt-auth.strategy')
 				AuthStrategyFactory.cachedStrategy = new JwtAuthStrategy(
 					{
@@ -92,7 +80,6 @@ export class AuthStrategyFactory {
 			}
 
 			default: {
-				// Check for custom registered strategies
 				const CustomStrategy =
 					AuthStrategyFactory.customStrategies.get(strategyName)
 				if (CustomStrategy) {
@@ -102,7 +89,7 @@ export class AuthStrategyFactory {
 					)
 				} else {
 					throw new Error(
-						`Unknown auth strategy: "${strategyName}". Use AuthStrategyFactory.registerStrategy() to register custom strategies, or use "jwt" for the default strategy.`,
+						`Unknown auth strategy: "${strategyName}". Ensure the auth adapter's .forRoot() is included in MagnetModule.forRoot() providers.`,
 					)
 				}
 			}
@@ -117,31 +104,22 @@ export class AuthStrategyFactory {
 		return AuthStrategyFactory.cachedStrategy
 	}
 
-	/**
-	 * Clear the cached strategy (useful for testing)
-	 */
+	/** Clear the cached strategy (useful for testing) */
 	static clearCache(): void {
 		AuthStrategyFactory.cachedStrategy = null
 		AuthStrategyFactory.cachedConfig = null
 	}
 
-	/**
-	 * Clear all registered custom strategies (useful for testing)
-	 */
+	/** Clear all registered custom strategies (useful for testing) */
 	static clearStrategies(): void {
 		AuthStrategyFactory.customStrategies.clear()
 	}
 
-	/**
-	 * Check if a strategy is registered
-	 */
+	/** Check if a strategy is registered */
 	static hasStrategy(name: string): boolean {
 		return name === 'jwt' || AuthStrategyFactory.customStrategies.has(name)
 	}
 
-	/**
-	 * Check if the provided config matches the cached config
-	 */
 	private static configMatches(config?: AuthConfig): boolean {
 		if (!config && !AuthStrategyFactory.cachedConfig) {
 			return true
@@ -149,7 +127,6 @@ export class AuthStrategyFactory {
 		if (!config || !AuthStrategyFactory.cachedConfig) {
 			return false
 		}
-		// Simple reference check - for more complex cases, use deep equality
 		return config === AuthStrategyFactory.cachedConfig
 	}
 }

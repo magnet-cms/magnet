@@ -21,18 +21,19 @@ The core module includes:
 
 ```typescript
 import { MagnetModule } from '@magnet-cms/core'
+import { MongooseDatabaseAdapter } from '@magnet-cms/adapter-db-mongoose'
 
 @Module({
   imports: [
-    MagnetModule.forRoot({
-      db: { uri: process.env.MONGODB_URI || 'mongodb://localhost:27017/magnet' },
-      jwt: { secret: process.env.JWT_SECRET || 'dev-secret' },
-      admin: true,
-    }),
+    MagnetModule.forRoot([
+      MongooseDatabaseAdapter.forRoot(),
+    ], { admin: true }),
   ],
 })
 export class AppModule {}
 ```
+
+Each adapter and plugin provides a static `.forRoot()` method that auto-resolves configuration from environment variables. Pass explicit values to override defaults.
 
 ## Modules
 

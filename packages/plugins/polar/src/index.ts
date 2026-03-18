@@ -1,8 +1,5 @@
-// Plugin definition
+// Plugin definition (PolarModule loaded lazily via @Plugin decorator)
 export { PolarPlugin } from './plugin'
-
-// Module
-export { PolarModule } from './polar.module'
 
 // Types
 export type {

@@ -1,7 +1,9 @@
 import type {
+	EnvVarRequirement,
 	HashiCorpVaultConfig,
 	VaultAdapter,
 	VaultAuthConfig,
+	VaultMagnetProvider,
 	VaultSecretMeta,
 } from '@magnet-cms/common'
 
@@ -53,6 +55,44 @@ export class HashiCorpVaultAdapter implements VaultAdapter {
 	private readonly url: string
 	private readonly auth: VaultAuthConfig
 	private readonly mountPath: string
+
+	/** Environment variables used by this adapter */
+	static readonly envVars: EnvVarRequirement[] = [
+		{
+			name: 'VAULT_ADDR',
+			required: true,
+			description: 'HashiCorp Vault server URL',
+		},
+		{
+			name: 'VAULT_TOKEN',
+			required: false,
+			description: 'Vault authentication token',
+		},
+	]
+
+	/**
+	 * Create a configured vault provider for MagnetModule.forRoot().
+	 * Auto-resolves config values from environment variables if not provided.
+	 *
+	 * @example
+	 * ```typescript
+	 * MagnetModule.forRoot([
+	 *   HashiCorpVaultAdapter.forRoot(),
+	 *   // or with explicit config:
+	 *   HashiCorpVaultAdapter.forRoot({
+	 *     url: 'https://vault.example.com:8200',
+	 *     mountPath: 'secret',
+	 *   }),
+	 * ])
+	 * ```
+	 */
+	static forRoot(config?: HashiCorpVaultConfig): VaultMagnetProvider {
+		return {
+			type: 'vault',
+			adapter: new HashiCorpVaultAdapter(config),
+			envVars: HashiCorpVaultAdapter.envVars,
+		}
+	}
 
 	constructor(config?: HashiCorpVaultConfig) {
 		const url = config?.url ?? process.env.VAULT_ADDR

@@ -103,10 +103,17 @@ export class PluginModule {
 			const PluginClass = config.plugin
 			const pluginModule = Reflect.getMetadata(PLUGIN_MODULE, PluginClass) as
 				| Type<unknown>
+				| (() => Type<unknown>)
 				| undefined
 
 			if (pluginModule) {
-				modules.push(pluginModule)
+				// Getters are arrow functions (no prototype); classes have prototype
+				const isGetter =
+					typeof pluginModule === 'function' && !pluginModule.prototype
+				const resolved: Type<unknown> = isGetter
+					? (pluginModule as unknown as () => Type<unknown>)()
+					: (pluginModule as Type<unknown>)
+				modules.push(resolved)
 			}
 		}
 

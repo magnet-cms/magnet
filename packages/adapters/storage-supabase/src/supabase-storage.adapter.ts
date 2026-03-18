@@ -1,7 +1,9 @@
 import { randomUUID } from 'node:crypto'
 import { Readable } from 'node:stream'
 import {
+	type EnvVarRequirement,
 	StorageAdapter,
+	type StorageMagnetProvider,
 	TransformOptions,
 	UploadOptions,
 	UploadResult,
@@ -371,5 +373,47 @@ export class SupabaseStorageAdapter extends StorageAdapter {
 	 */
 	getSupabaseClient(): SupabaseClient {
 		return this.supabase
+	}
+
+	/** Environment variables used by this adapter */
+	static readonly envVars: EnvVarRequirement[] = [
+		{
+			name: 'SUPABASE_URL',
+			required: true,
+			description: 'Supabase project URL',
+		},
+		{
+			name: 'SUPABASE_SERVICE_KEY',
+			required: true,
+			description: 'Supabase service role key',
+		},
+		{
+			name: 'SUPABASE_STORAGE_BUCKET',
+			required: false,
+			description: 'Storage bucket name',
+		},
+	]
+
+	/**
+	 * Create a configured storage provider for MagnetModule.forRoot().
+	 * Auto-resolves config values from environment variables if not provided.
+	 */
+	static forRoot(
+		config?: Partial<SupabaseStorageConfig>,
+	): StorageMagnetProvider {
+		const resolvedConfig: SupabaseStorageConfig = {
+			supabaseUrl: config?.supabaseUrl ?? process.env.SUPABASE_URL ?? '',
+			supabaseKey:
+				config?.supabaseKey ?? process.env.SUPABASE_SERVICE_KEY ?? '',
+			bucket: config?.bucket ?? process.env.SUPABASE_STORAGE_BUCKET ?? 'media',
+			publicUrl: config?.publicUrl,
+		}
+
+		return {
+			type: 'storage',
+			adapter: new SupabaseStorageAdapter(resolvedConfig),
+			config: resolvedConfig as unknown as Record<string, unknown>,
+			envVars: SupabaseStorageAdapter.envVars,
+		}
 	}
 }

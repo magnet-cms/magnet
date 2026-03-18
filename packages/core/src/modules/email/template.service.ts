@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { Injectable } from '@nestjs/common'
 import Handlebars from 'handlebars'
@@ -69,6 +69,12 @@ export class TemplateService {
 
 	private loadTemplates(): void {
 		try {
+			if (!existsSync(this.templatesDir)) {
+				this.logger.debug(
+					`Email templates dir not found at ${this.templatesDir}, using empty set`,
+				)
+				return
+			}
 			const files = readdirSync(this.templatesDir)
 			for (const file of files) {
 				if (!file.endsWith('.hbs')) continue

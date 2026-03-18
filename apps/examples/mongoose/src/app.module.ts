@@ -1,12 +1,11 @@
+import { MongooseDatabaseAdapter } from '@magnet-cms/adapter-db-mongoose'
+import { HashiCorpVaultAdapter } from '@magnet-cms/adapter-vault-hashicorp'
 import { MagnetModule } from '@magnet-cms/core'
 import { ContentBuilderPlugin } from '@magnet-cms/plugin-content-builder'
 import { StripePlugin } from '@magnet-cms/plugin-stripe'
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
-import { CatsModule } from './modules/cats/cats.module'
-import { MedicalRecordsModule } from './modules/medical-records/medical-records.module'
-import { OwnersModule } from './modules/owners/owners.module'
-import { VeterinariansModule } from './modules/veterinarians/veterinarians.module'
+import { FeaturesModule } from './modules/features.module'
 
 /**
  * Example application using Magnet CMS with MongoDB (Mongoose).
@@ -14,10 +13,11 @@ import { VeterinariansModule } from './modules/veterinarians/veterinarians.modul
  * This demonstrates:
  * - Mongoose database adapter
  * - JWT authentication (built-in)
- * - Local file storage
+ * - Local file storage (default)
  * - HashiCorp Vault for secrets management
- * - Nodemailer email adapter (MailPit for dev)
+ * - Built-in email (console-only; add NodemailerEmailAdapter for SMTP)
  * - Content Builder plugin
+ * - Stripe plugin
  * - Admin UI serving
  *
  * To run this example:
@@ -28,61 +28,23 @@ import { VeterinariansModule } from './modules/veterinarians/veterinarians.modul
 @Module({
 	imports: [
 		ConfigModule.forRoot({ isGlobal: true }),
-		MagnetModule.forRoot({
-			db: {
-				uri:
-					process.env.MONGODB_URI || 'mongodb://localhost:27017/cats-example',
-			},
-			jwt: {
-				secret: process.env.JWT_SECRET || 'development-secret-key',
-			},
-			admin: true,
-			storage: {
-				adapter: 'local',
-				local: {
-					uploadDir: './uploads',
-					publicPath: '/media',
-				},
-			},
-			vault: {
-				adapter: 'hashicorp',
-				hashicorp: {
-					url: process.env.VAULT_ADDR || 'http://localhost:8200',
-				},
-			},
-			email: {
-				adapter: 'nodemailer',
-				nodemailer: {
-					host: process.env.SMTP_HOST || 'localhost',
-					port: Number(process.env.SMTP_PORT || 1025),
-					secure: false,
-					auth: { user: '', pass: '' },
-				},
-				defaults: {
-					from: process.env.EMAIL_FROM || 'noreply@magnet.local',
-				},
-			},
-			plugins: [
-				{ plugin: ContentBuilderPlugin },
-				{
-					plugin: StripePlugin,
-					options: {
-						secretKey: process.env.STRIPE_SECRET_KEY || '',
-						webhookSecret: process.env.STRIPE_WEBHOOK_SECRET || '',
-						publishableKey: process.env.STRIPE_PUBLISHABLE_KEY || '',
+		FeaturesModule.forRoot(
+			MagnetModule.forRoot(
+				[
+					MongooseDatabaseAdapter.forRoot(),
+					HashiCorpVaultAdapter.forRoot(),
+					ContentBuilderPlugin.forRoot(),
+					StripePlugin.forRoot({
 						currency: 'usd',
 						features: {
 							pro: ['unlimited-servers', 'priority-support'],
 							basic: ['5-servers'],
 						},
-					},
-				},
-			],
-		}),
-		CatsModule,
-		OwnersModule,
-		VeterinariansModule,
-		MedicalRecordsModule,
+					}),
+				],
+				{ admin: true },
+			),
+		),
 	],
 })
 export class AppModule {}

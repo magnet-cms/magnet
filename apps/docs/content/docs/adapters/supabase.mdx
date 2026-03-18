@@ -32,50 +32,38 @@ The Supabase auth strategy delegates user authentication to Supabase Auth. This 
 
 ### Configuration
 
-Register the strategy before module initialization, then use config-driven auth:
-
 ```typescript
-import { setDatabaseAdapter } from '@magnet-cms/common'
-setDatabaseAdapter('drizzle')
-
+import { DrizzleDatabaseAdapter } from '@magnet-cms/adapter-db-drizzle'
 import { SupabaseAuthStrategy } from '@magnet-cms/adapter-auth-supabase'
-import { AuthStrategyFactory, MagnetModule } from '@magnet-cms/core'
+import { MagnetModule } from '@magnet-cms/core'
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
-
-AuthStrategyFactory.registerStrategy('supabase', SupabaseAuthStrategy)
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    MagnetModule.forRoot({
-      db: {
-        connectionString: process.env.DATABASE_URL || '',
-        dialect: 'postgresql',
-        driver: 'pg',
-        debug: process.env.NODE_ENV === 'development',
-      },
-      jwt: { secret: process.env.JWT_SECRET || '' },
-      auth: {
-        strategy: 'supabase',
-        supabaseUrl: process.env.SUPABASE_URL || '',
-        supabaseKey: process.env.SUPABASE_ANON_KEY || '',
-        supabaseServiceKey: process.env.SUPABASE_SERVICE_KEY || '',
-      },
-    }),
+    MagnetModule.forRoot(
+      [
+        DrizzleDatabaseAdapter.forRoot({ dialect: 'postgresql', driver: 'pg' }),
+        SupabaseAuthStrategy.forRoot(),
+      ],
+      { admin: true },
+    ),
   ],
 })
 export class AppModule {}
 ```
 
+Environment variables (`SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_KEY`, etc.) are auto-resolved from `process.env`. Pass explicit config to override.
+
 ### Auth Configuration Options
 
 | Option | Type | Required | Description |
 |--------|------|----------|-------------|
-| `strategy` | `'supabase'` | Yes | Activates Supabase auth strategy |
 | `supabaseUrl` | `string` | Yes | Your Supabase project URL (`https://xxx.supabase.co`) |
 | `supabaseKey` | `string` | Yes | Supabase anon/public key |
 | `supabaseServiceKey` | `string` | No | Service role key — required for `listUsers()` and user management |
+| `defaultRole` | `string` | No | Default role assigned to new users (default: `'user'`) |
 
 ### How Auth Works
 
@@ -97,9 +85,6 @@ SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_ANON_KEY=your-anon-key
 SUPABASE_SERVICE_KEY=your-service-role-key  # Optional
 
-# JWT secret (shared; must match Supabase JWT secret)
-JWT_SECRET=your-jwt-secret
-
 # Database connection (Supabase PostgreSQL via Drizzle)
 DATABASE_URL=postgresql://postgres:password@db.your-project.supabase.co:5432/postgres
 ```
@@ -111,15 +96,26 @@ The storage adapter stores media uploads in Supabase Storage buckets.
 ### Configuration
 
 ```typescript
-storage: {
-  adapter: 'supabase',
-  supabase: {
-    supabaseUrl: process.env.SUPABASE_URL || '',
-    supabaseKey: process.env.SUPABASE_SERVICE_KEY || '',
-    bucket: process.env.SUPABASE_STORAGE_BUCKET || 'media',
-  },
-}
+import { DrizzleDatabaseAdapter } from '@magnet-cms/adapter-db-drizzle'
+import { SupabaseStorageAdapter } from '@magnet-cms/adapter-storage-supabase'
+import { MagnetModule } from '@magnet-cms/core'
+import { Module } from '@nestjs/common'
+
+@Module({
+  imports: [
+    MagnetModule.forRoot(
+      [
+        DrizzleDatabaseAdapter.forRoot({ dialect: 'postgresql', driver: 'pg' }),
+        SupabaseStorageAdapter.forRoot({ bucket: 'media' }),
+      ],
+      { admin: true },
+    ),
+  ],
+})
+export class AppModule {}
 ```
+
+Environment variables (`SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, `SUPABASE_STORAGE_BUCKET`) are auto-resolved from `process.env`.
 
 ### Storage Adapter Options
 
@@ -151,70 +147,54 @@ The vault adapter uses Supabase Vault (pgsodium) for encrypted secrets managemen
 ### Configuration
 
 ```typescript
-vault: {
-  adapter: 'supabase',
-  supabase: {
-    supabaseUrl: process.env.SUPABASE_URL || '',
-    supabaseServiceKey: process.env.SUPABASE_SERVICE_KEY || '',
-  },
-}
+import { SupabaseVaultAdapter } from '@magnet-cms/adapter-vault-supabase'
+
+MagnetModule.forRoot(
+  [
+    DrizzleDatabaseAdapter.forRoot({ dialect: 'postgresql', driver: 'pg' }),
+    SupabaseVaultAdapter.forRoot(),
+  ],
+  { admin: true },
+)
 ```
 
 ## Combined Setup: Drizzle + Supabase
 
-The most common setup uses Drizzle for the database and Supabase for auth, storage, and vault:
+The most common setup uses Drizzle for the database (connecting to Supabase PostgreSQL) and Supabase for auth, storage, and vault:
 
 ```typescript
-import { setDatabaseAdapter } from '@magnet-cms/common'
-setDatabaseAdapter('drizzle')
-
 import { SupabaseAuthStrategy } from '@magnet-cms/adapter-auth-supabase'
-import { AuthStrategyFactory, MagnetModule } from '@magnet-cms/core'
+import { DrizzleDatabaseAdapter } from '@magnet-cms/adapter-db-drizzle'
+import { SupabaseStorageAdapter } from '@magnet-cms/adapter-storage-supabase'
+import { SupabaseVaultAdapter } from '@magnet-cms/adapter-vault-supabase'
+import { MagnetModule } from '@magnet-cms/core'
 import { ContentBuilderPlugin } from '@magnet-cms/plugin-content-builder'
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 
-AuthStrategyFactory.registerStrategy('supabase', SupabaseAuthStrategy)
-
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    MagnetModule.forRoot({
-      db: {
-        connectionString: process.env.DATABASE_URL || '',
-        dialect: 'postgresql',
-        driver: 'pg',
-        debug: process.env.NODE_ENV === 'development',
-      },
-      jwt: { secret: process.env.JWT_SECRET || '' },
-      admin: true,
-      auth: {
-        strategy: 'supabase',
-        supabaseUrl: process.env.SUPABASE_URL || '',
-        supabaseKey: process.env.SUPABASE_ANON_KEY || '',
-        supabaseServiceKey: process.env.SUPABASE_SERVICE_KEY || '',
-      },
-      storage: {
-        adapter: 'supabase',
-        supabase: {
-          supabaseUrl: process.env.SUPABASE_URL || '',
-          supabaseKey: process.env.SUPABASE_SERVICE_KEY || '',
-          bucket: process.env.SUPABASE_STORAGE_BUCKET || 'media',
-        },
-      },
-      vault: {
-        adapter: 'supabase',
-        supabase: {
-          supabaseUrl: process.env.SUPABASE_URL || '',
-          supabaseServiceKey: process.env.SUPABASE_SERVICE_KEY || '',
-        },
-      },
-      plugins: [{ plugin: ContentBuilderPlugin }],
-    }),
+    MagnetModule.forRoot(
+      [
+        DrizzleDatabaseAdapter.forRoot({
+          dialect: 'postgresql',
+          driver: 'pg',
+          migrations: { mode: 'auto', directory: './migrations' },
+        }),
+        SupabaseAuthStrategy.forRoot(),
+        SupabaseStorageAdapter.forRoot(),
+        SupabaseVaultAdapter.forRoot(),
+        ContentBuilderPlugin.forRoot(),
+      ],
+      { admin: true },
+    ),
   ],
 })
 export class AppModule {}
 ```
+
+Required environment variables are validated at startup. If any are missing, the app exits with a clear error listing all missing vars.
 
 ## Local Development with Docker
 

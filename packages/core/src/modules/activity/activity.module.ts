@@ -1,5 +1,5 @@
+import { DatabaseModule } from '@magnet-cms/core'
 import { Module, forwardRef } from '@nestjs/common'
-import { DatabaseModule } from '~/modules/database'
 import { SettingsModule } from '~/modules/settings'
 import { UserModule } from '~/modules/user/user.module'
 import { ActivityController } from './activity.controller'

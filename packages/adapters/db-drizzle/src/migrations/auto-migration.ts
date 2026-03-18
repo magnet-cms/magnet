@@ -30,7 +30,8 @@ export class AutoMigration {
 		config: MigrationConfig,
 		directory: string,
 	): Promise<void> {
-		const diffResult = await this.diff.diff(dialect)
+		const prevSnapshot = await this.bridge.loadSnapshot(directory)
+		const diffResult = await this.diff.diff(dialect, prevSnapshot ?? undefined)
 
 		if (diffResult.isEmpty) {
 			return
@@ -74,7 +75,28 @@ export class AutoMigration {
 			warnings: diffResult.warnings,
 			async up(db) {
 				for (const sql of upSQL) {
-					await db.execute(sql)
+					try {
+						await db.execute(sql)
+					} catch (err) {
+						const msg = err instanceof Error ? err.message : String(err)
+						const code =
+							err && typeof err === 'object' && 'code' in err
+								? (err as { code?: string }).code
+								: undefined
+						// PostgreSQL 42P07, MySQL ER_TABLE_EXISTS, SQLite duplicate table
+						if (
+							code === '42P07' ||
+							msg.includes('already exists') ||
+							msg.includes('ER_TABLE_EXISTS') ||
+							msg.includes('duplicate table name')
+						) {
+							logger.warn(
+								`Skipping (object already exists): ${msg.slice(0, 80)}`,
+							)
+							continue
+						}
+						throw err
+					}
 				}
 			},
 			async down(_db) {
@@ -84,5 +106,7 @@ export class AutoMigration {
 
 		const result = await this.runner.up([migration])
 		logger.log(`Auto-migration applied: ${result.applied} migration(s)`)
+
+		await this.bridge.saveSnapshot(directory, diffResult.currentSnapshot)
 	}
 }

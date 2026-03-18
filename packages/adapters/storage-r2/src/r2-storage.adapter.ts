@@ -11,8 +11,10 @@ import {
 } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import {
+	type EnvVarRequirement,
 	type R2StorageConfig,
 	StorageAdapter,
+	type StorageMagnetProvider,
 	type TransformOptions,
 	type UploadOptions,
 	type UploadResult,
@@ -275,5 +277,53 @@ export class R2StorageAdapter extends StorageAdapter {
 			new GetObjectCommand({ Bucket: this.bucket, Key: key }),
 			{ expiresIn },
 		)
+	}
+
+	/** Environment variables used by this adapter */
+	static readonly envVars: EnvVarRequirement[] = [
+		{ name: 'R2_BUCKET', required: true, description: 'R2 bucket name' },
+		{
+			name: 'R2_ACCOUNT_ID',
+			required: true,
+			description: 'Cloudflare account ID',
+		},
+		{
+			name: 'R2_ACCESS_KEY_ID',
+			required: true,
+			description: 'R2 access key ID',
+		},
+		{
+			name: 'R2_SECRET_ACCESS_KEY',
+			required: true,
+			description: 'R2 secret access key',
+		},
+		{
+			name: 'R2_PUBLIC_URL',
+			required: false,
+			description: 'Public URL for R2 bucket',
+		},
+	]
+
+	/**
+	 * Create a configured storage provider for MagnetModule.forRoot().
+	 * Auto-resolves config values from environment variables if not provided.
+	 */
+	static forRoot(config?: Partial<R2StorageConfig>): StorageMagnetProvider {
+		const resolvedConfig: R2StorageConfig = {
+			bucket: config?.bucket ?? process.env.R2_BUCKET ?? '',
+			region: config?.region ?? 'auto',
+			accountId: config?.accountId ?? process.env.R2_ACCOUNT_ID ?? '',
+			accessKeyId: config?.accessKeyId ?? process.env.R2_ACCESS_KEY_ID ?? '',
+			secretAccessKey:
+				config?.secretAccessKey ?? process.env.R2_SECRET_ACCESS_KEY ?? '',
+			publicUrl: config?.publicUrl ?? process.env.R2_PUBLIC_URL,
+		}
+
+		return {
+			type: 'storage',
+			adapter: new R2StorageAdapter(resolvedConfig),
+			config: resolvedConfig as unknown as Record<string, unknown>,
+			envVars: R2StorageAdapter.envVars,
+		}
 	}
 }

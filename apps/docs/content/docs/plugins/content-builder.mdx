@@ -18,22 +18,18 @@ Register the plugin in your application:
 ```typescript
 import { Module } from '@nestjs/common'
 import { MagnetModule } from '@magnet-cms/core'
+import { MongooseDatabaseAdapter } from '@magnet-cms/adapter-db-mongoose'
 import { ContentBuilderPlugin } from '@magnet-cms/plugin-content-builder'
 
 @Module({
   imports: [
-    MagnetModule.forRoot({
-      db: { uri: process.env.MONGODB_URI },
-      jwt: { secret: process.env.JWT_SECRET },
-      plugins: [
-        {
-          plugin: ContentBuilderPlugin,
-          options: {
-            modulesPath: './src/modules',
-          },
-        },
+    MagnetModule.forRoot(
+      [
+        MongooseDatabaseAdapter.forRoot(),
+        ContentBuilderPlugin.forRoot({ modulesPath: './src/modules' }),
       ],
-    }),
+      { admin: true },
+    ),
   ],
 })
 export class AppModule {}

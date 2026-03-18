@@ -19,22 +19,21 @@ The Auth Module provides:
 
 Configure authentication in `MagnetModule.forRoot()`:
 
+### JWT (Default)
+
 ```typescript
 import { Module } from '@nestjs/common'
 import { MagnetModule } from '@magnet-cms/core'
+import { MongooseDatabaseAdapter } from '@magnet-cms/adapter-db-mongoose'
 
 @Module({
   imports: [
-    MagnetModule.forRoot({
-      db: { uri: process.env.MONGODB_URI },
+    MagnetModule.forRoot([
+      MongooseDatabaseAdapter.forRoot(),
+    ], {
+      admin: true,
       jwt: {
-        secret: process.env.JWT_SECRET,
-      },
-      auth: {
-        strategy: 'jwt',  // or 'supabase'
-        jwt: {
-          expiresIn: '7d',
-        },
+        expiresIn: '7d',
       },
     }),
   ],
@@ -42,29 +41,20 @@ import { MagnetModule } from '@magnet-cms/core'
 export class AppModule {}
 ```
 
-### JWT Configuration
+JWT is the default auth strategy. `JWT_SECRET` is auto-resolved from `process.env`.
+
+### Supabase Authentication
 
 ```typescript
-auth: {
-  strategy: 'jwt',
-  jwt: {
-    secret: process.env.JWT_SECRET,
-    expiresIn: '7d',  // Token expiration
-  },
-  defaultRole: 'admin',
-}
+import { SupabaseAuthAdapter } from '@magnet-cms/adapter-auth-supabase'
+
+MagnetModule.forRoot([
+  DrizzleDatabaseAdapter.forRoot({ dialect: 'postgresql' }),
+  SupabaseAuthAdapter.forRoot(),
+], { admin: true })
 ```
 
-### Supabase Configuration
-
-```typescript
-auth: {
-  strategy: 'supabase',
-  supabaseUrl: process.env.SUPABASE_URL,
-  supabaseKey: process.env.SUPABASE_ANON_KEY,
-  supabaseServiceKey: process.env.SUPABASE_SERVICE_KEY,
-}
-```
+`SupabaseAuthAdapter.forRoot()` auto-resolves `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_KEY` from `process.env`.
 
 ## API Endpoints
 
@@ -247,16 +237,12 @@ export class CustomAuthStrategy extends AuthStrategy {
 }
 ```
 
-Register your custom strategy:
+Register your custom strategy using the `AuthStrategyFactory`:
 
 ```typescript
-MagnetModule.forRoot({
-  // ...
-  auth: {
-    strategy: 'custom',
-    // Pass your strategy class
-  },
-})
+import { AuthStrategyFactory } from '@magnet-cms/core'
+
+AuthStrategyFactory.registerStrategy('custom', CustomAuthStrategy)
 ```
 
 ## AuthService

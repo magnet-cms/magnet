@@ -1,4 +1,6 @@
 import type {
+	EmailMagnetProvider,
+	EnvVarRequirement,
 	ResendConfig,
 	SendEmailOptions,
 	SendEmailResult,
@@ -22,6 +24,52 @@ import type { CreateEmailOptions } from 'resend'
 export class ResendEmailAdapter extends EmailAdapter {
 	readonly name = 'resend'
 	private readonly client: Resend
+
+	/** Environment variables used by this adapter */
+	static readonly envVars: EnvVarRequirement[] = [
+		{ name: 'RESEND_API_KEY', required: true, description: 'Resend API key' },
+		{
+			name: 'EMAIL_FROM',
+			required: false,
+			description: 'Default sender email address',
+		},
+	]
+
+	/**
+	 * Create a configured email provider for MagnetModule.forRoot().
+	 * Auto-resolves config values from environment variables if not provided.
+	 *
+	 * @example
+	 * ```typescript
+	 * MagnetModule.forRoot([
+	 *   ResendEmailAdapter.forRoot(),
+	 *   // or with explicit config:
+	 *   ResendEmailAdapter.forRoot({
+	 *     apiKey: 're_xxxxxxxxxxxx',
+	 *     defaults: { from: 'noreply@example.com' },
+	 *   }),
+	 * ])
+	 * ```
+	 */
+	static forRoot(config?: {
+		apiKey?: string
+		defaults?: { from?: string; replyTo?: string }
+	}): EmailMagnetProvider {
+		const resolvedConfig: ResendConfig = {
+			apiKey: config?.apiKey ?? process.env.RESEND_API_KEY ?? '',
+		}
+
+		const defaults =
+			config?.defaults ??
+			(process.env.EMAIL_FROM ? { from: process.env.EMAIL_FROM } : undefined)
+
+		return {
+			type: 'email',
+			adapter: new ResendEmailAdapter(resolvedConfig),
+			defaults,
+			envVars: ResendEmailAdapter.envVars,
+		}
+	}
 
 	constructor(config: ResendConfig) {
 		super()

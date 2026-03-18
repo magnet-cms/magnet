@@ -20,24 +20,28 @@ Configure the Mongoose adapter in your application module:
 ```typescript
 import { Module } from '@nestjs/common'
 import { MagnetModule } from '@magnet-cms/core'
+import { MongooseDatabaseAdapter } from '@magnet-cms/adapter-db-mongoose'
 
 @Module({
   imports: [
-    MagnetModule.forRoot({
-      db: {
-        uri: process.env.MONGODB_URI || 'mongodb://localhost:27017/my-cms'
-      },
-      jwt: {
-        secret: process.env.JWT_SECRET || 'your-secret-key'
-      },
+    MagnetModule.forRoot([
+      MongooseDatabaseAdapter.forRoot(),
+    ], {
+      admin: true,
       internationalization: {
         locales: ['en', 'es', 'pt'],
-        defaultLocale: 'en'
-      }
-    })
-  ]
+        defaultLocale: 'en',
+      },
+    }),
+  ],
 })
 export class AppModule {}
+```
+
+`MongooseDatabaseAdapter.forRoot()` auto-resolves `MONGODB_URI` from `process.env`. Pass an explicit URI to override:
+
+```typescript
+MongooseDatabaseAdapter.forRoot({ uri: 'mongodb://localhost:27017/my-cms' })
 ```
 
 ## Schema Definition
