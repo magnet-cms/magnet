@@ -44,7 +44,7 @@ import { FeaturesModule } from './modules/features.module'
 					SupabaseVaultAdapter.forRoot(),
 					ContentBuilderPlugin.forRoot(),
 				],
-				{ admin: true },
+				{ admin: false },
 			),
 		),
 	],
