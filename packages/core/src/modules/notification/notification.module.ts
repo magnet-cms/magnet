@@ -1,6 +1,6 @@
 import type { NotificationChannelAdapter } from '@magnet-cms/common'
-import { DatabaseModule } from '@magnet-cms/core'
 import { type DynamicModule, Module } from '@nestjs/common'
+import { DatabaseModule } from '~/modules/database'
 import { SettingsModule } from '~/modules/settings'
 import { NOTIFICATION_MODULE_OPTIONS } from './notification.constants'
 import { NotificationController } from './notification.controller'

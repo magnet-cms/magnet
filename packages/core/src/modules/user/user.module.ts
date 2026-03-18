@@ -1,6 +1,6 @@
 import { isUserExtension } from '@magnet-cms/common'
-import { DatabaseModule } from '@magnet-cms/core'
 import { DynamicModule, Logger, Module, Type } from '@nestjs/common'
+import { DatabaseModule } from '~/modules/database'
 import { User } from './schemas/user.schema'
 import {
 	USER_EXTENSION_TOKEN,

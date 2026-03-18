@@ -1,5 +1,4 @@
 import { getSettingsOptions } from '@magnet-cms/common'
-import { DatabaseModule } from '@magnet-cms/core'
 import {
 	DynamicModule,
 	Logger,
@@ -7,6 +6,7 @@ import {
 	OnApplicationBootstrap,
 	Type,
 } from '@nestjs/common'
+import { DatabaseModule } from '~/modules/database'
 import { Setting } from './schemas/setting.schema'
 import { SettingsController } from './settings.controller'
 import { SettingsService } from './settings.service'

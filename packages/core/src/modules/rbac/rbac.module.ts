@@ -1,6 +1,6 @@
 import type { RBACModuleOptions } from '@magnet-cms/common'
-import { DatabaseModule } from '@magnet-cms/core'
 import { DynamicModule, Module, forwardRef } from '@nestjs/common'
+import { DatabaseModule } from '~/modules/database'
 import { DiscoveryModule } from '~/modules/discovery'
 import { EventsModule } from '~/modules/events'
 import { SettingsModule } from '~/modules/settings'

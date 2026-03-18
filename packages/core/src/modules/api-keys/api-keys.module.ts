@@ -1,5 +1,5 @@
-import { DatabaseModule } from '@magnet-cms/core'
 import { Module } from '@nestjs/common'
+import { DatabaseModule } from '~/modules/database'
 import { EventsModule } from '~/modules/events'
 import { SettingsModule } from '~/modules/settings'
 import { ApiKeyController } from './api-keys.controller'

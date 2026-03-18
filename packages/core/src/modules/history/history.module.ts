@@ -1,5 +1,5 @@
-import { DatabaseModule } from '@magnet-cms/core'
 import { Module } from '@nestjs/common'
+import { DatabaseModule } from '~/modules/database'
 import { SettingsModule } from '~/modules/settings'
 import { HistoryController } from './history.controller'
 import { HistoryService } from './history.service'

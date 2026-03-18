@@ -1,5 +1,5 @@
-import { DatabaseModule } from '@magnet-cms/core'
 import { type DynamicModule, Module } from '@nestjs/common'
+import { DatabaseModule } from '~/modules/database'
 import { SettingsModule } from '~/modules/settings'
 import { WebhookDelivery } from './schemas/webhook-delivery.schema'
 import { Webhook } from './schemas/webhook.schema'
