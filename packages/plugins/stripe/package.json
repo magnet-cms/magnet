@@ -65,7 +65,7 @@
   "peerDependencies": {
     "@magnet-cms/admin": "^0.1.2",
     "@magnet-cms/common": "^0.1.0",
-    "@magnet-cms/core": "^1.0.2",
+    "@magnet-cms/core": "^1.0.3",
     "@magnet-cms/ui": "^0.1.0",
     "@magnet-cms/utils": "^0.1.0",
     "@nestjs/common": "^11.1.12",

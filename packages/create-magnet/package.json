@@ -1,6 +1,6 @@
 {
   "name": "create-magnet",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Create a new Magnet CMS project",
   "type": "module",
   "main": "./dist/index.js",
