@@ -1,6 +1,6 @@
 {
   "name": "@magnet-cms/adapter-auth-supabase",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Supabase auth strategy for Magnet CMS",
   "type": "module",
   "main": "./dist/index.cjs",

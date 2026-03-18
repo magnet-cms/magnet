@@ -1,6 +1,6 @@
 {
   "name": "magnet-template-mongoose-cats",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Magnet CMS template with Mongoose adapter and example content schemas",
   "author": "",
   "private": true,
