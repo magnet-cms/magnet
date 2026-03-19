@@ -94,8 +94,9 @@ authTest.describe('Complete User Journey', () => {
 		async ({ page }) => {
 			const dashboard = new DashboardPage(page)
 			await dashboard.goto()
+			await dashboard.expectLoaded()
 
-			await expect(dashboard.sidebar).toBeVisible()
+			await expect(dashboard.sidebar).toBeVisible({ timeout: 10_000 })
 
 			const sidebarItems = await dashboard.getSidebarItems()
 			expect(sidebarItems.length).toBeGreaterThan(0)

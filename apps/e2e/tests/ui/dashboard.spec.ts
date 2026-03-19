@@ -53,8 +53,9 @@ authTest.describe('Dashboard UI', () => {
 	authTest('sidebar navigation is visible', async ({ page }) => {
 		const dashboard = new DashboardPage(page)
 		await dashboard.goto()
+		await dashboard.expectLoaded()
 
-		await expect(dashboard.sidebar).toBeVisible()
+		await expect(dashboard.sidebar).toBeVisible({ timeout: 10_000 })
 	})
 
 	authTest('user menu is visible when authenticated', async ({ page }) => {

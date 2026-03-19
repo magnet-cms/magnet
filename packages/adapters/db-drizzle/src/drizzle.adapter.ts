@@ -77,16 +77,32 @@ export class DrizzleDatabaseAdapter extends DatabaseAdapter {
 	private schemaRegistry: Map<string, { table: PgTable; tableName: string }> =
 		new Map()
 	private tablesInitialized = false
+	private tablesInitPromise: Promise<void> | null = null
 
 	/**
 	 * Automatically create tables for all registered schemas.
 	 * Called lazily when first model is accessed, or can be called explicitly.
+	 * Uses a lock (Promise) to prevent concurrent execution from multiple forFeature() calls.
 	 */
 	async ensureTablesCreated(): Promise<void> {
 		if (this.tablesInitialized || !this.db || this.schemaRegistry.size === 0) {
 			return
 		}
 
+		// If already running, wait for the existing call to finish
+		if (this.tablesInitPromise) {
+			return this.tablesInitPromise
+		}
+
+		this.tablesInitPromise = this._doEnsureTablesCreated()
+		try {
+			await this.tablesInitPromise
+		} finally {
+			this.tablesInitPromise = null
+		}
+	}
+
+	private async _doEnsureTablesCreated(): Promise<void> {
 		// Small delay to allow all schemas to be registered
 		await new Promise((resolve) => setTimeout(resolve, 200))
 

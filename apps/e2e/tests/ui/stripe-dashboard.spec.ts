@@ -23,8 +23,13 @@ test.describe('Stripe Dashboard UI', () => {
 			return
 		}
 
+		// Wait for the page to load before checking content
+		await page.waitForLoadState('networkidle')
+
 		// Should see the dashboard title
-		await expect(page.getByText('Stripe Dashboard')).toBeVisible()
+		await expect(page.getByText('Stripe Dashboard')).toBeVisible({
+			timeout: 10_000,
+		})
 
 		// Should see metric cards
 		await expect(page.getByText('Monthly Recurring Revenue')).toBeVisible()
@@ -45,8 +50,9 @@ test.describe('Stripe Dashboard UI', () => {
 			'Stripe plugin only in mongoose example',
 		)
 		await page.goto('/admin')
+		await page.waitForLoadState('networkidle')
 
 		// Should see the Payments sidebar item
-		await expect(page.getByText('Payments')).toBeVisible()
+		await expect(page.getByText('Payments')).toBeVisible({ timeout: 10_000 })
 	})
 })

@@ -277,8 +277,18 @@ jobs:
             docker exec drizzle-supabase-db pg_isready -U postgres 2>/dev/null && break
             sleep 2
           done
-          # Extra wait for GoTrue and Kong
-          sleep 15
+          # Wait for Kong API gateway to be ready (routes to auth, storage, rest)
+          echo "Waiting for Kong API gateway..."
+          for i in $(seq 1 60); do
+            curl -sf http://localhost:8000/ 2>/dev/null && break
+            sleep 2
+          done
+          # Wait for Storage API to be ready via Kong
+          echo "Waiting for Storage API..."
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:8000/storage/v1/ 2>/dev/null && break
+            sleep 2
+          done
 
       - name: Start backend server
         run: |

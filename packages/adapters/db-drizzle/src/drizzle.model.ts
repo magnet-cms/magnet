@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto'
 import {
 	BaseSchema,
 	DatabaseError,
@@ -52,6 +53,15 @@ type DynamicTable = PgTable & Record<string, any>
  * Type for database row from query results
  */
 type DatabaseRow = Record<string, unknown>
+
+/**
+ * Detect if a Drizzle DB instance is backed by SQLite (better-sqlite3).
+ * SQLite can't bind Date objects — needs ISO strings.
+ */
+function isSQLiteDriver(db: unknown): boolean {
+	const d = db as Record<string, unknown>
+	return typeof d.run === 'function' && typeof d.execute !== 'function'
+}
 
 /**
  * Drizzle-orm has internal type conflicts where SQL types from different
@@ -149,8 +159,7 @@ export function createModel<T>(
 
 				// Add document fields if table has them
 				if ('documentId' in dynamicTable) {
-					insertData.documentId =
-						insertData.documentId || sql`gen_random_uuid()`
+					insertData.documentId = insertData.documentId || randomUUID()
 					insertData.locale =
 						insertData.locale || this.currentLocale || DEFAULT_LOCALE
 					insertData.status = insertData.status || DOCUMENT_STATUS.DRAFT
@@ -702,17 +711,23 @@ export function createModel<T>(
 			isCreate = false,
 		): Record<string, unknown> {
 			const result: Record<string, unknown> = {}
+			const isSQLite = isSQLiteDriver(this._db)
 
 			// Ensure createdAt is set on new records so it never relies on a
 			// potentially-missing DB-level default (e.g. when the column was
 			// originally migrated without DEFAULT NOW()).
-			if (isCreate && !data.createdAt) {
-				result.createdAt = new Date()
+			if (isCreate) {
+				result.createdAt =
+					data.createdAt instanceof Date ? data.createdAt : new Date()
 			}
+
+			// Always set updatedAt on every write
+			result.updatedAt =
+				data.updatedAt instanceof Date ? data.updatedAt : new Date()
 
 			for (const [key, value] of Object.entries(data)) {
 				if (key === 'id') continue // Skip id, it's auto-generated
-				if (key === 'createdAt') continue // Skip createdAt - handled above or irrelevant for updates
+				if (key === 'createdAt' || key === 'updatedAt') continue // Handled above
 
 				if (value === undefined) {
 					// Skip undefined - let database defaults handle it
@@ -724,8 +739,14 @@ export function createModel<T>(
 					continue
 				}
 
+				// SQLite: convert booleans to 0/1 (SQLite can't bind true/false)
+				if (typeof value === 'boolean' && isSQLite) {
+					result[key] = value ? 1 : 0
+					continue
+				}
+
 				// Handle Date objects - ensure they're Date instances (not strings)
-				// Drizzle expects Date objects for timestamp columns
+				// Drizzle's mapToDriverValue handles Date→string conversion per dialect
 				if (value instanceof Date) {
 					result[key] = value
 					continue

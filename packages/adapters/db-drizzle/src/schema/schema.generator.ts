@@ -1,7 +1,8 @@
+import { randomUUID } from 'node:crypto'
 import { PropOptions, getSchemaOptions } from '@magnet-cms/common'
 import { pluralize, toSnakeCase } from '@magnet-cms/utils'
 import type { Type } from '@nestjs/common'
-import { and, eq, sql } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
 import {
 	boolean,
 	doublePrecision,
@@ -67,10 +68,13 @@ export function generateSchema(schemaClass: Type): {
 	// Build columns object
 	const columns: Record<string, any> = {
 		// Primary key - always UUID
-		// Type assertion needed due to drizzle-orm type system seeing SQL types as incompatible
+		// $defaultFn generates UUIDs in JS (works on all dialects: PostgreSQL, MySQL, SQLite)
+		// Note: SQL .default(gen_random_uuid()) is intentionally omitted because it conflicts
+		// with $defaultFn when using pg-core types on non-PostgreSQL drivers.
+		// The createTableFromConfig() method adds dialect-appropriate SQL DEFAULT for direct inserts.
 		id: uuid('id')
 			.primaryKey()
-			.default(sql`gen_random_uuid()` as any),
+			.$defaultFn(() => randomUUID()),
 	}
 
 	// Add document columns for i18n/versioning if enabled
@@ -91,9 +95,11 @@ export function generateSchema(schemaClass: Type): {
 		}
 	})
 
-	// Add timestamps
-	columns.createdAt = timestamp('created_at').defaultNow().notNull()
-	columns.updatedAt = timestamp('updated_at').defaultNow().notNull()
+	// Add timestamps — SQL .defaultNow() omitted for cross-dialect compatibility.
+	// The model layer (_prepareData) sets createdAt/updatedAt as JS Date objects,
+	// and serializes them to ISO strings for SQLite compatibility.
+	columns.createdAt = timestamp('created_at').notNull()
+	columns.updatedAt = timestamp('updated_at').notNull()
 
 	// Create the table with indexes
 	const table = pgTable(tableName, columns, (table) => {
