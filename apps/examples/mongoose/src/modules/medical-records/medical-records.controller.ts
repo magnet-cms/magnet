@@ -1,5 +1,5 @@
 import { RequirePermission, Resolve } from '@magnet-cms/common'
-import { JwtAuthGuard } from '@magnet-cms/core/modules'
+import { JwtAuthGuard } from '@magnet-cms/core'
 import {
 	Body,
 	Controller,

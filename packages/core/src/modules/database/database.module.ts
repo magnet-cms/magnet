@@ -18,14 +18,29 @@ const modules = [
 	),
 ]
 
+// Use globalThis with Symbol.for() to share adapter state across tsup bundle chunks.
+// Without this, CJS entry points (index.cjs, magnet-module-imports.cjs) each get their
+// own copy of DatabaseModule with separate static properties, causing register() in one
+// chunk to be invisible to forFeature() in another.
+const ADAPTER_KEY = Symbol.for('@magnet-cms/core/database-adapter')
+
+function getSharedAdapter(): DatabaseAdapter | null {
+	return (
+		((globalThis as Record<symbol, unknown>)[ADAPTER_KEY] as
+			| DatabaseAdapter
+			| undefined) ?? null
+	)
+}
+
+function setSharedAdapter(adapter: DatabaseAdapter): void {
+	;(globalThis as Record<symbol, unknown>)[ADAPTER_KEY] = adapter
+}
+
 @Module({
 	imports: modules,
 	exports: modules,
 })
 export class DatabaseModule {
-	/** Cached adapter instance set during register(), used by forFeature() */
-	private static adapter: DatabaseAdapter | null = null
-
 	/**
 	 * Register the database module with an adapter and config.
 	 *
@@ -33,7 +48,7 @@ export class DatabaseModule {
 	 * @param config - Resolved database config (from provider.config)
 	 */
 	static register(adapter: DatabaseAdapter, config: DBConfig): DynamicModule {
-		DatabaseModule.adapter = adapter
+		setSharedAdapter(adapter)
 		const adapterOptions = adapter.connect(config)
 
 		return {
@@ -44,8 +59,15 @@ export class DatabaseModule {
 		}
 	}
 
+	/**
+	 * Register schemas for database access.
+	 *
+	 * IMPORTANT: Feature modules that call forFeature() must be loaded AFTER
+	 * MagnetModule.forRoot() has run (which calls register()). Use a FeaturesModule
+	 * with require() to defer loading. See apps/examples for the pattern.
+	 */
 	static forFeature(schemas: Type | Type[]): DynamicModule {
-		const adapter = DatabaseModule.adapter
+		const adapter = getSharedAdapter()
 		if (!adapter) {
 			throw new Error(
 				'DatabaseModule.register() must be called before DatabaseModule.forFeature(). ' +
@@ -60,8 +82,6 @@ export class DatabaseModule {
 				{
 					provide: getModelToken(schema),
 					useFactory: async (moduleRef: ModuleRef) => {
-						// Pass a factory function to createModel instead of the model directly
-						// This allows lazy loading of the Mongoose model
 						const modelFactory = async () => {
 							return await moduleRef.get(adapter.token(schema.name), {
 								strict: false,

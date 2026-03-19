@@ -71,12 +71,9 @@ jobs:
 
       - name: Seed Vault secrets
         run: |
-          docker exec ${{ job.services.vault.id }} vault kv put secret/magnet/database uri=mongodb://localhost:27017/cats-example
-          docker exec ${{ job.services.vault.id }} vault kv put secret/magnet/jwt secret=test-secret-key
-          docker exec ${{ job.services.vault.id }} vault kv put secret/magnet/email host=localhost port=1025 fromAddress=noreply@magnet.local fromName="Magnet CMS"
-        env:
-          VAULT_ADDR: http://localhost:8200
-          VAULT_TOKEN: dev-token
+          docker exec -e VAULT_TOKEN=dev-token ${{ job.services.vault.id }} vault kv put secret/magnet/database uri=mongodb://localhost:27017/cats-example
+          docker exec -e VAULT_TOKEN=dev-token ${{ job.services.vault.id }} vault kv put secret/magnet/jwt secret=test-secret-key
+          docker exec -e VAULT_TOKEN=dev-token ${{ job.services.vault.id }} vault kv put secret/magnet/email host=localhost port=1025 fromAddress=noreply@magnet.local fromName="Magnet CMS"
 
       - name: Start backend server
         run: |
@@ -332,3 +329,219 @@ jobs:
         run: |
           cd apps/examples/drizzle-supabase
           docker compose -f docker/docker-compose.yml down
+
+  e2e-drizzle-mysql:
+    name: E2E — Drizzle/MySQL
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      mysql:
+        image: mysql:8
+        ports:
+          - 3307:3306
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: magnet
+        options: >-
+          --health-cmd "mysqladmin ping -h localhost -u root -proot"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      mailpit:
+        image: axllent/mailpit:latest
+        ports:
+          - 1025:1025
+          - 8025:8025
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.2.2"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build packages
+        run: bun run build
+
+      - name: Start MinIO
+        run: |
+          docker run -d --name minio \
+            -p 9000:9000 -p 9001:9001 \
+            -e MINIO_ROOT_USER=minioadmin \
+            -e MINIO_ROOT_PASSWORD=minioadmin \
+            minio/minio:latest server /data --console-address ":9001"
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:9000/minio/health/live && break
+            sleep 1
+          done
+
+      - name: Create MinIO bucket
+        run: |
+          docker run --rm --network host --entrypoint /bin/sh minio/mc:latest -c \
+            'mc alias set local http://localhost:9000 minioadmin minioadmin && mc mb local/magnet-media --ignore-existing'
+
+      - name: Start backend server
+        run: |
+          cd apps/examples/drizzle-mysql
+          bun run dev &
+          sleep 5
+        env:
+          DATABASE_URL: mysql://root:root@localhost:3307/magnet
+          JWT_SECRET: test-secret-key
+          S3_BUCKET: magnet-media
+          S3_REGION: us-east-1
+          S3_ACCESS_KEY: minioadmin
+          S3_SECRET_KEY: minioadmin
+          S3_ENDPOINT: http://localhost:9000
+          SMTP_HOST: localhost
+          SMTP_PORT: "1025"
+          EMAIL_FROM: noreply@magnet.local
+          VAULT_MASTER_KEY: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+
+      - name: Start admin UI
+        run: |
+          cd packages/client/admin
+          bun run dev &
+          sleep 3
+
+      - name: Wait for servers
+        run: |
+          for i in $(seq 1 60); do
+            curl -sf http://localhost:3000/health && break
+            sleep 2
+          done
+          curl -sf http://localhost:3000/health || exit 1
+
+      - name: Install Playwright browsers
+        run: cd apps/e2e && npx playwright install --with-deps chromium
+
+      - name: Run E2E tests
+        run: cd apps/e2e && bun run test
+        env:
+          API_BASE_URL: http://localhost:3000
+          UI_BASE_URL: http://localhost:3001
+          TEMPLATE_NAME: drizzle-mysql
+          CI: true
+
+      - name: Upload test results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-drizzle-mysql-results
+          path: |
+            apps/e2e/test-results/
+            apps/e2e/playwright-report/
+          retention-days: 7
+
+  e2e-drizzle-sqlite:
+    name: E2E — Drizzle/SQLite
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      mailpit:
+        image: axllent/mailpit:latest
+        ports:
+          - 1025:1025
+          - 8025:8025
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.2.2"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build packages
+        run: bun run build
+
+      - name: Start MinIO
+        run: |
+          docker run -d --name minio \
+            -p 9000:9000 -p 9001:9001 \
+            -e MINIO_ROOT_USER=minioadmin \
+            -e MINIO_ROOT_PASSWORD=minioadmin \
+            minio/minio:latest server /data --console-address ":9001"
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:9000/minio/health/live && break
+            sleep 1
+          done
+
+      - name: Create MinIO bucket
+        run: |
+          docker run --rm --network host --entrypoint /bin/sh minio/mc:latest -c \
+            'mc alias set local http://localhost:9000 minioadmin minioadmin && mc mb local/magnet-media --ignore-existing'
+
+      - name: Start backend server
+        run: |
+          cd apps/examples/drizzle-sqlite
+          bun run dev &
+          sleep 5
+        env:
+          DATABASE_URL: ./sqlite.db
+          JWT_SECRET: test-secret-key
+          S3_BUCKET: magnet-media
+          S3_REGION: us-east-1
+          S3_ACCESS_KEY: minioadmin
+          S3_SECRET_KEY: minioadmin
+          S3_ENDPOINT: http://localhost:9000
+          SMTP_HOST: localhost
+          SMTP_PORT: "1025"
+          EMAIL_FROM: noreply@magnet.local
+          VAULT_MASTER_KEY: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+
+      - name: Start admin UI
+        run: |
+          cd packages/client/admin
+          bun run dev &
+          sleep 3
+
+      - name: Wait for servers
+        run: |
+          for i in $(seq 1 60); do
+            curl -sf http://localhost:3000/health && break
+            sleep 2
+          done
+          curl -sf http://localhost:3000/health || exit 1
+
+      - name: Install Playwright browsers
+        run: cd apps/e2e && npx playwright install --with-deps chromium
+
+      - name: Run E2E tests
+        run: cd apps/e2e && bun run test
+        env:
+          API_BASE_URL: http://localhost:3000
+          UI_BASE_URL: http://localhost:3001
+          TEMPLATE_NAME: drizzle-sqlite
+          CI: true
+
+      - name: Upload test results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-drizzle-sqlite-results
+          path: |
+            apps/e2e/test-results/
+            apps/e2e/playwright-report/
+          retention-days: 7

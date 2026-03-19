@@ -5,11 +5,7 @@ import { NodemailerEmailAdapter } from '@magnet-cms/email-nodemailer'
 import { ContentBuilderPlugin } from '@magnet-cms/plugin-content-builder'
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
-import { CatsModule } from './modules/cats/cats.module'
-import { MedicalRecordsModule } from './modules/medical-records/medical-records.module'
-import { OwnersModule } from './modules/owners/owners.module'
-import { PostsModule } from './modules/posts/posts.module'
-import { VeterinariansModule } from './modules/veterinarians/veterinarians.module'
+import { FeaturesModule } from './modules/features.module'
 
 /**
  * Example application using Magnet CMS with SQLite (Drizzle ORM).
@@ -31,30 +27,29 @@ import { VeterinariansModule } from './modules/veterinarians/veterinarians.modul
 @Module({
 	imports: [
 		ConfigModule.forRoot({ isGlobal: true }),
-		MagnetModule.forRoot(
-			[
-				DrizzleDatabaseAdapter.forRoot({
-					dialect: 'sqlite',
-					driver: 'better-sqlite3',
-					debug: process.env.NODE_ENV === 'development',
-				}),
-				S3StorageAdapter.forRoot({
-					forcePathStyle: true,
-				}),
-				NodemailerEmailAdapter.forRoot({
-					secure: false,
-					auth: { user: '', pass: '' },
-					defaults: { from: process.env.EMAIL_FROM || 'noreply@magnet.local' },
-				}),
-				ContentBuilderPlugin.forRoot(),
-			],
-			{ admin: true },
+		FeaturesModule.forRoot(
+			MagnetModule.forRoot(
+				[
+					DrizzleDatabaseAdapter.forRoot({
+						dialect: 'sqlite',
+						driver: 'better-sqlite3',
+						debug: process.env.NODE_ENV === 'development',
+					}),
+					S3StorageAdapter.forRoot({
+						forcePathStyle: true,
+					}),
+					NodemailerEmailAdapter.forRoot({
+						secure: false,
+						auth: { user: '', pass: '' },
+						defaults: {
+							from: process.env.EMAIL_FROM || 'noreply@magnet.local',
+						},
+					}),
+					ContentBuilderPlugin.forRoot(),
+				],
+				{ admin: true },
+			),
 		),
-		CatsModule,
-		OwnersModule,
-		VeterinariansModule,
-		MedicalRecordsModule,
-		PostsModule,
 	],
 })
 export class AppModule {}

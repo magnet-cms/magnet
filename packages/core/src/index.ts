@@ -15,3 +15,6 @@ export {
 export { Hook } from './modules/plugin/decorators/hook.decorator'
 export { InjectPluginOptions } from './modules/plugin/decorators/inject-plugin-options.decorator'
 export { AuthStrategyFactory } from './modules/auth/auth-strategy.factory'
+// Guards - no DB deps, safe to load before forRoot()
+export { JwtAuthGuard } from './modules/auth/guards/auth.guard'
+export { PermissionGuard } from './modules/rbac/guards/permission.guard'
