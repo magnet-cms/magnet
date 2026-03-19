@@ -1,4 +1,5 @@
-import { expect, test } from '@playwright/test'
+import { expect } from '@playwright/test'
+import { test } from '../../src/fixtures/auth.fixture'
 
 const TEMPLATE_NAME = process.env.TEMPLATE_NAME || ''
 
