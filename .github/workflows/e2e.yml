@@ -78,6 +78,7 @@ jobs:
       - name: Start backend server
         run: |
           cd apps/examples/mongoose
+          rm -rf dist
           bun run dev &
           sleep 5
         env:
@@ -189,6 +190,7 @@ jobs:
       - name: Start backend server
         run: |
           cd apps/examples/drizzle-neon
+          rm -rf dist
           bun run dev &
           sleep 5
         env:
@@ -196,8 +198,8 @@ jobs:
           JWT_SECRET: test-secret-key
           S3_BUCKET: magnet-media
           S3_REGION: us-east-1
-          S3_ACCESS_KEY: minioadmin
-          S3_SECRET_KEY: minioadmin
+          S3_ACCESS_KEY_ID: minioadmin
+          S3_SECRET_ACCESS_KEY: minioadmin
           S3_ENDPOINT: http://localhost:9000
           SMTP_HOST: localhost
           SMTP_PORT: "1025"
@@ -279,6 +281,7 @@ jobs:
       - name: Start backend server
         run: |
           cd apps/examples/drizzle-supabase
+          rm -rf dist
           bun run dev &
           sleep 5
         env:
@@ -394,6 +397,7 @@ jobs:
       - name: Start backend server
         run: |
           cd apps/examples/drizzle-mysql
+          rm -rf dist
           bun run dev &
           sleep 5
         env:
@@ -401,8 +405,8 @@ jobs:
           JWT_SECRET: test-secret-key
           S3_BUCKET: magnet-media
           S3_REGION: us-east-1
-          S3_ACCESS_KEY: minioadmin
-          S3_SECRET_KEY: minioadmin
+          S3_ACCESS_KEY_ID: minioadmin
+          S3_SECRET_ACCESS_KEY: minioadmin
           S3_ENDPOINT: http://localhost:9000
           SMTP_HOST: localhost
           SMTP_PORT: "1025"
@@ -496,6 +500,7 @@ jobs:
       - name: Start backend server
         run: |
           cd apps/examples/drizzle-sqlite
+          rm -rf dist
           bun run dev &
           sleep 5
         env:
@@ -503,8 +508,8 @@ jobs:
           JWT_SECRET: test-secret-key
           S3_BUCKET: magnet-media
           S3_REGION: us-east-1
-          S3_ACCESS_KEY: minioadmin
-          S3_SECRET_KEY: minioadmin
+          S3_ACCESS_KEY_ID: minioadmin
+          S3_SECRET_ACCESS_KEY: minioadmin
           S3_ENDPOINT: http://localhost:9000
           SMTP_HOST: localhost
           SMTP_PORT: "1025"
