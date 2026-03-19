@@ -83,12 +83,14 @@ export class AutoMigration {
 							err && typeof err === 'object' && 'code' in err
 								? (err as { code?: string }).code
 								: undefined
-						// PostgreSQL 42P07, MySQL ER_TABLE_EXISTS, SQLite duplicate table
+						// PostgreSQL 42P07 (table), 42710 (type/object); MySQL ER_TABLE_EXISTS; SQLite duplicate
 						if (
 							code === '42P07' ||
+							code === '42710' ||
 							msg.includes('already exists') ||
 							msg.includes('ER_TABLE_EXISTS') ||
-							msg.includes('duplicate table name')
+							msg.includes('duplicate table name') ||
+							msg.includes('duplicate key value')
 						) {
 							logger.warn(
 								`Skipping (object already exists): ${msg.slice(0, 80)}`,

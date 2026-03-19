@@ -153,17 +153,23 @@ export class DrizzleDatabaseAdapter extends DatabaseAdapter {
 
 		const drizzleConfig = this.options as DrizzleConfig | undefined
 		const dialect = drizzleConfig?.dialect ?? 'postgresql'
+		const logger = new Logger('DrizzleAdapter')
+		let hasErrors = false
 
-		try {
-			for (const [, { table }] of this.schemaRegistry.entries()) {
+		for (const [name, { table }] of this.schemaRegistry.entries()) {
+			try {
 				const config = getTableConfig(table)
 				await this.createTableFromConfig(config, dialect)
+			} catch (error) {
+				hasErrors = true
+				const msg = error instanceof Error ? error.message : String(error)
+				logger.warn(`Error creating table for "${name}" automatically: ${msg}`)
 			}
-		} catch (error) {
-			// Log error but don't fail startup - tables might already exist
-			new Logger('DrizzleAdapter').warn(
-				'Error creating tables automatically:',
-				JSON.stringify(error),
+		}
+
+		if (hasErrors) {
+			logger.warn(
+				'Some tables could not be created. The application may not work correctly.',
 			)
 		}
 	}
@@ -250,9 +256,7 @@ export class DrizzleDatabaseAdapter extends DatabaseAdapter {
 			)
 		`)
 
-		await (this.db as { execute: (s: unknown) => Promise<unknown> }).execute(
-			createTableSQL,
-		)
+		await this.execRawSQL(createTableSQL)
 
 		// Create indexes separately (they might already exist)
 		const indexes = config.indexes as Record<string, unknown> | undefined
@@ -280,13 +284,26 @@ export class DrizzleDatabaseAdapter extends DatabaseAdapter {
 						CREATE ${uniqueKeyword} INDEX IF NOT EXISTS ${q(indexName)}
 						ON ${q(tableName)} (${columnsStr})
 					`)
-					await (this.db as { execute: (s: unknown) => Promise<unknown> })
-						.execute(createIndexSQL)
-						.catch(() => {
-							// Index might already exist, ignore error
-						})
+					await this.execRawSQL(createIndexSQL).catch(() => {
+						// Index might already exist, ignore error
+					})
 				}
 			}
+		}
+	}
+
+	/**
+	 * Execute raw SQL across all supported dialects.
+	 * PostgreSQL/MySQL use db.execute(), SQLite uses db.run().
+	 */
+	private async execRawSQL(rawSQL: ReturnType<typeof sql.raw>): Promise<void> {
+		const db = this.db as unknown as Record<string, unknown>
+		if (typeof db.execute === 'function') {
+			await (db.execute as (s: unknown) => Promise<unknown>)(rawSQL)
+		} else if (typeof db.run === 'function') {
+			;(db.run as (s: unknown) => unknown)(rawSQL)
+		} else {
+			throw new Error('Database instance has no execute() or run() method')
 		}
 	}
 
