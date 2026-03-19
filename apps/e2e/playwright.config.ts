@@ -3,6 +3,9 @@ import { defineConfig, devices } from '@playwright/test'
 const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:3000'
 const UI_BASE_URL = process.env.UI_BASE_URL || 'http://localhost:3001'
 const CI = !!process.env.CI
+const TEMPLATE_NAME = process.env.TEMPLATE_NAME || ''
+/** drizzle-supabase uses `admin: false` (Vite proxy); static asset / SPA behavior differs from bundled admin. */
+const includeAdminServeProject = TEMPLATE_NAME !== 'drizzle-supabase'
 
 export default defineConfig({
 	testDir: './tests',
@@ -50,14 +53,18 @@ export default defineConfig({
 				baseURL: UI_BASE_URL,
 			},
 		},
-		{
-			name: 'admin-serve',
-			testDir: './tests/admin-serve',
-			use: {
-				...devices['Desktop Chrome'],
-				baseURL: API_BASE_URL,
-			},
-		},
+		...(includeAdminServeProject
+			? [
+					{
+						name: 'admin-serve',
+						testDir: './tests/admin-serve',
+						use: {
+							...devices['Desktop Chrome'],
+							baseURL: API_BASE_URL,
+						},
+					},
+				]
+			: []),
 	],
 
 	// Servers must be started manually before running tests:

@@ -10,7 +10,11 @@
  * toSnakeCase('userId') // 'user_id'
  */
 export function toSnakeCase(str: string): string {
-	return str.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`)
+	// Handles consecutive capitals (e.g. tagID -> tag_id, userID -> user_id)
+	return str
+		.replace(/([a-z\d])([A-Z])/g, '$1_$2')
+		.replace(/([A-Z]+)([A-Z][a-z])/g, '$1_$2')
+		.toLowerCase()
 }
 
 /**

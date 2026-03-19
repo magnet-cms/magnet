@@ -34,6 +34,8 @@ import {
 } from 'drizzle-orm'
 import type { PgTable } from 'drizzle-orm/pg-core'
 
+import { getDrizzlePropsMetadata } from '~/decorators/prop.decorator'
+
 import { DrizzleQueryBuilder } from './drizzle.query-builder'
 import { DEFAULT_LOCALE, DOCUMENT_STATUS } from './schema/document.plugin'
 import type { DrizzleDB } from './types'
@@ -156,6 +158,7 @@ export function createModel<T>(
 				const insertData: Record<string, unknown> = {
 					...this._prepareData(data, true),
 				}
+				this._applyDeclaredEmptyArrayDefaults(insertData)
 
 				// Add document fields if table has them
 				if ('documentId' in dynamicTable) {
@@ -706,6 +709,25 @@ export function createModel<T>(
 		 * For JSONB columns (arrays/objects), ensure values are properly formatted
 		 * @internal
 		 */
+		/**
+		 * Fields declared with `default: []` omit a DB default (cross-dialect migration/runtime).
+		 * Fill missing keys so inserts match Mongoose-style expectations.
+		 */
+		_applyDeclaredEmptyArrayDefaults(row: Record<string, unknown>): void {
+			const props = getDrizzlePropsMetadata(this._schemaClass)
+			for (const [propertyKey, options] of props) {
+				const key = String(propertyKey)
+				if (
+					options.default !== undefined &&
+					Array.isArray(options.default) &&
+					options.default.length === 0 &&
+					row[key] === undefined
+				) {
+					row[key] = isSQLiteDriver(this._db) ? JSON.stringify([]) : []
+				}
+			}
+		}
+
 		_prepareData(
 			data: Record<string, unknown>,
 			isCreate = false,
@@ -777,8 +799,8 @@ export function createModel<T>(
 						result[key] = value
 					}
 				} else if (Array.isArray(value)) {
-					// For arrays, pass as-is - Drizzle will automatically serialize arrays/objects for JSONB columns
-					result[key] = value
+					// SQLite + pg-core JSON columns: binding `[]` can mismatch placeholders; use a JSON string.
+					result[key] = isSQLite ? JSON.stringify(value) : value
 				} else if (value !== null && typeof value === 'object') {
 					// For objects, pass as-is - Drizzle will serialize for JSONB
 					result[key] = value

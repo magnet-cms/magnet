@@ -192,7 +192,14 @@ function generateColumn(columnName: string, options: PropOptions): any {
 	// notNull directly in generateSchema(), not here.
 
 	if (options.default !== undefined) {
-		column = column.default(options.default)
+		// `column.default([])` makes drizzle-kit emit invalid SQL (`DEFAULT ,`).
+		// `sql\`[]::jsonb\`` breaks SQLite inserts with pg-core + better-sqlite3 (placeholder mismatch).
+		// Omit a DB default; callers / `create()` merge empty arrays from field metadata when needed.
+		if (Array.isArray(options.default) && options.default.length === 0) {
+			// intentionally no .default()
+		} else {
+			column = column.default(options.default)
+		}
 	}
 
 	return column

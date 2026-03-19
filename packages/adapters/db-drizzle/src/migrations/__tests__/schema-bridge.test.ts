@@ -1,7 +1,7 @@
 import { describe, expect, it, spyOn } from 'bun:test'
 import type { DrizzleSnapshotJSON } from 'drizzle-kit/api'
 import * as schemaGenerator from '../../schema/schema.generator'
-import { SchemaBridge } from '../schema-bridge'
+import { SchemaBridge, sanitizeExecutableMigrationSql } from '../schema-bridge'
 
 function makeEmptySnapshot(): DrizzleSnapshotJSON {
 	return {
@@ -118,5 +118,14 @@ describe('SchemaBridge', () => {
 
 	it('getRegisteredSchemas is exported from schema.generator', () => {
 		expect(typeof schemaGenerator.getRegisteredSchemas).toBe('function')
+	})
+
+	it('sanitizeExecutableMigrationSql binds partial-index placeholders for PostgreSQL', () => {
+		const raw =
+			'CREATE UNIQUE INDEX "x" ON "cats" ("tag_id") WHERE ("cats"."locale" = $1 and "cats"."status" = $2);'
+		const out = sanitizeExecutableMigrationSql('postgresql', raw)
+		expect(out).toContain(`"locale" = 'en'`)
+		expect(out).toContain(`"status" = 'draft'`)
+		expect(out).not.toContain('$1')
 	})
 })

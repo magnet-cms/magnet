@@ -131,7 +131,6 @@ jobs:
     name: E2E — Drizzle/PostgreSQL
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    continue-on-error: true # Known: auto-migration SQL generation issues
 
     services:
       postgres:
@@ -247,8 +246,7 @@ jobs:
   e2e-drizzle-supabase:
     name: E2E — Drizzle/Supabase
     runs-on: ubuntu-latest
-    timeout-minutes: 20
-    continue-on-error: true # Known: Supabase Docker stack + auto-migration issues
+    timeout-minutes: 25
 
     steps:
       - name: Checkout code
@@ -275,22 +273,34 @@ jobs:
           cd apps/examples/drizzle-supabase
           docker compose -f docker/docker-compose.yml up -d
           echo "Waiting for Supabase stack to be ready..."
-          for i in $(seq 1 90); do
+          for i in $(seq 1 120); do
             docker exec drizzle-supabase-db pg_isready -U postgres 2>/dev/null && break
             sleep 2
           done
+          docker exec drizzle-supabase-db pg_isready -U postgres
           # Wait for Kong API gateway to be ready (routes to auth, storage, rest)
           echo "Waiting for Kong API gateway..."
-          for i in $(seq 1 60); do
-            curl -sf http://localhost:8000/ 2>/dev/null && break
+          for i in $(seq 1 90); do
+            curl -sf http://127.0.0.1:8000/ 2>/dev/null && break
             sleep 2
           done
-          # Wait for Storage API to be ready via Kong
+          curl -sf http://127.0.0.1:8000/ || exit 1
+          # Wait for Storage API to be ready via Kong (502/503 until storage is up)
           echo "Waiting for Storage API..."
-          for i in $(seq 1 30); do
-            curl -sf http://localhost:8000/storage/v1/ 2>/dev/null && break
+          for i in $(seq 1 90); do
+            code=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8000/storage/v1/ 2>/dev/null || echo "000")
+            if [ "$code" != "502" ] && [ "$code" != "503" ] && [ "$code" != "000" ]; then
+              break
+            fi
             sleep 2
           done
+          code=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8000/storage/v1/)
+          if [ "$code" = "502" ] || [ "$code" = "503" ] || [ "$code" = "000" ]; then
+            echo "Storage API still unavailable (HTTP $code)"
+            exit 1
+          fi
+          # Extra settle time for Supabase auth/realtime wiring
+          sleep 5
 
       - name: Start backend server
         run: |
@@ -300,7 +310,7 @@ jobs:
           sleep 5
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
-          SUPABASE_URL: http://localhost:8000
+          SUPABASE_URL: http://127.0.0.1:8000
           SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0"
           SUPABASE_SERVICE_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU"
           JWT_SECRET: super-secret-jwt-token-with-at-least-32-characters-long
@@ -351,7 +361,6 @@ jobs:
     name: E2E — Drizzle/MySQL
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    continue-on-error: true # Known: Drizzle adapter gen_random_uuid incompatibility with MySQL
 
     services:
       mysql:
@@ -467,7 +476,6 @@ jobs:
     name: E2E — Drizzle/SQLite
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    continue-on-error: true # Known: Drizzle adapter gen_random_uuid incompatibility with SQLite
 
     services:
       mailpit:

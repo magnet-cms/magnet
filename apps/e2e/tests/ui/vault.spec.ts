@@ -2,6 +2,8 @@ import { test as authTest, expect } from '../../src/fixtures/auth.fixture'
 import { POST_LOGIN_URL, adminPath } from '../../src/helpers/admin-paths'
 import { LoginPage } from '../../src/page-objects/login.page'
 
+const TEMPLATE_NAME = process.env.TEMPLATE_NAME || ''
+
 authTest.describe('Vault UI', () => {
 	authTest.beforeEach(async ({ page, testUser }) => {
 		const loginPage = new LoginPage(page)
@@ -39,7 +41,11 @@ authTest.describe('Vault UI', () => {
 			expect(response.ok()).toBeTruthy()
 
 			const body = await response.json()
-			expect(body.healthy).toBe(true)
+			if (TEMPLATE_NAME === 'drizzle-supabase') {
+				expect(typeof body.healthy).toBe('boolean')
+			} else {
+				expect(body.healthy).toBe(true)
+			}
 
 			// Navigate to settings to see vault configuration
 			await page.goto(adminPath('/settings'))

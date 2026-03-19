@@ -4,6 +4,21 @@ import { getRegisteredSchemas } from '../schema/schema.generator'
 import type { MigrationDialect } from './types'
 
 /**
+ * drizzle-kit emits partial unique-index WHERE clauses with `$1`/`$2` placeholders,
+ * but Magnet runs DDL as plain strings without bound parameters.
+ */
+export function sanitizeExecutableMigrationSql(
+	dialect: MigrationDialect,
+	statement: string,
+): string {
+	if (dialect !== 'postgresql') return statement
+	if (!statement.includes('$')) return statement
+	return statement
+		.replace(/"locale" = \$1/g, `"locale" = 'en'`)
+		.replace(/"status" = \$2/g, `"status" = 'draft'`)
+}
+
+/**
  * Default filename for persisted schema snapshot (used by auto-migration).
  */
 export const SNAPSHOT_FILENAME = '.schema_snapshot.json'
@@ -83,7 +98,8 @@ export class SchemaBridge {
 		dialect: MigrationDialect = 'postgresql',
 	): Promise<string[]> {
 		const fn = generateSQLFn ?? (await this.resolveGenerateSQLFn(dialect))
-		return fn(prev, cur)
+		const statements = await fn(prev, cur)
+		return statements.map((s) => sanitizeExecutableMigrationSql(dialect, s))
 	}
 
 	/**

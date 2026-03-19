@@ -81,7 +81,12 @@ const examples: Record<string, ExampleConfig> = {
 			{
 				container: 'supabase-kong',
 				type: 'http',
-				check: 'http://localhost:8000/rest/v1/',
+				check: 'http://127.0.0.1:8000/rest/v1/',
+			},
+			{
+				container: 'supabase-kong',
+				type: 'http',
+				check: 'http://127.0.0.1:8000/storage/v1/',
 			},
 		],
 		maxAttempts: 90,

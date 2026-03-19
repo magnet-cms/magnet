@@ -50,8 +50,8 @@ const EXAMPLE_ENV_VARS: Record<ExampleName, Record<string, string>> = {
 		JWT_SECRET: 'test-secret-key',
 		S3_BUCKET: 'magnet-media',
 		S3_REGION: 'us-east-1',
-		S3_ACCESS_KEY: 'minioadmin',
-		S3_SECRET_KEY: 'minioadmin',
+		S3_ACCESS_KEY_ID: 'minioadmin',
+		S3_SECRET_ACCESS_KEY: 'minioadmin',
 		S3_ENDPOINT: 'http://localhost:9000',
 		SMTP_HOST: 'localhost',
 		SMTP_PORT: '1025',
@@ -62,7 +62,8 @@ const EXAMPLE_ENV_VARS: Record<ExampleName, Record<string, string>> = {
 	},
 	'drizzle-supabase': {
 		DATABASE_URL: 'postgresql://postgres:postgres@localhost:5432/postgres',
-		SUPABASE_URL: 'http://localhost:8000',
+		// 127.0.0.1 avoids IPv6 localhost quirks (e.g. some WSL/Docker setups)
+		SUPABASE_URL: 'http://127.0.0.1:8000',
 		SUPABASE_ANON_KEY:
 			'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0',
 		SUPABASE_SERVICE_KEY:
@@ -181,6 +182,34 @@ async function waitForUI(url: string, timeout = 60_000): Promise<boolean> {
 	return false
 }
 
+/** Wait until an HTTP endpoint responds (2xx or non-5xx). */
+async function waitForHttpEndpoint(
+	url: string,
+	label: string,
+	timeoutMs: number,
+): Promise<boolean> {
+	const start = Date.now()
+	while (Date.now() - start < timeoutMs) {
+		try {
+			const response = await fetch(url)
+			// Kong returns 502/503 while upstream (e.g. storage) is still starting
+			if (response.status === 502 || response.status === 503) {
+				await new Promise((r) => setTimeout(r, 2000))
+				continue
+			}
+			if (response.ok || response.status < 500) {
+				console.log(`  ✓ ${label}`)
+				return true
+			}
+		} catch {
+			// not ready
+		}
+		await new Promise((r) => setTimeout(r, 2000))
+	}
+	console.error(`  ✗ ${label} not ready within ${timeoutMs / 1000}s`)
+	return false
+}
+
 /** Max time to wait for the test process to exit before forcing exit. */
 const TEST_RUN_TIMEOUT_MS = 15 * 60 * 1000 // 15 minutes
 
@@ -221,8 +250,23 @@ async function runTestsForExample(
 
 		// Wait for database to be ready
 		if (example === 'drizzle-supabase') {
-			console.log('⏳ Waiting for Supabase to be ready (45 seconds)...')
-			await new Promise((resolve) => setTimeout(resolve, 45_000))
+			console.log('⏳ Waiting for Supabase Kong + Storage (up to 2 minutes)...')
+			const supabaseOk =
+				(await waitForHttpEndpoint(
+					'http://127.0.0.1:8000/rest/v1/',
+					'Supabase REST (Kong)',
+					120_000,
+				)) &&
+				(await waitForHttpEndpoint(
+					'http://127.0.0.1:8000/storage/v1/',
+					'Supabase Storage (Kong)',
+					120_000,
+				))
+			if (!supabaseOk) {
+				console.error('❌ Supabase stack did not become ready')
+				return false
+			}
+			await new Promise((resolve) => setTimeout(resolve, 5000))
 		} else {
 			console.log('⏳ Waiting for database to be ready (10 seconds)...')
 			await new Promise((resolve) => setTimeout(resolve, 10_000))
