@@ -2,6 +2,7 @@ import { expect } from '@playwright/test'
 import { test } from '../../src/fixtures/auth.fixture'
 
 const TEMPLATE_NAME = process.env.TEMPLATE_NAME || ''
+const CI = !!process.env.CI
 
 /**
  * Stripe Plugin UI E2E Tests
@@ -18,6 +19,7 @@ test.describe('Stripe Dashboard UI', () => {
 			TEMPLATE_NAME !== 'mongoose',
 			'Stripe plugin only in mongoose example',
 		)
+		test.skip(CI, 'Stripe dashboard requires real Stripe API keys')
 		const response = await page.goto('/admin/stripe')
 		if (response?.status() === 404) {
 			test.skip(true, 'Stripe plugin not available at /admin/stripe')
@@ -50,6 +52,7 @@ test.describe('Stripe Dashboard UI', () => {
 			TEMPLATE_NAME !== 'mongoose',
 			'Stripe plugin only in mongoose example',
 		)
+		test.skip(CI, 'Stripe dashboard requires real Stripe API keys')
 		await page.goto('/admin')
 		await page.waitForLoadState('networkidle')
 
