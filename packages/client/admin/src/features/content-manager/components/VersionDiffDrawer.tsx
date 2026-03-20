@@ -36,18 +36,18 @@ export function VersionDiffDrawer({
 			/>
 
 			{/* Panel */}
-			<div className="fixed top-0 right-0 h-full w-[480px] max-w-full bg-white shadow-xl z-50 flex flex-col">
+			<div className="fixed top-0 right-0 z-50 flex h-full w-[480px] max-w-full flex-col border-l border-border bg-background shadow-xl">
 				{/* Header */}
-				<div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+				<div className="flex items-center justify-between border-b border-border px-6 py-4">
 					<div>
-						<h2 className="text-base font-semibold text-gray-900">
+						<h2 className="text-base font-semibold text-foreground">
 							{intl.formatMessage({
 								id: 'contentManager.diff.title',
 								defaultMessage: 'Version Comparison',
 							})}
 						</h2>
 						{data && (
-							<p className="text-xs text-gray-500 mt-0.5">
+							<p className="mt-0.5 text-xs text-muted-foreground">
 								v{data.version1.versionNumber} → v{data.version2.versionNumber}
 							</p>
 						)}
@@ -81,7 +81,7 @@ export function VersionDiffDrawer({
 					)}
 
 					{data && data.changes.length === 0 && (
-						<div className="text-center py-12 text-sm text-gray-500">
+						<div className="py-12 text-center text-sm text-muted-foreground">
 							{intl.formatMessage({
 								id: 'contentManager.diff.noDifferences',
 								defaultMessage: 'No differences between these versions.',
@@ -91,7 +91,7 @@ export function VersionDiffDrawer({
 
 					{data && data.changes.length > 0 && (
 						<div className="space-y-3">
-							<p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+							<p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
 								{intl.formatMessage(
 									{
 										id: 'contentManager.diff.fieldsChanged',
@@ -106,14 +106,16 @@ export function VersionDiffDrawer({
 									key={change.field}
 									className={cn(
 										'rounded-lg border p-4',
-										change.type === 'added' && 'bg-green-50 border-green-200',
-										change.type === 'removed' && 'bg-red-50 border-red-200',
+										change.type === 'added' &&
+											'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950/30',
+										change.type === 'removed' &&
+											'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/30',
 										change.type === 'modified' &&
-											'bg-yellow-50 border-yellow-200',
+											'border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-950/30',
 									)}
 								>
 									<div className="flex items-center gap-2 mb-2">
-										<span className="text-sm font-medium text-gray-900">
+										<span className="text-sm font-medium text-foreground">
 											{change.field}
 										</span>
 										<Badge
@@ -121,11 +123,11 @@ export function VersionDiffDrawer({
 											className={cn(
 												'text-xs',
 												change.type === 'added' &&
-													'bg-green-100 text-green-700 border-green-300',
+													'border-green-300 bg-green-100 text-green-700 dark:border-green-700 dark:bg-green-900/40 dark:text-green-300',
 												change.type === 'removed' &&
-													'bg-red-100 text-red-700 border-red-300',
+													'border-red-300 bg-red-100 text-red-700 dark:border-red-700 dark:bg-red-900/40 dark:text-red-300',
 												change.type === 'modified' &&
-													'bg-yellow-100 text-yellow-700 border-yellow-300',
+													'border-yellow-300 bg-yellow-100 text-yellow-700 dark:border-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300',
 											)}
 										>
 											{change.type}
@@ -134,26 +136,26 @@ export function VersionDiffDrawer({
 
 									{change.type !== 'added' && (
 										<div className="mb-1">
-											<span className="text-xs text-gray-500 block mb-0.5">
+											<span className="mb-0.5 block text-xs text-muted-foreground">
 												{intl.formatMessage({
 													id: 'contentManager.diff.before',
 													defaultMessage: 'Before',
 												})}
 											</span>
-											<pre className="text-xs bg-white/60 rounded p-2 overflow-x-auto text-red-700 border border-red-100">
+											<pre className="overflow-x-auto rounded border border-red-200 bg-muted/50 p-2 text-xs text-red-700 dark:border-red-800 dark:text-red-300">
 												{JSON.stringify(change.before, null, 2)}
 											</pre>
 										</div>
 									)}
 									{change.type !== 'removed' && (
 										<div>
-											<span className="text-xs text-gray-500 block mb-0.5">
+											<span className="mb-0.5 block text-xs text-muted-foreground">
 												{intl.formatMessage({
 													id: 'contentManager.diff.after',
 													defaultMessage: 'After',
 												})}
 											</span>
-											<pre className="text-xs bg-white/60 rounded p-2 overflow-x-auto text-green-700 border border-green-100">
+											<pre className="overflow-x-auto rounded border border-green-200 bg-muted/50 p-2 text-xs text-green-700 dark:border-green-800 dark:text-green-300">
 												{JSON.stringify(change.after, null, 2)}
 											</pre>
 										</div>

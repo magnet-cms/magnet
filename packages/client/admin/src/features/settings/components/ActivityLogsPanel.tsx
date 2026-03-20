@@ -24,13 +24,13 @@ export function ActivityLogsPanel() {
 	const { data: activities, isLoading } = useUserActivity(user?.id ?? '', 20)
 
 	return (
-		<aside className="w-80 bg-white border-l border-gray-200 hidden md:flex flex-col sticky top-0 h-screen">
-			<div className="flex items-center justify-between p-4 border-b border-gray-100 shrink-0">
-				<h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+		<aside className="sticky top-0 hidden h-screen w-80 flex-col border-l border-border bg-card md:flex">
+			<div className="flex shrink-0 items-center justify-between border-b border-border p-4">
+				<h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
 					Activity Logs
 				</h3>
 				<div className="flex items-center gap-2">
-					<span className="text-xs text-gray-500">Compact</span>
+					<span className="text-xs text-muted-foreground">Compact</span>
 					<Switch
 						checked={!isCompact}
 						onCheckedChange={(checked) => setIsCompact(!checked)}
@@ -48,7 +48,7 @@ export function ActivityLogsPanel() {
 						</>
 					)}
 					{!isLoading && (!activities || activities.length === 0) && (
-						<p className="text-xs text-gray-400 text-center py-4">
+						<p className="py-4 text-center text-xs text-muted-foreground/70">
 							No recent activity
 						</p>
 					)}
@@ -58,29 +58,29 @@ export function ActivityLogsPanel() {
 							<div
 								key={log.id}
 								className={cn(
-									'flex gap-3 rounded-lg border border-gray-100 hover:border-gray-200 hover:bg-gray-50/50 transition-colors',
+									'flex gap-3 rounded-lg border border-border transition-colors hover:bg-muted/50',
 									isCompact ? 'p-2' : 'p-3',
 								)}
 							>
-								<div className="shrink-0 mt-0.5">
+								<div className="mt-0.5 shrink-0">
 									<div
 										className={cn(
-											'rounded-full bg-gray-100 flex items-center justify-center',
-											isCompact ? 'w-6 h-6' : 'w-8 h-8',
+											'flex items-center justify-center rounded-full bg-muted',
+											isCompact ? 'size-6' : 'size-8',
 										)}
 									>
 										<IconComponent
 											className={cn(
-												'text-gray-600',
-												isCompact ? 'w-3 h-3' : 'w-4 h-4',
+												'text-muted-foreground',
+												isCompact ? 'size-3' : 'size-4',
 											)}
 										/>
 									</div>
 								</div>
-								<div className="flex-1 min-w-0">
+								<div className="min-w-0 flex-1">
 									<p
 										className={cn(
-											'font-medium text-gray-900',
+											'font-medium text-foreground',
 											isCompact ? 'text-xs' : 'text-sm',
 										)}
 									>
@@ -89,14 +89,14 @@ export function ActivityLogsPanel() {
 											.replace(/\b\w/g, (c) => c.toUpperCase())}
 									</p>
 									{!isCompact && log.entityName && (
-										<p className="text-xs text-gray-500 mt-0.5 line-clamp-2">
+										<p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">
 											{log.entityName}
 										</p>
 									)}
 									<p
 										className={cn(
-											'text-gray-400',
-											isCompact ? 'text-[10px] mt-0.5' : 'text-xs mt-1.5',
+											'text-muted-foreground/80',
+											isCompact ? 'mt-0.5 text-[10px]' : 'mt-1.5 text-xs',
 										)}
 									>
 										{formatDistanceToNow(new Date(log.timestamp), {

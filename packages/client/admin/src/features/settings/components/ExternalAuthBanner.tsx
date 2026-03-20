@@ -30,10 +30,10 @@ export function ExternalAuthBanner({
 	return (
 		<div className="space-y-6" data-testid="external-auth-banner">
 			{/* Info Banner */}
-			<Card className="border border-blue-200 bg-blue-50/50 overflow-hidden">
-				<div className="px-6 py-4 border-b border-blue-100 flex items-center gap-2">
-					<Shield className="w-[18px] h-[18px] text-blue-500" />
-					<h2 className="text-sm font-semibold text-blue-900">
+			<Card className="overflow-hidden border border-blue-200 bg-blue-50/50 dark:border-blue-900 dark:bg-blue-950/30">
+				<div className="flex items-center gap-2 border-b border-blue-100 px-6 py-4 dark:border-blue-900">
+					<Shield className="size-[18px] text-blue-500 dark:text-blue-400" />
+					<h2 className="text-sm font-semibold text-blue-900 dark:text-blue-100">
 						{intl.formatMessage(
 							{
 								id: 'settings.auth.externalBanner.title',
@@ -45,8 +45,8 @@ export function ExternalAuthBanner({
 				</div>
 				<CardContent className="px-6 py-4">
 					<div className="flex items-start gap-3">
-						<Info className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
-						<p className="text-sm text-blue-800">
+						<Info className="mt-0.5 size-4 shrink-0 text-blue-400 dark:text-blue-300" />
+						<p className="text-sm text-blue-800 dark:text-blue-200">
 							{intl.formatMessage(
 								{
 									id: 'settings.auth.externalBanner.description',
@@ -63,8 +63,8 @@ export function ExternalAuthBanner({
 			{/* Detected Providers */}
 			{providers.length > 0 && (
 				<Card className="overflow-hidden">
-					<div className="px-6 py-4 border-b border-gray-100">
-						<h2 className="text-sm font-semibold text-gray-900">
+					<div className="border-b border-border px-6 py-4">
+						<h2 className="text-sm font-semibold text-foreground">
 							{intl.formatMessage({
 								id: 'settings.auth.externalBanner.providers',
 								defaultMessage: 'Configured Login Providers',
@@ -90,8 +90,8 @@ export function ExternalAuthBanner({
 			{/* Provider Settings */}
 			{providerSettings && Object.keys(providerSettings).length > 0 && (
 				<Card className="overflow-hidden">
-					<div className="px-6 py-4 border-b border-gray-100">
-						<h2 className="text-sm font-semibold text-gray-900">
+					<div className="border-b border-border px-6 py-4">
+						<h2 className="text-sm font-semibold text-foreground">
 							{intl.formatMessage({
 								id: 'settings.auth.externalBanner.providerSettings',
 								defaultMessage: 'Provider Settings',
@@ -108,10 +108,10 @@ export function ExternalAuthBanner({
 											key={key}
 											className="flex items-center justify-between text-sm"
 										>
-											<span className="text-gray-500 capitalize">
+											<span className="capitalize text-muted-foreground">
 												{key.replace(/([A-Z])/g, ' $1').trim()}
 											</span>
-											<span className="text-gray-900 font-medium">
+											<span className="font-medium text-foreground">
 												{typeof value === 'boolean'
 													? value
 														? intl.formatMessage({

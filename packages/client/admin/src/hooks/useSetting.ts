@@ -1,13 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import type { ContentData } from '~/core/adapters/types'
 import { useAdapter } from '~/core/provider/MagnetProvider'
 
 /**
  * Hook to fetch settings data by group
  * Note: This is different from useSetting in useDiscovery.ts which fetches schema metadata
  */
-export const useSettingData = <T extends Record<string, unknown>>(
-	group: string,
-) => {
+export const useSettingData = <T = ContentData>(group: string) => {
 	const adapter = useAdapter()
 
 	return useQuery<T, Error>({

@@ -34,9 +34,9 @@ export function LanguageSettingsCard() {
 
 	return (
 		<Card className="overflow-hidden">
-			<div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
-				<Globe className="w-[18px] h-[18px] text-gray-400" />
-				<h2 className="text-sm font-semibold text-gray-900">
+			<div className="flex items-center gap-2 border-b border-border px-6 py-4">
+				<Globe className="size-[18px] text-muted-foreground" />
+				<h2 className="text-sm font-semibold text-foreground">
 					{intl.formatMessage({
 						id: 'settings.language.title',
 						defaultMessage: 'Language',
@@ -44,7 +44,7 @@ export function LanguageSettingsCard() {
 				</h2>
 			</div>
 			<CardContent className="px-6 pb-6">
-				<p className="text-xs text-gray-500 mb-6">
+				<p className="mb-6 text-xs text-muted-foreground">
 					{intl.formatMessage({
 						id: 'settings.language.description',
 						defaultMessage: 'Choose the language for the admin interface.',

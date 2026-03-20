@@ -30,7 +30,7 @@ export function ProfilePreviewCard({
 }: ProfilePreviewCardProps) {
 	const intl = useAppIntl()
 	return (
-		<div className="w-[360px] overflow-hidden rounded-2xl bg-white shadow-2xl">
+		<div className="w-[360px] overflow-hidden rounded-2xl border border-border bg-card shadow-2xl">
 			{/* Cover Image */}
 			<div className="h-24 w-full overflow-hidden bg-muted">
 				<img src={coverUrl} alt="Cover" className="size-full object-cover" />
@@ -39,7 +39,7 @@ export function ProfilePreviewCard({
 			{/* Profile Content */}
 			<div className="-mt-10 flex flex-col gap-3 px-5 pb-6">
 				{/* Avatar */}
-				<Avatar className="size-20 border-4 border-white shadow-sm">
+				<Avatar className="size-20 border-4 border-background shadow-sm">
 					{avatarUrl ? (
 						<AvatarImage src={avatarUrl} alt={displayName} />
 					) : (

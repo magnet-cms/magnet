@@ -20,15 +20,6 @@ import { useAppIntl } from '~/i18n'
 
 import { CreateRoleDrawer } from './CreateRoleDrawer'
 
-const contentManagerStyles = `
-  .table-row-hover:hover td {
-    background-color: #F9FAFB;
-  }
-  .table-row-hover.group:hover td {
-    background-color: #F9FAFB;
-  }
-`
-
 interface RoleDisplay {
 	id: string
 	name: string
@@ -157,12 +148,12 @@ export function AccessControlListingPage() {
 					<div className="flex items-center gap-2">
 						<Link
 							to={`/access-control/${role.id}`}
-							className="text-sm font-medium text-gray-900 hover:text-gray-700 transition-colors"
+							className="text-sm font-medium text-foreground hover:text-muted-foreground transition-colors"
 						>
 							{role.displayName}
 						</Link>
 						{role.isSystem && (
-							<span className="inline-flex items-center rounded-md bg-gray-100 px-1.5 py-0.5 text-[10px] font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">
+							<span className="inline-flex items-center rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground ring-1 ring-inset ring-border">
 								System
 							</span>
 						)}
@@ -175,7 +166,9 @@ export function AccessControlListingPage() {
 			header: 'Description',
 			accessorKey: 'description',
 			format: (value) => (
-				<div className="text-sm text-gray-600 max-w-md">{value as string}</div>
+				<div className="text-sm text-muted-foreground max-w-md">
+					{value as string}
+				</div>
 			),
 		},
 		{
@@ -183,7 +176,7 @@ export function AccessControlListingPage() {
 			header: 'Users',
 			accessorKey: 'userCount',
 			format: (value) => (
-				<span className="text-sm text-gray-900 font-medium">
+				<span className="text-sm text-foreground font-medium">
 					{value as number}
 				</span>
 			),
@@ -193,7 +186,7 @@ export function AccessControlListingPage() {
 			header: 'Last Updated',
 			accessorKey: 'lastUpdated',
 			format: (value) => (
-				<span className="text-sm text-gray-500">{value as string}</span>
+				<span className="text-sm text-muted-foreground">{value as string}</span>
 			),
 		},
 	]
@@ -208,11 +201,11 @@ export function AccessControlListingPage() {
 
 	const renderToolbar = () => {
 		return (
-			<div className="px-6 py-4 flex flex-col sm:flex-row gap-3 items-center justify-between flex-none bg-white border-b border-gray-200">
+			<div className="px-6 py-4 flex flex-col sm:flex-row gap-3 items-center justify-between flex-none border-b border-border bg-background">
 				<div className="relative w-full sm:w-80">
 					<div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
 						<svg
-							className="text-gray-400"
+							className="text-muted-foreground"
 							width="16"
 							height="16"
 							viewBox="0 0 16 16"
@@ -238,7 +231,7 @@ export function AccessControlListingPage() {
 					</div>
 					<Input
 						type="text"
-						className="pl-9 pr-3 py-1.5 border border-gray-200 rounded-lg text-sm bg-gray-50 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-1 focus:ring-gray-900 focus:border-gray-900 transition-all shadow-sm"
+						className="pl-9 pr-3 py-1.5 border border-input rounded-lg text-sm bg-muted/50 placeholder:text-muted-foreground focus-visible:outline-none focus-visible:bg-background focus-visible:ring-1 focus-visible:ring-ring transition-all shadow-sm"
 						placeholder="Search roles..."
 						value={searchQuery}
 						onChange={(e) => setSearchQuery(e.target.value)}
@@ -246,11 +239,11 @@ export function AccessControlListingPage() {
 				</div>
 
 				<div className="flex items-center gap-3 w-full sm:w-auto">
-					<div className="flex items-center border border-gray-200 rounded-lg p-0.5 bg-gray-50">
+					<div className="flex items-center border border-border rounded-lg p-0.5 bg-muted/50">
 						<Button
 							variant="ghost"
 							size="sm"
-							className="px-2 py-1 text-xs font-medium text-gray-600 hover:text-gray-900"
+							className="px-2 py-1 text-xs font-medium text-muted-foreground hover:text-foreground"
 							onClick={() => {
 								setSearchQuery('')
 							}}
@@ -270,17 +263,19 @@ export function AccessControlListingPage() {
 		const endRow = Math.min((pageIndex + 1) * pageSize, totalRows)
 
 		return (
-			<div className="flex-none px-6 py-4 border-t border-gray-200 bg-white flex items-center justify-between">
-				<div className="text-xs text-gray-500">
-					Showing <span className="font-medium text-gray-900">{startRow}</span>{' '}
-					to <span className="font-medium text-gray-900">{endRow}</span> of{' '}
-					<span className="font-medium text-gray-900">{totalRows}</span> results
+			<div className="flex-none px-6 py-4 border-t border-border bg-background flex items-center justify-between">
+				<div className="text-xs text-muted-foreground">
+					Showing{' '}
+					<span className="font-medium text-foreground">{startRow}</span> to{' '}
+					<span className="font-medium text-foreground">{endRow}</span> of{' '}
+					<span className="font-medium text-foreground">{totalRows}</span>{' '}
+					results
 				</div>
 				<div className="flex items-center gap-2">
 					<Button
 						variant="outline"
 						size="sm"
-						className="px-3 py-1.5 border border-gray-200 rounded-md text-xs font-medium text-gray-400 cursor-not-allowed bg-gray-50"
+						className="px-3 py-1.5 rounded-md text-xs font-medium text-muted-foreground/50 cursor-not-allowed bg-muted"
 						disabled={!table.getCanPreviousPage()}
 						onClick={() => table.previousPage()}
 					>
@@ -289,7 +284,7 @@ export function AccessControlListingPage() {
 					<Button
 						variant="outline"
 						size="sm"
-						className="px-3 py-1.5 border border-gray-200 rounded-md text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+						className="px-3 py-1.5 rounded-md text-xs font-medium text-foreground hover:bg-muted transition-colors"
 						disabled={!table.getCanNextPage()}
 						onClick={() => table.nextPage()}
 					>
@@ -302,7 +297,7 @@ export function AccessControlListingPage() {
 
 	if (isLoading) {
 		return (
-			<div className="flex-1 flex flex-col min-w-0 bg-white h-full relative overflow-hidden">
+			<div className="flex-1 flex flex-col min-w-0 bg-background h-full relative overflow-hidden">
 				<PageHeader>
 					<div className="h-16 flex items-center justify-between px-6">
 						<div>
@@ -321,14 +316,14 @@ export function AccessControlListingPage() {
 
 	if (error) {
 		return (
-			<div className="flex-1 flex flex-col min-w-0 bg-white h-full relative overflow-hidden">
+			<div className="flex-1 flex flex-col min-w-0 bg-background h-full relative overflow-hidden">
 				<PageHeader>
 					<div className="h-16 flex items-center justify-between px-6">
 						<div>
-							<h1 className="text-lg font-semibold text-gray-900 tracking-tight">
+							<h1 className="text-lg font-semibold text-foreground tracking-tight">
 								Access Control
 							</h1>
-							<p className="text-xs text-gray-500">
+							<p className="text-xs text-muted-foreground">
 								Manage roles and permissions for your application.
 							</p>
 						</div>
@@ -336,7 +331,7 @@ export function AccessControlListingPage() {
 				</PageHeader>
 				<div className="flex-1 flex items-center justify-center">
 					<div className="text-center">
-						<p className="text-gray-500 mb-4">
+						<p className="text-muted-foreground mb-4">
 							{error.message || 'Failed to load roles'}
 						</p>
 						<Button onClick={() => refetch()}>Retry</Button>
@@ -347,16 +342,14 @@ export function AccessControlListingPage() {
 	}
 
 	return (
-		<div className="flex-1 flex flex-col min-w-0 bg-white h-full relative overflow-hidden">
-			<style>{contentManagerStyles}</style>
-
+		<div className="flex-1 flex flex-col min-w-0 bg-background h-full relative overflow-hidden">
 			<PageHeader>
 				<div className="h-16 flex items-center justify-between px-6">
 					<div>
-						<h1 className="text-lg font-semibold text-gray-900 tracking-tight">
+						<h1 className="text-lg font-semibold text-foreground tracking-tight">
 							Access Control
 						</h1>
-						<p className="text-xs text-gray-500">
+						<p className="text-xs text-muted-foreground">
 							Manage roles and permissions for your application. {roles.length}{' '}
 							role(s) total.
 						</p>
@@ -370,7 +363,7 @@ export function AccessControlListingPage() {
 				</div>
 			</PageHeader>
 
-			<div className="flex-1 flex flex-col overflow-hidden bg-gray-50">
+			<div className="flex-1 flex flex-col overflow-hidden bg-muted/50">
 				<div className="flex-1 overflow-hidden relative">
 					<div className="absolute inset-0 overflow-auto">
 						<DataTable

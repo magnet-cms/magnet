@@ -187,7 +187,7 @@ export function AccessControlPage() {
 
 	if (isLoading) {
 		return (
-			<div className="flex-1 flex flex-col min-w-0 bg-white h-full relative overflow-hidden">
+			<div className="flex-1 flex flex-col min-w-0 bg-background h-full relative overflow-hidden">
 				<PageHeader>
 					<div className="h-16 flex items-center justify-between px-6">
 						<div>
@@ -199,7 +199,7 @@ export function AccessControlPage() {
 							<Skeleton className="h-9 w-32" />
 						</div>
 					</div>
-					<div className="w-full px-6 border-b border-gray-200 flex items-end gap-6">
+					<div className="w-full px-6 border-b border-border flex items-end gap-6">
 						<Skeleton className="h-8 w-24 mb-1" />
 						<Skeleton className="h-8 w-32 mb-1" />
 					</div>
@@ -213,14 +213,14 @@ export function AccessControlPage() {
 
 	if (error || !roleData) {
 		return (
-			<div className="flex-1 flex flex-col min-w-0 bg-white h-full relative overflow-hidden">
+			<div className="flex-1 flex flex-col min-w-0 bg-background h-full relative overflow-hidden">
 				<PageHeader>
 					<div className="h-16 flex items-center justify-between px-6">
 						<div>
-							<h1 className="text-lg font-semibold text-gray-900 tracking-tight">
+							<h1 className="text-lg font-semibold text-foreground tracking-tight">
 								Role Details
 							</h1>
-							<p className="text-xs text-gray-500">
+							<p className="text-xs text-muted-foreground">
 								Manage permissions for this role.
 							</p>
 						</div>
@@ -228,7 +228,7 @@ export function AccessControlPage() {
 				</PageHeader>
 				<div className="flex-1 flex items-center justify-center">
 					<div className="text-center">
-						<p className="text-gray-500 mb-4">
+						<p className="text-muted-foreground mb-4">
 							{error?.message || 'Failed to load role'}
 						</p>
 						<div className="flex items-center gap-3 justify-center">
@@ -247,7 +247,7 @@ export function AccessControlPage() {
 	}
 
 	return (
-		<div className="flex-1 flex flex-col min-w-0 bg-white h-full relative overflow-hidden">
+		<div className="flex-1 flex flex-col min-w-0 bg-background h-full relative overflow-hidden">
 			<PageHeader>
 				<RoleHeader
 					roleName={roleData.displayName}
@@ -256,15 +256,15 @@ export function AccessControlPage() {
 					onDuplicate={() => setDuplicateOpen(true)}
 				/>
 
-				<div className="px-8 flex items-center gap-6 border-t border-gray-200 border-b border-gray-100 overflow-x-auto">
+				<div className="flex items-center gap-6 overflow-x-auto border-b border-border border-t border-border px-8">
 					<button
 						type="button"
 						onClick={() => setActiveTab('permissions')}
 						className={cn(
-							'py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap',
+							'whitespace-nowrap border-b-2 py-3 text-sm font-medium transition-colors',
 							activeTab === 'permissions'
-								? 'text-gray-900 border-gray-900'
-								: 'text-gray-500 hover:text-gray-900 border-transparent hover:border-gray-200',
+								? 'border-foreground text-foreground'
+								: 'border-transparent text-muted-foreground hover:border-border hover:text-foreground',
 						)}
 					>
 						Permissions
@@ -273,10 +273,10 @@ export function AccessControlPage() {
 						type="button"
 						onClick={() => setActiveTab('advanced')}
 						className={cn(
-							'py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap',
+							'whitespace-nowrap border-b-2 py-3 text-sm font-medium transition-colors',
 							activeTab === 'advanced'
-								? 'text-gray-900 border-gray-900'
-								: 'text-gray-500 hover:text-gray-900 border-transparent hover:border-gray-200',
+								? 'border-foreground text-foreground'
+								: 'border-transparent text-muted-foreground hover:border-border hover:text-foreground',
 						)}
 					>
 						Advanced Settings
@@ -285,7 +285,7 @@ export function AccessControlPage() {
 			</PageHeader>
 
 			{activeTab === 'permissions' && (
-				<div className="flex-1 flex overflow-hidden relative bg-gray-50">
+				<div className="relative flex flex-1 overflow-hidden bg-muted/50">
 					<PermissionMatrix
 						collectionTypes={collectionTypes}
 						controllers={controllers}
@@ -304,16 +304,16 @@ export function AccessControlPage() {
 			)}
 
 			{activeTab === 'advanced' && (
-				<div className="flex-1 flex items-center justify-center bg-gray-50">
-					<p className="text-sm text-gray-500">
+				<div className="flex flex-1 items-center justify-center bg-muted/50">
+					<p className="text-sm text-muted-foreground">
 						Advanced settings coming soon.
 					</p>
 				</div>
 			)}
 
 			{isSaving && (
-				<div className="absolute inset-0 bg-white/50 flex items-center justify-center z-50">
-					<p className="text-sm text-gray-600">Saving permissions...</p>
+				<div className="absolute inset-0 z-50 flex items-center justify-center bg-background/50 backdrop-blur-[1px]">
+					<p className="text-sm text-muted-foreground">Saving permissions...</p>
 				</div>
 			)}
 

@@ -59,7 +59,11 @@ export function UploadButton({
 				onDragOver={handleDragOver}
 				onDragLeave={handleDragLeave}
 				onDrop={handleDrop}
-				className={isDragging ? 'bg-gray-800' : ''}
+				className={
+					isDragging
+						? 'ring-2 ring-primary ring-offset-2 ring-offset-background'
+						: ''
+				}
 			>
 				<Upload className="w-3.5 h-3.5" />
 				{intl.formatMessage({

@@ -88,16 +88,6 @@ const ENTITY_TYPE_OPTIONS = [
 	{ label: 'API Key', value: 'api_key' },
 ]
 
-// Styles for content-manager variant
-const contentManagerStyles = `
-  .table-row-hover:hover td {
-    background-color: #F9FAFB;
-  }
-  .table-row-hover.group:hover td {
-    background-color: #F9FAFB;
-  }
-`
-
 // ============================================================================
 // Component
 // ============================================================================
@@ -157,10 +147,10 @@ export function ActivityPage() {
 				const Icon = getActionIcon(record.action)
 				return (
 					<div className="flex items-center gap-2">
-						<div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
-							<Icon className="w-3 h-3 text-gray-600" />
+						<div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-muted">
+							<Icon className="size-3 text-muted-foreground" />
 						</div>
-						<span className="text-sm font-medium text-gray-900">
+						<span className="text-sm font-medium text-foreground">
 							{record.action}
 						</span>
 					</div>
@@ -174,9 +164,11 @@ export function ActivityPage() {
 				const record = row.original
 				const label = record.entityName || record.entityId
 				return (
-					<div className="text-sm text-gray-600">
+					<div className="text-sm text-muted-foreground">
 						<span className="font-medium">{record.entityType}</span>
-						{label ? <span className="text-gray-400"> · {label}</span> : null}
+						{label ? (
+							<span className="text-muted-foreground/70"> · {label}</span>
+						) : null}
 					</div>
 				)
 			},
@@ -186,7 +178,7 @@ export function ActivityPage() {
 			header: 'User',
 			accessorKey: 'userName',
 			format: (value, row) => (
-				<span className="text-sm text-gray-600">
+				<span className="text-sm text-muted-foreground">
 					{(value as string) || row.userId || '—'}
 				</span>
 			),
@@ -196,7 +188,7 @@ export function ActivityPage() {
 			header: 'Timestamp',
 			accessorKey: 'timestamp',
 			format: (value) => (
-				<span className="text-sm text-gray-400">
+				<span className="text-sm text-muted-foreground/80">
 					{formatRelativeTime(value as string)}
 				</span>
 			),
@@ -208,10 +200,10 @@ export function ActivityPage() {
 	// ============================================================================
 
 	const renderToolbar = () => (
-		<div className="px-6 py-4 flex flex-col sm:flex-row gap-3 items-center justify-between flex-none bg-white border-b border-gray-200">
-			<div className="flex items-center gap-3 w-full flex-wrap">
+		<div className="flex-none flex flex-col gap-3 border-b border-border bg-background px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+			<div className="flex w-full flex-wrap items-center gap-3">
 				<Select value={actionFilter} onValueChange={setActionFilter}>
-					<SelectTrigger className="appearance-none pl-3 pr-8 py-1.5 border border-gray-200 rounded-lg text-sm bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-gray-900 focus:border-gray-900 shadow-sm cursor-pointer min-w-[140px]">
+					<SelectTrigger className="min-w-[140px] cursor-pointer appearance-none rounded-lg border border-input bg-background py-1.5 pl-3 pr-8 text-sm text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
 						<SelectValue />
 					</SelectTrigger>
 					<SelectContent>
@@ -224,7 +216,7 @@ export function ActivityPage() {
 				</Select>
 
 				<Select value={entityTypeFilter} onValueChange={setEntityTypeFilter}>
-					<SelectTrigger className="appearance-none pl-3 pr-8 py-1.5 border border-gray-200 rounded-lg text-sm bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-gray-900 focus:border-gray-900 shadow-sm cursor-pointer min-w-[130px]">
+					<SelectTrigger className="min-w-[130px] cursor-pointer appearance-none rounded-lg border border-input bg-background py-1.5 pl-3 pr-8 text-sm text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
 						<SelectValue />
 					</SelectTrigger>
 					<SelectContent>
@@ -237,7 +229,7 @@ export function ActivityPage() {
 				</Select>
 
 				<Select value={userFilter} onValueChange={setUserFilter}>
-					<SelectTrigger className="appearance-none pl-3 pr-8 py-1.5 border border-gray-200 rounded-lg text-sm bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-gray-900 focus:border-gray-900 shadow-sm cursor-pointer min-w-[130px]">
+					<SelectTrigger className="min-w-[130px] cursor-pointer appearance-none rounded-lg border border-input bg-background py-1.5 pl-3 pr-8 text-sm text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
 						<SelectValue />
 					</SelectTrigger>
 					<SelectContent>
@@ -249,11 +241,11 @@ export function ActivityPage() {
 					</SelectContent>
 				</Select>
 
-				<div className="flex items-center border border-gray-200 rounded-lg p-0.5 bg-gray-50">
+				<div className="flex items-center rounded-lg border border-border bg-muted/50 p-0.5">
 					<Button
 						variant="ghost"
 						size="sm"
-						className="px-2 py-1 text-xs font-medium text-gray-600 hover:text-gray-900"
+						className="px-2 py-1 text-xs font-medium text-muted-foreground hover:text-foreground"
 						onClick={() => {
 							setActionFilter('all')
 							setEntityTypeFilter('all')
@@ -278,17 +270,19 @@ export function ActivityPage() {
 		const endRow = Math.min((pageIndex + 1) * pageSize, totalRows)
 
 		return (
-			<div className="flex-none px-6 py-4 border-t border-gray-200 bg-white flex items-center justify-between">
-				<div className="text-xs text-gray-500">
-					Showing <span className="font-medium text-gray-900">{startRow}</span>{' '}
-					to <span className="font-medium text-gray-900">{endRow}</span> of{' '}
-					<span className="font-medium text-gray-900">{totalRows}</span> results
+			<div className="flex-none flex items-center justify-between border-t border-border bg-background px-6 py-4">
+				<div className="text-xs text-muted-foreground">
+					Showing{' '}
+					<span className="font-medium text-foreground">{startRow}</span> to{' '}
+					<span className="font-medium text-foreground">{endRow}</span> of{' '}
+					<span className="font-medium text-foreground">{totalRows}</span>{' '}
+					results
 				</div>
 				<div className="flex items-center gap-2">
 					<Button
 						variant="outline"
 						size="sm"
-						className="px-3 py-1.5 border border-gray-200 rounded-md text-xs font-medium text-gray-400 cursor-not-allowed bg-gray-50"
+						className="cursor-not-allowed rounded-md bg-muted px-3 py-1.5 text-xs font-medium text-muted-foreground/50"
 						disabled={!table.getCanPreviousPage()}
 						onClick={() => table.previousPage()}
 					>
@@ -297,7 +291,7 @@ export function ActivityPage() {
 					<Button
 						variant="outline"
 						size="sm"
-						className="px-3 py-1.5 border border-gray-200 rounded-md text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+						className="rounded-md px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted"
 						disabled={!table.getCanNextPage()}
 						onClick={() => table.nextPage()}
 					>
@@ -314,7 +308,7 @@ export function ActivityPage() {
 
 	if (isLoading) {
 		return (
-			<div className="flex-1 flex flex-col min-w-0 bg-white h-full relative overflow-hidden">
+			<div className="relative flex h-full min-w-0 flex-1 flex-col overflow-hidden bg-background">
 				<PageHeader>
 					<div className="h-16 flex items-center justify-between px-6">
 						<div>
@@ -336,11 +330,11 @@ export function ActivityPage() {
 
 	if (error) {
 		return (
-			<div className="flex-1 flex flex-col min-w-0 bg-white h-full relative overflow-hidden">
+			<div className="relative flex h-full min-w-0 flex-1 flex-col overflow-hidden bg-background">
 				<PageHeader>
 					<div className="h-16 flex items-center justify-between px-6">
 						<div>
-							<h1 className="text-lg font-semibold text-gray-900 tracking-tight">
+							<h1 className="text-lg font-semibold text-foreground tracking-tight">
 								{intl.formatMessage({
 									id: 'activity.title',
 									defaultMessage: 'Activity Log',
@@ -350,9 +344,9 @@ export function ActivityPage() {
 						</div>
 					</div>
 				</PageHeader>
-				<div className="flex-1 flex items-center justify-center">
+				<div className="flex flex-1 items-center justify-center">
 					<div className="text-center">
-						<p className="text-gray-500 mb-4">
+						<p className="mb-4 text-muted-foreground">
 							{error.message || 'Failed to load activity records'}
 						</p>
 					</div>
@@ -366,17 +360,15 @@ export function ActivityPage() {
 	// ============================================================================
 
 	return (
-		<div className="flex-1 flex flex-col min-w-0 bg-white h-full relative overflow-hidden">
-			<style>{contentManagerStyles}</style>
-
+		<div className="relative flex h-full min-w-0 flex-1 flex-col overflow-hidden bg-background">
 			{/* Header */}
 			<PageHeader>
 				<div className="h-16 flex items-center justify-between px-6">
 					<div>
-						<h1 className="text-lg font-semibold text-gray-900 tracking-tight">
+						<h1 className="text-lg font-semibold text-foreground tracking-tight">
 							Activity Log
 						</h1>
-						<p className="text-xs text-gray-500">
+						<p className="text-xs text-muted-foreground">
 							Audit trail of all user actions.{' '}
 							{data?.total !== undefined ? `${data.total} records total.` : ''}
 						</p>
@@ -385,7 +377,7 @@ export function ActivityPage() {
 			</PageHeader>
 
 			{/* Main Workspace */}
-			<div className="flex-1 flex flex-col overflow-hidden bg-gray-50">
+			<div className="flex flex-1 flex-col overflow-hidden bg-muted/50">
 				<div className="flex-1 overflow-hidden relative">
 					<div className="absolute inset-0 overflow-auto">
 						<DataTable
@@ -402,8 +394,8 @@ export function ActivityPage() {
 							variant="content-manager"
 							renderEmpty={(_table) => (
 								<div className="py-16 text-center">
-									<Activity className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-									<p className="text-sm text-gray-500">
+									<Activity className="mx-auto mb-3 size-10 text-muted-foreground/40" />
+									<p className="text-sm text-muted-foreground">
 										No activity records found
 									</p>
 								</div>

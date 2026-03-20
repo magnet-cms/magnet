@@ -35,6 +35,9 @@ interface GeneralSettings extends Record<string, unknown> {
 	autoUpdates?: boolean
 }
 
+/** API returns an array of partial setting records merged into one object */
+type GeneralSettingsRecords = Partial<GeneralSettings>[]
+
 // Default values
 const defaultSettings: GeneralSettings = {
 	displayName: 'Magnet Project',
@@ -52,7 +55,7 @@ export const ConfigurationForm = forwardRef<ConfigurationFormRef, object>(
 			isLoading,
 			error,
 			refetch,
-		} = useSettingData<GeneralSettings>('general')
+		} = useSettingData<GeneralSettingsRecords>('general')
 		const { mutate: updateSettings, isPending: isSaving } =
 			useSettingMutation<GeneralSettings>('general')
 
@@ -64,7 +67,7 @@ export const ConfigurationForm = forwardRef<ConfigurationFormRef, object>(
 		useEffect(() => {
 			if (settingsData && settingsData.length > 0) {
 				// Merge all settings into a single object
-				const mergedSettings = settingsData.reduce(
+				const mergedSettings = settingsData.reduce<GeneralSettings>(
 					(acc, item) => ({ ...acc, ...item }),
 					{} as GeneralSettings,
 				)
@@ -87,7 +90,7 @@ export const ConfigurationForm = forwardRef<ConfigurationFormRef, object>(
 
 		const handleReset = () => {
 			if (settingsData && settingsData.length > 0) {
-				const mergedSettings = settingsData.reduce(
+				const mergedSettings = settingsData.reduce<GeneralSettings>(
 					(acc, item) => ({ ...acc, ...item }),
 					{} as GeneralSettings,
 				)
@@ -138,7 +141,7 @@ export const ConfigurationForm = forwardRef<ConfigurationFormRef, object>(
 			return (
 				<div className="space-y-8">
 					<Card className="overflow-hidden">
-						<div className="px-6 py-4 border-b border-gray-100">
+						<div className="border-b border-border px-6 py-4">
 							<Skeleton className="h-5 w-32" />
 						</div>
 						<CardContent className="px-6 pb-6 space-y-6">
@@ -162,9 +165,9 @@ export const ConfigurationForm = forwardRef<ConfigurationFormRef, object>(
 			<div className="space-y-8">
 				{/* Section: Project Identity */}
 				<Card className="overflow-hidden">
-					<div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
-						<Box className="w-[18px] h-[18px] text-gray-400" />
-						<h2 className="text-sm font-semibold text-gray-900">
+					<div className="flex items-center gap-2 border-b border-border px-6 py-4">
+						<Box className="size-[18px] text-muted-foreground" />
+						<h2 className="text-sm font-semibold text-foreground">
 							Project Identity
 						</h2>
 						{hasChanges && (
@@ -180,23 +183,25 @@ export const ConfigurationForm = forwardRef<ConfigurationFormRef, object>(
 								type="button"
 								className="relative group cursor-pointer rounded-full"
 							>
-								<div className="w-16 h-16 rounded-full bg-gray-50 border border-gray-200 flex items-center justify-center text-gray-400 overflow-hidden group-hover:border-gray-300 transition-colors">
-									<Box className="w-8 h-8 text-gray-300" />
+								<div className="flex size-16 items-center justify-center overflow-hidden rounded-full border border-border bg-muted/50 text-muted-foreground transition-colors group-hover:border-border">
+									<Box className="size-8 text-muted-foreground/50" />
 								</div>
-								<div className="absolute inset-0 rounded-full bg-gray-900/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-									<span className="text-white text-xs font-medium">Upload</span>
+								<div className="absolute inset-0 flex items-center justify-center rounded-full bg-foreground/50 opacity-0 transition-opacity group-hover:opacity-100">
+									<span className="text-xs font-medium text-primary-foreground">
+										Upload
+									</span>
 								</div>
 							</button>
 							<div>
-								<h3 className="text-sm font-medium text-gray-900">
+								<h3 className="text-sm font-medium text-foreground">
 									Project Icon
 								</h3>
-								<p className="text-xs text-gray-500 mt-1">
+								<p className="mt-1 text-xs text-muted-foreground">
 									This icon will be displayed on your dashboard.
 								</p>
 								<button
 									type="button"
-									className="mt-2 text-xs font-medium text-gray-600 hover:text-gray-900 transition-colors"
+									className="mt-2 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
 								>
 									Upload New
 								</button>
@@ -207,7 +212,7 @@ export const ConfigurationForm = forwardRef<ConfigurationFormRef, object>(
 							<div className="col-span-1 space-y-1.5">
 								<Label
 									htmlFor="project-name"
-									className="text-xs font-medium text-gray-700"
+									className="text-xs font-medium text-foreground"
 								>
 									Display Name
 								</Label>
@@ -216,13 +221,13 @@ export const ConfigurationForm = forwardRef<ConfigurationFormRef, object>(
 									type="text"
 									value={formState.displayName || ''}
 									onChange={(e) => updateField('displayName', e.target.value)}
-									className="rounded-lg border-gray-200 bg-gray-50/50"
+									className="rounded-lg border-input bg-muted/40"
 								/>
 							</div>
 							<div className="col-span-1 space-y-1.5">
 								<Label
 									htmlFor="env"
-									className="text-xs font-medium text-gray-700"
+									className="text-xs font-medium text-foreground"
 								>
 									Environment
 								</Label>
@@ -232,7 +237,7 @@ export const ConfigurationForm = forwardRef<ConfigurationFormRef, object>(
 								>
 									<SelectTrigger
 										id="env"
-										className="w-full rounded-lg border-gray-200 bg-gray-50/50 h-[42px]"
+										className="h-[42px] w-full rounded-lg border-input bg-muted/40"
 									>
 										<SelectValue />
 									</SelectTrigger>
@@ -246,12 +251,12 @@ export const ConfigurationForm = forwardRef<ConfigurationFormRef, object>(
 							<div className="col-span-2 space-y-1.5">
 								<Label
 									htmlFor="url"
-									className="text-xs font-medium text-gray-700"
+									className="text-xs font-medium text-foreground"
 								>
 									Public URL
 								</Label>
-								<div className="flex rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-									<span className="inline-flex items-center px-3 bg-gray-50 text-gray-500 text-sm border-r border-gray-200">
+								<div className="flex overflow-hidden rounded-lg border border-border shadow-sm">
+									<span className="inline-flex items-center border-r border-border bg-muted/50 px-3 text-sm text-muted-foreground">
 										https://
 									</span>
 									<Input
@@ -263,7 +268,7 @@ export const ConfigurationForm = forwardRef<ConfigurationFormRef, object>(
 										placeholder="api.myservice.com"
 									/>
 								</div>
-								<p className="text-[11px] text-gray-500">
+								<p className="text-[11px] text-muted-foreground">
 									The primary URL used for API responses and callbacks.
 								</p>
 							</div>
@@ -273,17 +278,19 @@ export const ConfigurationForm = forwardRef<ConfigurationFormRef, object>(
 
 				{/* Section: Preferences */}
 				<Card className="overflow-hidden">
-					<div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
-						<SlidersHorizontal className="w-[18px] h-[18px] text-gray-400" />
-						<h2 className="text-sm font-semibold text-gray-900">Preferences</h2>
+					<div className="flex items-center gap-2 border-b border-border px-6 py-4">
+						<SlidersHorizontal className="size-[18px] text-muted-foreground" />
+						<h2 className="text-sm font-semibold text-foreground">
+							Preferences
+						</h2>
 					</div>
 					<div className="px-6 pb-6 space-y-5">
 						<div className="flex items-center justify-between gap-4">
 							<div>
-								<p className="text-sm font-medium text-gray-900">
+								<p className="text-sm font-medium text-foreground">
 									Maintenance Mode
 								</p>
-								<p className="text-xs text-gray-500 mt-0.5">
+								<p className="mt-0.5 text-xs text-muted-foreground">
 									Disable public access to the API.
 								</p>
 							</div>
@@ -294,11 +301,13 @@ export const ConfigurationForm = forwardRef<ConfigurationFormRef, object>(
 								}
 							/>
 						</div>
-						<hr className="border-gray-100" />
+						<hr className="border-border" />
 						<div className="flex items-center justify-between gap-4">
 							<div>
-								<p className="text-sm font-medium text-gray-900">Public Logs</p>
-								<p className="text-xs text-gray-500 mt-0.5">
+								<p className="text-sm font-medium text-foreground">
+									Public Logs
+								</p>
+								<p className="mt-0.5 text-xs text-muted-foreground">
 									Allow unauthenticated users to view system status.
 								</p>
 							</div>
@@ -309,13 +318,13 @@ export const ConfigurationForm = forwardRef<ConfigurationFormRef, object>(
 								}
 							/>
 						</div>
-						<hr className="border-gray-100" />
+						<hr className="border-border" />
 						<div className="flex items-center justify-between gap-4">
 							<div>
-								<p className="text-sm font-medium text-gray-900">
+								<p className="text-sm font-medium text-foreground">
 									Automatic Updates
 								</p>
-								<p className="text-xs text-gray-500 mt-0.5">
+								<p className="mt-0.5 text-xs text-muted-foreground">
 									Install security patches automatically.
 								</p>
 							</div>
@@ -330,17 +339,19 @@ export const ConfigurationForm = forwardRef<ConfigurationFormRef, object>(
 				</Card>
 
 				{/* Section: Danger Zone */}
-				<Card className="border border-red-200 bg-red-50/30 overflow-hidden">
-					<div className="px-6 py-4 border-b border-red-100 flex items-center gap-2">
-						<span className="text-red-500 font-bold">!</span>
-						<h2 className="text-sm font-semibold text-red-900">Danger Zone</h2>
+				<Card className="overflow-hidden border border-destructive/30 bg-destructive/5">
+					<div className="flex items-center gap-2 border-b border-destructive/20 px-6 py-4">
+						<span className="font-bold text-destructive">!</span>
+						<h2 className="text-sm font-semibold text-destructive">
+							Danger Zone
+						</h2>
 					</div>
-					<div className="px-6 pb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+					<div className="flex flex-col justify-between gap-4 px-6 pb-6 sm:flex-row sm:items-center">
 						<div>
-							<p className="text-sm font-medium text-gray-900">
+							<p className="text-sm font-medium text-foreground">
 								Delete Project
 							</p>
-							<p className="text-xs text-gray-500 mt-1 max-w-sm">
+							<p className="mt-1 max-w-sm text-xs text-muted-foreground">
 								Once you delete a project, there is no going back. Please be
 								certain.
 							</p>
@@ -349,7 +360,7 @@ export const ConfigurationForm = forwardRef<ConfigurationFormRef, object>(
 							type="button"
 							variant="outline"
 							size="sm"
-							className="text-red-700 border-red-200 hover:bg-red-50 hover:border-red-300 w-full sm:w-auto"
+							className="w-full border-destructive/30 text-destructive hover:border-destructive/50 hover:bg-destructive/10 sm:w-auto"
 							onClick={handleDeleteProject}
 							disabled={isSaving}
 						>

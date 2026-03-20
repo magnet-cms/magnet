@@ -4,15 +4,6 @@ import {
 	type DataTableColumn,
 } from '@magnet-cms/ui/components'
 
-const contentManagerStyles = `
-  .table-row-hover:hover td {
-    background-color: #F9FAFB;
-  }
-  .table-row-hover.group:hover td {
-    background-color: #F9FAFB;
-  }
-`
-
 interface Payment {
 	id: string
 	amount: number
@@ -87,7 +78,6 @@ export function RecentPayments({ payments }: RecentPaymentsProps) {
 
 	return (
 		<>
-			<style>{contentManagerStyles}</style>
 			<DataTable
 				data={payments}
 				columns={columns}

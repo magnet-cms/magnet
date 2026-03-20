@@ -43,13 +43,13 @@ export function SettingsSectionCard({
 					<span className="text-red-500 font-bold">!</span>
 				) : (
 					IconComponent && (
-						<IconComponent className="w-[18px] h-[18px] text-gray-400" />
+						<IconComponent className="size-[18px] text-muted-foreground" />
 					)
 				)}
 				<h2
 					className={cn(
 						'text-sm font-semibold',
-						isDanger ? 'text-red-900' : 'text-gray-900',
+						isDanger ? 'text-destructive' : 'text-foreground',
 					)}
 				>
 					{section.label}
@@ -59,7 +59,9 @@ export function SettingsSectionCard({
 			{/* Section Content */}
 			<CardContent className="px-6 pb-6">
 				{section.description && (
-					<p className="text-xs text-gray-500 mb-6">{section.description}</p>
+					<p className="mb-6 text-xs text-muted-foreground">
+						{section.description}
+					</p>
 				)}
 
 				<div className="space-y-5">

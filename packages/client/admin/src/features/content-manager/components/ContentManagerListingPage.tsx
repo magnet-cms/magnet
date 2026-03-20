@@ -32,16 +32,6 @@ import type { ViewConfigColumn } from '../hooks/useViewConfig'
 import { useViewConfig } from '../hooks/useViewConfig'
 import { ConfigureViewDrawer } from './ConfigureViewDrawer'
 
-// Styles for content-manager variant
-const contentManagerStyles = `
-  .table-row-hover:hover td {
-    background-color: #F9FAFB;
-  }
-  .table-row-hover.group:hover td {
-    background-color: #F9FAFB;
-  }
-`
-
 interface ContentManagerListingPageProps {
 	schema: string
 	schemaDisplayName: string
@@ -60,24 +50,24 @@ type ContentEntry = Record<string, unknown> & {
 const statusColors: Record<string, { bg: string; text: string; ring: string }> =
 	{
 		published: {
-			bg: 'bg-green-50',
-			text: 'text-green-700',
-			ring: 'ring-green-600/20',
+			bg: 'bg-green-50 dark:bg-green-950/40',
+			text: 'text-green-700 dark:text-green-400',
+			ring: 'ring-green-600/20 dark:ring-green-500/30',
 		},
 		draft: {
 			bg: 'bg-muted',
 			text: 'text-muted-foreground',
-			ring: 'ring-gray-500/10',
+			ring: 'ring-border',
 		},
 		review: {
-			bg: 'bg-yellow-50',
-			text: 'text-yellow-800',
-			ring: 'ring-yellow-600/20',
+			bg: 'bg-yellow-50 dark:bg-yellow-950/40',
+			text: 'text-yellow-800 dark:text-yellow-300',
+			ring: 'ring-yellow-600/20 dark:ring-yellow-500/30',
 		},
 		archived: {
 			bg: 'bg-muted',
 			text: 'text-muted-foreground',
-			ring: 'ring-gray-500/10',
+			ring: 'ring-border',
 		},
 	}
 
@@ -582,8 +572,6 @@ export function ContentManagerListingPage({
 
 	return (
 		<div className="flex-1 flex flex-col min-w-0 bg-background h-full relative overflow-hidden">
-			<style>{contentManagerStyles}</style>
-
 			{/* Header */}
 			<PageHeader>
 				{/* Toolbar: Title & Actions */}
@@ -633,7 +621,7 @@ export function ContentManagerListingPage({
 			</PageHeader>
 
 			{/* Main Workspace */}
-			<div className="flex-1 flex flex-col overflow-hidden bg-muted">
+			<div className="flex-1 flex flex-col overflow-hidden bg-muted/50">
 				{/* Content Table */}
 				<div className="flex-1 overflow-hidden relative">
 					<div className="absolute inset-0 overflow-auto">

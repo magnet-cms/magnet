@@ -4,6 +4,7 @@
  * These load after MagnetModule.forRoot() has run.
  */
 export * from './modules/api-keys'
+export * from './modules/cache'
 export * from './modules/auth'
 export * from './modules/content'
 export * from './modules/document'

@@ -39,10 +39,10 @@ export function MaskedSecretCell({ secretName }: MaskedSecretCellProps) {
 	}
 
 	return (
-		<div className="flex items-center gap-1.5 min-w-0 max-w-[280px]">
-			<span className="font-mono text-sm text-gray-700 truncate shrink min-w-0">
+		<div className="flex min-w-0 max-w-[280px] items-center gap-1.5">
+			<span className="min-w-0 shrink truncate font-mono text-sm text-foreground">
 				{isLoading ? (
-					<Loader2 className="w-3.5 h-3.5 animate-spin text-gray-400" />
+					<Loader2 className="size-3.5 animate-spin text-muted-foreground" />
 				) : (
 					displayValue
 				)}
@@ -52,7 +52,7 @@ export function MaskedSecretCell({ secretName }: MaskedSecretCellProps) {
 					type="button"
 					variant="ghost"
 					size="sm"
-					className="h-7 w-7 p-0 text-gray-400 hover:text-gray-600"
+					className="size-7 p-0 text-muted-foreground hover:text-foreground"
 					onClick={(e) => {
 						e.stopPropagation()
 						setRevealed((v) => !v)
@@ -82,7 +82,7 @@ export function MaskedSecretCell({ secretName }: MaskedSecretCellProps) {
 								type="button"
 								variant="ghost"
 								size="sm"
-								className="h-7 w-7 p-0 text-gray-400 hover:text-gray-600"
+								className="size-7 p-0 text-muted-foreground hover:text-foreground"
 								onClick={handleCopy}
 								aria-label={intl.formatMessage({
 									id: 'vault.secrets.copyToClipboard',

@@ -162,7 +162,7 @@ export const DynamicSettingsForm = forwardRef<
 		return (
 			<div className="space-y-8">
 				<Card className="overflow-hidden">
-					<div className="px-6 py-4 border-b border-gray-100">
+					<div className="border-b border-border px-6 py-4">
 						<Skeleton className="h-5 w-32" />
 					</div>
 					<CardContent className="px-6 pb-6 pt-6 space-y-6">
@@ -181,7 +181,7 @@ export const DynamicSettingsForm = forwardRef<
 	// Error or no schema
 	if (!parsedSchema) {
 		return (
-			<div className="text-center py-8 text-gray-500">
+			<div className="py-8 text-center text-muted-foreground">
 				{intl.formatMessage(
 					{
 						id: 'settings.loadError',
@@ -196,7 +196,7 @@ export const DynamicSettingsForm = forwardRef<
 	// No sections (empty schema)
 	if (parsedSchema.sections.length === 0) {
 		return (
-			<div className="text-center py-8 text-gray-500">
+			<div className="py-8 text-center text-muted-foreground">
 				{intl.formatMessage({
 					id: 'settings.noAvailable',
 					defaultMessage: 'No settings available for this group',

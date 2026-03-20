@@ -38,7 +38,7 @@ export function AssetGrid({
 						<button
 							type="button"
 							key={asset.id}
-							className="flex items-center gap-4 p-3 bg-white border border-gray-200 rounded-lg hover:shadow-sm transition-all cursor-pointer w-full text-left"
+							className="flex w-full cursor-pointer items-center gap-4 rounded-lg border border-border bg-card p-3 text-left transition-all hover:shadow-sm"
 							onClick={() => onAssetView(asset.id)}
 						>
 							<input
@@ -49,9 +49,9 @@ export function AssetGrid({
 									onAssetSelect(asset.id)
 								}}
 								onClick={(e) => e.stopPropagation()}
-								className="w-4 h-4 rounded border-gray-300"
+								className="size-4 rounded border-border"
 							/>
-							<div className="w-10 h-10 rounded-md overflow-hidden bg-gray-100 flex items-center justify-center shrink-0">
+							<div className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-md bg-muted">
 								{asset.type === 'image' && asset.url ? (
 									<img
 										src={asset.url}
@@ -68,16 +68,18 @@ export function AssetGrid({
 										<docIcon.icon className={cn('w-5 h-5', docIcon.color)} />
 									</div>
 								) : (
-									<div className="w-full h-full bg-gray-800 flex items-center justify-center">
-										<span className="text-white text-[8px]">VID</span>
+									<div className="flex size-full items-center justify-center bg-foreground/90">
+										<span className="text-[8px] text-primary-foreground">
+											VID
+										</span>
 									</div>
 								)}
 							</div>
-							<div className="flex-1 min-w-0">
-								<p className="text-sm font-medium text-gray-900 truncate">
+							<div className="min-w-0 flex-1">
+								<p className="truncate text-sm font-medium text-foreground">
 									{asset.name}
 								</p>
-								<p className="text-xs text-gray-500">
+								<p className="text-xs text-muted-foreground">
 									{asset.format.toUpperCase()} • {asset.size}
 								</p>
 							</div>

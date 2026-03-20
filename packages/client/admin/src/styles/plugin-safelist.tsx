@@ -103,6 +103,15 @@ const _aspect = `
   aspect-auto aspect-square aspect-video
 `
 
+// Semantic theme tokens (plugins may compose these at runtime)
+const _themeTokens = `
+  bg-background bg-card bg-muted bg-popover bg-primary bg-secondary bg-accent
+  text-foreground text-muted-foreground text-primary-foreground text-card-foreground
+  border-border border-input
+  ring-ring ring-offset-background
+  hover:bg-muted hover:text-foreground
+`
+
 // Color utilities (backgrounds, text, borders)
 const _colors = `
   bg-blue-50 bg-blue-100 bg-blue-500 bg-blue-600 bg-blue-700
@@ -156,5 +165,6 @@ export const _safelist = {
 	_position,
 	_radius,
 	_aspect,
+	_themeTokens,
 	_colors,
 }

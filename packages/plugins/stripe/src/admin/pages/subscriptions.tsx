@@ -14,15 +14,6 @@ import {
 } from '@magnet-cms/ui/components'
 import { useEffect, useState } from 'react'
 
-const contentManagerStyles = `
-  .table-row-hover:hover td {
-    background-color: #F9FAFB;
-  }
-  .table-row-hover.group:hover td {
-    background-color: #F9FAFB;
-  }
-`
-
 interface Subscription {
 	id: string
 	stripeSubscriptionId: string
@@ -151,7 +142,7 @@ const SubscriptionsPage = () => {
 	]
 
 	const renderToolbar = () => (
-		<div className="px-6 py-4 flex flex-col sm:flex-row gap-3 items-center justify-between flex-none bg-white border-b border-gray-200">
+		<div className="px-6 py-4 flex flex-col sm:flex-row gap-3 items-center justify-between flex-none border-b border-border bg-background">
 			<div className="max-w-[200px]">
 				<Select value={statusFilter} onValueChange={setStatusFilter}>
 					<SelectTrigger>
@@ -179,11 +170,13 @@ const SubscriptionsPage = () => {
 		const startRow = pageIndex * pageSize + 1
 		const endRow = Math.min((pageIndex + 1) * pageSize, totalRows)
 		return (
-			<div className="flex-none px-6 py-4 border-t border-gray-200 bg-white flex items-center justify-between">
-				<div className="text-xs text-gray-500">
-					Showing <span className="font-medium text-gray-900">{startRow}</span>{' '}
-					to <span className="font-medium text-gray-900">{endRow}</span> of{' '}
-					<span className="font-medium text-gray-900">{totalRows}</span> results
+			<div className="flex-none px-6 py-4 border-t border-border bg-background flex items-center justify-between">
+				<div className="text-xs text-muted-foreground">
+					Showing{' '}
+					<span className="font-medium text-foreground">{startRow}</span> to{' '}
+					<span className="font-medium text-foreground">{endRow}</span> of{' '}
+					<span className="font-medium text-foreground">{totalRows}</span>{' '}
+					results
 				</div>
 				<div className="flex items-center gap-2">
 					<Button
@@ -209,7 +202,7 @@ const SubscriptionsPage = () => {
 
 	if (loading) {
 		return (
-			<div className="flex-1 flex flex-col min-w-0 bg-white h-full relative overflow-hidden">
+			<div className="flex-1 flex flex-col min-w-0 bg-background h-full relative overflow-hidden">
 				<PageHeader title="Subscriptions" />
 				<div className="flex-1 p-6">
 					<Skeleton className="h-96 w-full" />
@@ -219,13 +212,12 @@ const SubscriptionsPage = () => {
 	}
 
 	return (
-		<div className="flex-1 flex flex-col min-w-0 bg-white h-full relative overflow-hidden">
-			<style>{contentManagerStyles}</style>
+		<div className="flex-1 flex flex-col min-w-0 bg-background h-full relative overflow-hidden">
 			<PageHeader
 				title="Subscriptions"
 				description={`${subscriptions.length} subscription(s) total.`}
 			/>
-			<div className="flex-1 flex flex-col overflow-hidden bg-gray-50">
+			<div className="flex-1 flex flex-col overflow-hidden bg-muted/50">
 				<div className="flex-1 overflow-hidden relative">
 					<div className="absolute inset-0 overflow-auto">
 						<DataTable

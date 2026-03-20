@@ -19,22 +19,29 @@ interface SettingsListProps {
 
 export function SettingsList({ activeId, onSelect }: SettingsListProps) {
 	return (
-		<div className="w-56 bg-white border-r border-gray-200 flex flex-col lg:flex">
-			<div className="flex-1 overflow-y-auto px-2 pt-4 pb-4 space-y-0.5">
+		<div className="flex w-56 flex-col border-r border-border bg-background lg:flex">
+			<div className="flex-1 space-y-0.5 overflow-y-auto px-2 pb-4 pt-4">
 				{settingsItems.map((item) => (
 					<button
 						key={item.id}
 						type="button"
 						onClick={() => onSelect(item.id)}
 						className={cn(
-							'w-full text-left px-3 py-2 rounded-md group transition-colors',
-							activeId === item.id ? 'bg-gray-50' : 'hover:bg-gray-50',
+							'group w-full rounded-md px-3 py-2 text-left transition-colors',
+							activeId === item.id ? 'bg-muted' : 'hover:bg-muted/70',
 						)}
 					>
-						<p className="text-sm font-medium text-gray-600 group-hover:text-gray-900">
+						<p
+							className={cn(
+								'text-sm font-medium',
+								activeId === item.id
+									? 'text-foreground'
+									: 'text-muted-foreground group-hover:text-foreground',
+							)}
+						>
 							{item.name}
 						</p>
-						<p className="text-xs text-gray-400 font-mono mt-0.5 group-hover:text-gray-500">
+						<p className="mt-0.5 font-mono text-xs text-muted-foreground/80 group-hover:text-muted-foreground">
 							{item.apiId}
 						</p>
 					</button>

@@ -54,10 +54,10 @@ export function createActionsColumn<TData>(
 										isDisabled && 'opacity-30 cursor-not-allowed',
 										!isDisabled &&
 											action.destructive &&
-											'text-gray-400 hover:text-red-600',
+											'text-muted-foreground hover:text-destructive',
 										!isDisabled &&
 											!action.destructive &&
-											'text-gray-400 hover:text-gray-600',
+											'text-muted-foreground hover:text-foreground',
 									)}
 									aria-label={action.label}
 								>

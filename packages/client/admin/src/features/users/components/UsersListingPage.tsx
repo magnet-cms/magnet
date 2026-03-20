@@ -32,16 +32,6 @@ import {
 
 import { CreateUserDrawer } from './CreateUserDrawer'
 
-// Styles for content-manager variant
-const contentManagerStyles = `
-  .table-row-hover:hover td {
-    background-color: #F9FAFB;
-  }
-  .table-row-hover.group:hover td {
-    background-color: #F9FAFB;
-  }
-`
-
 interface User {
 	id: string
 	name: string
@@ -55,19 +45,19 @@ interface User {
 const statusColors: Record<string, { bg: string; text: string; ring: string }> =
 	{
 		Active: {
-			bg: 'bg-green-50',
-			text: 'text-green-700',
-			ring: 'ring-green-600/20',
+			bg: 'bg-green-50 dark:bg-green-950/40',
+			text: 'text-green-700 dark:text-green-400',
+			ring: 'ring-green-600/20 dark:ring-green-500/30',
 		},
 		Inactive: {
-			bg: 'bg-gray-100',
-			text: 'text-gray-600',
-			ring: 'ring-gray-500/10',
+			bg: 'bg-muted',
+			text: 'text-muted-foreground',
+			ring: 'ring-border',
 		},
 		Pending: {
-			bg: 'bg-yellow-50',
-			text: 'text-yellow-800',
-			ring: 'ring-yellow-600/20',
+			bg: 'bg-yellow-50 dark:bg-yellow-950/40',
+			text: 'text-yellow-800 dark:text-yellow-300',
+			ring: 'ring-yellow-600/20 dark:ring-yellow-500/30',
 		},
 	}
 
@@ -243,7 +233,7 @@ export function UsersListingPage() {
 			header: 'Name',
 			accessorKey: 'name',
 			format: (value) => (
-				<div className="text-sm font-medium text-gray-900">
+				<div className="text-sm font-medium text-foreground">
 					{value as string}
 				</div>
 			),
@@ -253,7 +243,7 @@ export function UsersListingPage() {
 			header: 'Email',
 			accessorKey: 'email',
 			format: (value) => (
-				<div className="text-sm text-gray-600">{value as string}</div>
+				<div className="text-sm text-muted-foreground">{value as string}</div>
 			),
 		},
 		{
@@ -272,9 +262,9 @@ export function UsersListingPage() {
 			cell: (row) => {
 				const status = row.original.status
 				const colors = statusColors[status] ?? {
-					bg: 'bg-gray-100',
-					text: 'text-gray-600',
-					ring: 'ring-gray-500/10',
+					bg: 'bg-muted',
+					text: 'text-muted-foreground',
+					ring: 'ring-border',
 				}
 				return (
 					<span
@@ -290,7 +280,7 @@ export function UsersListingPage() {
 			header: 'Last Login',
 			accessorKey: 'lastLogin',
 			format: (value) => (
-				<span className="text-sm text-gray-500">{value as string}</span>
+				<span className="text-sm text-muted-foreground">{value as string}</span>
 			),
 		},
 		{
@@ -298,7 +288,7 @@ export function UsersListingPage() {
 			header: 'Created',
 			accessorKey: 'createdAt',
 			format: (value) => (
-				<span className="text-sm text-gray-500">{value as string}</span>
+				<span className="text-sm text-muted-foreground">{value as string}</span>
 			),
 		},
 	]
@@ -314,11 +304,11 @@ export function UsersListingPage() {
 
 	const renderToolbar = () => {
 		return (
-			<div className="px-6 py-4 flex flex-col sm:flex-row gap-3 items-center justify-between flex-none bg-white border-b border-gray-200">
+			<div className="px-6 py-4 flex flex-col sm:flex-row gap-3 items-center justify-between flex-none border-b border-border bg-background">
 				<div className="relative w-full sm:w-80">
 					<div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
 						<svg
-							className="text-gray-400"
+							className="text-muted-foreground"
 							width="16"
 							height="16"
 							viewBox="0 0 16 16"
@@ -344,7 +334,7 @@ export function UsersListingPage() {
 					</div>
 					<Input
 						type="text"
-						className="pl-9 pr-3 py-1.5 border border-gray-200 rounded-lg text-sm bg-gray-50 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-1 focus:ring-gray-900 focus:border-gray-900 transition-all shadow-sm"
+						className="pl-9 pr-3 py-1.5 border border-input rounded-lg text-sm bg-muted/50 placeholder:text-muted-foreground focus-visible:outline-none focus-visible:bg-background focus-visible:ring-1 focus-visible:ring-ring transition-all shadow-sm"
 						placeholder={intl.formatMessage({
 							id: 'users.searchPlaceholder',
 							defaultMessage: 'Search users...',
@@ -356,7 +346,7 @@ export function UsersListingPage() {
 
 				<div className="flex items-center gap-3 w-full sm:w-auto">
 					<Select value={statusFilter} onValueChange={setStatusFilter}>
-						<SelectTrigger className="appearance-none pl-3 pr-8 py-1.5 border border-gray-200 rounded-lg text-sm bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-gray-900 focus:border-gray-900 shadow-sm cursor-pointer min-w-[120px]">
+						<SelectTrigger className="appearance-none pl-3 pr-8 py-1.5 border border-input rounded-lg text-sm bg-background text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring shadow-sm cursor-pointer min-w-[120px]">
 							<SelectValue />
 						</SelectTrigger>
 						<SelectContent>
@@ -367,11 +357,11 @@ export function UsersListingPage() {
 						</SelectContent>
 					</Select>
 
-					<div className="flex items-center border border-gray-200 rounded-lg p-0.5 bg-gray-50">
+					<div className="flex items-center border border-border rounded-lg p-0.5 bg-muted/50">
 						<Button
 							variant="ghost"
 							size="sm"
-							className="px-2 py-1 text-xs font-medium text-gray-600 hover:text-gray-900"
+							className="px-2 py-1 text-xs font-medium text-muted-foreground hover:text-foreground"
 							onClick={() => {
 								setSearchQuery('')
 								setStatusFilter('All Status')
@@ -395,17 +385,19 @@ export function UsersListingPage() {
 		const endRow = Math.min((pageIndex + 1) * pageSize, totalRows)
 
 		return (
-			<div className="flex-none px-6 py-4 border-t border-gray-200 bg-white flex items-center justify-between">
-				<div className="text-xs text-gray-500">
-					Showing <span className="font-medium text-gray-900">{startRow}</span>{' '}
-					to <span className="font-medium text-gray-900">{endRow}</span> of{' '}
-					<span className="font-medium text-gray-900">{totalRows}</span> results
+			<div className="flex-none px-6 py-4 border-t border-border bg-background flex items-center justify-between">
+				<div className="text-xs text-muted-foreground">
+					Showing{' '}
+					<span className="font-medium text-foreground">{startRow}</span> to{' '}
+					<span className="font-medium text-foreground">{endRow}</span> of{' '}
+					<span className="font-medium text-foreground">{totalRows}</span>{' '}
+					results
 				</div>
 				<div className="flex items-center gap-2">
 					<Button
 						variant="outline"
 						size="sm"
-						className="px-3 py-1.5 border border-gray-200 rounded-md text-xs font-medium text-gray-400 cursor-not-allowed bg-gray-50"
+						className="px-3 py-1.5 rounded-md text-xs font-medium text-muted-foreground/50 cursor-not-allowed bg-muted"
 						disabled={!table.getCanPreviousPage()}
 						onClick={() => table.previousPage()}
 					>
@@ -414,7 +406,7 @@ export function UsersListingPage() {
 					<Button
 						variant="outline"
 						size="sm"
-						className="px-3 py-1.5 border border-gray-200 rounded-md text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+						className="px-3 py-1.5 rounded-md text-xs font-medium text-foreground hover:bg-muted transition-colors"
 						disabled={!table.getCanNextPage()}
 						onClick={() => table.nextPage()}
 					>
@@ -428,7 +420,7 @@ export function UsersListingPage() {
 	// Loading state
 	if (isLoading) {
 		return (
-			<div className="flex-1 flex flex-col min-w-0 bg-white h-full relative overflow-hidden">
+			<div className="flex-1 flex flex-col min-w-0 bg-background h-full relative overflow-hidden">
 				<PageHeader>
 					<div className="h-16 flex items-center justify-between px-6">
 						<div>
@@ -448,14 +440,14 @@ export function UsersListingPage() {
 	// Error state
 	if (error) {
 		return (
-			<div className="flex-1 flex flex-col min-w-0 bg-white h-full relative overflow-hidden">
+			<div className="flex-1 flex flex-col min-w-0 bg-background h-full relative overflow-hidden">
 				<PageHeader>
 					<div className="h-16 flex items-center justify-between px-6">
 						<div>
-							<h1 className="text-lg font-semibold text-gray-900 tracking-tight">
+							<h1 className="text-lg font-semibold text-foreground tracking-tight">
 								Users
 							</h1>
-							<p className="text-xs text-gray-500">
+							<p className="text-xs text-muted-foreground">
 								{intl.formatMessage({
 									id: 'users.subtitle',
 									defaultMessage: 'Manage users and their roles.',
@@ -466,7 +458,7 @@ export function UsersListingPage() {
 				</PageHeader>
 				<div className="flex-1 flex items-center justify-center">
 					<div className="text-center">
-						<p className="text-gray-500 mb-4">
+						<p className="text-muted-foreground mb-4">
 							{error.message || 'Failed to load users'}
 						</p>
 						<Button onClick={() => refetch()}>Retry</Button>
@@ -477,19 +469,17 @@ export function UsersListingPage() {
 	}
 
 	return (
-		<div className="flex-1 flex flex-col min-w-0 bg-white h-full relative overflow-hidden">
-			<style>{contentManagerStyles}</style>
-
+		<div className="flex-1 flex flex-col min-w-0 bg-background h-full relative overflow-hidden">
 			{/* Header */}
 			<PageHeader>
 				{/* Toolbar: Title & Actions */}
 				<div className="h-16 flex items-center justify-between px-6">
 					{/* Left: Title */}
 					<div>
-						<h1 className="text-lg font-semibold text-gray-900 tracking-tight">
+						<h1 className="text-lg font-semibold text-foreground tracking-tight">
 							Users
 						</h1>
-						<p className="text-xs text-gray-500">
+						<p className="text-xs text-muted-foreground">
 							{intl.formatMessage({
 								id: 'users.subtitle',
 								defaultMessage: 'Manage users and their roles.',
@@ -508,7 +498,7 @@ export function UsersListingPage() {
 			</PageHeader>
 
 			{/* Main Workspace */}
-			<div className="flex-1 flex flex-col overflow-hidden bg-gray-50">
+			<div className="flex-1 flex flex-col overflow-hidden bg-muted/50">
 				{/* Content Table */}
 				<div className="flex-1 overflow-hidden relative">
 					<div className="absolute inset-0 overflow-auto">

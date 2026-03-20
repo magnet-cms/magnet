@@ -1,5 +1,6 @@
 import {
 	type AuthMagnetProvider,
+	type CacheMagnetProvider,
 	type DatabaseMagnetProvider,
 	type EmailMagnetProvider,
 	type MagnetGlobalOptions,
@@ -36,6 +37,7 @@ function categorizeProviders(providers: MagnetProvider[]): {
 	email?: EmailMagnetProvider
 	vault?: VaultMagnetProvider
 	auth?: AuthMagnetProvider
+	cache?: CacheMagnetProvider
 	plugins: PluginMagnetProvider[]
 } {
 	let database: DatabaseMagnetProvider | undefined
@@ -43,6 +45,7 @@ function categorizeProviders(providers: MagnetProvider[]): {
 	let email: EmailMagnetProvider | undefined
 	let vault: VaultMagnetProvider | undefined
 	let auth: AuthMagnetProvider | undefined
+	let cache: CacheMagnetProvider | undefined
 	const plugins: PluginMagnetProvider[] = []
 
 	for (const provider of providers) {
@@ -62,13 +65,16 @@ function categorizeProviders(providers: MagnetProvider[]): {
 			case 'auth':
 				auth = provider
 				break
+			case 'cache':
+				cache = provider
+				break
 			case 'plugin':
 				plugins.push(provider)
 				break
 		}
 	}
 
-	return { database, storage, email, vault, auth, plugins }
+	return { database, storage, email, vault, auth, cache, plugins }
 }
 
 /**
@@ -157,6 +163,7 @@ export class MagnetModule {
 		const {
 			buildMagnetImports,
 			ApiKeysModule,
+			CacheModule,
 			ContentModule,
 			DocumentModule,
 			HistoryModule,
@@ -175,8 +182,10 @@ export class MagnetModule {
 				DBModule: DynamicModule
 				StorageModuleConfig: DynamicModule
 				VaultModuleConfig: DynamicModule
+				CacheModuleConfig: DynamicModule
 			}
 			ApiKeysModule: Type
+			CacheModule: Type
 			ContentModule: Type
 			DocumentModule: Type
 			HistoryModule: Type
@@ -190,6 +199,7 @@ export class MagnetModule {
 			imports: lazyImports,
 			StorageModuleConfig,
 			VaultModuleConfig,
+			CacheModuleConfig,
 		} = buildMagnetImports({
 			categorized,
 			globalOptions,
@@ -220,6 +230,7 @@ export class MagnetModule {
 			exports: [
 				MagnetModuleOptions,
 				ApiKeysModule,
+				CacheModuleConfig,
 				ContentModule,
 				DiscoveryModule,
 				DBModule,

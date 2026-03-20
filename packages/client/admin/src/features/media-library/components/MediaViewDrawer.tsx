@@ -136,7 +136,7 @@ export function MediaViewDrawer({
 					isExpanded ? 'sm:max-w-3xl' : 'sm:max-w-sm',
 				)}
 			>
-				<SheetHeader className="px-5 py-4 border-b border-gray-200 bg-white sticky top-0 z-10">
+				<SheetHeader className="px-5 py-4 border-b border-border bg-background sticky top-0 z-10">
 					<div className="flex items-start justify-between">
 						<div>
 							<SheetTitle className="text-base">
@@ -152,7 +152,7 @@ export function MediaViewDrawer({
 						<div className="flex items-center gap-2">
 							<button
 								type="button"
-								className="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
+								className="rounded-md bg-background text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
 								onClick={() => setIsExpanded(!isExpanded)}
 								title={
 									isExpanded
@@ -175,7 +175,7 @@ export function MediaViewDrawer({
 							<button
 								type="button"
 								onClick={() => onOpenChange(false)}
-								className="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
+								className="rounded-md bg-background text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
 							>
 								<X className="w-5 h-5" />
 							</button>
@@ -185,10 +185,10 @@ export function MediaViewDrawer({
 
 				<div className="flex-1 overflow-y-auto px-5 py-6 space-y-8">
 					{/* Preview */}
-					<div className="rounded-lg border border-gray-200 bg-gray-50 overflow-hidden">
+					<div className="rounded-lg border border-border bg-muted/50 overflow-hidden">
 						<div
 							className={cn(
-								'w-full relative flex items-center justify-center bg-gray-100',
+								'w-full relative flex items-center justify-center bg-muted',
 								isExpanded ? 'min-h-[60vh]' : 'aspect-video',
 							)}
 						>
@@ -202,7 +202,7 @@ export function MediaViewDrawer({
 									)}
 								/>
 							) : asset.type === 'video' ? (
-								<div className="w-full h-full bg-gray-800 flex items-center justify-center">
+								<div className="w-full h-full bg-foreground/90 flex items-center justify-center">
 									<div className="text-white opacity-50">
 										{intl.formatMessage({
 											id: 'media.viewDrawer.videoPreview',
@@ -262,15 +262,15 @@ export function MediaViewDrawer({
 								})()
 							)}
 						</div>
-						<div className="bg-white px-3 py-2 border-t border-gray-200 flex justify-between items-center">
-							<span className="text-xs font-mono text-gray-500">
+						<div className="bg-background px-3 py-2 border-t border-border flex justify-between items-center">
+							<span className="text-xs font-mono text-muted-foreground">
 								{asset.dimensions ||
 									`${asset.format.toUpperCase()} • ${asset.size}`}
 							</span>
 							<div className="flex gap-2">
 								<button
 									type="button"
-									className="p-1 text-gray-400 hover:text-gray-900 transition-colors"
+									className="p-1 text-muted-foreground hover:text-foreground transition-colors"
 									title={intl.formatMessage({
 										id: 'media.viewDrawer.crop',
 										defaultMessage: 'Crop',
@@ -280,7 +280,7 @@ export function MediaViewDrawer({
 								</button>
 								<button
 									type="button"
-									className="p-1 text-gray-400 hover:text-gray-900 transition-colors"
+									className="p-1 text-muted-foreground hover:text-foreground transition-colors"
 									title={intl.formatMessage({
 										id: 'media.viewDrawer.openOriginal',
 										defaultMessage: 'Open Original',
@@ -297,11 +297,11 @@ export function MediaViewDrawer({
 
 					{/* Quick Actions */}
 					<div>
-						<h3 className="text-xs font-semibold text-gray-900 uppercase tracking-wider mb-3 flex items-center gap-2">
+						<h3 className="text-xs font-semibold text-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
 							Actions
 						</h3>
 						<div className="grid grid-cols-2 gap-3">
-							<label className="flex items-center justify-center gap-2 w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-xs font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all cursor-pointer">
+							<label className="flex items-center justify-center gap-2 w-full px-3 py-2 bg-background border border-border rounded-lg text-xs font-medium text-muted-foreground hover:bg-muted/50 hover:border-border transition-all cursor-pointer">
 								<input
 									type="file"
 									className="hidden"
@@ -314,7 +314,7 @@ export function MediaViewDrawer({
 							<button
 								type="button"
 								onClick={handleDownload}
-								className="flex items-center justify-center gap-2 w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-xs font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all"
+								className="flex items-center justify-center gap-2 w-full px-3 py-2 bg-background border border-border rounded-lg text-xs font-medium text-muted-foreground hover:bg-muted/50 hover:border-border transition-all"
 							>
 								<Download className="w-3.5 h-3.5" />
 								{intl.formatMessage({
@@ -323,7 +323,7 @@ export function MediaViewDrawer({
 								})}
 							</button>
 						</div>
-						<p className="text-[10px] text-gray-400 mt-2 px-1">
+						<p className="text-[10px] text-muted-foreground mt-2 px-1">
 							Tip: Drag and drop a new file here to replace current version.
 						</p>
 					</div>
@@ -333,7 +333,7 @@ export function MediaViewDrawer({
 						<div>
 							<Label
 								htmlFor="filename"
-								className="text-xs font-medium text-gray-700 mb-1.5"
+								className="text-xs font-medium text-muted-foreground mb-1.5"
 							>
 								{intl.formatMessage({
 									id: 'media.viewDrawer.fileName',
@@ -346,10 +346,12 @@ export function MediaViewDrawer({
 									id="filename"
 									value={filename}
 									onChange={(e) => setFilename(e.target.value)}
-									className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-gray-900 sm:text-sm sm:leading-6 pl-3 pr-12"
+									className="block w-full rounded-md border-0 py-1.5 pl-3 pr-12 text-foreground shadow-sm ring-1 ring-inset ring-border placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring sm:text-sm sm:leading-6"
 								/>
 								<div className="absolute inset-y-0 right-0 flex items-center pr-3">
-									<span className="text-gray-400 text-xs">.{asset.format}</span>
+									<span className="text-muted-foreground text-xs">
+										.{asset.format}
+									</span>
 								</div>
 							</div>
 						</div>
@@ -357,7 +359,7 @@ export function MediaViewDrawer({
 						<div>
 							<Label
 								htmlFor="alt-text"
-								className="text-xs font-medium text-gray-700 mb-1.5"
+								className="text-xs font-medium text-muted-foreground mb-1.5"
 							>
 								{intl.formatMessage({
 									id: 'media.viewDrawer.altText',
@@ -369,7 +371,7 @@ export function MediaViewDrawer({
 								rows={2}
 								value={altText}
 								onChange={(e) => setAltText(e.target.value)}
-								className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-gray-900 sm:text-sm sm:leading-6 pl-3 resize-none"
+								className="block w-full resize-none rounded-md border-0 py-1.5 pl-3 text-foreground shadow-sm ring-1 ring-inset ring-border placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring sm:text-sm sm:leading-6"
 								placeholder={intl.formatMessage({
 									id: 'media.viewDrawer.altTextPlaceholder',
 									defaultMessage: 'Describe this image for accessibility',
@@ -379,16 +381,18 @@ export function MediaViewDrawer({
 
 						{/* Folder Context */}
 						<div>
-							<Label className="block text-xs font-medium text-gray-700 mb-1.5">
+							<Label className="block text-xs font-medium text-muted-foreground mb-1.5">
 								{intl.formatMessage({
 									id: 'media.viewDrawer.location',
 									defaultMessage: 'Location',
 								})}
 							</Label>
-							<div className="flex items-center justify-between p-2 bg-gray-50 border border-gray-200 rounded-md">
+							<div className="flex items-center justify-between p-2 bg-muted/50 border border-border rounded-md">
 								<div className="flex items-center gap-2 overflow-hidden">
-									<div className="w-4 h-4 text-gray-400 shrink-0">📁</div>
-									<span className="text-xs text-gray-600 truncate">
+									<div className="w-4 h-4 text-muted-foreground shrink-0">
+										📁
+									</div>
+									<span className="text-xs text-muted-foreground truncate">
 										{asset.location ||
 											intl.formatMessage({
 												id: 'media.viewDrawer.root',
@@ -408,13 +412,13 @@ export function MediaViewDrawer({
 								</button>
 							</div>
 							{showMoveSelect && folders && onMove && (
-								<div className="mt-2 p-2 bg-white border border-gray-200 rounded-md space-y-1">
+								<div className="mt-2 p-2 bg-background border border-border rounded-md space-y-1">
 									<button
 										type="button"
 										className={cn(
-											'w-full text-left text-xs px-2 py-1.5 rounded hover:bg-gray-100 transition-colors',
+											'w-full text-left text-xs px-2 py-1.5 rounded hover:bg-muted transition-colors',
 											!asset.location || asset.location === 'Root'
-												? 'bg-gray-100 font-medium'
+												? 'bg-muted font-medium'
 												: '',
 										)}
 										onClick={() => {
@@ -429,9 +433,9 @@ export function MediaViewDrawer({
 											type="button"
 											key={folder.id}
 											className={cn(
-												'w-full text-left text-xs px-2 py-1.5 rounded hover:bg-gray-100 transition-colors',
+												'w-full text-left text-xs px-2 py-1.5 rounded hover:bg-muted transition-colors',
 												asset.location === folder.path
-													? 'bg-gray-100 font-medium'
+													? 'bg-muted font-medium'
 													: '',
 											)}
 											onClick={() => {
@@ -446,7 +450,7 @@ export function MediaViewDrawer({
 							)}
 							<button
 								type="button"
-								className="flex items-center gap-1.5 mt-2 text-xs text-gray-500 hover:text-gray-900 transition-colors"
+								className="flex items-center gap-1.5 mt-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
 								onClick={() => setShowSubfolderInput(!showSubfolderInput)}
 							>
 								<span className="text-xs">+</span>
@@ -495,23 +499,23 @@ export function MediaViewDrawer({
 
 						{/* Info Grid */}
 						<div>
-							<h4 className="text-xs font-medium text-gray-900 mb-3 border-t border-gray-100 pt-4">
+							<h4 className="text-xs font-medium text-foreground mb-3 border-t border-border pt-4">
 								Information
 							</h4>
 							<dl className="grid grid-cols-2 gap-x-4 gap-y-4">
 								<div>
-									<dt className="text-[10px] text-gray-400 uppercase tracking-wide">
+									<dt className="text-[10px] text-muted-foreground uppercase tracking-wide">
 										File Size
 									</dt>
-									<dd className="text-xs font-medium text-gray-700 mt-0.5">
+									<dd className="mt-0.5 text-xs font-medium text-foreground">
 										{asset.size}
 									</dd>
 								</div>
 								<div>
-									<dt className="text-[10px] text-gray-400 uppercase tracking-wide">
+									<dt className="text-[10px] text-muted-foreground uppercase tracking-wide">
 										Created
 									</dt>
-									<dd className="text-xs font-medium text-gray-700 mt-0.5">
+									<dd className="mt-0.5 text-xs font-medium text-foreground">
 										{asset.createdAt ||
 											intl.formatMessage({
 												id: 'media.viewDrawer.unknown',
@@ -520,11 +524,11 @@ export function MediaViewDrawer({
 									</dd>
 								</div>
 								<div>
-									<dt className="text-[10px] text-gray-400 uppercase tracking-wide">
+									<dt className="text-[10px] text-muted-foreground uppercase tracking-wide">
 										Uploaded By
 									</dt>
-									<dd className="text-xs font-medium text-gray-700 mt-0.5 flex items-center gap-1.5">
-										<div className="w-4 h-4 rounded-full bg-gray-200 flex items-center justify-center text-[8px]">
+									<dd className="mt-0.5 flex items-center gap-1.5 text-xs font-medium text-foreground">
+										<div className="w-4 h-4 rounded-full bg-muted flex items-center justify-center text-[8px]">
 											{asset.uploadedBy?.[0]?.toUpperCase() || 'U'}
 										</div>
 										{asset.uploadedBy ||
@@ -535,10 +539,10 @@ export function MediaViewDrawer({
 									</dd>
 								</div>
 								<div>
-									<dt className="text-[10px] text-gray-400 uppercase tracking-wide">
+									<dt className="text-[10px] text-muted-foreground uppercase tracking-wide">
 										Extension
 									</dt>
-									<dd className="text-xs font-medium text-gray-700 mt-0.5 uppercase">
+									<dd className="mt-0.5 text-xs font-medium uppercase text-foreground">
 										{asset.format}
 									</dd>
 								</div>
@@ -548,12 +552,12 @@ export function MediaViewDrawer({
 				</div>
 
 				{/* Footer */}
-				<div className="shrink-0 border-t border-gray-200 p-4 bg-gray-50 flex justify-between items-center z-10">
+				<div className="shrink-0 border-t border-border p-4 bg-muted/50 flex justify-between items-center z-10">
 					<Button
 						type="button"
 						variant="outline"
 						onClick={handleDelete}
-						className="text-xs font-medium text-red-600 hover:text-red-700 bg-white border border-red-200 hover:bg-red-50 px-3 py-2"
+						className="border border-destructive/30 bg-background px-3 py-2 text-xs font-medium text-destructive hover:bg-destructive/10 hover:text-destructive"
 					>
 						{intl.formatMessage({
 							id: 'media.viewDrawer.deleteAsset',
@@ -563,7 +567,7 @@ export function MediaViewDrawer({
 					<Button
 						type="button"
 						onClick={handleSave}
-						className="text-xs font-medium text-white bg-gray-900 hover:bg-gray-800 px-4 py-2"
+						className="bg-primary px-4 py-2 text-xs font-medium text-primary-foreground hover:bg-primary/90"
 					>
 						{intl.formatMessage({
 							id: 'common.actions.saveChanges',

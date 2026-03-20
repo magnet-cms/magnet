@@ -1,5 +1,6 @@
 import type { Type } from '@nestjs/common'
 import type { AuthConfig } from './auth.types'
+import type { CacheAdapter } from './cache.types'
 import type {
 	AdminConfig,
 	InternationalizationOptions,
@@ -157,6 +158,25 @@ export interface PluginMagnetProvider extends BaseMagnetProvider {
 }
 
 /**
+ * Cache adapter provider.
+ * Returned by cache adapter `.forRoot()` methods.
+ *
+ * When not provided, CacheModule defaults to the built-in MemoryCacheAdapter.
+ *
+ * @example
+ * ```typescript
+ * MagnetModule.forRoot([
+ *   RedisCacheAdapter.forRoot(), // or omit for in-memory default
+ * ])
+ * ```
+ */
+export interface CacheMagnetProvider extends BaseMagnetProvider {
+	type: 'cache'
+	/** The cache adapter instance */
+	adapter: CacheAdapter
+}
+
+/**
  * Discriminated union of all provider types.
  * Each adapter/plugin `.forRoot()` returns one of these variants.
  *
@@ -176,3 +196,4 @@ export type MagnetProvider =
 	| VaultMagnetProvider
 	| AuthMagnetProvider
 	| PluginMagnetProvider
+	| CacheMagnetProvider

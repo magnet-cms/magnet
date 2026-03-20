@@ -5,7 +5,11 @@
  * has been called. Modules that use DatabaseModule.forFeature() must be
  * imported here (not in magnet.module.ts) to avoid load-order errors.
  */
-import type { PluginConfig, RBACModuleOptions } from '@magnet-cms/common'
+import type {
+	CacheAdapter,
+	PluginConfig,
+	RBACModuleOptions,
+} from '@magnet-cms/common'
 import type {
 	EmailAdapter,
 	StorageAdapter,
@@ -22,6 +26,7 @@ import {
 import { AdminModule } from './modules/admin/admin.module'
 import { ApiKeysModule } from './modules/api-keys/api-keys.module'
 import { AuthModule } from './modules/auth/auth.module'
+import { CacheModule } from './modules/cache/cache.module'
 import { ContentModule } from './modules/content/content.module'
 import { DocumentModule } from './modules/document/document.module'
 import { EmailModule } from './modules/email/email.module'
@@ -53,6 +58,7 @@ export interface BuildImportsParams {
 			adapter?: EmailAdapter | null
 			defaults?: { from?: string; replyTo?: string }
 		}
+		cache?: { adapter?: CacheAdapter | null }
 	}
 	globalOptions: { rbac?: RBACModuleOptions } | undefined
 	adminConfig: AdminServeOptions
@@ -63,12 +69,16 @@ export function buildMagnetImports(params: BuildImportsParams): {
 	DBModule: DynamicModule
 	StorageModuleConfig: DynamicModule
 	VaultModuleConfig: DynamicModule
+	CacheModuleConfig: DynamicModule
 } {
 	const { DBModule, categorized, globalOptions, adminConfig } = params
 
 	const StorageModuleConfig = StorageModule.forRoot(
 		categorized.storage?.adapter as StorageAdapter | null | undefined,
 		categorized.storage?.config as Record<string, unknown> | undefined,
+	)
+	const CacheModuleConfig = CacheModule.forRoot(
+		(categorized.cache?.adapter as CacheAdapter | null | undefined) ?? null,
 	)
 	const VaultModuleConfig = VaultModule.forRoot(
 		categorized.vault?.adapter as VaultAdapter | null | undefined,
@@ -91,6 +101,7 @@ export function buildMagnetImports(params: BuildImportsParams): {
 		AdminModule,
 		ApiKeysModule,
 		AuthModuleConfig,
+		CacheModuleConfig,
 		ContentModule,
 		DocumentModule,
 		EmailModule.forRoot(
@@ -122,12 +133,14 @@ export function buildMagnetImports(params: BuildImportsParams): {
 		DBModule: params.DBModule,
 		StorageModuleConfig,
 		VaultModuleConfig,
+		CacheModuleConfig,
 	}
 }
 
 // Re-export module classes for MagnetModule's exports array
 export {
 	ApiKeysModule,
+	CacheModule,
 	ContentModule,
 	DocumentModule,
 	HistoryModule,

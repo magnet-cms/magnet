@@ -17,10 +17,10 @@ export function RoleHeader({
 	return (
 		<div className="h-16 flex items-center justify-between px-6">
 			<div>
-				<h1 className="text-lg font-semibold text-gray-900 tracking-tight">
+				<h1 className="text-lg font-semibold text-foreground tracking-tight">
 					{roleName}
 				</h1>
-				<p className="text-xs text-gray-500">{roleDescription}</p>
+				<p className="text-xs text-muted-foreground">{roleDescription}</p>
 			</div>
 
 			<div className="flex items-center gap-3">

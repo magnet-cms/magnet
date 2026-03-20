@@ -57,14 +57,14 @@ export function PermissionMatrix({
 	return (
 		<div className="flex-1 overflow-y-auto p-6">
 			<div className="w-full space-y-6">
-				<div className="relative group">
-					<Search className="absolute left-3 top-2.5 text-gray-400 group-focus-within:text-gray-600 w-4 h-4" />
+				<div className="group relative">
+					<Search className="absolute left-3 top-2.5 size-4 text-muted-foreground group-focus-within:text-muted-foreground" />
 					<Input
 						type="text"
 						placeholder="Search for a content type or permission..."
 						value={searchQuery}
 						onChange={(e) => setSearchQuery(e.target.value)}
-						className="w-full bg-white pl-10 pr-4 py-2 text-sm border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 transition-all placeholder:text-gray-400"
+						className="w-full rounded-lg border border-input bg-background py-2 pl-10 pr-4 text-sm shadow-sm transition-all placeholder:text-muted-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/20"
 					/>
 				</div>
 

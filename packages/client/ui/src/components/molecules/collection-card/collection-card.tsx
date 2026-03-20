@@ -80,8 +80,8 @@ export function CollectionCard({
 					className={cn(
 						'rounded-full border px-2 py-1 text-[10px] font-medium',
 						isSingle
-							? 'border-gray-900 bg-gray-900 text-white'
-							: 'border-gray-100 bg-gray-50 text-gray-600',
+							? 'border-primary bg-primary text-primary-foreground'
+							: 'border-border bg-muted text-muted-foreground',
 					)}
 				>
 					{isSingle ? 'Single' : `${itemCount} items`}

@@ -40,8 +40,8 @@ export function FilterPills<T extends string = string>({
 					className={cn(
 						'h-7 shrink-0 rounded-full px-3.5 text-xs font-medium',
 						value === option.id
-							? 'bg-zinc-900 text-white hover:bg-zinc-800'
-							: 'border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900',
+							? ''
+							: 'border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground',
 					)}
 					onClick={() => onChange(option.id as T)}
 				>
@@ -54,7 +54,7 @@ export function FilterPills<T extends string = string>({
 					variant="outline"
 					size="sm"
 					type="button"
-					className="h-7 gap-1 rounded-full border-zinc-200 bg-white px-3.5 text-xs font-medium text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900"
+					className="h-7 gap-1 rounded-full border-border bg-background px-3.5 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
 					onClick={onFiltersClick}
 				>
 					<SlidersHorizontal className="size-3" />

@@ -90,7 +90,7 @@ export function TimelineItem({
 		<div
 			className={cn(
 				'flex gap-3 transition-colors',
-				isCompact ? 'p-4 hover:bg-gray-50' : 'p-3 hover:bg-accent/50',
+				isCompact ? 'p-4 hover:bg-muted/60' : 'p-3 hover:bg-accent/50',
 				isUnread && !isCompact && 'bg-accent/30',
 				className,
 			)}
@@ -147,7 +147,7 @@ export function TimelineItem({
 				<p
 					className={cn(
 						isCompact
-							? 'text-xs leading-snug text-gray-900'
+							? 'text-xs leading-snug text-foreground'
 							: 'line-clamp-2 text-xs text-muted-foreground',
 					)}
 				>
@@ -156,7 +156,7 @@ export function TimelineItem({
 				<span
 					className={cn(
 						isCompact
-							? 'mt-1 text-[10px] text-gray-400'
+							? 'mt-1 text-[10px] text-muted-foreground/80'
 							: 'text-xs text-muted-foreground',
 					)}
 				>

@@ -15,18 +15,18 @@ interface PermissionItemProps {
 
 export function PermissionItem({ permission, onToggle }: PermissionItemProps) {
 	return (
-		<label className="flex items-center gap-3 p-2 rounded-md hover:bg-gray-50 cursor-pointer group border border-transparent hover:border-gray-100 transition-all">
+		<label className="group flex cursor-pointer items-center gap-3 rounded-md border border-transparent p-2 transition-all hover:border-border hover:bg-muted/50">
 			<div className="relative flex items-center justify-center">
 				<input
 					type="checkbox"
 					checked={permission.checked ?? false}
 					onChange={() => onToggle(permission.id)}
-					className="peer appearance-none h-4 w-4 rounded border border-gray-300 bg-white checked:bg-gray-900 checked:border-gray-900 focus:outline-none transition-all"
+					className="peer h-4 w-4 appearance-none rounded border border-input bg-background transition-all checked:border-primary checked:bg-primary focus-visible:outline-none"
 				/>
-				<div className="absolute pointer-events-none rounded w-4 h-4 flex items-center justify-center transition-all peer-checked:bg-gray-900 peer-checked:border-gray-900">
+				<div className="pointer-events-none absolute flex size-4 items-center justify-center rounded transition-all peer-checked:bg-primary peer-checked:border-primary">
 					<Check
 						className={cn(
-							'w-3 h-3 text-white transition-opacity',
+							'size-3 text-primary-foreground transition-opacity',
 							permission.checked ? 'opacity-100' : 'opacity-0',
 						)}
 						strokeWidth={3}
@@ -34,10 +34,10 @@ export function PermissionItem({ permission, onToggle }: PermissionItemProps) {
 				</div>
 			</div>
 			<div>
-				<p className="text-sm text-gray-700 group-hover:text-gray-900 font-medium">
-					{permission.name}
+				<p className="text-sm font-medium text-foreground">{permission.name}</p>
+				<p className="text-[10px] text-muted-foreground/80">
+					{permission.description}
 				</p>
-				<p className="text-[10px] text-gray-400">{permission.description}</p>
 			</div>
 		</label>
 	)

@@ -16,22 +16,22 @@ export function FolderGrid({ folders, onFolderClick }: FolderGridProps) {
 	const intl = useAppIntl()
 	return (
 		<div className="mb-6">
-			<h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+			<h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
 				{intl.formatMessage({ id: 'media.folders', defaultMessage: 'Folders' })}
 			</h3>
-			<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+			<div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
 				{folders.map((folder) => (
 					<button
 						type="button"
 						key={folder.id}
 						onClick={() => onFolderClick(folder.id)}
-						className="group flex flex-col items-center p-4 bg-card border border-border rounded-xl hover:border-muted-foreground/30 hover:shadow-sm transition-all text-center cursor-pointer"
+						className="group flex cursor-pointer flex-col items-center rounded-xl border border-border bg-card p-4 text-center transition-all hover:border-muted-foreground/30 hover:shadow-sm"
 					>
-						<FolderIcon className="w-10 h-10 text-gray-400 group-hover:text-yellow-500 transition-colors mb-2" />
-						<span className="text-sm font-medium text-gray-900 truncate w-full">
+						<FolderIcon className="mb-2 size-10 text-muted-foreground transition-colors group-hover:text-yellow-500" />
+						<span className="w-full truncate text-sm font-medium text-foreground">
 							{folder.name}
 						</span>
-						<span className="text-xs text-gray-500">
+						<span className="text-xs text-muted-foreground">
 							{intl.formatMessage(
 								{ id: 'media.itemCount', defaultMessage: '{count} items' },
 								{ count: folder.itemCount },

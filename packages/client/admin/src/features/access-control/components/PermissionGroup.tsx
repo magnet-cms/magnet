@@ -30,7 +30,7 @@ export function PermissionGroup({
 }: PermissionGroupProps) {
 	return (
 		<div>
-			<h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 pl-1">
+			<h3 className="mb-3 pl-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
 				{title}
 			</h3>
 			<div className="space-y-3">

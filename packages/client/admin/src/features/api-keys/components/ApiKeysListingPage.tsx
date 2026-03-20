@@ -31,16 +31,6 @@ import { useAppIntl } from '~/i18n'
 
 import { CreateApiKeyDrawer } from './CreateApiKeyDrawer'
 
-// Styles for content-manager variant
-const contentManagerStyles = `
-  .table-row-hover:hover td {
-    background-color: #F9FAFB;
-  }
-  .table-row-hover.group:hover td {
-    background-color: #F9FAFB;
-  }
-`
-
 interface ApiKey {
 	id: string
 	name: string
@@ -54,19 +44,19 @@ interface ApiKey {
 const statusColors: Record<string, { bg: string; text: string; ring: string }> =
 	{
 		Active: {
-			bg: 'bg-green-50',
-			text: 'text-green-700',
-			ring: 'ring-green-600/20',
+			bg: 'bg-green-50 dark:bg-green-950/40',
+			text: 'text-green-700 dark:text-green-400',
+			ring: 'ring-green-600/20 dark:ring-green-500/30',
 		},
 		Revoked: {
-			bg: 'bg-red-50',
-			text: 'text-red-700',
-			ring: 'ring-red-600/20',
+			bg: 'bg-red-50 dark:bg-red-950/40',
+			text: 'text-red-700 dark:text-red-400',
+			ring: 'ring-red-600/20 dark:ring-red-500/30',
 		},
 		Expired: {
-			bg: 'bg-gray-100',
-			text: 'text-gray-600',
-			ring: 'ring-gray-500/10',
+			bg: 'bg-muted',
+			text: 'text-muted-foreground',
+			ring: 'ring-border',
 		},
 	}
 
@@ -233,7 +223,7 @@ export function ApiKeysListingPage() {
 			header: 'Name',
 			accessorKey: 'name',
 			format: (value) => (
-				<div className="text-sm font-medium text-gray-900">
+				<div className="text-sm font-medium text-foreground">
 					{value as string}
 				</div>
 			),
@@ -245,7 +235,7 @@ export function ApiKeysListingPage() {
 				const maskedKey = maskApiKey(row.original.key)
 				return (
 					<div className="flex items-center gap-2">
-						<code className="text-xs font-mono text-gray-600 bg-gray-50 px-2 py-1 rounded">
+						<code className="text-xs font-mono text-muted-foreground bg-muted px-2 py-1 rounded">
 							{maskedKey}
 						</code>
 						<Button
@@ -267,9 +257,9 @@ export function ApiKeysListingPage() {
 			cell: (row) => {
 				const status = row.original.status
 				const colors = statusColors[status] ?? {
-					bg: 'bg-gray-100',
-					text: 'text-gray-600',
-					ring: 'ring-gray-500/10',
+					bg: 'bg-muted',
+					text: 'text-muted-foreground',
+					ring: 'ring-border',
 				}
 				return (
 					<span
@@ -285,7 +275,7 @@ export function ApiKeysListingPage() {
 			header: 'Created',
 			accessorKey: 'createdAt',
 			format: (value) => (
-				<span className="text-sm text-gray-500">{value as string}</span>
+				<span className="text-sm text-muted-foreground">{value as string}</span>
 			),
 		},
 		{
@@ -293,7 +283,7 @@ export function ApiKeysListingPage() {
 			header: 'Last Used',
 			accessorKey: 'lastUsed',
 			format: (value) => (
-				<span className="text-sm text-gray-500">{value as string}</span>
+				<span className="text-sm text-muted-foreground">{value as string}</span>
 			),
 		},
 		{
@@ -302,7 +292,9 @@ export function ApiKeysListingPage() {
 			cell: (row) => {
 				const expiresAt = row.original.expiresAt
 				return (
-					<span className="text-sm text-gray-500">{expiresAt || 'Never'}</span>
+					<span className="text-sm text-muted-foreground">
+						{expiresAt || 'Never'}
+					</span>
 				)
 			},
 		},
@@ -319,11 +311,11 @@ export function ApiKeysListingPage() {
 
 	const renderToolbar = () => {
 		return (
-			<div className="px-6 py-4 flex flex-col sm:flex-row gap-3 items-center justify-between flex-none bg-white border-b border-gray-200">
+			<div className="px-6 py-4 flex flex-col sm:flex-row gap-3 items-center justify-between flex-none border-b border-border bg-background">
 				<div className="relative w-full sm:w-80">
 					<div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
 						<svg
-							className="text-gray-400"
+							className="text-muted-foreground"
 							width="16"
 							height="16"
 							viewBox="0 0 16 16"
@@ -349,7 +341,7 @@ export function ApiKeysListingPage() {
 					</div>
 					<Input
 						type="text"
-						className="pl-9 pr-3 py-1.5 border border-gray-200 rounded-lg text-sm bg-gray-50 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-1 focus:ring-gray-900 focus:border-gray-900 transition-all shadow-sm"
+						className="pl-9 pr-3 py-1.5 border border-input rounded-lg text-sm bg-muted/50 placeholder:text-muted-foreground focus-visible:outline-none focus-visible:bg-background focus-visible:ring-1 focus-visible:ring-ring transition-all shadow-sm"
 						placeholder="Search API keys..."
 						value={searchQuery}
 						onChange={(e) => setSearchQuery(e.target.value)}
@@ -358,7 +350,7 @@ export function ApiKeysListingPage() {
 
 				<div className="flex items-center gap-3 w-full sm:w-auto">
 					<Select value={statusFilter} onValueChange={setStatusFilter}>
-						<SelectTrigger className="appearance-none pl-3 pr-8 py-1.5 border border-gray-200 rounded-lg text-sm bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-gray-900 focus:border-gray-900 shadow-sm cursor-pointer min-w-[120px]">
+						<SelectTrigger className="appearance-none pl-3 pr-8 py-1.5 border border-input rounded-lg text-sm bg-background text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring shadow-sm cursor-pointer min-w-[120px]">
 							<SelectValue />
 						</SelectTrigger>
 						<SelectContent>
@@ -369,11 +361,11 @@ export function ApiKeysListingPage() {
 						</SelectContent>
 					</Select>
 
-					<div className="flex items-center border border-gray-200 rounded-lg p-0.5 bg-gray-50">
+					<div className="flex items-center border border-border rounded-lg p-0.5 bg-muted/50">
 						<Button
 							variant="ghost"
 							size="sm"
-							className="px-2 py-1 text-xs font-medium text-gray-600 hover:text-gray-900"
+							className="px-2 py-1 text-xs font-medium text-muted-foreground hover:text-foreground"
 							onClick={() => {
 								setSearchQuery('')
 								setStatusFilter('All Status')
@@ -394,17 +386,19 @@ export function ApiKeysListingPage() {
 		const endRow = Math.min((pageIndex + 1) * pageSize, totalRows)
 
 		return (
-			<div className="flex-none px-6 py-4 border-t border-gray-200 bg-white flex items-center justify-between">
-				<div className="text-xs text-gray-500">
-					Showing <span className="font-medium text-gray-900">{startRow}</span>{' '}
-					to <span className="font-medium text-gray-900">{endRow}</span> of{' '}
-					<span className="font-medium text-gray-900">{totalRows}</span> results
+			<div className="flex-none px-6 py-4 border-t border-border bg-background flex items-center justify-between">
+				<div className="text-xs text-muted-foreground">
+					Showing{' '}
+					<span className="font-medium text-foreground">{startRow}</span> to{' '}
+					<span className="font-medium text-foreground">{endRow}</span> of{' '}
+					<span className="font-medium text-foreground">{totalRows}</span>{' '}
+					results
 				</div>
 				<div className="flex items-center gap-2">
 					<Button
 						variant="outline"
 						size="sm"
-						className="px-3 py-1.5 border border-gray-200 rounded-md text-xs font-medium text-gray-400 cursor-not-allowed bg-gray-50"
+						className="px-3 py-1.5 rounded-md text-xs font-medium text-muted-foreground/50 cursor-not-allowed bg-muted"
 						disabled={!table.getCanPreviousPage()}
 						onClick={() => table.previousPage()}
 					>
@@ -413,7 +407,7 @@ export function ApiKeysListingPage() {
 					<Button
 						variant="outline"
 						size="sm"
-						className="px-3 py-1.5 border border-gray-200 rounded-md text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+						className="px-3 py-1.5 rounded-md text-xs font-medium text-foreground hover:bg-muted transition-colors"
 						disabled={!table.getCanNextPage()}
 						onClick={() => table.nextPage()}
 					>
@@ -427,7 +421,7 @@ export function ApiKeysListingPage() {
 	// Loading state
 	if (isLoading) {
 		return (
-			<div className="flex-1 flex flex-col min-w-0 bg-white h-full relative overflow-hidden">
+			<div className="flex-1 flex flex-col min-w-0 bg-background h-full relative overflow-hidden">
 				<PageHeader>
 					<div className="h-16 flex items-center justify-between px-6">
 						<div>
@@ -447,14 +441,14 @@ export function ApiKeysListingPage() {
 	// Error state
 	if (error) {
 		return (
-			<div className="flex-1 flex flex-col min-w-0 bg-white h-full relative overflow-hidden">
+			<div className="flex-1 flex flex-col min-w-0 bg-background h-full relative overflow-hidden">
 				<PageHeader>
 					<div className="h-16 flex items-center justify-between px-6">
 						<div>
-							<h1 className="text-lg font-semibold text-gray-900 tracking-tight">
+							<h1 className="text-lg font-semibold text-foreground tracking-tight">
 								API Keys
 							</h1>
-							<p className="text-xs text-gray-500">
+							<p className="text-xs text-muted-foreground">
 								Manage API keys for accessing your application.
 							</p>
 						</div>
@@ -462,7 +456,7 @@ export function ApiKeysListingPage() {
 				</PageHeader>
 				<div className="flex-1 flex items-center justify-center">
 					<div className="text-center">
-						<p className="text-gray-500 mb-4">
+						<p className="text-muted-foreground mb-4">
 							{error.message || 'Failed to load API keys'}
 						</p>
 						<Button onClick={() => refetch()}>Retry</Button>
@@ -473,21 +467,19 @@ export function ApiKeysListingPage() {
 	}
 
 	return (
-		<div className="flex-1 flex flex-col min-w-0 bg-white h-full relative overflow-hidden">
-			<style>{contentManagerStyles}</style>
-
+		<div className="flex-1 flex flex-col min-w-0 bg-background h-full relative overflow-hidden">
 			{/* Newly created key notification */}
 			{newlyCreatedKey && (
-				<div className="bg-amber-50 border-b border-amber-200 px-6 py-3">
+				<div className="border-b border-amber-200 bg-amber-50 px-6 py-3 dark:border-amber-800 dark:bg-amber-950/40">
 					<div className="flex items-center justify-between">
 						<div>
-							<p className="text-sm font-medium text-amber-800">
+							<p className="text-sm font-medium text-amber-800 dark:text-amber-200">
 								New API Key Created
 							</p>
-							<code className="text-xs font-mono text-amber-700 bg-amber-100 px-2 py-1 rounded mt-1 inline-block">
+							<code className="mt-1 inline-block rounded bg-amber-100 px-2 py-1 font-mono text-xs text-amber-700 dark:bg-amber-900/50 dark:text-amber-300">
 								{newlyCreatedKey}
 							</code>
-							<p className="text-xs text-amber-600 mt-1">
+							<p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
 								Copy this key now - it won&apos;t be shown again!
 							</p>
 						</div>
@@ -521,10 +513,10 @@ export function ApiKeysListingPage() {
 				<div className="h-16 flex items-center justify-between px-6">
 					{/* Left: Title */}
 					<div>
-						<h1 className="text-lg font-semibold text-gray-900 tracking-tight">
+						<h1 className="text-lg font-semibold text-foreground tracking-tight">
 							API Keys
 						</h1>
-						<p className="text-xs text-gray-500">
+						<p className="text-xs text-muted-foreground">
 							Manage API keys for accessing your application. {apiKeys.length}{' '}
 							key(s) total.
 						</p>
@@ -541,7 +533,7 @@ export function ApiKeysListingPage() {
 			</PageHeader>
 
 			{/* Main Workspace */}
-			<div className="flex-1 flex flex-col overflow-hidden bg-gray-50">
+			<div className="flex-1 flex flex-col overflow-hidden bg-muted/50">
 				{/* Content Table */}
 				<div className="flex-1 overflow-hidden relative">
 					<div className="absolute inset-0 overflow-auto">

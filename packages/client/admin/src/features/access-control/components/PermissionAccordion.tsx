@@ -38,28 +38,28 @@ export function PermissionAccordion({
 	const allChecked = group.permissions.every((p) => p.checked)
 
 	return (
-		<div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+		<div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
 			<Accordion
 				type="single"
 				collapsible
 				defaultValue={group.isOpen ? group.id : undefined}
 			>
 				<AccordionItem value={group.id} className="border-0">
-					<AccordionTrigger className="px-4 py-3 bg-gray-50/50 hover:bg-gray-50 border-b border-gray-100 hover:no-underline">
-						<div className="flex items-center justify-between w-full pr-4">
+					<AccordionTrigger className="border-b border-border bg-muted/50 px-4 py-3 hover:bg-muted hover:no-underline">
+						<div className="flex w-full items-center justify-between pr-4">
 							<div className="flex items-center gap-3">
-								<span className="text-sm font-medium text-gray-900">
+								<span className="text-sm font-medium text-foreground">
 									{group.name}
 								</span>
 								{group.apiId && (
-									<span className="text-[10px] text-gray-400 font-mono bg-gray-100 px-1.5 py-0.5 rounded border border-gray-200">
+									<span className="rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
 										{group.apiId}
 									</span>
 								)}
 							</div>
 							<div className="flex items-center gap-4">
 								<label
-									className="flex items-center gap-2 cursor-pointer group"
+									className="group flex cursor-pointer items-center gap-2"
 									onClick={(e) => e.stopPropagation()}
 									onKeyDown={(e) => e.stopPropagation()}
 								>
@@ -68,19 +68,19 @@ export function PermissionAccordion({
 											type="checkbox"
 											checked={allChecked}
 											onChange={() => onToggleSelectAll(group.id)}
-											className="peer appearance-none h-4 w-4 rounded border border-gray-300 bg-white checked:bg-gray-900 checked:border-gray-900 focus:outline-none transition-all"
+											className="peer h-4 w-4 appearance-none rounded border border-input bg-background transition-all checked:border-primary checked:bg-primary focus-visible:outline-none"
 										/>
-										<div className="absolute pointer-events-none rounded w-4 h-4 flex items-center justify-center transition-all peer-checked:bg-gray-900 peer-checked:border-gray-900">
+										<div className="pointer-events-none absolute flex size-4 items-center justify-center rounded transition-all peer-checked:bg-primary peer-checked:border-primary">
 											<Check
 												className={cn(
-													'w-3 h-3 text-white transition-opacity',
+													'size-3 text-primary-foreground transition-opacity',
 													allChecked ? 'opacity-100' : 'opacity-0',
 												)}
 												strokeWidth={3}
 											/>
 										</div>
 									</div>
-									<span className="text-xs text-gray-500 group-hover:text-gray-700 select-none">
+									<span className="select-none text-xs text-muted-foreground group-hover:text-foreground">
 										Select All
 									</span>
 								</label>
@@ -88,7 +88,7 @@ export function PermissionAccordion({
 						</div>
 					</AccordionTrigger>
 					<AccordionContent>
-						<div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 bg-white">
+						<div className="grid grid-cols-1 gap-4 bg-background p-4 sm:grid-cols-2 lg:grid-cols-3">
 							{group.permissions.map((permission) => (
 								<PermissionItem
 									key={permission.id}

@@ -17,15 +17,6 @@ import { Search } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { ALL_PROJECTS, useProjectFilter } from '../hooks/use-project-filter'
 
-const contentManagerStyles = `
-  .table-row-hover:hover td {
-    background-color: #F9FAFB;
-  }
-  .table-row-hover.group:hover td {
-    background-color: #F9FAFB;
-  }
-`
-
 interface SentryIssue {
 	id: string
 	shortId: string
@@ -64,10 +55,10 @@ const columns: DataTableColumn<SentryIssue>[] = [
 		header: 'Title',
 		cell: (row) => (
 			<div>
-				<p className="text-sm font-medium text-gray-900">
+				<p className="text-sm font-medium text-foreground">
 					{row.original.title}
 				</p>
-				<p className="text-xs text-gray-500 font-mono">
+				<p className="text-xs text-muted-foreground font-mono">
 					{row.original.shortId}
 				</p>
 			</div>
@@ -87,7 +78,7 @@ const columns: DataTableColumn<SentryIssue>[] = [
 		header: 'Events',
 		accessorKey: 'count',
 		format: (value) => (
-			<span className="text-sm text-gray-600">{value as string}</span>
+			<span className="text-sm text-muted-foreground">{value as string}</span>
 		),
 	},
 	{
@@ -95,7 +86,7 @@ const columns: DataTableColumn<SentryIssue>[] = [
 		header: 'Last Seen',
 		accessorKey: 'lastSeen',
 		format: (value) => (
-			<span className="text-sm text-gray-500">
+			<span className="text-sm text-muted-foreground">
 				{formatRelativeTime(value as string)}
 			</span>
 		),
@@ -155,7 +146,7 @@ const SentryIssues = () => {
 		) : null
 
 	const renderToolbar = () => (
-		<div className="px-6 py-4 flex flex-col sm:flex-row gap-3 items-center justify-between flex-none bg-white border-b border-gray-200">
+		<div className="px-6 py-4 flex flex-col sm:flex-row gap-3 items-center justify-between flex-none border-b border-border bg-background">
 			<div className="relative w-full sm:w-80">
 				<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
 				<Input
@@ -178,11 +169,13 @@ const SentryIssues = () => {
 		const endRow = Math.min((pageIndex + 1) * pageSize, totalRows)
 
 		return (
-			<div className="flex-none px-6 py-4 border-t border-gray-200 bg-white flex items-center justify-between">
-				<div className="text-xs text-gray-500">
-					Showing <span className="font-medium text-gray-900">{startRow}</span>{' '}
-					to <span className="font-medium text-gray-900">{endRow}</span> of{' '}
-					<span className="font-medium text-gray-900">{totalRows}</span> results
+			<div className="flex-none px-6 py-4 border-t border-border bg-background flex items-center justify-between">
+				<div className="text-xs text-muted-foreground">
+					Showing{' '}
+					<span className="font-medium text-foreground">{startRow}</span> to{' '}
+					<span className="font-medium text-foreground">{endRow}</span> of{' '}
+					<span className="font-medium text-foreground">{totalRows}</span>{' '}
+					results
 				</div>
 				<div className="flex items-center gap-2">
 					<Button
@@ -208,7 +201,7 @@ const SentryIssues = () => {
 
 	if (loading || dataLoading) {
 		return (
-			<div className="flex-1 flex flex-col min-w-0 bg-white h-full relative overflow-hidden">
+			<div className="flex-1 flex flex-col min-w-0 bg-background h-full relative overflow-hidden">
 				<PageHeader
 					title="Sentry Issues"
 					actions={projectSelector ?? undefined}
@@ -221,14 +214,13 @@ const SentryIssues = () => {
 	}
 
 	return (
-		<div className="flex-1 flex flex-col min-w-0 bg-white h-full relative overflow-hidden">
-			<style>{contentManagerStyles}</style>
+		<div className="flex-1 flex flex-col min-w-0 bg-background h-full relative overflow-hidden">
 			<PageHeader
 				title="Sentry Issues"
 				description={`${issues.length} issue(s) loaded.`}
 				actions={projectSelector ?? undefined}
 			/>
-			<div className="flex-1 flex flex-col overflow-hidden bg-gray-50">
+			<div className="flex-1 flex flex-col overflow-hidden bg-muted/50">
 				<div className="flex-1 overflow-hidden relative">
 					<div className="absolute inset-0 overflow-auto">
 						<DataTable

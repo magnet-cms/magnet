@@ -143,28 +143,30 @@ export function UploadAssetsDrawer({
 						onDragLeave={handleDragLeave}
 						onDrop={handleDrop}
 						className={cn(
-							'border-2 border-dashed rounded-lg p-8 text-center transition-colors',
+							'rounded-lg border-2 border-dashed p-8 text-center transition-colors',
 							isDragging
-								? 'border-gray-900 bg-gray-50'
-								: 'border-gray-300 bg-gray-50/50 hover:border-gray-400 hover:bg-gray-50',
+								? 'border-primary bg-primary/5'
+								: 'border-border bg-muted/40 hover:border-muted-foreground/40 hover:bg-muted/60',
 						)}
 					>
 						<div className="flex flex-col items-center gap-3">
 							<div
 								className={cn(
-									'w-12 h-12 rounded-full flex items-center justify-center transition-colors',
-									isDragging ? 'bg-gray-900' : 'bg-gray-100',
+									'flex size-12 items-center justify-center rounded-full transition-colors',
+									isDragging ? 'bg-primary' : 'bg-muted',
 								)}
 							>
 								<Upload
 									className={cn(
-										'w-6 h-6',
-										isDragging ? 'text-white' : 'text-gray-600',
+										'size-6',
+										isDragging
+											? 'text-primary-foreground'
+											: 'text-muted-foreground',
 									)}
 								/>
 							</div>
 							<div>
-								<p className="text-sm font-medium text-gray-900">
+								<p className="text-sm font-medium text-foreground">
 									{isDragging
 										? intl.formatMessage({
 												id: 'media.uploadDrawer.dropHere',
@@ -175,7 +177,7 @@ export function UploadAssetsDrawer({
 												defaultMessage: 'Drag and drop files',
 											})}
 								</p>
-								<p className="text-xs text-gray-500 mt-1">
+								<p className="mt-1 text-xs text-muted-foreground">
 									{intl.formatMessage({
 										id: 'media.uploadDrawer.orBrowse',
 										defaultMessage: 'or click to browse',
@@ -210,13 +212,13 @@ export function UploadAssetsDrawer({
 					{uploadFiles.length > 0 && (
 						<div className="space-y-3">
 							<div className="flex items-center justify-between">
-								<span className="text-xs font-medium text-gray-900">
+								<span className="text-xs font-medium text-foreground">
 									{intl.formatMessage({
 										id: 'media.uploadDrawer.uploadQueue',
 										defaultMessage: 'Upload Queue',
 									})}
 								</span>
-								<span className="text-[10px] text-gray-500">
+								<span className="text-[10px] text-muted-foreground">
 									{intl.formatMessage(
 										{
 											id: 'media.uploadDrawer.completed',
@@ -231,7 +233,7 @@ export function UploadAssetsDrawer({
 								{uploadFiles.map((uploadFile) => (
 									<div
 										key={uploadFile.id}
-										className="bg-gray-900 rounded-lg p-3 text-white shadow-lg"
+										className="rounded-lg border border-border bg-muted p-3 text-foreground shadow-sm"
 									>
 										<div className="flex items-center gap-2 mb-2">
 											{uploadFile.status === 'completed' ? (
@@ -239,28 +241,28 @@ export function UploadAssetsDrawer({
 											) : uploadFile.status === 'uploading' ? (
 												<div className="w-3.5 h-3.5 border-2 border-blue-400 border-t-transparent rounded-full animate-spin shrink-0" />
 											) : (
-												<div className="w-3.5 h-3.5 border-2 border-gray-400 border-t-transparent rounded-full shrink-0" />
+												<div className="size-3.5 shrink-0 rounded-full border-2 border-muted-foreground/40 border-t-transparent" />
 											)}
-											<span className="text-xs text-gray-300 truncate flex-1">
+											<span className="flex-1 truncate text-xs text-muted-foreground">
 												{uploadFile.file.name}
 											</span>
 											{uploadFile.status !== 'uploading' && (
 												<button
 													type="button"
 													onClick={() => handleRemoveFile(uploadFile.id)}
-													className="text-gray-400 hover:text-white transition-colors shrink-0"
+													className="shrink-0 text-muted-foreground transition-colors hover:text-foreground"
 												>
 													<X className="w-3.5 h-3.5" />
 												</button>
 											)}
 											{uploadFile.status === 'uploading' && (
-												<span className="text-[10px] text-gray-400 shrink-0">
+												<span className="shrink-0 text-[10px] text-muted-foreground">
 													{uploadFile.progress}%
 												</span>
 											)}
 										</div>
 										{uploadFile.status === 'uploading' && (
-											<div className="h-1 bg-gray-700 rounded-full overflow-hidden">
+											<div className="h-1 overflow-hidden rounded-full bg-muted-foreground/20">
 												<div
 													className="h-full bg-blue-500 rounded-full transition-all"
 													style={{ width: `${uploadFile.progress}%` }}
@@ -274,7 +276,7 @@ export function UploadAssetsDrawer({
 					)}
 
 					{uploadFiles.length === 0 && (
-						<p className="text-[10px] text-gray-400 text-center mt-4">
+						<p className="mt-4 text-center text-[10px] text-muted-foreground/80">
 							{intl.formatMessage({
 								id: 'media.uploadDrawer.tip',
 								defaultMessage:

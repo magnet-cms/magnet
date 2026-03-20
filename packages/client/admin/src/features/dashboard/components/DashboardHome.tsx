@@ -505,7 +505,7 @@ export function DashboardHome() {
 								rel="noopener noreferrer"
 								className="bg-linear-to-br from-gray-900 to-gray-800 rounded-xl p-6 text-white shadow-md relative overflow-hidden group cursor-pointer block"
 							>
-								<div className="absolute top-0 right-0 p-32 bg-white/5 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110" />
+								<div className="absolute -right-16 -top-16 rounded-full bg-foreground/10 p-32 transition-transform group-hover:scale-110" />
 								<div className="relative z-10">
 									<Code2 className="w-8 h-8 mb-4 text-white/60" />
 									<h3 className="text-base font-semibold mb-2">
@@ -521,7 +521,7 @@ export function DashboardHome() {
 												'Learn how to consume your content via REST or GraphQL APIs.',
 										})}
 									</p>
-									<Badge className="text-xs font-medium bg-white/10 px-3 py-1.5 rounded-full hover:bg-white/20 transition-colors">
+									<Badge className="rounded-full bg-foreground/10 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-foreground/20">
 										{intl.formatMessage({
 											id: 'dashboard.footer.readDocs',
 											defaultMessage: 'Read Docs',
