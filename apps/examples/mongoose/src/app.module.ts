@@ -5,7 +5,10 @@ import { PlaygroundPlugin } from '@magnet-cms/plugin-playground'
 import { StripePlugin } from '@magnet-cms/plugin-stripe'
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
-import { FeaturesModule } from './modules/features.module'
+import { CatsModule } from './modules/cats/cats.module'
+import { MedicalRecordsModule } from './modules/medical-records/medical-records.module'
+import { OwnersModule } from './modules/owners/owners.module'
+import { VeterinariansModule } from './modules/veterinarians/veterinarians.module'
 
 /**
  * Example application using Magnet CMS with MongoDB (Mongoose).
@@ -28,23 +31,25 @@ import { FeaturesModule } from './modules/features.module'
 @Module({
 	imports: [
 		ConfigModule.forRoot({ isGlobal: true }),
-		FeaturesModule.forRoot(
-			MagnetModule.forRoot(
-				[
-					MongooseDatabaseAdapter.forRoot(),
-					HashiCorpVaultAdapter.forRoot(),
-					PlaygroundPlugin.forRoot(),
-					StripePlugin.forRoot({
-						currency: 'usd',
-						features: {
-							pro: ['unlimited-servers', 'priority-support'],
-							basic: ['5-servers'],
-						},
-					}),
-				],
-				{ admin: true },
-			),
+		MagnetModule.forRoot(
+			[
+				MongooseDatabaseAdapter.forRoot(),
+				HashiCorpVaultAdapter.forRoot(),
+				PlaygroundPlugin.forRoot(),
+				StripePlugin.forRoot({
+					currency: 'usd',
+					features: {
+						pro: ['unlimited-servers', 'priority-support'],
+						basic: ['5-servers'],
+					},
+				}),
+			],
+			{ admin: true },
 		),
+		CatsModule,
+		OwnersModule,
+		VeterinariansModule,
+		MedicalRecordsModule,
 	],
 })
 export class AppModule {}

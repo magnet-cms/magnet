@@ -7,7 +7,10 @@ import { PlaygroundPlugin } from '@magnet-cms/plugin-playground'
 import { SentryPlugin } from '@magnet-cms/plugin-sentry'
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
-import { FeaturesModule } from './modules/features.module'
+import { CatsModule } from './modules/cats/cats.module'
+import { MedicalRecordsModule } from './modules/medical-records/medical-records.module'
+import { OwnersModule } from './modules/owners/owners.module'
+import { VeterinariansModule } from './modules/veterinarians/veterinarians.module'
 
 /**
  * Example application using Magnet CMS with full Supabase integration.
@@ -31,22 +34,24 @@ import { FeaturesModule } from './modules/features.module'
 @Module({
 	imports: [
 		ConfigModule.forRoot({ isGlobal: true }),
-		FeaturesModule.forRoot(
-			MagnetModule.forRoot([
-				DrizzleDatabaseAdapter.forRoot({
-					dialect: 'postgresql',
-					driver: 'pg',
-					debug: process.env.NODE_ENV === 'development',
-					// No migrations config: uses CREATE TABLE IF NOT EXISTS.
-					// Supabase Auth creates its own tables; auto-migration can conflict.
-				}),
-				SupabaseAuthStrategy.forRoot(),
-				SupabaseStorageAdapter.forRoot(),
-				SupabaseVaultAdapter.forRoot(),
-				PlaygroundPlugin.forRoot(),
-				SentryPlugin.forRoot(),
-			]),
-		),
+		MagnetModule.forRoot([
+			DrizzleDatabaseAdapter.forRoot({
+				dialect: 'postgresql',
+				driver: 'pg',
+				debug: process.env.NODE_ENV === 'development',
+				// No migrations config: uses CREATE TABLE IF NOT EXISTS.
+				// Supabase Auth creates its own tables; auto-migration can conflict.
+			}),
+			SupabaseAuthStrategy.forRoot(),
+			SupabaseStorageAdapter.forRoot(),
+			SupabaseVaultAdapter.forRoot(),
+			PlaygroundPlugin.forRoot(),
+			SentryPlugin.forRoot(),
+		]),
+		CatsModule,
+		OwnersModule,
+		VeterinariansModule,
+		MedicalRecordsModule,
 	],
 })
 export class AppModule {}

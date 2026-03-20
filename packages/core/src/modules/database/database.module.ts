@@ -62,9 +62,9 @@ export class DatabaseModule {
 	/**
 	 * Register schemas for database access.
 	 *
-	 * IMPORTANT: Feature modules that call forFeature() must be loaded AFTER
-	 * MagnetModule.forRoot() has run (which calls register()). Use a FeaturesModule
-	 * with require() to defer loading. See apps/examples for the pattern.
+	 * IMPORTANT: Feature modules that call forFeature() must be listed AFTER
+	 * MagnetModule.forRoot() in the AppModule imports array so that the database
+	 * adapter is initialized before feature modules access it.
 	 */
 	static forFeature(schemas: Type | Type[]): DynamicModule {
 		const adapter = getSharedAdapter()

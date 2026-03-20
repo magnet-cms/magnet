@@ -5,7 +5,11 @@ import { NodemailerEmailAdapter } from '@magnet-cms/email-nodemailer'
 import { PlaygroundPlugin } from '@magnet-cms/plugin-playground'
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
-import { FeaturesModule } from './modules/features.module'
+import { CatsModule } from './modules/cats/cats.module'
+import { MedicalRecordsModule } from './modules/medical-records/medical-records.module'
+import { OwnersModule } from './modules/owners/owners.module'
+import { PostsModule } from './modules/posts/posts.module'
+import { VeterinariansModule } from './modules/veterinarians/veterinarians.module'
 
 /**
  * Example application using Magnet CMS with MySQL (Drizzle ORM).
@@ -27,29 +31,29 @@ import { FeaturesModule } from './modules/features.module'
 @Module({
 	imports: [
 		ConfigModule.forRoot({ isGlobal: true }),
-		FeaturesModule.forRoot(
-			MagnetModule.forRoot(
-				[
-					DrizzleDatabaseAdapter.forRoot({
-						dialect: 'mysql',
-						driver: 'mysql2',
-						debug: process.env.NODE_ENV === 'development',
-					}),
-					S3StorageAdapter.forRoot({
-						forcePathStyle: true,
-					}),
-					NodemailerEmailAdapter.forRoot({
-						secure: false,
-						auth: { user: '', pass: '' },
-						defaults: {
-							from: process.env.EMAIL_FROM || 'noreply@magnet.local',
-						},
-					}),
-					PlaygroundPlugin.forRoot(),
-				],
-				{ admin: true },
-			),
-		),
+		MagnetModule.forRoot([
+			DrizzleDatabaseAdapter.forRoot({
+				dialect: 'mysql',
+				driver: 'mysql2',
+				debug: process.env.NODE_ENV === 'development',
+			}),
+			S3StorageAdapter.forRoot({
+				forcePathStyle: true,
+			}),
+			NodemailerEmailAdapter.forRoot({
+				secure: false,
+				auth: { user: '', pass: '' },
+				defaults: {
+					from: process.env.EMAIL_FROM || 'noreply@magnet.local',
+				},
+			}),
+			PlaygroundPlugin.forRoot(),
+		]),
+		CatsModule,
+		OwnersModule,
+		VeterinariansModule,
+		MedicalRecordsModule,
+		PostsModule,
 	],
 })
 export class AppModule {}
