@@ -1,6 +1,6 @@
 {
   "name": "@magnet-cms/adapter-cache-redis",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Redis cache adapter for Magnet CMS",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -32,7 +32,7 @@
     "ioredis": "^5.4.2"
   },
   "peerDependencies": {
-    "@magnet-cms/common": "^0.1.0",
+    "@magnet-cms/common": "^0.2.0",
     "ioredis": "^5.0.0"
   }
 }

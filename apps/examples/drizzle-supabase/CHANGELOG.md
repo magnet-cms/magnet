@@ -1,5 +1,19 @@
 # magnet-template-drizzle-supabase
 
+## 0.0.3
+
+### Patch Changes
+
+- Updated dependencies [[`f63ef65`](https://github.com/magnet-cms/magnet/commit/f63ef6520c8395b90e35eb530f0d2e2aee4adf12)]:
+  - @magnet-cms/common@0.2.0
+  - @magnet-cms/core@2.0.0
+  - @magnet-cms/plugin-sentry@1.0.0
+  - @magnet-cms/adapter-auth-supabase@2.0.0
+  - @magnet-cms/adapter-db-drizzle@2.0.0
+  - @magnet-cms/adapter-storage-supabase@2.0.0
+  - @magnet-cms/adapter-vault-supabase@2.0.0
+  - @magnet-cms/plugin-playground@2.0.0
+
 ## 0.0.2
 
 ### Patch Changes

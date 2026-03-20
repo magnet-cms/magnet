@@ -1,6 +1,6 @@
 {
   "name": "@magnet-cms/core",
-  "version": "1.0.3",
+  "version": "2.0.0",
   "description": "Core NestJS module for Magnet CMS",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -72,8 +72,8 @@
     "sharp": "^0.33.5"
   },
   "peerDependencies": {
-    "@magnet-cms/common": "^0.1.0",
-    "@magnet-cms/utils": "^0.1.0",
+    "@magnet-cms/common": "^0.2.0",
+    "@magnet-cms/utils": "^0.1.1",
     "@nestjs/common": "^11.1.12",
     "@nestjs/config": "^4.0.0",
     "@nestjs/core": "^11.1.12",
