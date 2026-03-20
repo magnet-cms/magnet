@@ -1,6 +1,6 @@
 import { PageContent, PageHeader, useAdapter } from '@magnet-cms/admin'
 import { Badge, Card } from '@magnet-cms/ui/components'
-import { useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 
 interface SentryClientConfig {
 	dsn: string
@@ -15,28 +15,46 @@ interface SentryApiStatus {
 	lastSync: string | null
 }
 
+interface SentryTokenScopes {
+	orgRead: boolean
+	projectRead: boolean
+	eventRead: boolean
+	alertsRead: boolean
+}
+
+const SCOPE_LABELS: Record<keyof SentryTokenScopes, string> = {
+	orgRead: 'org:read',
+	projectRead: 'project:read',
+	eventRead: 'event:read',
+	alertsRead: 'alerts:read',
+}
+
 /**
  * Sentry plugin settings page in the admin UI.
  *
- * Displays the current Sentry connection status and API connectivity.
+ * Displays the current Sentry connection status, API connectivity, and
+ * detected token scope availability.
  * Accessible at /sentry/settings in the admin sidebar.
  */
 const SentrySettings = () => {
 	const adapter = useAdapter()
 	const [config, setConfig] = useState<SentryClientConfig | null>(null)
 	const [apiStatus, setApiStatus] = useState<SentryApiStatus | null>(null)
+	const [scopes, setScopes] = useState<SentryTokenScopes | null>(null)
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState<string | null>(null)
 
 	useEffect(() => {
 		async function fetchData() {
 			try {
-				const [configData, statusData] = await Promise.all([
+				const [configData, statusData, scopesData] = await Promise.all([
 					adapter.request<SentryClientConfig>('/sentry/config'),
 					adapter.request<SentryApiStatus>('/sentry/admin/status'),
+					adapter.request<SentryTokenScopes>('/sentry/admin/scopes'),
 				])
 				setConfig(configData)
 				setApiStatus(statusData)
+				setScopes(scopesData)
 			} catch {
 				setError('Failed to load Sentry configuration.')
 			} finally {
@@ -128,6 +146,32 @@ const SentrySettings = () => {
 								</p>
 							)}
 						</Card>
+
+						{apiStatus?.connected && scopes && (
+							<Card className="p-6">
+								<h3 className="text-base font-semibold mb-4">Token Scopes</h3>
+								<p className="text-xs text-muted-foreground mb-4">
+									Detected permissions for the configured{' '}
+									<code className="font-mono">SENTRY_AUTH_TOKEN</code>.
+								</p>
+								<dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+									{(
+										Object.keys(SCOPE_LABELS) as (keyof SentryTokenScopes)[]
+									).map((key) => (
+										<Fragment key={key}>
+											<dt className="text-muted-foreground font-mono text-xs self-center">
+												{SCOPE_LABELS[key]}
+											</dt>
+											<dd>
+												<Badge variant={scopes[key] ? 'default' : 'outline'}>
+													{scopes[key] ? 'Available' : 'Not available'}
+												</Badge>
+											</dd>
+										</Fragment>
+									))}
+								</dl>
+							</Card>
+						)}
 					</div>
 				)}
 			</PageContent>

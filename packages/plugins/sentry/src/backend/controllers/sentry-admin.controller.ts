@@ -7,7 +7,12 @@ import {
 	Query,
 } from '@nestjs/common'
 import { SentryApiService } from '../services/sentry-api.service'
-import type { SentryAdminStatsResponse, SentryIssue } from '../types'
+import type {
+	SentryAdminStatsResponse,
+	SentryIssue,
+	SentryProject,
+	SentryTokenScopes,
+} from '../types'
 
 function messageFromHttpException(e: HttpException): string {
 	const r = e.getResponse()
@@ -40,12 +45,15 @@ export class SentryAdminController {
 	/**
 	 * GET /sentry/admin/stats
 	 * Returns error metrics for the dashboard: totals, unresolved count, 24h errors.
+	 * Optional ?project= overrides the configured SENTRY_PROJECT.
 	 * Returns zeroes with isConfigured:false when auth token is not set.
 	 */
 	@Get('admin/stats')
 	@RestrictedRoute()
-	async getStats(): Promise<SentryAdminStatsResponse> {
-		if (!this.sentryApi.isConfigured()) {
+	async getStats(
+		@Query('project') project?: string,
+	): Promise<SentryAdminStatsResponse> {
+		if (!this.sentryApi.isOrgConfigured()) {
 			return {
 				isConfigured: false,
 				totalErrors: 0,
@@ -55,7 +63,9 @@ export class SentryAdminController {
 		}
 
 		try {
-			const stats = await this.sentryApi.getProjectStats()
+			const stats = project
+				? await this.sentryApi.getProjectStats(project)
+				: await this.sentryApi.getOrgStats()
 			return { isConfigured: true, ...stats }
 		} catch (e) {
 			if (e instanceof BadGatewayException) {
@@ -73,18 +83,21 @@ export class SentryAdminController {
 
 	/**
 	 * GET /sentry/admin/issues
-	 * Returns list of Sentry issues. Optional ?query= param for search.
+	 * Returns list of Sentry issues. Optional ?query= for search, ?project= to override project.
 	 */
 	@Get('admin/issues')
 	@RestrictedRoute()
 	async getIssues(
 		@Query('query') query: string | undefined,
+		@Query('project') project?: string,
 	): Promise<SentryIssue[]> {
-		if (!this.sentryApi.isConfigured()) {
+		if (!this.sentryApi.isOrgConfigured()) {
 			return []
 		}
 		try {
-			return await this.sentryApi.getIssues(query)
+			return project
+				? await this.sentryApi.getIssues(query, project)
+				: await this.sentryApi.getOrgIssues(query)
 		} catch (e) {
 			if (e instanceof BadGatewayException) {
 				return []
@@ -106,6 +119,56 @@ export class SentryAdminController {
 			organization: this.sentryApi.orgSlug,
 			project: this.sentryApi.projectSlug,
 			lastSync: connected ? new Date().toISOString() : null,
+		}
+	}
+
+	/**
+	 * GET /sentry/admin/projects
+	 * Returns all projects in the organization, with isActive flag for the
+	 * configured project and errorCount from 24h stats.
+	 * Returns empty array when org is not configured or Sentry API errors.
+	 */
+	@Get('admin/projects')
+	@RestrictedRoute()
+	async getProjects(): Promise<SentryProject[]> {
+		if (!this.sentryApi.isOrgConfigured()) {
+			return []
+		}
+		try {
+			return await this.sentryApi.getOrganizationProjects()
+		} catch (e) {
+			if (e instanceof BadGatewayException) {
+				return []
+			}
+			throw e
+		}
+	}
+
+	/**
+	 * GET /sentry/admin/scopes
+	 * Returns detected token scope availability by probing known Sentry endpoints.
+	 * Results are cached for 5 minutes on the service.
+	 * Returns all-false when org is not configured.
+	 */
+	@Get('admin/scopes')
+	@RestrictedRoute()
+	async getScopes(): Promise<SentryTokenScopes> {
+		const allFalse: SentryTokenScopes = {
+			orgRead: false,
+			projectRead: false,
+			eventRead: false,
+			alertsRead: false,
+		}
+		if (!this.sentryApi.isOrgConfigured()) {
+			return allFalse
+		}
+		try {
+			return await this.sentryApi.probeTokenScopes()
+		} catch (e) {
+			if (e instanceof BadGatewayException) {
+				return allFalse
+			}
+			throw e
 		}
 	}
 }

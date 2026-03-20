@@ -1,12 +1,30 @@
-import { PageContent, PageHeader, useAdapter } from '@magnet-cms/admin'
+import { PageHeader, useAdapter } from '@magnet-cms/admin'
 import {
 	Badge,
+	Button,
 	DataTable,
 	type DataTableColumn,
+	type DataTableRenderContext,
+	Input,
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
 	Skeleton,
 } from '@magnet-cms/ui/components'
-import { ExternalLink } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { Search } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { ALL_PROJECTS, useProjectFilter } from '../hooks/use-project-filter'
+
+const contentManagerStyles = `
+  .table-row-hover:hover td {
+    background-color: #F9FAFB;
+  }
+  .table-row-hover.group:hover td {
+    background-color: #F9FAFB;
+  }
+`
 
 interface SentryIssue {
 	id: string
@@ -45,22 +63,13 @@ const columns: DataTableColumn<SentryIssue>[] = [
 		type: 'custom',
 		header: 'Title',
 		cell: (row) => (
-			<div className="flex items-center gap-2">
-				<div>
-					<p className="font-medium">{row.original.title}</p>
-					<p className="text-xs text-muted-foreground font-mono">
-						{row.original.shortId}
-					</p>
-				</div>
-				<a
-					href={row.original.permalink}
-					target="_blank"
-					rel="noopener noreferrer"
-					onClick={(e) => e.stopPropagation()}
-					className="ml-auto shrink-0"
-				>
-					<ExternalLink className="h-4 w-4 text-muted-foreground" />
-				</a>
+			<div>
+				<p className="text-sm font-medium text-gray-900">
+					{row.original.title}
+				</p>
+				<p className="text-xs text-gray-500 font-mono">
+					{row.original.shortId}
+				</p>
 			</div>
 		),
 	},
@@ -77,13 +86,16 @@ const columns: DataTableColumn<SentryIssue>[] = [
 		type: 'text',
 		header: 'Events',
 		accessorKey: 'count',
+		format: (value) => (
+			<span className="text-sm text-gray-600">{value as string}</span>
+		),
 	},
 	{
 		type: 'text',
 		header: 'Last Seen',
 		accessorKey: 'lastSeen',
 		format: (value) => (
-			<span className="text-muted-foreground">
+			<span className="text-sm text-gray-500">
 				{formatRelativeTime(value as string)}
 			</span>
 		),
@@ -93,45 +105,172 @@ const columns: DataTableColumn<SentryIssue>[] = [
 const SentryIssues = () => {
 	const adapter = useAdapter()
 	const [issues, setIssues] = useState<SentryIssue[]>([])
-	const [loading, setLoading] = useState(true)
+	const [dataLoading, setDataLoading] = useState(false)
+	const [searchQuery, setSearchQuery] = useState('')
 
-	useEffect(() => {
-		async function fetchIssues() {
+	const { projects, selectedProject, loading, handleProjectChange } =
+		useProjectFilter(adapter, async (slug) => {
+			setDataLoading(true)
 			try {
+				const params =
+					slug && slug !== ALL_PROJECTS
+						? `?project=${encodeURIComponent(slug)}`
+						: ''
 				const data = await adapter.request<SentryIssue[]>(
-					'/sentry/admin/issues',
+					`/sentry/admin/issues${params}`,
 				)
 				setIssues(data)
 			} catch (error) {
 				console.error('[Sentry] Failed to fetch issues:', error)
 			} finally {
-				setLoading(false)
+				setDataLoading(false)
 			}
-		}
-		fetchIssues()
-	}, [adapter])
+		})
+
+	const filteredIssues = useMemo(() => {
+		const q = searchQuery.trim().toLowerCase()
+		if (!q) return issues
+		return issues.filter(
+			(i) =>
+				i.title.toLowerCase().includes(q) ||
+				i.shortId.toLowerCase().includes(q),
+		)
+	}, [issues, searchQuery])
+
+	const projectSelector =
+		projects.length > 0 ? (
+			<Select value={selectedProject} onValueChange={handleProjectChange}>
+				<SelectTrigger className="w-[180px]">
+					<SelectValue />
+				</SelectTrigger>
+				<SelectContent>
+					<SelectItem value={ALL_PROJECTS}>All Projects</SelectItem>
+					{projects.map((p) => (
+						<SelectItem key={p.slug} value={p.slug}>
+							{p.name}
+						</SelectItem>
+					))}
+				</SelectContent>
+			</Select>
+		) : null
+
+	const renderToolbar = () => (
+		<div className="px-6 py-4 flex flex-col sm:flex-row gap-3 items-center justify-between flex-none bg-white border-b border-gray-200">
+			<div className="relative w-full sm:w-80">
+				<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+				<Input
+					placeholder="Search issues..."
+					value={searchQuery}
+					onChange={(e) => setSearchQuery(e.target.value)}
+					className="pl-9"
+				/>
+			</div>
+			<Button variant="ghost" size="sm" onClick={() => setSearchQuery('')}>
+				Clear Filters
+			</Button>
+		</div>
+	)
+
+	const renderPagination = (table: DataTableRenderContext<SentryIssue>) => {
+		const { pageIndex, pageSize } = table.getState().pagination
+		const totalRows = table.getFilteredRowModel().rows.length
+		const startRow = pageIndex * pageSize + 1
+		const endRow = Math.min((pageIndex + 1) * pageSize, totalRows)
+
+		return (
+			<div className="flex-none px-6 py-4 border-t border-gray-200 bg-white flex items-center justify-between">
+				<div className="text-xs text-gray-500">
+					Showing <span className="font-medium text-gray-900">{startRow}</span>{' '}
+					to <span className="font-medium text-gray-900">{endRow}</span> of{' '}
+					<span className="font-medium text-gray-900">{totalRows}</span> results
+				</div>
+				<div className="flex items-center gap-2">
+					<Button
+						variant="outline"
+						size="sm"
+						disabled={!table.getCanPreviousPage()}
+						onClick={() => table.previousPage()}
+					>
+						Previous
+					</Button>
+					<Button
+						variant="outline"
+						size="sm"
+						disabled={!table.getCanNextPage()}
+						onClick={() => table.nextPage()}
+					>
+						Next
+					</Button>
+				</div>
+			</div>
+		)
+	}
+
+	if (loading || dataLoading) {
+		return (
+			<div className="flex-1 flex flex-col min-w-0 bg-white h-full relative overflow-hidden">
+				<PageHeader
+					title="Sentry Issues"
+					actions={projectSelector ?? undefined}
+				/>
+				<div className="flex-1 p-6">
+					<Skeleton className="h-96 w-full" />
+				</div>
+			</div>
+		)
+	}
 
 	return (
-		<>
-			<PageHeader title="Sentry Issues" />
-			<PageContent>
-				{loading ? (
-					<div className="space-y-2 p-6">
-						{[1, 2, 3, 4, 5].map((i) => (
-							<Skeleton key={i} className="h-12" />
-						))}
+		<div className="flex-1 flex flex-col min-w-0 bg-white h-full relative overflow-hidden">
+			<style>{contentManagerStyles}</style>
+			<PageHeader
+				title="Sentry Issues"
+				description={`${issues.length} issue(s) loaded.`}
+				actions={projectSelector ?? undefined}
+			/>
+			<div className="flex-1 flex flex-col overflow-hidden bg-gray-50">
+				<div className="flex-1 overflow-hidden relative">
+					<div className="absolute inset-0 overflow-auto">
+						<DataTable
+							columns={columns}
+							data={filteredIssues}
+							options={{
+								rowActions: {
+									items: [
+										{
+											label: 'Open in Sentry',
+											onSelect: (row) => {
+												window.open(
+													row.permalink,
+													'_blank',
+													'noopener,noreferrer',
+												)
+											},
+										},
+									],
+								},
+							}}
+							getRowId={(row) => row.id}
+							renderToolbar={renderToolbar}
+							renderPagination={renderPagination}
+							enablePagination
+							pageSizeOptions={[5, 10, 20, 30, 50]}
+							initialPagination={{ pageIndex: 0, pageSize: 10 }}
+							showCount={false}
+							className="h-full flex flex-col"
+							variant="content-manager"
+							renderEmpty={() => (
+								<span className="text-sm text-muted-foreground">
+									{issues.length === 0
+										? 'No issues found'
+										: 'No matching issues'}
+								</span>
+							)}
+						/>
 					</div>
-				) : issues.length === 0 ? (
-					<div className="p-6 text-center text-sm text-muted-foreground">
-						No issues found
-					</div>
-				) : (
-					<div className="p-6">
-						<DataTable columns={columns} data={issues} />
-					</div>
-				)}
-			</PageContent>
-		</>
+				</div>
+			</div>
+		</div>
 	)
 }
 

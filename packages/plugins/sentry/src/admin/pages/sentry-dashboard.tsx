@@ -4,11 +4,17 @@ import {
 	AlertDescription,
 	AlertTitle,
 	Card,
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
 	Skeleton,
 } from '@magnet-cms/ui/components'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { ErrorMetrics } from '../components/error-metrics'
 import { RecentIssues } from '../components/recent-issues'
+import { ALL_PROJECTS, useProjectFilter } from '../hooks/use-project-filter'
 
 interface SentryStats {
 	isConfigured: boolean
@@ -61,31 +67,54 @@ const SentryDashboard = () => {
 	const adapter = useAdapter()
 	const [stats, setStats] = useState<SentryStats | null>(null)
 	const [issues, setIssues] = useState<SentryIssue[]>([])
-	const [loading, setLoading] = useState(true)
+	const [dataLoading, setDataLoading] = useState(false)
 
-	useEffect(() => {
-		async function fetchData() {
+	const { projects, selectedProject, loading, handleProjectChange } =
+		useProjectFilter(adapter, async (slug) => {
+			setDataLoading(true)
 			try {
+				const params =
+					slug && slug !== ALL_PROJECTS
+						? `?project=${encodeURIComponent(slug)}`
+						: ''
 				const [statsData, issuesData] = await Promise.all([
-					adapter.request<SentryStats>('/sentry/admin/stats'),
-					adapter.request<SentryIssue[]>('/sentry/admin/issues'),
+					adapter.request<SentryStats>(`/sentry/admin/stats${params}`),
+					adapter.request<SentryIssue[]>(`/sentry/admin/issues${params}`),
 				])
 				setStats(statsData)
 				setIssues(issuesData.slice(0, 5))
 			} catch (error) {
 				console.error('[Sentry] Failed to fetch dashboard data:', error)
 			} finally {
-				setLoading(false)
+				setDataLoading(false)
 			}
-		}
-		fetchData()
-	}, [adapter])
+		})
+
+	const projectSelector =
+		projects.length > 0 ? (
+			<Select value={selectedProject} onValueChange={handleProjectChange}>
+				<SelectTrigger className="w-[180px]">
+					<SelectValue />
+				</SelectTrigger>
+				<SelectContent>
+					<SelectItem value={ALL_PROJECTS}>All Projects</SelectItem>
+					{projects.map((p) => (
+						<SelectItem key={p.slug} value={p.slug}>
+							{p.name}
+						</SelectItem>
+					))}
+				</SelectContent>
+			</Select>
+		) : null
 
 	return (
 		<>
-			<PageHeader title="Sentry Dashboard" />
+			<PageHeader
+				title="Sentry Dashboard"
+				actions={projectSelector ?? undefined}
+			/>
 			<PageContent>
-				{loading || !stats ? (
+				{loading || dataLoading || !stats ? (
 					<DashboardSkeleton />
 				) : !stats.isConfigured ? (
 					<div className="p-6">

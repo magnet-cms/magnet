@@ -147,3 +147,34 @@ export interface SentryAdminStatsResponse extends SentryProjectStats {
 	/** Set when credentials are present but the Sentry Web API rejects the request */
 	apiError?: string
 }
+
+/**
+ * A Sentry project in an organization, as returned by
+ * GET /api/0/organizations/{org}/projects/
+ */
+export interface SentryProject {
+	id: string
+	slug: string
+	name: string
+	platform: string | null
+	status: string
+	dateCreated: string
+	/** True when this project matches the configured SENTRY_PROJECT */
+	isActive: boolean
+	/** Sum of errors in the last 24h, or null if stats were not returned by the API */
+	errorCount: number | null
+}
+
+/**
+ * Token scope availability as detected by probing known Sentry API endpoints.
+ */
+export interface SentryTokenScopes {
+	/** Whether the token can read organization data (org:read scope) */
+	orgRead: boolean
+	/** Whether the token can read project list (project:read scope) */
+	projectRead: boolean
+	/** Whether the token can read events/issues (event:read scope) */
+	eventRead: boolean
+	/** Whether the token can read alert rules (alerts:read scope) */
+	alertsRead: boolean
+}

@@ -5,6 +5,9 @@ import type {
 import { Plugin } from '@magnet-cms/core'
 import type { SentryPluginConfig } from './types'
 
+/** Resolved type for optional runtime `require('@sentry/nestjs')` (single-line for DTS emit). */
+type SentryNestJs = typeof import('@sentry/nestjs')
+
 /**
  * Sentry Plugin for Magnet CMS
  *
@@ -62,6 +65,12 @@ import type { SentryPluginConfig } from './types'
 						title: 'Issues',
 						url: '/sentry/issues',
 						icon: 'Bug',
+					},
+					{
+						id: 'sentry-projects',
+						title: 'Projects',
+						url: '/sentry/projects',
+						icon: 'FolderKanban',
 					},
 					{
 						id: 'sentry-settings',
@@ -148,9 +157,7 @@ export class SentryPlugin {
 
 		try {
 			// eslint-disable-next-line @typescript-eslint/no-require-imports
-			const Sentry = require('@sentry/nestjs') as typeof import(
-				'@sentry/nestjs',
-			)
+			const Sentry = require('@sentry/nestjs') as SentryNestJs
 
 			// Skip if already initialized (e.g., via instrument.ts early init)
 			if (Sentry.getClient()) return
@@ -177,9 +184,7 @@ export class SentryPlugin {
 	async onPluginDestroy(): Promise<void> {
 		try {
 			// eslint-disable-next-line @typescript-eslint/no-require-imports
-			const Sentry = require('@sentry/nestjs') as typeof import(
-				'@sentry/nestjs',
-			)
+			const Sentry = require('@sentry/nestjs') as SentryNestJs
 			await Sentry.close(2000)
 		} catch {
 			// @sentry/nestjs not installed or already closed — no-op
