@@ -42,7 +42,7 @@ const EXAMPLE_ENV_VARS: Record<ExampleName, Record<string, string>> = {
 		SMTP_PORT: '1025',
 		EMAIL_FROM: 'noreply@magnet.local',
 		TEMPLATE_NAME: 'mongoose',
-		// Content Builder playground writes modules here during e2e so example src/modules stays clean
+		// Playground plugin writes modules here during e2e so example src/modules stays clean
 		MAGNET_PLAYGROUND_MODULES_PATH: '/tmp/magnet-e2e-playground-modules',
 	},
 	'drizzle-neon': {

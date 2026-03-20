@@ -94,7 +94,7 @@ export function getDocumentIcon(format: string): DocumentIconInfo {
 				bgColor: 'bg-orange-50',
 			}
 		default:
-			return { icon: File, color: 'text-gray-400', bgColor: 'bg-gray-50' }
+			return { icon: File, color: 'text-muted-foreground', bgColor: 'bg-muted' }
 	}
 }
 
@@ -113,11 +113,11 @@ export function AssetCard({
 
 	return (
 		<div
-			className="group relative bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-md transition-all"
+			className="group relative bg-card border border-border rounded-xl overflow-hidden hover:shadow-md transition-all"
 			onMouseEnter={() => setIsHovered(true)}
 			onMouseLeave={() => setIsHovered(false)}
 		>
-			<div className="aspect-square bg-gray-100 relative overflow-hidden">
+			<div className="aspect-square bg-muted relative overflow-hidden">
 				{asset.type === 'image' && asset.url && (
 					<img
 						src={asset.url}
@@ -126,8 +126,8 @@ export function AssetCard({
 					/>
 				)}
 				{asset.type === 'video' && (
-					<div className="w-full h-full bg-gray-800 flex items-center justify-center">
-						<div className="text-white opacity-50">
+					<div className="w-full h-full bg-black/70 flex items-center justify-center">
+						<div className="text-white/70">
 							{intl.formatMessage({
 								id: 'media.video',
 								defaultMessage: 'Video',
@@ -143,7 +143,7 @@ export function AssetCard({
 				{asset.type === 'document' && docIcon && (
 					<div
 						className={cn(
-							'w-full h-full flex flex-col items-center justify-center border-b border-gray-100',
+							'w-full h-full flex flex-col items-center justify-center border-b border-border',
 							docIcon.bgColor,
 						)}
 					>
@@ -170,7 +170,7 @@ export function AssetCard({
 						type="checkbox"
 						checked={isSelected}
 						onChange={() => onSelect(asset.id)}
-						className="w-4 h-4 rounded border-gray-300 text-gray-900 focus:ring-0 focus:ring-offset-0 cursor-pointer"
+						className="w-4 h-4 rounded border-border text-foreground focus:ring-0 focus:ring-offset-0 cursor-pointer"
 					/>
 				</div>
 
@@ -188,7 +188,7 @@ export function AssetCard({
 							e.stopPropagation()
 							onView(asset.id)
 						}}
-						className="p-1.5 bg-white/90 hover:bg-white pointer-events-auto"
+						className="p-1.5 bg-background/90 hover:bg-background pointer-events-auto"
 					>
 						<Eye className="w-4 h-4" />
 					</Button>
@@ -199,24 +199,24 @@ export function AssetCard({
 							e.stopPropagation()
 							onDownload(asset.id)
 						}}
-						className="p-1.5 bg-white/90 hover:bg-white pointer-events-auto"
+						className="p-1.5 bg-background/90 hover:bg-background pointer-events-auto"
 					>
 						<Download className="w-4 h-4" />
 					</Button>
 				</div>
 			</div>
 			<div className="p-2.5">
-				<p className="text-sm font-medium text-gray-900 truncate">
+				<p className="text-sm font-medium text-foreground truncate">
 					{asset.name}
 				</p>
 				<div className="flex items-center justify-between mt-1">
-					<p className="text-xs text-gray-500">
+					<p className="text-xs text-muted-foreground">
 						{asset.format.toUpperCase()} • {asset.size}
 					</p>
 					<button
 						type="button"
 						className={cn(
-							'text-gray-400 hover:text-gray-600 transition-opacity',
+							'text-muted-foreground hover:text-foreground transition-opacity',
 							isHovered ? 'opacity-100' : 'opacity-0',
 						)}
 					>

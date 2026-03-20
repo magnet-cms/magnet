@@ -102,13 +102,13 @@ export function RelationsAndMetadataPanel({
 	const hasSidePanelFields = sidePanelFields.length > 0 && renderField
 
 	return (
-		<aside className="w-80 shrink-0 bg-white border-l border-gray-200 hidden md:flex flex-col overflow-y-auto">
+		<aside className="w-80 shrink-0 bg-card border-l border-border hidden md:flex flex-col overflow-y-auto">
 			<div className="flex-1 overflow-y-auto">
 				<div className="p-4 space-y-6">
 					{/* Relationship fields */}
 					{hasRelations && (
 						<div>
-							<h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">
+							<h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">
 								{intl.formatMessage({
 									id: 'contentManager.metadata.relations',
 									defaultMessage: 'Relations',
@@ -125,7 +125,7 @@ export function RelationsAndMetadataPanel({
 					{/* Side panel fields */}
 					{hasSidePanelFields && (
 						<div>
-							<h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">
+							<h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">
 								{intl.formatMessage({
 									id: 'contentManager.metadata.additionalInfo',
 									defaultMessage: 'Additional Info',
@@ -141,7 +141,7 @@ export function RelationsAndMetadataPanel({
 
 					{/* Metadata - Always visible */}
 					<div>
-						<h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">
+						<h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">
 							{intl.formatMessage({
 								id: 'contentManager.metadata.title',
 								defaultMessage: 'Metadata',
@@ -149,35 +149,35 @@ export function RelationsAndMetadataPanel({
 						</h2>
 						<div className="space-y-4">
 							<div className="flex justify-between items-center text-sm">
-								<span className="text-gray-500">
+								<span className="text-muted-foreground">
 									{intl.formatMessage({
 										id: 'contentManager.metadata.created',
 										defaultMessage: 'Created',
 									})}
 								</span>
-								<span className="font-medium text-gray-900">
+								<span className="font-medium text-foreground">
 									{formatRelativeDate(metadata?.createdAt, intl)}
 								</span>
 							</div>
 							<div className="flex justify-between items-center text-sm">
-								<span className="text-gray-500">
+								<span className="text-muted-foreground">
 									{intl.formatMessage({
 										id: 'contentManager.metadata.updated',
 										defaultMessage: 'Updated',
 									})}
 								</span>
-								<span className="font-medium text-gray-900">
+								<span className="font-medium text-foreground">
 									{formatRelativeDate(metadata?.updatedAt, intl)}
 								</span>
 							</div>
 							<div className="flex justify-between items-center text-sm">
-								<span className="text-gray-500">
+								<span className="text-muted-foreground">
 									{intl.formatMessage({
 										id: 'contentManager.metadata.lastPublished',
 										defaultMessage: 'Last Published',
 									})}
 								</span>
-								<span className="font-medium text-gray-900">
+								<span className="font-medium text-foreground">
 									{formatRelativeDate(metadata?.publishedAt, intl)}
 								</span>
 							</div>

@@ -2,7 +2,7 @@ import { DrizzleDatabaseAdapter } from '@magnet-cms/adapter-db-drizzle'
 import { S3StorageAdapter } from '@magnet-cms/adapter-storage-s3'
 import { MagnetModule } from '@magnet-cms/core'
 import { NodemailerEmailAdapter } from '@magnet-cms/email-nodemailer'
-import { ContentBuilderPlugin } from '@magnet-cms/plugin-content-builder'
+import { PlaygroundPlugin } from '@magnet-cms/plugin-playground'
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { FeaturesModule } from './modules/features.module'
@@ -16,7 +16,7 @@ import { FeaturesModule } from './modules/features.module'
  * - S3 storage via MinIO (S3-compatible)
  * - DB vault for secrets management (default)
  * - Nodemailer email adapter (MailPit for dev)
- * - Content Builder plugin
+ * - Playground plugin
  * - Admin UI serving
  *
  * To run this example:
@@ -45,7 +45,7 @@ import { FeaturesModule } from './modules/features.module'
 							from: process.env.EMAIL_FROM || 'noreply@magnet.local',
 						},
 					}),
-					ContentBuilderPlugin.forRoot(),
+					PlaygroundPlugin.forRoot(),
 				],
 				{ admin: true },
 			),

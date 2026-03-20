@@ -54,8 +54,8 @@ export interface MagnetGlobalOptions {
 		expiresIn?: string
 	}
 	/**
-	 * Admin panel configuration
-	 * @example admin: true // Enable with defaults
+	 * Admin panel configuration (enabled by default when omitted).
+	 * @example admin: false // API-only / headless
 	 * @example admin: { enabled: true, path: '/dashboard' }
 	 */
 	admin?: boolean | AdminConfig
@@ -63,7 +63,7 @@ export interface MagnetGlobalOptions {
 	rbac?: RBACModuleOptions
 	/** Internationalization settings */
 	internationalization?: InternationalizationOptions
-	/** Playground settings for Content Builder */
+	/** Global Playground (schema builder) settings */
 	playground?: PlaygroundOptions
 }
 

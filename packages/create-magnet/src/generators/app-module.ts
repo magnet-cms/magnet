@@ -21,13 +21,16 @@ export function generateAppModule(config: ProjectConfig): string {
 	imports.push("import { MagnetModule } from '@magnet-cms/core'")
 
 	// Plugin imports
-	if (plugins.includes('content-builder')) {
+	if (plugins.includes('playground')) {
 		imports.push(
-			"import { ContentBuilderPlugin } from '@magnet-cms/plugin-content-builder'",
+			"import { PlaygroundPlugin } from '@magnet-cms/plugin-playground'",
 		)
 	}
 	if (plugins.includes('seo')) {
 		imports.push("import { SeoPlugin } from '@magnet-cms/plugin-seo'")
+	}
+	if (plugins.includes('sentry')) {
+		imports.push("import { SentryPlugin } from '@magnet-cms/plugin-sentry'")
 	}
 
 	imports.push("import { Module } from '@nestjs/common'")
@@ -161,10 +164,12 @@ function generateProviders(config: ProjectConfig): string {
 
 	// Plugin providers
 	for (const plugin of plugins) {
-		if (plugin === 'content-builder') {
-			lines.push('\t\t\tContentBuilderPlugin.forRoot(),')
+		if (plugin === 'playground') {
+			lines.push('\t\t\tPlaygroundPlugin.forRoot(),')
 		} else if (plugin === 'seo') {
 			lines.push('\t\t\tSeoPlugin.forRoot(),')
+		} else if (plugin === 'sentry') {
+			lines.push('\t\t\tSentryPlugin.forRoot(),')
 		}
 	}
 

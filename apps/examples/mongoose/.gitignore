@@ -1,4 +1,4 @@
-# Playground/content-builder plugin can create test modules during e2e (e.g. test33a9dbf1).
+# Playground plugin can create test modules during e2e (e.g. test33a9dbf1).
 # Ignore them so they are not committed. Prefer setting MAGNET_PLAYGROUND_MODULES_PATH
 # when running e2e so modules are written outside the repo (see apps/e2e README).
 src/modules/test*/

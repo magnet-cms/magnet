@@ -23,5 +23,11 @@
     "*.pipe.ts": "nest-pipe",
     "*.strategy.ts": "nest-strategy",
     "*.resolver.ts": "nest-resolver"
+  },
+  "[ignore]": {
+    "editor.defaultFormatter": "lumirelle.shell-format-rev"
+  },
+  "[dotenv]": {
+    "editor.defaultFormatter": "lumirelle.shell-format-rev"
   }
 }

@@ -409,7 +409,7 @@ export function MediaLibraryPage() {
 	// Loading state
 	if (isLoading && !mediaData) {
 		return (
-			<div className="flex-1 flex flex-col min-w-0 bg-white h-full relative overflow-hidden">
+			<div className="flex-1 flex flex-col min-w-0 bg-background h-full relative overflow-hidden">
 				<PageHeader>
 					<div className="h-16 flex items-center justify-between px-6">
 						<div>
@@ -422,7 +422,7 @@ export function MediaLibraryPage() {
 						</div>
 					</div>
 				</PageHeader>
-				<div className="flex-1 flex flex-col overflow-hidden bg-gray-50 p-6">
+				<div className="flex-1 flex flex-col overflow-hidden bg-muted p-6">
 					<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
 						{[
 							's1',
@@ -449,17 +449,17 @@ export function MediaLibraryPage() {
 	// Error state
 	if (error) {
 		return (
-			<div className="flex-1 flex flex-col min-w-0 bg-white h-full relative overflow-hidden">
+			<div className="flex-1 flex flex-col min-w-0 bg-background h-full relative overflow-hidden">
 				<PageHeader>
 					<div className="h-16 flex items-center justify-between px-6">
 						<div>
-							<h1 className="text-lg font-semibold text-gray-900 tracking-tight">
+							<h1 className="text-lg font-semibold text-foreground tracking-tight">
 								{intl.formatMessage({
 									id: 'media.title',
 									defaultMessage: 'Media Library',
 								})}
 							</h1>
-							<p className="text-xs text-gray-500">
+							<p className="text-xs text-muted-foreground">
 								{intl.formatMessage({
 									id: 'media.subtitle',
 									defaultMessage:
@@ -469,9 +469,9 @@ export function MediaLibraryPage() {
 						</div>
 					</div>
 				</PageHeader>
-				<div className="flex-1 flex items-center justify-center bg-gray-50">
+				<div className="flex-1 flex items-center justify-center bg-muted">
 					<div className="text-center">
-						<p className="text-gray-500 mb-4">
+						<p className="text-muted-foreground mb-4">
 							{error.message ||
 								intl.formatMessage({
 									id: 'media.failedToLoad',
@@ -491,25 +491,25 @@ export function MediaLibraryPage() {
 	}
 
 	return (
-		<div className="flex-1 flex flex-col min-w-0 bg-white h-full relative overflow-hidden">
+		<div className="flex-1 flex flex-col min-w-0 bg-background h-full relative overflow-hidden">
 			{/* Header */}
 			<PageHeader>
 				{/* Toolbar: Title & Actions */}
 				<div className="h-16 flex items-center justify-between px-6">
 					<div>
-						<h1 className="text-lg font-semibold text-gray-900 tracking-tight">
+						<h1 className="text-lg font-semibold text-foreground tracking-tight">
 							{intl.formatMessage({
 								id: 'media.title',
 								defaultMessage: 'Media Library',
 							})}
 							{currentFolder && (
-								<span className="text-gray-400 font-normal">
+								<span className="text-muted-foreground font-normal">
 									{' '}
 									/ {currentFolder}
 								</span>
 							)}
 						</h1>
-						<p className="text-xs text-gray-500">
+						<p className="text-xs text-muted-foreground">
 							{intl.formatMessage(
 								{ id: 'media.assetCount', defaultMessage: '{count} assets' },
 								{ count: mediaData?.total || 0 },
@@ -565,7 +565,7 @@ export function MediaLibraryPage() {
 			</PageHeader>
 
 			{/* Main Workspace */}
-			<div className="flex-1 flex flex-col overflow-hidden bg-gray-50">
+			<div className="flex-1 flex flex-col overflow-hidden bg-muted">
 				<MediaFilters
 					searchQuery={searchQuery}
 					onSearchChange={setSearchQuery}
@@ -589,7 +589,7 @@ export function MediaLibraryPage() {
 
 					{/* Assets */}
 					<div>
-						<h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+						<h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
 							{intl.formatMessage({
 								id: 'media.assets',
 								defaultMessage: 'Assets',
@@ -597,16 +597,16 @@ export function MediaLibraryPage() {
 						</h3>
 						{assets.length === 0 ? (
 							<div className="flex flex-col items-center justify-center py-12 text-center">
-								<div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-									<Upload className="w-8 h-8 text-gray-400" />
+								<div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
+									<Upload className="w-8 h-8 text-muted-foreground" />
 								</div>
-								<p className="text-gray-500 mb-2">
+								<p className="text-muted-foreground mb-2">
 									{intl.formatMessage({
 										id: 'media.noAssets',
 										defaultMessage: 'No assets found',
 									})}
 								</p>
-								<p className="text-xs text-gray-400 mb-4">
+								<p className="text-xs text-muted-foreground mb-4">
 									{searchQuery
 										? intl.formatMessage({
 												id: 'media.searchHint',

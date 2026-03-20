@@ -25,6 +25,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 import { ThemeSwitcher } from '~/components/ThemeSwitcher'
 import { usePluginSidebarItems } from '~/core/plugins/PluginRegistry'
+
 import { NotificationsDrawer } from '~/features/notifications'
 import { useAuth, useLogout } from '~/hooks/useAuth'
 import { useSchemas } from '~/hooks/useDiscovery'
@@ -54,7 +55,7 @@ export function AuthedLayout({ children, header, sidebar }: AuthedLayoutProps) {
 	// Get schemas for dynamic nav
 	const { data: schemas } = useSchemas()
 
-	// Get plugin sidebar items
+	// Get plugin sidebar items (includes Playground — shown under Plugins, not Platform)
 	const pluginSidebarItems = usePluginSidebarItems()
 
 	// Handle logout
@@ -92,12 +93,9 @@ export function AuthedLayout({ children, header, sidebar }: AuthedLayoutProps) {
 		}))
 	}, [schemas])
 
-	// Playground is special: it lives under Platform. All other plugins go to Plugins section.
-	const playgroundItem = pluginSidebarItems.find((p) => p.id === 'playground')
 	const pluginNavItems = useMemo(
 		() =>
 			pluginSidebarItems
-				.filter((item) => item.id !== 'playground')
 				.map((item) => ({
 					title: item.title,
 					url: item.url,
@@ -136,15 +134,6 @@ export function AuthedLayout({ children, header, sidebar }: AuthedLayoutProps) {
 					icon: Layers,
 					items: contentManagerItems,
 				},
-				...(playgroundItem
-					? [
-							{
-								title: playgroundItem.title,
-								url: playgroundItem.url,
-								icon: playgroundItem.icon,
-							},
-						]
-					: []),
 				{
 					title: 'Media Library',
 					url: '/media-library',
@@ -191,13 +180,7 @@ export function AuthedLayout({ children, header, sidebar }: AuthedLayoutProps) {
 			user: authUser,
 			onLogout: handleLogout,
 		}),
-		[
-			contentManagerItems,
-			playgroundItem,
-			pluginNavItems,
-			authUser,
-			handleLogout,
-		],
+		[contentManagerItems, pluginNavItems, authUser, handleLogout],
 	)
 
 	// User menu actions with notifications item
@@ -271,7 +254,7 @@ export function AuthedLayout({ children, header, sidebar }: AuthedLayoutProps) {
 			{ label: 'Home', href: '/' },
 		]
 		for (let i = 0; i < pathnames.length; i++) {
-			const segment = pathnames[i]
+			const segment = pathnames[i] ?? ''
 			const href = `/${pathnames.slice(0, i + 1).join('/')}`
 			const cName = names(segment)
 			crumbs.push({

@@ -550,8 +550,8 @@ export function SchemaFormPage({
 	// Loading state
 	if (isLoading) {
 		return (
-			<div className="flex-1 flex flex-col min-w-0 bg-white h-full relative">
-				<header className="shrink-0 border-b border-gray-200 bg-white/80 backdrop-blur-md z-20 sticky top-0">
+			<div className="flex-1 flex flex-col min-w-0 bg-background h-full relative">
+				<header className="shrink-0 border-b border-border bg-background/80 backdrop-blur-md z-20 sticky top-0">
 					<div className="px-8 py-4 flex items-center justify-between">
 						<Skeleton className="h-8 w-48" />
 						<div className="flex items-center gap-3">
@@ -574,10 +574,10 @@ export function SchemaFormPage({
 	// Error state
 	if (contentError || !schemaMetadata || 'error' in schemaMetadata) {
 		return (
-			<div className="flex-1 flex flex-col min-w-0 bg-white h-full relative">
-				<header className="shrink-0 border-b border-gray-200 bg-white/80 backdrop-blur-md z-20 sticky top-0">
+			<div className="flex-1 flex flex-col min-w-0 bg-background h-full relative">
+				<header className="shrink-0 border-b border-border bg-background/80 backdrop-blur-md z-20 sticky top-0">
 					<div className="px-8 py-4 flex items-center justify-between">
-						<h1 className="text-3xl font-medium text-gray-900 tracking-tight">
+						<h1 className="text-3xl font-medium text-foreground tracking-tight">
 							{schemaDisplayName}
 						</h1>
 						<Button variant="outline" onClick={handleDiscard}>
@@ -590,7 +590,7 @@ export function SchemaFormPage({
 				</header>
 				<div className="flex-1 flex items-center justify-center p-8">
 					<div className="text-center">
-						<p className="text-gray-500 mb-4">
+						<p className="text-muted-foreground mb-4">
 							{contentError?.message ||
 								intl.formatMessage({
 									id: 'contentManager.form.failedToLoadContent',
@@ -610,7 +610,7 @@ export function SchemaFormPage({
 	}
 
 	return (
-		<div className="flex-1 flex flex-col min-w-0 bg-white h-full relative">
+		<div className="flex-1 flex flex-col min-w-0 bg-background h-full relative">
 			{/* Content Header with locale selector, auto-save status, and publish button */}
 			<ContentHeader
 				basePath={`/content-manager/${schema}/${entryId}`}
@@ -679,7 +679,7 @@ export function SchemaFormPage({
 				)}
 
 			{/* Content Body */}
-			<div className="flex-1 flex overflow-hidden bg-gray-50/50">
+			<div className="flex-1 flex overflow-hidden bg-muted/50">
 				{/* VIEW: EDIT */}
 				{currentView === 'edit' && (
 					<FormBuilder
@@ -714,14 +714,14 @@ export function SchemaFormPage({
 							<div>
 								<Card className="gap-0">
 									{/* Card Header */}
-									<div className="px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
-										<h2 className="text-sm font-semibold text-gray-900">
+									<div className="px-6 py-4 border-b border-border bg-muted/50 flex justify-between items-center">
+										<h2 className="text-sm font-semibold text-foreground">
 											{intl.formatMessage({
 												id: 'contentManager.versions.title',
 												defaultMessage: 'Version History',
 											})}
 										</h2>
-										<span className="text-xs text-gray-500">
+										<span className="text-xs text-muted-foreground">
 											{intl.formatMessage(
 												{
 													id: 'contentManager.versions.versionsFound',
@@ -733,7 +733,7 @@ export function SchemaFormPage({
 									</div>
 
 									{/* Version Items - Divided List */}
-									<div className="divide-y divide-gray-100">
+									<div className="divide-y divide-border">
 										{versions && versions.length > 0 ? (
 											(() => {
 												const sortedVersions = [...versions].sort(
@@ -782,16 +782,16 @@ export function SchemaFormPage({
 													return (
 														<div
 															key={version.versionId}
-															className="p-6 flex gap-4 hover:bg-gray-50 transition-colors group"
+															className="p-6 flex gap-4 hover:bg-muted/80 transition-colors group"
 														>
 															{/* Status indicator circle */}
 															<div className="shrink-0 mt-1">
 																<div
 																	className={cn(
-																		'w-8 h-8 rounded-full flex items-center justify-center ring-4 ring-white group-hover:ring-gray-50',
+																		'w-8 h-8 rounded-full flex items-center justify-center ring-4 ring-background group-hover:ring-muted',
 																		isDraft
 																			? 'bg-yellow-100 text-yellow-700'
-																			: 'bg-gray-100 text-gray-500',
+																			: 'bg-muted text-muted-foreground',
 																	)}
 																>
 																	{isDraft ? (
@@ -805,7 +805,7 @@ export function SchemaFormPage({
 															{/* Content */}
 															<div className="flex-1">
 																<div className="flex items-center justify-between mb-1">
-																	<p className="text-sm font-medium text-gray-900">
+																	<p className="text-sm font-medium text-foreground">
 																		{getVersionTitle()}
 																	</p>
 																	<Badge
@@ -816,7 +816,7 @@ export function SchemaFormPage({
 																			version.status === 'published' &&
 																				'bg-emerald-50 text-emerald-700 border-emerald-600/20',
 																			version.status === 'archived' &&
-																				'bg-gray-50 text-gray-600 border-gray-300',
+																				'bg-muted text-muted-foreground border-border',
 																		)}
 																	>
 																		{isDraft
@@ -825,7 +825,7 @@ export function SchemaFormPage({
 																				version.status.slice(1)}
 																	</Badge>
 																</div>
-																<p className="text-sm text-gray-500 mb-3">
+																<p className="text-sm text-muted-foreground mb-3">
 																	{version.createdBy && (
 																		<>
 																			{intl.formatMessage(
@@ -843,7 +843,7 @@ export function SchemaFormPage({
 																	)}
 																</p>
 																{changedFields.length > 0 && (
-																	<div className="text-xs text-gray-400 font-mono bg-gray-50 inline-block px-2 py-1 rounded border border-gray-200">
+																	<div className="text-xs text-muted-foreground font-mono bg-muted inline-block px-2 py-1 rounded border border-border">
 																		{intl.formatMessage({
 																			id: 'contentManager.versions.changes',
 																			defaultMessage: 'Changes:',
@@ -944,7 +944,7 @@ export function SchemaFormPage({
 												})
 											})()
 										) : (
-											<div className="p-6 text-center text-gray-500">
+											<div className="p-6 text-center text-muted-foreground">
 												{intl.formatMessage({
 													id: 'contentManager.versions.noHistory',
 													defaultMessage: 'No version history available',
@@ -1005,7 +1005,7 @@ export function SchemaFormPage({
 										case 'DELETE':
 											return 'bg-red-100 text-red-700'
 										default:
-											return 'bg-gray-100 text-gray-700'
+											return 'bg-muted text-muted-foreground'
 									}
 								}
 
@@ -1127,7 +1127,7 @@ fetch('${apiBaseUrl}/content/${schema}/${entryId}${selectedApiLocale && selected
 												{/* Locale Selector */}
 												{availableLocales.length > 0 && (
 													<div className="flex items-center gap-2">
-														<Globe className="h-4 w-4 text-gray-400" />
+														<Globe className="h-4 w-4 text-muted-foreground" />
 														<Select
 															value={selectedApiLocale}
 															onValueChange={setSelectedApiLocale}
@@ -1159,7 +1159,7 @@ fetch('${apiBaseUrl}/content/${schema}/${entryId}${selectedApiLocale && selected
 												{/* Endpoints Card */}
 												<Card>
 													<CardContent className="p-6">
-														<h3 className="text-sm font-semibold text-gray-900 mb-4">
+														<h3 className="text-sm font-semibold text-foreground mb-4">
 															{intl.formatMessage({
 																id: 'contentManager.api.endpoints',
 																defaultMessage: 'Endpoints',
@@ -1175,7 +1175,7 @@ fetch('${apiBaseUrl}/content/${schema}/${entryId}${selectedApiLocale && selected
 																		'group p-3 rounded-lg border transition-all cursor-pointer text-left w-full',
 																		activeEndpoint === endpoint.id
 																			? 'border-blue-200 bg-blue-50/50'
-																			: 'border-gray-200 hover:border-gray-300',
+																			: 'border-border hover:border-muted-foreground/40',
 																	)}
 																>
 																	<div className="flex items-center gap-2 mb-1">
@@ -1189,11 +1189,11 @@ fetch('${apiBaseUrl}/content/${schema}/${entryId}${selectedApiLocale && selected
 																				? 'DEL'
 																				: endpoint.method}
 																		</span>
-																		<span className="text-xs font-mono text-gray-600">
+																		<span className="text-xs font-mono text-muted-foreground">
 																			{endpoint.path}
 																		</span>
 																	</div>
-																	<p className="text-xs text-gray-500">
+																	<p className="text-xs text-muted-foreground">
 																		{endpoint.description}
 																	</p>
 																</button>

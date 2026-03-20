@@ -5,6 +5,7 @@ import { AutoLinkNode, LinkNode } from '@lexical/link'
 import { ListItemNode, ListNode } from '@lexical/list'
 import { TRANSFORMERS } from '@lexical/markdown'
 import { LexicalComposer } from '@lexical/react/LexicalComposer'
+import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext'
 import { ContentEditable } from '@lexical/react/LexicalContentEditable'
 import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary'
 import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin'
@@ -14,12 +15,11 @@ import { MarkdownShortcutPlugin } from '@lexical/react/LexicalMarkdownShortcutPl
 import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin'
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin'
 import { HeadingNode, QuoteNode } from '@lexical/rich-text'
-import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext'
 import {
 	$getSelection,
 	$isRangeSelection,
-	FORMAT_TEXT_COMMAND,
 	type EditorState,
+	FORMAT_TEXT_COMMAND,
 } from 'lexical'
 import { Bold, Code, Italic, Strikethrough, Underline } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
@@ -39,7 +39,8 @@ const theme = {
 		ol: 'list-decimal ml-4 mb-2',
 		listitem: 'mb-1',
 	},
-	quote: 'border-l-4 border-muted-foreground/30 pl-4 italic text-muted-foreground mb-2',
+	quote:
+		'border-l-4 border-muted-foreground/30 pl-4 italic text-muted-foreground mb-2',
 	text: {
 		bold: 'font-bold',
 		italic: 'italic',

@@ -168,7 +168,7 @@ import { DrizzleDatabaseAdapter } from '@magnet-cms/adapter-db-drizzle'
 import { SupabaseStorageAdapter } from '@magnet-cms/adapter-storage-supabase'
 import { SupabaseVaultAdapter } from '@magnet-cms/adapter-vault-supabase'
 import { MagnetModule } from '@magnet-cms/core'
-import { ContentBuilderPlugin } from '@magnet-cms/plugin-content-builder'
+import { PlaygroundPlugin } from '@magnet-cms/plugin-playground'
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 
@@ -185,7 +185,7 @@ import { ConfigModule } from '@nestjs/config'
         SupabaseAuthStrategy.forRoot(),
         SupabaseStorageAdapter.forRoot(),
         SupabaseVaultAdapter.forRoot(),
-        ContentBuilderPlugin.forRoot(),
+        PlaygroundPlugin.forRoot(),
       ],
       { admin: true },
     ),

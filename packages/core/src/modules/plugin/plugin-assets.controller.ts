@@ -21,12 +21,12 @@ export class PluginAssetsController {
 	 * Serve a plugin frontend asset
 	 * GET /plugins/assets/:pluginName/*path
 	 *
-	 * @example GET /plugins/assets/content-builder/bundle.umd.js
+	 * @example GET /plugins/assets/playground/bundle.iife.js
 	 */
 	@Get(':pluginName/*path')
 	servePluginAsset(
 		@Param('pluginName') pluginName: string,
-		@Param('path') assetPath: string,
+		@Param('path') assetPath: string | string[],
 		@Res() res: Response,
 	) {
 		const pluginPackageName = `@magnet-cms/plugin-${pluginName}`
@@ -40,8 +40,13 @@ export class PluginAssetsController {
 			})
 		}
 
+		// NestJS binds `*path` as string[] for multi-segment wildcards; path.resolve requires strings.
+		const assetPathStr = Array.isArray(assetPath)
+			? assetPath.join('/')
+			: assetPath
+
 		// Assets are expected to be in dist/frontend/
-		const fullPath = resolve(pluginPath, 'dist', 'frontend', assetPath)
+		const fullPath = resolve(pluginPath, 'dist', 'frontend', assetPathStr)
 
 		this.logger.log(`Serving plugin asset: ${fullPath}`)
 
@@ -50,12 +55,12 @@ export class PluginAssetsController {
 			return res.status(404).json({
 				error: 'Asset not found',
 				plugin: pluginName,
-				path: assetPath,
+				path: assetPathStr,
 			})
 		}
 
 		// Set appropriate content type based on extension
-		const ext = assetPath.split('.').pop()?.toLowerCase()
+		const ext = assetPathStr.split('.').pop()?.toLowerCase()
 		const contentTypes: Record<string, string> = {
 			js: 'application/javascript',
 			mjs: 'application/javascript',

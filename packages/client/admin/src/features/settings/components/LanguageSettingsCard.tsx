@@ -33,7 +33,7 @@ export function LanguageSettingsCard() {
 	const { locale, setLocale, supportedLocales } = useLocale()
 
 	return (
-		<Card className="border border-gray-200 overflow-hidden">
+		<Card className="overflow-hidden">
 			<div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
 				<Globe className="w-[18px] h-[18px] text-gray-400" />
 				<h2 className="text-sm font-semibold text-gray-900">

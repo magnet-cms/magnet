@@ -111,7 +111,7 @@ bun run dev:admin
 
 | Package | Description |
 |---------|-------------|
-| `@magnet-cms/plugin-content-builder` | Visual content builder plugin |
+| `@magnet-cms/plugin-playground` | Playground (visual schema builder) |
 | `@magnet-cms/plugin-seo` | SEO management plugin |
 
 ## Project Structure
@@ -136,7 +136,7 @@ magnet/
 │   ├── core/              # Core Magnet framework (NestJS modules)
 │   ├── create-magnet/     # CLI tool for scaffolding new projects
 │   ├── plugins/
-│   │   ├── content-builder/   # Visual content builder plugin
+│   │   ├── playground/   # Playground (visual schema builder) plugin
 │   │   └── seo/               # SEO management plugin
 │   ├── tooling/           # Shared build and config tools
 │   │   ├── biome/         # Biome linting configuration

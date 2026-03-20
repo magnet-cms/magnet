@@ -24,7 +24,7 @@ export function FilterBar({ children, className }: FilterBarProps) {
 	return (
 		<div
 			className={cn(
-				'flex flex-none flex-col items-center justify-between gap-3 border-b border-gray-200 bg-white px-6 py-4 sm:flex-row',
+				'flex flex-none flex-col items-center justify-between gap-3 border-b border-border bg-background px-6 py-4 sm:flex-row',
 				className,
 			)}
 		>
@@ -49,7 +49,7 @@ function FilterBarSearch({
 	return (
 		<div className={cn('relative w-full sm:w-72', className)}>
 			<div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-				<Search className="size-4 text-gray-400" />
+				<Search className="size-4 text-muted-foreground" />
 			</div>
 			<Input
 				type="text"
@@ -112,15 +112,15 @@ function FilterBarViewToggle({
 	className,
 }: FilterBarViewToggleProps) {
 	return (
-		<div className={cn('flex rounded-lg bg-gray-200 p-0.5', className)}>
+		<div className={cn('flex rounded-lg bg-muted p-0.5', className)}>
 			<button
 				type="button"
 				onClick={() => onChange('grid')}
 				className={cn(
 					'rounded-md p-1.5 transition-colors cursor-pointer',
 					value === 'grid'
-						? 'bg-white text-gray-900 shadow-sm'
-						: 'text-gray-500 hover:text-gray-700',
+						? 'bg-background text-foreground shadow-sm'
+						: 'text-muted-foreground hover:text-foreground',
 				)}
 			>
 				<Grid3x3 className="size-4" />
@@ -131,8 +131,8 @@ function FilterBarViewToggle({
 				className={cn(
 					'rounded-md p-1.5 transition-colors cursor-pointer',
 					value === 'list'
-						? 'bg-white text-gray-900 shadow-sm'
-						: 'text-gray-500 hover:text-gray-700',
+						? 'bg-background text-foreground shadow-sm'
+						: 'text-muted-foreground hover:text-foreground',
 				)}
 			>
 				<List className="size-4" />
@@ -142,7 +142,7 @@ function FilterBarViewToggle({
 }
 
 function FilterBarDivider({ className }: { className?: string }) {
-	return <div className={cn('mx-1 h-4 w-px bg-gray-300', className)} />
+	return <div className={cn('mx-1 h-4 w-px bg-border', className)} />
 }
 
 function FilterBarGroup({

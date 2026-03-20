@@ -28,7 +28,7 @@ export interface PermissionDefinition {
 	group?: string
 	/** Schema name if auto-generated from schema */
 	schema?: string
-	/** API identifier (e.g., 'api::posts', 'plugin::content-builder') */
+	/** API identifier (e.g., 'api::posts', 'plugin::playground') */
 	apiId?: string
 	/** Source of this permission */
 	source?: PermissionSource

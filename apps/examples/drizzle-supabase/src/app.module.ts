@@ -3,7 +3,8 @@ import { DrizzleDatabaseAdapter } from '@magnet-cms/adapter-db-drizzle'
 import { SupabaseStorageAdapter } from '@magnet-cms/adapter-storage-supabase'
 import { SupabaseVaultAdapter } from '@magnet-cms/adapter-vault-supabase'
 import { MagnetModule } from '@magnet-cms/core'
-import { ContentBuilderPlugin } from '@magnet-cms/plugin-content-builder'
+import { PlaygroundPlugin } from '@magnet-cms/plugin-playground'
+import { SentryPlugin } from '@magnet-cms/plugin-sentry'
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { FeaturesModule } from './modules/features.module'
@@ -16,7 +17,8 @@ import { FeaturesModule } from './modules/features.module'
  * - Supabase Auth strategy for authentication
  * - Supabase Storage adapter for file uploads
  * - Supabase Vault (pgsodium) for secrets management
- * - Content Builder plugin
+ * - Playground plugin
+ * - Sentry plugin (set SENTRY_DSN in .env)
  * - Admin UI serving
  * - Local development with Docker Compose
  *
@@ -30,22 +32,20 @@ import { FeaturesModule } from './modules/features.module'
 	imports: [
 		ConfigModule.forRoot({ isGlobal: true }),
 		FeaturesModule.forRoot(
-			MagnetModule.forRoot(
-				[
-					DrizzleDatabaseAdapter.forRoot({
-						dialect: 'postgresql',
-						driver: 'pg',
-						debug: process.env.NODE_ENV === 'development',
-						// No migrations config: uses CREATE TABLE IF NOT EXISTS.
-						// Supabase Auth creates its own tables; auto-migration can conflict.
-					}),
-					SupabaseAuthStrategy.forRoot(),
-					SupabaseStorageAdapter.forRoot(),
-					SupabaseVaultAdapter.forRoot(),
-					ContentBuilderPlugin.forRoot(),
-				],
-				{ admin: false },
-			),
+			MagnetModule.forRoot([
+				DrizzleDatabaseAdapter.forRoot({
+					dialect: 'postgresql',
+					driver: 'pg',
+					debug: process.env.NODE_ENV === 'development',
+					// No migrations config: uses CREATE TABLE IF NOT EXISTS.
+					// Supabase Auth creates its own tables; auto-migration can conflict.
+				}),
+				SupabaseAuthStrategy.forRoot(),
+				SupabaseStorageAdapter.forRoot(),
+				SupabaseVaultAdapter.forRoot(),
+				PlaygroundPlugin.forRoot(),
+				SentryPlugin.forRoot(),
+			]),
 		),
 	],
 })

@@ -521,9 +521,8 @@ export function UsersListingPage() {
 									items: [
 										{
 											label: 'Edit',
-											onSelect: (row) => {
+											onSelect: () => {
 												// Would open edit drawer
-												console.log('Edit', row)
 											},
 										},
 										{

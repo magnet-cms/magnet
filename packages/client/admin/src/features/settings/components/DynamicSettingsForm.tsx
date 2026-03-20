@@ -161,7 +161,7 @@ export const DynamicSettingsForm = forwardRef<
 	if (schemaLoading || valuesLoading) {
 		return (
 			<div className="space-y-8">
-				<Card className="border border-gray-200 overflow-hidden">
+				<Card className="overflow-hidden">
 					<div className="px-6 py-4 border-b border-gray-100">
 						<Skeleton className="h-5 w-32" />
 					</div>

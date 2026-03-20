@@ -53,15 +53,15 @@ export function VaultSidePanel() {
 	}
 
 	return (
-		<aside className="w-80 bg-white border-l border-gray-200 hidden md:flex flex-col">
-			<div className="flex items-center justify-between p-4 border-b border-gray-100 shrink-0">
-				<h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+		<aside className="w-80 bg-card border-l border-border hidden md:flex flex-col">
+			<div className="flex items-center justify-between p-4 border-b border-border shrink-0">
+				<h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
 					Vault Status
 				</h3>
 				<button
 					type="button"
 					onClick={() => refetch()}
-					className="text-gray-400 hover:text-gray-600 transition-colors"
+					className="text-muted-foreground hover:text-foreground transition-colors"
 					title="Refresh status"
 				>
 					<RefreshCw className="w-3.5 h-3.5" />
@@ -73,23 +73,23 @@ export function VaultSidePanel() {
 					{/* Adapter info */}
 					{!isLoading && status && (
 						<>
-							<div className="rounded-lg border border-gray-200 bg-gray-50/50 p-3">
+							<div className="rounded-lg border border-border bg-muted/50 p-3">
 								<div className="flex items-start gap-3">
 									<div className="shrink-0">
 										{(() => {
 											const Icon = ADAPTER_ICONS[status.adapter] ?? Server
 											return (
-												<div className="rounded-full bg-gray-100 flex items-center justify-center w-8 h-8">
-													<Icon className="w-4 h-4 text-gray-600" />
+												<div className="rounded-full bg-muted flex items-center justify-center w-8 h-8">
+													<Icon className="w-4 h-4 text-muted-foreground" />
 												</div>
 											)
 										})()}
 									</div>
 									<div className="flex-1 min-w-0">
-										<p className="text-xs font-semibold text-gray-900">
+										<p className="text-xs font-semibold text-foreground">
 											{ADAPTER_LABELS[status.adapter] ?? status.adapter}
 										</p>
-										<p className="text-[11px] text-gray-500 mt-0.5">
+										<p className="text-[11px] text-muted-foreground mt-0.5">
 											Active adapter
 										</p>
 									</div>
@@ -165,12 +165,12 @@ export function VaultSidePanel() {
 					)}
 
 					{/* Cache management */}
-					<div className="border-t border-gray-100 pt-4">
-						<h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+					<div className="border-t border-border pt-4">
+						<h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
 							Secret Cache
 						</h4>
-						<div className="rounded-lg border border-gray-200 bg-gray-50/50 p-3">
-							<p className="text-[11px] text-gray-500 leading-relaxed mb-3">
+						<div className="rounded-lg border border-border bg-muted/50 p-3">
+							<p className="text-[11px] text-muted-foreground leading-relaxed mb-3">
 								Clear the in-memory cache to force re-fetching secrets from the
 								vault backend.
 							</p>

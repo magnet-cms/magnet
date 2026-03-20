@@ -19,33 +19,13 @@ import {
 } from '@nestjs/core'
 import { RestrictedGuard } from './guards/restricted.guard'
 import { GlobalExceptionFilter } from './handlers'
-import { type AdminServeOptions } from './modules/admin-serve/admin-serve.module'
 import { DatabaseModule } from './modules/database/database.module'
 import { EventContextInterceptor } from './modules/events/event-context.interceptor'
 import { EventsModule } from './modules/events/events.module'
 import { HealthModule } from './modules/health/health.module'
 import { LoggingInterceptor } from './modules/logging/logging.interceptor'
 import { LoggingModule } from './modules/logging/logging.module'
-import { validateEnvironment } from './utils'
-
-/**
- * Normalizes admin configuration to AdminServeOptions
- */
-function normalizeAdminConfig(
-	admin?: boolean | { enabled?: boolean; path?: string; distPath?: string },
-): AdminServeOptions {
-	if (admin === true) {
-		return { enabled: true, path: '/admin' }
-	}
-	if (admin === false || admin === undefined) {
-		return { enabled: false, path: '/admin' }
-	}
-	return {
-		enabled: admin.enabled ?? true,
-		path: admin.path ?? '/admin',
-		distPath: admin.distPath,
-	}
-}
+import { normalizeMagnetAdminConfig, validateEnvironment } from './utils'
 
 /**
  * Categorize providers by type from the flat array.
@@ -133,7 +113,7 @@ export class MagnetModule {
 	 * Environment variables are validated upfront before NestJS bootstraps.
 	 *
 	 * @param providers - Array of MagnetProvider objects from adapter/plugin `.forRoot()` calls
-	 * @param globalOptions - Cross-cutting options (JWT, admin, RBAC, i18n)
+	 * @param globalOptions - Cross-cutting options (JWT, admin, RBAC, i18n). Admin UI serving is on by default; pass `{ admin: false }` for API-only mode.
 	 *
 	 * @example
 	 * ```typescript
@@ -143,7 +123,7 @@ export class MagnetModule {
 	 * MagnetModule.forRoot([
 	 *   MongooseDatabaseAdapter.forRoot(),
 	 *   StripePlugin.forRoot({ currency: 'usd' }),
-	 * ], { admin: true })
+	 * ])
 	 * ```
 	 */
 	static forRoot(
@@ -173,7 +153,7 @@ export class MagnetModule {
 			categorized.database.adapter,
 			categorized.database.config,
 		)
-		const adminConfig = normalizeAdminConfig(globalOptions?.admin)
+		const adminConfig = normalizeMagnetAdminConfig(globalOptions?.admin)
 		const {
 			buildMagnetImports,
 			ApiKeysModule,
@@ -188,7 +168,7 @@ export class MagnetModule {
 			buildMagnetImports: (params: {
 				categorized: ReturnType<typeof categorizeProviders>
 				globalOptions: MagnetGlobalOptions | undefined
-				adminConfig: ReturnType<typeof normalizeAdminConfig>
+				adminConfig: ReturnType<typeof normalizeMagnetAdminConfig>
 				DBModule: DynamicModule
 			}) => {
 				imports: Array<DynamicModule | Type>

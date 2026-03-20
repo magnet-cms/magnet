@@ -116,13 +116,18 @@ async function promptPlugins(): Promise<Plugin[]> {
 		message: 'Select plugins to include:',
 		choices: [
 			{
-				name: 'Content Builder',
-				value: 'content-builder' as const,
+				name: 'Playground',
+				value: 'playground' as const,
 				checked: true,
 			},
 			{
 				name: 'SEO',
 				value: 'seo' as const,
+				checked: false,
+			},
+			{
+				name: 'Sentry (Error Tracking & Performance)',
+				value: 'sentry' as const,
 				checked: false,
 			},
 		],

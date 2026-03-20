@@ -180,7 +180,7 @@ export function ProfilePage() {
 		)
 	}, [passwordForm, changePassword])
 
-	const handleRevokeSession = (sessionId: string) => {
+	const handleRevokeSession = (_sessionId: string) => {
 		// Session management would need dedicated API
 		toast.info(
 			intl.formatMessage({
@@ -188,13 +188,12 @@ export function ProfilePage() {
 				defaultMessage: 'Session management coming soon',
 			}),
 		)
-		console.log('Revoking session:', sessionId)
 	}
 
 	// Loading state
 	if (isUserLoading) {
 		return (
-			<div className="flex-1 flex flex-col min-w-0 bg-white h-full relative overflow-hidden">
+			<div className="flex-1 flex flex-col min-w-0 bg-background h-full relative overflow-hidden">
 				<PageHeader>
 					<div className="h-16 flex items-center justify-between px-6">
 						<div>
@@ -211,17 +210,17 @@ export function ProfilePage() {
 	}
 
 	return (
-		<div className="flex-1 flex flex-col min-w-0 bg-white h-full relative overflow-hidden">
+		<div className="flex-1 flex flex-col min-w-0 bg-background h-full relative overflow-hidden">
 			<PageHeader>
 				<div className="h-16 flex items-center justify-between px-6">
 					<div>
-						<h1 className="text-lg font-semibold text-gray-900 tracking-tight">
+						<h1 className="text-lg font-semibold text-foreground tracking-tight">
 							{intl.formatMessage({
 								id: 'profile.title',
 								defaultMessage: 'Profile',
 							})}
 						</h1>
-						<p className="text-xs text-gray-500">
+						<p className="text-xs text-muted-foreground">
 							{intl.formatMessage({
 								id: 'profile.subtitle',
 								defaultMessage:
@@ -233,16 +232,16 @@ export function ProfilePage() {
 			</PageHeader>
 
 			{/* Tabs */}
-			<header className="shrink-0 border-b border-gray-200 bg-white/80 backdrop-blur-md z-20 sticky top-0">
-				<div className="px-8 flex items-center gap-6 border-b border-gray-100">
+			<header className="shrink-0 border-b border-border bg-background/80 backdrop-blur-md z-20 sticky top-0">
+				<div className="px-8 flex items-center gap-6 border-b border-border">
 					<button
 						type="button"
 						onClick={() => setActiveTab('personal')}
 						className={cn(
 							'py-3 text-sm font-medium border-b-2 transition-colors',
 							activeTab === 'personal'
-								? 'text-gray-900 border-gray-900'
-								: 'text-gray-500 hover:text-gray-900 border-transparent hover:border-gray-200',
+								? 'text-foreground border-foreground'
+								: 'text-muted-foreground hover:text-foreground border-transparent hover:border-border',
 						)}
 					>
 						{intl.formatMessage({
@@ -256,8 +255,8 @@ export function ProfilePage() {
 						className={cn(
 							'py-3 text-sm font-medium border-b-2 transition-colors',
 							activeTab === 'security'
-								? 'text-gray-900 border-gray-900'
-								: 'text-gray-500 hover:text-gray-900 border-transparent hover:border-gray-200',
+								? 'text-foreground border-foreground'
+								: 'text-muted-foreground hover:text-foreground border-transparent hover:border-border',
 						)}
 					>
 						{intl.formatMessage({
@@ -269,7 +268,7 @@ export function ProfilePage() {
 			</header>
 
 			{/* Content Body */}
-			<div className="flex-1 flex overflow-hidden bg-gray-50/50">
+			<div className="flex-1 flex overflow-hidden bg-muted/50">
 				<div className="flex-1 overflow-y-auto p-6">
 					<div className="space-y-6 pb-10">
 						{/* Personal Tab Content */}
@@ -279,17 +278,17 @@ export function ProfilePage() {
 								<Card>
 									<CardHeader>
 										<div className="flex items-center gap-3 mb-1">
-											<div className="p-2 bg-gray-50 rounded-lg border border-gray-100">
-												<User className="w-5 h-5 text-gray-900" />
+											<div className="p-2 bg-muted rounded-lg border border-border">
+												<User className="w-5 h-5 text-foreground" />
 											</div>
 											<div>
-												<h3 className="text-base font-semibold text-gray-900">
+												<h3 className="text-base font-semibold text-foreground">
 													{intl.formatMessage({
 														id: 'profile.personalInfo',
 														defaultMessage: 'Personal Information',
 													})}
 												</h3>
-												<p className="text-sm text-gray-500 mt-1">
+												<p className="text-sm text-muted-foreground mt-1">
 													{intl.formatMessage({
 														id: 'profile.personalInfoDescription',
 														defaultMessage:
@@ -307,30 +306,30 @@ export function ProfilePage() {
 												onClick={handleAvatarUpload}
 												className="relative group cursor-pointer rounded-full"
 											>
-												<Avatar className="w-20 h-20 border-2 border-gray-200">
+												<Avatar className="w-20 h-20 border-2 border-border">
 													{profileForm.avatarUrl ? (
 														<AvatarImage
 															src={profileForm.avatarUrl}
 															alt={profileForm.name}
 														/>
 													) : (
-														<AvatarFallback className="text-2xl bg-gray-50 text-gray-600">
+														<AvatarFallback className="text-2xl bg-muted text-muted-foreground">
 															{profileForm.name.charAt(0).toUpperCase() || 'U'}
 														</AvatarFallback>
 													)}
 												</Avatar>
-												<div className="absolute inset-0 rounded-full bg-gray-900/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+												<div className="absolute inset-0 rounded-full bg-foreground/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
 													<Camera className="w-5 h-5 text-white" />
 												</div>
 											</button>
 											<div>
-												<h3 className="text-sm font-medium text-gray-900">
+												<h3 className="text-sm font-medium text-foreground">
 													{intl.formatMessage({
 														id: 'profile.profilePhoto',
 														defaultMessage: 'Profile Photo',
 													})}
 												</h3>
-												<p className="text-xs text-gray-500 mt-1">
+												<p className="text-xs text-muted-foreground mt-1">
 													{intl.formatMessage({
 														id: 'profile.profilePhotoDescription',
 														defaultMessage:
@@ -340,7 +339,7 @@ export function ProfilePage() {
 												<button
 													type="button"
 													onClick={handleAvatarUpload}
-													className="mt-2 text-xs font-medium text-gray-600 hover:text-gray-900 transition-colors"
+													className="mt-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
 												>
 													{intl.formatMessage({
 														id: 'profile.uploadNewPhoto',
@@ -355,7 +354,7 @@ export function ProfilePage() {
 											<div className="col-span-1 space-y-1.5">
 												<Label
 													htmlFor="profile-name"
-													className="text-xs font-medium text-gray-700"
+													className="text-xs font-medium text-muted-foreground"
 												>
 													{intl.formatMessage({
 														id: 'profile.fullName',
@@ -372,13 +371,13 @@ export function ProfilePage() {
 															name: e.target.value,
 														})
 													}
-													className="rounded-lg border-gray-200 bg-gray-50/50"
+													className="rounded-lg border-border bg-muted/50"
 												/>
 											</div>
 											<div className="col-span-1 space-y-1.5">
 												<Label
 													htmlFor="profile-email"
-													className="text-xs font-medium text-gray-700"
+													className="text-xs font-medium text-muted-foreground"
 												>
 													{intl.formatMessage({
 														id: 'profile.emailAddress',
@@ -390,9 +389,9 @@ export function ProfilePage() {
 													type="email"
 													value={profileForm.email}
 													disabled
-													className="rounded-lg border-gray-200 bg-gray-50/50 cursor-not-allowed"
+													className="rounded-lg border-border bg-muted/50 cursor-not-allowed"
 												/>
-												<p className="text-[11px] text-gray-500">
+												<p className="text-[11px] text-muted-foreground">
 													{intl.formatMessage({
 														id: 'profile.emailCannotChange',
 														defaultMessage:
@@ -402,7 +401,7 @@ export function ProfilePage() {
 											</div>
 										</div>
 									</CardContent>
-									<CardFooter className="bg-gray-50 border-t border-gray-100 flex items-center justify-end gap-3">
+									<CardFooter className="bg-muted border-t border-border flex items-center justify-end gap-3">
 										<Button
 											type="button"
 											variant="outline"
@@ -448,17 +447,17 @@ export function ProfilePage() {
 								<Card>
 									<CardHeader>
 										<div className="flex items-center gap-3 mb-1">
-											<div className="p-2 bg-gray-50 rounded-lg border border-gray-100">
-												<Key className="w-5 h-5 text-gray-900" />
+											<div className="p-2 bg-muted rounded-lg border border-border">
+												<Key className="w-5 h-5 text-foreground" />
 											</div>
 											<div>
-												<h3 className="text-base font-semibold text-gray-900">
+												<h3 className="text-base font-semibold text-foreground">
 													{intl.formatMessage({
 														id: 'profile.password',
 														defaultMessage: 'Password',
 													})}
 												</h3>
-												<p className="text-sm text-gray-500 mt-1">
+												<p className="text-sm text-muted-foreground mt-1">
 													{intl.formatMessage({
 														id: 'profile.passwordDescription',
 														defaultMessage:
@@ -537,13 +536,13 @@ export function ProfilePage() {
 										</div>
 
 										<div className="pt-2">
-											<h4 className="text-xs font-medium text-gray-900 mb-2">
+											<h4 className="text-xs font-medium text-foreground mb-2">
 												{intl.formatMessage({
 													id: 'profile.passwordRequirements',
 													defaultMessage: 'Password requirements:',
 												})}
 											</h4>
-											<ul className="text-xs text-gray-500 space-y-1 list-disc pl-4">
+											<ul className="text-xs text-muted-foreground space-y-1 list-disc pl-4">
 												<li>
 													{intl.formatMessage({
 														id: 'profile.passwordMin8',
@@ -565,7 +564,7 @@ export function ProfilePage() {
 											</ul>
 										</div>
 									</CardContent>
-									<CardFooter className="bg-gray-50 border-t border-gray-100 flex items-center justify-end gap-3">
+									<CardFooter className="bg-muted border-t border-border flex items-center justify-end gap-3">
 										<Button
 											type="button"
 											variant="outline"
@@ -605,17 +604,17 @@ export function ProfilePage() {
 									<CardHeader>
 										<div className="flex items-start justify-between">
 											<div className="flex gap-4">
-												<div className="p-2 bg-gray-50 rounded-lg border border-gray-100 h-fit">
-													<ShieldAlert className="w-5 h-5 text-gray-900" />
+												<div className="p-2 bg-muted rounded-lg border border-border h-fit">
+													<ShieldAlert className="w-5 h-5 text-foreground" />
 												</div>
 												<div>
-													<h3 className="text-base font-semibold text-gray-900">
+													<h3 className="text-base font-semibold text-foreground">
 														{intl.formatMessage({
 															id: 'profile.twoFactor',
 															defaultMessage: 'Two-factor Authentication',
 														})}
 													</h3>
-													<p className="text-sm text-gray-500 mt-1 max-w-md">
+													<p className="text-sm text-muted-foreground mt-1 max-w-md">
 														{intl.formatMessage({
 															id: 'profile.twoFactorDescription',
 															defaultMessage:
@@ -636,17 +635,17 @@ export function ProfilePage() {
 								<Card>
 									<CardHeader>
 										<div className="flex items-center gap-3 mb-1">
-											<div className="p-2 bg-gray-50 rounded-lg border border-gray-100">
-												<Laptop className="w-5 h-5 text-gray-900" />
+											<div className="p-2 bg-muted rounded-lg border border-border">
+												<Laptop className="w-5 h-5 text-foreground" />
 											</div>
 											<div>
-												<h3 className="text-base font-semibold text-gray-900">
+												<h3 className="text-base font-semibold text-foreground">
 													{intl.formatMessage({
 														id: 'profile.activeSessions',
 														defaultMessage: 'Active Sessions',
 													})}
 												</h3>
-												<p className="text-sm text-gray-500 mt-1">
+												<p className="text-sm text-muted-foreground mt-1">
 													{intl.formatMessage({
 														id: 'profile.activeSessionsDescription',
 														defaultMessage:
@@ -657,21 +656,21 @@ export function ProfilePage() {
 										</div>
 									</CardHeader>
 									<CardContent className="p-0">
-										<div className="divide-y divide-gray-100">
+										<div className="divide-y divide-border">
 											{mockSessions.map((session) => {
 												const IconComponent = session.icon
 												return (
 													<div
 														key={session.id}
-														className="p-4 pl-14 pr-6 flex items-center justify-between group hover:bg-gray-50 transition-colors"
+														className="p-4 pl-14 pr-6 flex items-center justify-between group hover:bg-muted transition-colors"
 													>
 														<div className="flex items-center gap-4">
-															<IconComponent className="w-6 h-6 text-gray-400" />
+															<IconComponent className="w-6 h-6 text-muted-foreground" />
 															<div>
-																<p className="text-sm font-medium text-gray-900">
+																<p className="text-sm font-medium text-foreground">
 																	{session.device}
 																</p>
-																<p className="text-xs text-gray-500">
+																<p className="text-xs text-muted-foreground">
 																	{session.location} •{' '}
 																	{session.isCurrent ? (
 																		<span className="text-green-600 font-medium">

@@ -1,7 +1,7 @@
 'use client'
 
 import type { SchemaMetadata } from '@magnet-cms/common'
-import { Button, Skeleton } from '@magnet-cms/ui'
+import { Button, ScrollArea, Skeleton } from '@magnet-cms/ui'
 import { cn } from '@magnet-cms/ui/lib/utils'
 import { Loader2, Save } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -104,7 +104,7 @@ export function SettingsPage() {
 	// Loading state
 	if (isLoading) {
 		return (
-			<div className="flex-1 flex flex-col min-w-0 bg-white h-full relative overflow-hidden">
+			<div className="flex-1 flex flex-col min-w-0 bg-background h-full relative overflow-hidden">
 				<PageHeader>
 					<div className="h-16 flex items-center justify-between px-6">
 						<div>
@@ -117,14 +117,19 @@ export function SettingsPage() {
 						</div>
 					</div>
 				</PageHeader>
-				<header className="shrink-0 border-b border-gray-200 bg-white/80 backdrop-blur-md z-20 sticky top-0">
-					<div className="px-8 flex items-center gap-6 border-b border-gray-100">
-						<Skeleton className="h-10 w-32" />
-						<Skeleton className="h-10 w-32" />
-						<Skeleton className="h-10 w-32" />
-					</div>
+				<header className="shrink-0 border-b border-border bg-background/80 backdrop-blur-md z-20 sticky top-0">
+					<ScrollArea
+						orientation="horizontal"
+						className="w-full border-b border-border"
+					>
+						<div className="flex w-max items-center gap-6 px-8">
+							<Skeleton className="h-10 w-32 shrink-0" />
+							<Skeleton className="h-10 w-32 shrink-0" />
+							<Skeleton className="h-10 w-32 shrink-0" />
+						</div>
+					</ScrollArea>
 				</header>
-				<div className="flex-1 flex overflow-hidden bg-gray-50/50">
+				<div className="flex-1 flex overflow-hidden bg-muted/50">
 					<div className="flex-1 overflow-y-auto p-6">
 						<div className="space-y-8">
 							<Skeleton className="h-48 w-full rounded-lg" />
@@ -139,17 +144,17 @@ export function SettingsPage() {
 	// No settings registered
 	if (tabs.length === 0) {
 		return (
-			<div className="flex-1 flex flex-col min-w-0 bg-white h-full relative overflow-hidden">
+			<div className="flex-1 flex flex-col min-w-0 bg-background h-full relative overflow-hidden">
 				<PageHeader>
 					<div className="h-16 flex items-center px-6">
 						<div>
-							<h1 className="text-lg font-semibold text-gray-900 tracking-tight">
+							<h1 className="text-lg font-semibold text-foreground tracking-tight">
 								{intl.formatMessage({
 									id: 'settings.title',
 									defaultMessage: 'Settings',
 								})}
 							</h1>
-							<p className="text-xs text-gray-500">
+							<p className="text-xs text-muted-foreground">
 								{intl.formatMessage({
 									id: 'settings.noSettingsRegistered',
 									defaultMessage: 'No settings have been registered yet.',
@@ -158,8 +163,8 @@ export function SettingsPage() {
 						</div>
 					</div>
 				</PageHeader>
-				<div className="flex-1 flex items-center justify-center bg-gray-50/50">
-					<div className="text-center text-gray-500">
+				<div className="flex-1 flex items-center justify-center bg-muted/50">
+					<div className="text-center text-muted-foreground">
 						<p className="text-sm">
 							{intl.formatMessage({
 								id: 'settings.noSettingsSchemas',
@@ -180,15 +185,15 @@ export function SettingsPage() {
 	}
 
 	return (
-		<div className="flex-1 flex flex-col min-w-0 bg-white h-full relative overflow-hidden">
+		<div className="flex-1 flex flex-col min-w-0 bg-background h-full relative overflow-hidden">
 			<PageHeader>
 				<div className="h-16 flex items-center justify-between px-6">
 					<div>
-						<h1 className="text-lg font-semibold text-gray-900 tracking-tight">
+						<h1 className="text-lg font-semibold text-foreground tracking-tight">
 							{activeTabData?.label ?? 'Settings'}
 						</h1>
 						{activeTabData?.description && (
-							<p className="text-xs text-gray-500">
+							<p className="text-xs text-muted-foreground">
 								{activeTabData.description}
 							</p>
 						)}
@@ -228,32 +233,37 @@ export function SettingsPage() {
 			</PageHeader>
 
 			{/* Dynamic Tabs */}
-			<header className="shrink-0 border-b border-gray-200 bg-white/80 backdrop-blur-md z-20 sticky top-0">
-				<div className="px-8 flex items-center gap-6 border-b border-gray-100 overflow-x-auto">
-					{tabs.map((tab) => {
-						const IconComponent = getIconComponent(tab.icon)
-						return (
-							<button
-								key={tab.id}
-								type="button"
-								onClick={() => setActiveTab(tab.id)}
-								className={cn(
-									'py-3 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 whitespace-nowrap',
-									activeTab === tab.id
-										? 'text-gray-900 border-gray-900'
-										: 'text-gray-500 hover:text-gray-900 border-transparent hover:border-gray-200',
-								)}
-							>
-								{IconComponent && <IconComponent className="w-4 h-4" />}
-								{tab.label}
-							</button>
-						)
-					})}
-				</div>
+			<header className="shrink-0 border-b border-border bg-background/80 backdrop-blur-md z-20 sticky top-0">
+				<ScrollArea
+					orientation="horizontal"
+					className="w-full border-b border-border"
+				>
+					<div className="flex w-max items-center gap-6 px-8">
+						{tabs.map((tab) => {
+							const IconComponent = getIconComponent(tab.icon)
+							return (
+								<button
+									key={tab.id}
+									type="button"
+									onClick={() => setActiveTab(tab.id)}
+									className={cn(
+										'shrink-0 py-3 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 whitespace-nowrap',
+										activeTab === tab.id
+											? 'text-foreground border-foreground'
+											: 'text-muted-foreground hover:text-foreground border-transparent hover:border-border',
+									)}
+								>
+									{IconComponent && <IconComponent className="w-4 h-4" />}
+									{tab.label}
+								</button>
+							)
+						})}
+					</div>
+				</ScrollArea>
 			</header>
 
 			{/* Content Body */}
-			<div className="flex-1 flex overflow-hidden bg-gray-50/50">
+			<div className="flex-1 flex overflow-hidden bg-muted/50">
 				<div className="flex-1 overflow-y-auto p-6">
 					<div className="space-y-8 pb-10">
 						{activeTab === 'general' && <LanguageSettingsCard />}

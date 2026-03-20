@@ -1,5 +1,30 @@
 {
 	"extends": ["@repo/biome/base"],
+	"overrides": [
+		{
+			"include": [
+				"packages/client/ui/src/components/atoms/slider.tsx",
+				"packages/client/ui/src/components/atoms/step-indicator.tsx"
+			],
+			"linter": {
+				"rules": {
+					"suspicious": {
+						"noArrayIndexKey": "off"
+					}
+				}
+			}
+		},
+		{
+			"include": ["packages/client/ui/src/components/atoms/chart.tsx"],
+			"linter": {
+				"rules": {
+					"security": {
+						"noDangerouslySetInnerHtml": "off"
+					}
+				}
+			}
+		}
+	],
 	"files": {
 		"ignore": [
 			"dist",

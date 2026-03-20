@@ -25,15 +25,15 @@ export function ActivityFeed({ activities, onViewAll }: ActivityFeedProps) {
 	return (
 		<div>
 			<div className="flex items-center justify-between mb-4">
-				<h2 className="text-sm font-semibold text-gray-900">
+				<h2 className="text-sm font-semibold text-foreground">
 					{intl.formatMessage({
 						id: 'dashboard.activity.title',
 						defaultMessage: 'Recent Activity',
 					})}
 				</h2>
 			</div>
-			<Card className="shadow-sm ring-1 ring-gray-200 overflow-hidden py-0">
-				<ul className="divide-y divide-gray-100">
+			<Card className="shadow-sm ring-1 ring-border overflow-hidden py-0">
+				<ul className="divide-y divide-border">
 					{activities.map((activity) => (
 						<ActivityItem
 							key={activity.id}
@@ -46,11 +46,11 @@ export function ActivityFeed({ activities, onViewAll }: ActivityFeedProps) {
 						/>
 					))}
 					{onViewAll && (
-						<li className="p-4 bg-gray-50/50 text-center">
+						<li className="p-4 bg-muted/50 text-center">
 							<button
 								type="button"
 								onClick={onViewAll}
-								className="text-xs font-medium text-gray-500 hover:text-gray-900"
+								className="text-xs font-medium text-muted-foreground hover:text-foreground"
 							>
 								{intl.formatMessage({
 									id: 'dashboard.activity.viewAllLogs',

@@ -62,7 +62,7 @@ export function ExternalAuthBanner({
 
 			{/* Detected Providers */}
 			{providers.length > 0 && (
-				<Card className="border border-gray-200 overflow-hidden">
+				<Card className="overflow-hidden">
 					<div className="px-6 py-4 border-b border-gray-100">
 						<h2 className="text-sm font-semibold text-gray-900">
 							{intl.formatMessage({
@@ -89,7 +89,7 @@ export function ExternalAuthBanner({
 
 			{/* Provider Settings */}
 			{providerSettings && Object.keys(providerSettings).length > 0 && (
-				<Card className="border border-gray-200 overflow-hidden">
+				<Card className="overflow-hidden">
 					<div className="px-6 py-4 border-b border-gray-100">
 						<h2 className="text-sm font-semibold text-gray-900">
 							{intl.formatMessage({

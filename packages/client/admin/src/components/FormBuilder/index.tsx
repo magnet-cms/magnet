@@ -299,12 +299,8 @@ export const FormBuilder = <T extends Record<string, unknown>>({
 			{/* Fields without tabs */}
 			{fieldsWithoutTabs.length > 0 && (
 				<div>
-					<h3 className="text-base font-semibold mb-6">
-						General Information
-					</h3>
-					<div className="space-y-4">
-						{renderMainRows(fieldsWithoutTabs)}
-					</div>
+					<h3 className="text-base font-semibold mb-6">General Information</h3>
+					<div className="space-y-4">{renderMainRows(fieldsWithoutTabs)}</div>
 				</div>
 			)}
 
@@ -312,9 +308,7 @@ export const FormBuilder = <T extends Record<string, unknown>>({
 			{tabs.length === 1 && (
 				<div
 					className={
-						fieldsWithoutTabs.length > 0
-							? 'border-t border-border pt-8'
-							: ''
+						fieldsWithoutTabs.length > 0 ? 'border-t border-border pt-8' : ''
 					}
 				>
 					<h3 className="text-base font-semibold mb-6">{tabs[0]}</h3>
@@ -328,9 +322,7 @@ export const FormBuilder = <T extends Record<string, unknown>>({
 			{tabs.length > 1 && (
 				<div
 					className={
-						fieldsWithoutTabs.length > 0
-							? 'border-t border-border pt-8'
-							: ''
+						fieldsWithoutTabs.length > 0 ? 'border-t border-border pt-8' : ''
 					}
 				>
 					<Tabs value={activeTab} onValueChange={setActiveTab}>

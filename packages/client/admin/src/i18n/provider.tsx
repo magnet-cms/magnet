@@ -78,7 +78,8 @@ async function loadMessages(
 
 	try {
 		const module = await import(`./messages/${locale}.json`)
-		return module.default as Record<string, string>
+		const overrides = module.default as Record<string, string>
+		return { ...enMessages, ...overrides }
 	} catch {
 		// Fall back to English if locale file fails to load
 		return enMessages

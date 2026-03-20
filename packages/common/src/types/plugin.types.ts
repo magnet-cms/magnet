@@ -4,7 +4,7 @@ import type { Type } from '@nestjs/common'
  * Plugin metadata for the @Plugin decorator
  */
 export interface PluginMetadata {
-	/** Unique plugin identifier (e.g., 'content-builder') */
+	/** Unique plugin identifier (e.g., 'playground') */
 	name: string
 	/** Human-readable description */
 	description?: string

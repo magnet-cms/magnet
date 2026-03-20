@@ -101,7 +101,7 @@ export function generateBiomeJson(): string {
 }
 
 export function generateEnvExample(config: ProjectConfig): string {
-	const { database, storage } = config
+	const { database, storage, plugins } = config
 
 	const lines: string[] = [
 		'# Application',
@@ -147,6 +147,13 @@ export function generateEnvExample(config: ProjectConfig): string {
 		} else if (storage === 'supabase') {
 			lines.push('SUPABASE_STORAGE_BUCKET=media')
 		}
+		lines.push('')
+	}
+
+	// Sentry plugin
+	if (plugins.includes('sentry')) {
+		lines.push('# Sentry (Error Tracking & Performance)')
+		lines.push('SENTRY_DSN=https://your-dsn@o0.ingest.sentry.io/12345')
 		lines.push('')
 	}
 

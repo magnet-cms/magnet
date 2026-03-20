@@ -122,8 +122,8 @@ function getActivityDisplay(
 		case 'user.logout':
 			return {
 				icon: LogOut,
-				iconBgColor: 'bg-gray-100',
-				iconColor: 'text-gray-600',
+				iconBgColor: 'bg-muted',
+				iconColor: 'text-muted-foreground',
 				message: intl.formatMessage({
 					id: 'dashboard.activity.userLogout',
 					defaultMessage: 'User logged out',
@@ -170,8 +170,8 @@ function getActivityDisplay(
 		default:
 			return {
 				icon: Server,
-				iconBgColor: 'bg-gray-100',
-				iconColor: 'text-gray-600',
+				iconBgColor: 'bg-muted',
+				iconColor: 'text-muted-foreground',
 				message: record.action,
 			}
 	}
@@ -285,8 +285,8 @@ export function DashboardHome() {
 			),
 			itemCount: 0,
 			href: `/content-manager/${schemaName}`,
-			iconBgColor: 'bg-gray-50',
-			iconColor: 'text-gray-600',
+			iconBgColor: 'bg-muted',
+			iconColor: 'text-muted-foreground',
 		}))
 	}, [schemas, intl])
 
@@ -307,7 +307,7 @@ export function DashboardHome() {
 	const isLoading = isUserLoading || isSchemasLoading
 
 	return (
-		<div className="flex-1 flex flex-col min-w-0 bg-white h-full relative">
+		<div className="flex-1 flex flex-col min-w-0 bg-background h-full relative">
 			{/* Header Section */}
 			<PageHeader>
 				{/* Title & Actions */}
@@ -320,7 +320,7 @@ export function DashboardHome() {
 							</>
 						) : (
 							<>
-								<h1 className="text-2xl font-medium text-gray-900 tracking-tight">
+								<h1 className="text-2xl font-medium text-foreground tracking-tight">
 									{intl.formatMessage(
 										{
 											id: 'dashboard.welcomeBack',
@@ -329,7 +329,7 @@ export function DashboardHome() {
 										{ userName },
 									)}
 								</h1>
-								<p className="mt-1 text-sm text-gray-500">
+								<p className="mt-1 text-sm text-muted-foreground">
 									{intl.formatMessage({
 										id: 'dashboard.subtitle',
 										defaultMessage: "Here's what's happening in your project.",
@@ -364,7 +364,7 @@ export function DashboardHome() {
 			</PageHeader>
 
 			{/* Scrollable Content */}
-			<div className="flex-1 overflow-y-auto bg-gray-50/50 p-8">
+			<div className="flex-1 overflow-y-auto bg-muted/50 p-8">
 				<div className="w-full space-y-8">
 					{/* Quick Stats */}
 					<div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
@@ -376,7 +376,7 @@ export function DashboardHome() {
 					{/* Content Collections Grid */}
 					<div>
 						<div className="flex items-center justify-between mb-4">
-							<h2 className="text-sm font-semibold text-gray-900">
+							<h2 className="text-sm font-semibold text-foreground">
 								{intl.formatMessage({
 									id: 'dashboard.collections.title',
 									defaultMessage: 'Collections',
@@ -384,7 +384,7 @@ export function DashboardHome() {
 							</h2>
 							<Link
 								to="/content-manager"
-								className="text-xs font-medium text-blue-600 hover:text-blue-700"
+								className="text-xs font-medium text-primary hover:text-primary/90"
 							>
 								{intl.formatMessage({
 									id: 'common.actions.viewAll',
@@ -400,9 +400,9 @@ export function DashboardHome() {
 							</div>
 						) : collections.length === 0 ? (
 							<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-								<div className="col-span-full text-center py-8 bg-white rounded-xl border border-dashed border-gray-200">
-									<Database className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-									<p className="text-sm text-gray-500 mb-3">
+								<div className="col-span-full text-center py-8 bg-card rounded-xl border border-dashed border-border">
+									<Database className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+									<p className="text-sm text-muted-foreground mb-3">
 										{intl.formatMessage({
 											id: 'dashboard.collections.noCollections',
 											defaultMessage: 'No collections yet',
@@ -497,7 +497,7 @@ export function DashboardHome() {
 					</div>
 
 					{/* Footer Links */}
-					<div className="border-t border-gray-200 pt-8 pb-10">
+					<div className="border-t border-border pt-8 pb-10">
 						<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 							<a
 								href="https://magnet-cms.dev/docs/api"
@@ -507,14 +507,14 @@ export function DashboardHome() {
 							>
 								<div className="absolute top-0 right-0 p-32 bg-white/5 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110" />
 								<div className="relative z-10">
-									<Code2 className="w-8 h-8 mb-4 text-gray-300" />
+									<Code2 className="w-8 h-8 mb-4 text-white/60" />
 									<h3 className="text-base font-semibold mb-2">
 										{intl.formatMessage({
 											id: 'dashboard.footer.apiDocs',
 											defaultMessage: 'API Documentation',
 										})}
 									</h3>
-									<p className="text-sm text-gray-400 mb-4">
+									<p className="text-sm text-white/70 mb-4">
 										{intl.formatMessage({
 											id: 'dashboard.footer.apiDocsDescription',
 											defaultMessage:
@@ -532,22 +532,22 @@ export function DashboardHome() {
 
 							<Link
 								to="/users"
-								className="bg-white rounded-xl shadow-sm ring-1 ring-gray-200 p-6 relative overflow-hidden group cursor-pointer hover:ring-blue-200 transition-all block"
+								className="bg-card rounded-xl shadow-sm ring-1 ring-border p-6 relative overflow-hidden group cursor-pointer hover:ring-primary/40 transition-all block"
 							>
 								<div className="relative z-10">
 									<div className="flex items-center justify-between mb-4">
-										<Users className="w-8 h-8 text-blue-600" />
-										<span className="text-gray-300 group-hover:text-blue-600 group-hover:translate-x-1 transition-all">
+										<Users className="w-8 h-8 text-primary" />
+										<span className="text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all">
 											→
 										</span>
 									</div>
-									<h3 className="text-base font-semibold text-gray-900 mb-2">
+									<h3 className="text-base font-semibold text-foreground mb-2">
 										{intl.formatMessage({
 											id: 'dashboard.footer.manageTeam',
 											defaultMessage: 'Manage Team',
 										})}
 									</h3>
-									<p className="text-sm text-gray-500">
+									<p className="text-sm text-muted-foreground">
 										{intl.formatMessage({
 											id: 'dashboard.footer.manageTeamDescription',
 											defaultMessage:

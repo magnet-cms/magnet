@@ -1,6 +1,6 @@
 import {
-  CollectionCard as BaseCollectionCard,
-  type CollectionCardProps as BaseProps,
+	CollectionCard as BaseCollectionCard,
+	type CollectionCardProps as BaseProps,
 } from '@magnet-cms/ui'
 import { Link } from 'react-router-dom'
 
@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom'
 type CollectionCardProps = Omit<BaseProps, 'linkComponent'>
 
 export function CollectionCard(props: CollectionCardProps) {
-  return <BaseCollectionCard {...props} linkComponent={Link} />
+	return <BaseCollectionCard {...props} linkComponent={Link} />
 }
 
 // Also export the type for consumers

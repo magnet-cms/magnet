@@ -149,7 +149,11 @@ export const useUserDelete = () => {
 export const useUserResetPassword = () => {
 	const adapter = useAdapter()
 
-	return useMutation<{ message: string }, Error, { id: string; newPassword: string }>({
+	return useMutation<
+		{ message: string },
+		Error,
+		{ id: string; newPassword: string }
+	>({
 		mutationFn: ({ id, newPassword }) =>
 			adapter.request<{ message: string }>(`/users/${id}/reset-password`, {
 				method: 'POST',

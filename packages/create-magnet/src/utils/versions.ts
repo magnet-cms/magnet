@@ -15,7 +15,7 @@ export const PACKAGE_VERSIONS = {
 	'@magnet-cms/adapter-storage-r2': '^1.0.0',
 	'@magnet-cms/adapter-vault-hashicorp': '^1.0.0',
 	'@magnet-cms/adapter-vault-supabase': '^1.0.0',
-	'@magnet-cms/plugin-content-builder': '^1.0.0',
+	'@magnet-cms/plugin-playground': '^1.0.0',
 	'@magnet-cms/plugin-seo': '^0.1.0',
 
 	// NestJS

@@ -23,7 +23,7 @@ export interface PluginDecoratorOptions extends Omit<PluginMetadata, 'module'> {
  * @example
  * ```ts
  * @Plugin({
- *   name: 'content-builder',
+ *   name: 'playground',
  *   description: 'Visual schema builder',
  *   version: '1.0.0',
  *   frontend: {
@@ -31,7 +31,7 @@ export interface PluginDecoratorOptions extends Omit<PluginMetadata, 'module'> {
  *     sidebar: [{ id: 'playground', title: 'Playground', url: '/playground', icon: 'Boxes' }]
  *   }
  * })
- * export class ContentBuilderPlugin {}
+ * export class PlaygroundPlugin {}
  * ```
  */
 export function Plugin(options: PluginDecoratorOptions): ClassDecorator {

@@ -1116,7 +1116,7 @@ export class ApiClient {
 		)
 	}
 
-	// Playground (Content Builder plugin) endpoints
+	// Playground plugin endpoints
 	async listPlaygroundSchemas() {
 		return this.request.get(`${this.baseURL}/playground/schemas`, {
 			headers: this.getHeaders(),
@@ -1307,5 +1307,12 @@ export class ApiClient {
 			case 'DELETE':
 				return this.request.delete(url, { headers })
 		}
+	}
+
+	// Sentry plugin endpoints
+	async getSentryConfig() {
+		return this.request.get(`${this.baseURL}/sentry/config`, {
+			headers: this.getHeaders(),
+		})
 	}
 }

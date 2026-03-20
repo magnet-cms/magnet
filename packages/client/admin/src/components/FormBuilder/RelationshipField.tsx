@@ -23,11 +23,7 @@ export function RelationshipField(prop: SchemaProperty): ReactElement {
 
 	// Fetch all items from the target schema (including drafts)
 	// For relationship selectors, we show all content so users can link to any item
-	const {
-		data: items = [],
-		isLoading,
-		error,
-	} = useContentList(targetSchema)
+	const { data: items = [], isLoading, error } = useContentList(targetSchema)
 
 	if (error) {
 		return (

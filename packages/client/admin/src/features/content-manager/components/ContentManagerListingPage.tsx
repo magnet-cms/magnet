@@ -65,8 +65,8 @@ const statusColors: Record<string, { bg: string; text: string; ring: string }> =
 			ring: 'ring-green-600/20',
 		},
 		draft: {
-			bg: 'bg-gray-100',
-			text: 'text-gray-600',
+			bg: 'bg-muted',
+			text: 'text-muted-foreground',
 			ring: 'ring-gray-500/10',
 		},
 		review: {
@@ -75,8 +75,8 @@ const statusColors: Record<string, { bg: string; text: string; ring: string }> =
 			ring: 'ring-yellow-600/20',
 		},
 		archived: {
-			bg: 'bg-gray-100',
-			text: 'text-gray-600',
+			bg: 'bg-muted',
+			text: 'text-muted-foreground',
 			ring: 'ring-gray-500/10',
 		},
 	}
@@ -168,7 +168,7 @@ function generateColumns(
 				''
 			const truncated = id.length > 8 ? `${id.slice(0, 8)}…` : id
 			return (
-				<span className="text-xs font-mono text-gray-500" title={id}>
+				<span className="text-xs font-mono text-muted-foreground" title={id}>
 					{truncated || '-'}
 				</span>
 			)
@@ -186,7 +186,9 @@ function generateColumns(
 			cell: (row: Row<ContentEntry>) => {
 				const value = row.original[prop.name]
 				const formatted = formatCellValue(value, prop)
-				return <span className="text-sm text-gray-700">{formatted}</span>
+				return (
+					<span className="text-sm text-muted-foreground">{formatted}</span>
+				)
 			},
 		})),
 	]
@@ -219,13 +221,13 @@ function generateColumns(
 		header: 'Updated',
 		cell: (row) => {
 			const date = row.original.updatedAt as string
-			if (!date) return <span className="text-sm text-gray-500">-</span>
+			if (!date) return <span className="text-sm text-muted-foreground">-</span>
 			const formatted = new Date(date).toLocaleDateString(undefined, {
 				month: 'short',
 				day: 'numeric',
 				year: 'numeric',
 			})
-			return <span className="text-sm text-gray-500">{formatted}</span>
+			return <span className="text-sm text-muted-foreground">{formatted}</span>
 		},
 	})
 
@@ -382,11 +384,11 @@ export function ContentManagerListingPage({
 
 	const renderToolbar = () => {
 		return (
-			<div className="px-6 py-4 flex flex-col sm:flex-row gap-3 items-center justify-between flex-none bg-white border-b border-gray-200">
+			<div className="px-6 py-4 flex flex-col sm:flex-row gap-3 items-center justify-between flex-none bg-background border-b border-border">
 				<div className="relative w-full sm:w-80">
 					<div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
 						<svg
-							className="text-gray-400"
+							className="text-muted-foreground"
 							width="16"
 							height="16"
 							viewBox="0 0 16 16"
@@ -412,7 +414,7 @@ export function ContentManagerListingPage({
 					</div>
 					<Input
 						type="text"
-						className="pl-9 pr-3 py-1.5 border border-gray-200 rounded-lg text-sm bg-gray-50 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-1 focus:ring-gray-900 focus:border-gray-900 transition-all shadow-sm"
+						className="pl-9 pr-3 py-1.5 border border-border rounded-lg text-sm bg-muted placeholder:text-muted-foreground focus:outline-none focus:bg-background focus:ring-1 focus:ring-ring focus:border-ring transition-all shadow-sm"
 						placeholder={intl.formatMessage({
 							id: 'contentManager.listing.searchPlaceholder',
 							defaultMessage: 'Search entries...',
@@ -424,7 +426,7 @@ export function ContentManagerListingPage({
 
 				<div className="flex items-center gap-3 w-full sm:w-auto">
 					<Select value={statusFilter} onValueChange={setStatusFilter}>
-						<SelectTrigger className="appearance-none pl-3 pr-8 py-1.5 border border-gray-200 rounded-lg text-sm bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-gray-900 focus:border-gray-900 shadow-sm cursor-pointer min-w-[120px]">
+						<SelectTrigger className="appearance-none pl-3 pr-8 py-1.5 border border-border rounded-lg text-sm bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-ring focus:border-ring shadow-sm cursor-pointer min-w-[120px]">
 							<SelectValue />
 						</SelectTrigger>
 						<SelectContent>
@@ -449,11 +451,11 @@ export function ContentManagerListingPage({
 						</SelectContent>
 					</Select>
 
-					<div className="flex items-center border border-gray-200 rounded-lg p-0.5 bg-gray-50">
+					<div className="flex items-center border border-border rounded-lg p-0.5 bg-muted">
 						<Button
 							variant="ghost"
 							size="sm"
-							className="px-2 py-1 text-xs font-medium text-gray-600 hover:text-gray-900"
+							className="px-2 py-1 text-xs font-medium text-muted-foreground hover:text-foreground"
 							onClick={() => {
 								setSearchQuery('')
 								setStatusFilter('all')
@@ -477,8 +479,8 @@ export function ContentManagerListingPage({
 		const endRow = Math.min((pageIndex + 1) * pageSize, totalRows)
 
 		return (
-			<div className="flex-none px-6 py-4 border-t border-gray-200 bg-white flex items-center justify-between">
-				<div className="text-xs text-gray-500">
+			<div className="flex-none px-6 py-4 border-t border-border bg-background flex items-center justify-between">
+				<div className="text-xs text-muted-foreground">
 					{intl.formatMessage(
 						{
 							id: 'common.pagination.showing',
@@ -491,7 +493,7 @@ export function ContentManagerListingPage({
 					<Button
 						variant="outline"
 						size="sm"
-						className="px-3 py-1.5 border border-gray-200 rounded-md text-xs font-medium text-gray-400 cursor-not-allowed bg-gray-50"
+						className="px-3 py-1.5 border border-border rounded-md text-xs font-medium text-muted-foreground cursor-not-allowed bg-muted"
 						disabled={!table.getCanPreviousPage()}
 						onClick={() => table.previousPage()}
 					>
@@ -503,7 +505,7 @@ export function ContentManagerListingPage({
 					<Button
 						variant="outline"
 						size="sm"
-						className="px-3 py-1.5 border border-gray-200 rounded-md text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+						className="px-3 py-1.5 border border-border rounded-md text-xs font-medium text-muted-foreground hover:bg-muted transition-colors"
 						disabled={!table.getCanNextPage()}
 						onClick={() => table.nextPage()}
 					>
@@ -520,14 +522,14 @@ export function ContentManagerListingPage({
 	// Loading state
 	if (isLoading) {
 		return (
-			<div className="flex-1 flex flex-col min-w-0 bg-white h-full relative overflow-hidden">
+			<div className="flex-1 flex flex-col min-w-0 bg-background h-full relative overflow-hidden">
 				<PageHeader>
 					<div className="h-16 flex items-center justify-between px-6">
 						<div>
-							<h1 className="text-lg font-semibold text-gray-900 tracking-tight">
+							<h1 className="text-lg font-semibold text-foreground tracking-tight">
 								{schemaDisplayName}
 							</h1>
-							<p className="text-xs text-gray-500">
+							<p className="text-xs text-muted-foreground">
 								{intl.formatMessage({
 									id: 'common.actions.loading',
 									defaultMessage: 'Loading...',
@@ -547,11 +549,11 @@ export function ContentManagerListingPage({
 	// Error state
 	if (contentError) {
 		return (
-			<div className="flex-1 flex flex-col min-w-0 bg-white h-full relative overflow-hidden">
+			<div className="flex-1 flex flex-col min-w-0 bg-background h-full relative overflow-hidden">
 				<PageHeader>
 					<div className="h-16 flex items-center justify-between px-6">
 						<div>
-							<h1 className="text-lg font-semibold text-gray-900 tracking-tight">
+							<h1 className="text-lg font-semibold text-foreground tracking-tight">
 								{schemaDisplayName}
 							</h1>
 							<p className="text-xs text-red-500">
@@ -565,7 +567,7 @@ export function ContentManagerListingPage({
 				</PageHeader>
 				<div className="flex-1 p-6">
 					<div className="text-center py-12">
-						<p className="text-gray-500 mb-4">{contentError.message}</p>
+						<p className="text-muted-foreground mb-4">{contentError.message}</p>
 						<Button onClick={() => window.location.reload()}>
 							{intl.formatMessage({
 								id: 'common.actions.retry',
@@ -579,7 +581,7 @@ export function ContentManagerListingPage({
 	}
 
 	return (
-		<div className="flex-1 flex flex-col min-w-0 bg-white h-full relative overflow-hidden">
+		<div className="flex-1 flex flex-col min-w-0 bg-background h-full relative overflow-hidden">
 			<style>{contentManagerStyles}</style>
 
 			{/* Header */}
@@ -588,10 +590,10 @@ export function ContentManagerListingPage({
 				<div className="h-16 flex items-center justify-between px-6">
 					{/* Left: Title */}
 					<div>
-						<h1 className="text-lg font-semibold text-gray-900 tracking-tight">
+						<h1 className="text-lg font-semibold text-foreground tracking-tight">
 							{schemaDisplayName}
 						</h1>
-						<p className="text-xs text-gray-500">
+						<p className="text-xs text-muted-foreground">
 							{intl.formatMessage(
 								{
 									id: 'contentManager.listing.manageEntries',
@@ -631,13 +633,13 @@ export function ContentManagerListingPage({
 			</PageHeader>
 
 			{/* Main Workspace */}
-			<div className="flex-1 flex flex-col overflow-hidden bg-gray-50">
+			<div className="flex-1 flex flex-col overflow-hidden bg-muted">
 				{/* Content Table */}
 				<div className="flex-1 overflow-hidden relative">
 					<div className="absolute inset-0 overflow-auto">
 						{filteredData.length === 0 && !searchQuery ? (
 							<div className="flex flex-col items-center justify-center h-full text-center p-6">
-								<div className="text-gray-400 mb-4">
+								<div className="text-muted-foreground mb-4">
 									<svg
 										className="w-16 h-16 mx-auto"
 										fill="none"
@@ -653,13 +655,13 @@ export function ContentManagerListingPage({
 										/>
 									</svg>
 								</div>
-								<h3 className="text-lg font-medium text-gray-900 mb-2">
+								<h3 className="text-lg font-medium text-foreground mb-2">
 									{intl.formatMessage({
 										id: 'contentManager.listing.noEntries',
 										defaultMessage: 'No entries yet',
 									})}
 								</h3>
-								<p className="text-sm text-gray-500 mb-4">
+								<p className="text-sm text-muted-foreground mb-4">
 									{intl.formatMessage(
 										{
 											id: 'contentManager.listing.getStarted',

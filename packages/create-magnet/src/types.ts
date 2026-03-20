@@ -1,6 +1,6 @@
 export type DatabaseAdapter = 'mongoose' | 'drizzle-neon' | 'drizzle-supabase'
 
-export type Plugin = 'content-builder' | 'seo'
+export type Plugin = 'playground' | 'seo' | 'sentry'
 
 export type StorageAdapter = 'local' | 's3' | 'r2' | 'supabase' | 'none'
 

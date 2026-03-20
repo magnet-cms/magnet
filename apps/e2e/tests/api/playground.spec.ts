@@ -31,7 +31,7 @@ function minimalSchema(name: string) {
 	}
 }
 
-test.describe('Playground API (Content Builder plugin)', () => {
+test.describe('Playground API', () => {
 	test.describe('Public access', () => {
 		test('GET /playground/schemas is publicly accessible', async ({
 			request,

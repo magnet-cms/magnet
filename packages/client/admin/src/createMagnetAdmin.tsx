@@ -12,10 +12,10 @@ export interface MagnetAdminConfig {
 	 *
 	 * @example
 	 * ```ts
-	 * import { contentBuilderPlugin } from '@magnet-cms/plugin-content-builder/frontend'
+	 * import { playgroundPlugin } from '@magnet-cms/plugin-playground/frontend'
 	 *
 	 * createMagnetAdmin({
-	 *   plugins: [contentBuilderPlugin]
+	 *   plugins: [playgroundPlugin]
 	 * })
 	 * ```
 	 */
@@ -37,11 +37,11 @@ export interface MagnetAdminConfig {
  * ```ts
  * // apps/my-app/admin/entry.ts
  * import { createMagnetAdmin } from '@magnet-cms/admin'
- * import { contentBuilderPlugin } from '@magnet-cms/plugin-content-builder/frontend'
+ * import { playgroundPlugin } from '@magnet-cms/plugin-playground/frontend'
  * import { seoPlugin } from '@magnet-cms/plugin-seo/frontend'
  *
  * createMagnetAdmin({
- *   plugins: [contentBuilderPlugin, seoPlugin]
+ *   plugins: [playgroundPlugin, seoPlugin]
  * })
  * ```
  */

@@ -140,10 +140,9 @@ function ProfileSetupPage() {
 	// TODO: Wire to useUpdateProfile when profile setup API is available
 	const isLoading = false
 
-	const handleSubmit = (data: ProfileSetupFormValues) => {
+	const handleSubmit = (_data: ProfileSetupFormValues) => {
 		// For now, just navigate to dashboard
 		// This will be wired to useUpdateProfile in Phase 5
-		console.log('Profile setup data:', data)
 		toast.success('Profile setup complete!')
 		navigate('/')
 	}

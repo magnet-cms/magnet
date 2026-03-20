@@ -52,7 +52,7 @@ export const AppSidebar = ({
 		}) || []
 
 	// Core sidebar items with order for sorting
-	// Plugin items (like Playground from content-builder) are added via usePluginSidebarItems()
+	// Plugin items (e.g. Playground from `@magnet-cms/plugin-playground`) via usePluginSidebarItems()
 	const coreSidebarItems = [
 		{
 			title: intl.formatMessage({

@@ -13,6 +13,7 @@ import {
 	useState,
 } from 'react'
 import type { RouteObject } from 'react-router-dom'
+import { Outlet } from 'react-router-dom'
 import { useAdapter } from '../provider/MagnetProvider'
 import { exposePluginGlobals } from './globals'
 import {
@@ -114,37 +115,41 @@ export function PluginRegistryProvider({
 				const registrations = getRegisteredPlugins()
 				console.log('[Magnet] Registered plugins:', registrations)
 
-				// 4. Resolve routes and components from bundle registrations
+				const advertisedPluginNames = new Set(
+					manifests.map((m) => m.pluginName),
+				)
+
+				// 4. Resolve routes and components from bundle registrations.
+				//    Only plugins advertised by GET /plugins/manifests are shown (avoids
+				//    createMagnetAdmin static registration without a matching backend).
 				const resolvedPlugins = new Map<string, ResolvedPlugin>()
 
 				for (const registration of registrations) {
+					const name = registration.manifest.pluginName
+					if (!advertisedPluginNames.has(name)) {
+						console.warn(
+							`[Magnet] Ignoring plugin "${name}" — not in server manifests.`,
+						)
+						continue
+					}
 					try {
 						const resolved = resolvePlugin(
 							registration.manifest,
 							registration.components,
 						)
-						resolvedPlugins.set(registration.manifest.pluginName, resolved)
+						resolvedPlugins.set(name, resolved)
 					} catch (err) {
-						console.error(
-							`[Magnet] Failed to resolve plugin ${registration.manifest.pluginName}:`,
-							err,
-						)
+						console.error(`[Magnet] Failed to resolve plugin ${name}:`, err)
 					}
 				}
 
-				// 5. For manifests whose bundles didn't register, still resolve
-				//    sidebar items so they appear in the menu
+				// 5. Warn when the server advertised a plugin but its bundle did not register.
+				//    Do not add sidebar items from the manifest alone (broken nav / empty routes).
 				for (const manifest of manifests) {
 					if (!resolvedPlugins.has(manifest.pluginName)) {
 						console.warn(
-							`[Magnet] Plugin "${manifest.pluginName}" bundle did not register. Sidebar resolved from manifest.`,
+							`[Magnet] Plugin "${manifest.pluginName}" bundle did not register; sidebar omitted.`,
 						)
-						resolvedPlugins.set(manifest.pluginName, {
-							manifest,
-							components: new Map(),
-							routes: [],
-							sidebarItems: (manifest.sidebar || []).map(resolveSidebarItem),
-						})
 					}
 				}
 
@@ -270,14 +275,16 @@ function resolveRoute(
 	const Component = components.get(routeDef.componentId)
 	const hasChildren = routeDef.children && routeDef.children.length > 0
 
-	// If route has children, don't set element on parent
-	// The index child (path: '') will handle the default view
-	const element =
-		Component && !hasChildren ? (
-			<Suspense fallback={<div className="p-4">Loading...</div>}>
-				<Component />
-			</Suspense>
-		) : null
+	const suspense = (node: ReactNode) => (
+		<Suspense fallback={<div className="p-4">Loading...</div>}>{node}</Suspense>
+	)
+
+	// Parents with children must render <Outlet /> (RR7); null breaks child matching.
+	const element = hasChildren
+		? suspense(<Outlet />)
+		: Component
+			? suspense(<Component />)
+			: null
 
 	return {
 		path: routeDef.path,

@@ -1,7 +1,7 @@
 import { MongooseDatabaseAdapter } from '@magnet-cms/adapter-db-mongoose'
 import { HashiCorpVaultAdapter } from '@magnet-cms/adapter-vault-hashicorp'
 import { MagnetModule } from '@magnet-cms/core'
-import { ContentBuilderPlugin } from '@magnet-cms/plugin-content-builder'
+import { PlaygroundPlugin } from '@magnet-cms/plugin-playground'
 import { StripePlugin } from '@magnet-cms/plugin-stripe'
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
@@ -16,7 +16,7 @@ import { FeaturesModule } from './modules/features.module'
  * - Local file storage (default)
  * - HashiCorp Vault for secrets management
  * - Built-in email (console-only; add NodemailerEmailAdapter for SMTP)
- * - Content Builder plugin
+ * - Playground plugin
  * - Stripe plugin
  * - Admin UI serving
  *
@@ -33,7 +33,7 @@ import { FeaturesModule } from './modules/features.module'
 				[
 					MongooseDatabaseAdapter.forRoot(),
 					HashiCorpVaultAdapter.forRoot(),
-					ContentBuilderPlugin.forRoot(),
+					PlaygroundPlugin.forRoot(),
 					StripePlugin.forRoot({
 						currency: 'usd',
 						features: {

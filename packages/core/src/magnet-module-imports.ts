@@ -58,22 +58,6 @@ export interface BuildImportsParams {
 	adminConfig: AdminServeOptions
 }
 
-function normalizeAdminConfig(
-	admin?: boolean | { enabled?: boolean; path?: string; distPath?: string },
-): AdminServeOptions {
-	if (admin === true) {
-		return { enabled: true, path: '/admin' }
-	}
-	if (admin === false || admin === undefined) {
-		return { enabled: false, path: '/admin' }
-	}
-	return {
-		enabled: admin.enabled ?? true,
-		path: admin.path ?? '/admin',
-		distPath: admin.distPath,
-	}
-}
-
 export function buildMagnetImports(params: BuildImportsParams): {
 	imports: Array<DynamicModule | Type>
 	DBModule: DynamicModule

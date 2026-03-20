@@ -194,8 +194,9 @@ export function MediaUploadField(prop: SchemaProperty): ReactElement {
 	)
 
 	const availableMedia =
-		mediaData?.items?.filter((item: MediaItem) => !mediaIds.includes(item.id)) ||
-		[]
+		mediaData?.items?.filter(
+			(item: MediaItem) => !mediaIds.includes(item.id),
+		) || []
 
 	return (
 		<FormField

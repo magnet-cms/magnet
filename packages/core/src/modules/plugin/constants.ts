@@ -5,12 +5,12 @@ export const PLUGIN_MODULE = 'plugin:module'
 /**
  * Generate standardized options token for a plugin.
  *
- * @param pluginName - The plugin name (e.g., 'content-builder')
- * @returns Token string (e.g., 'PLUGIN_CONTENT_BUILDER_OPTIONS')
+ * @param pluginName - The plugin name (e.g., 'playground')
+ * @returns Token string (e.g., 'PLUGIN_PLAYGROUND_OPTIONS')
  *
  * @example
  * ```ts
- * getPluginOptionsToken('content-builder') // 'PLUGIN_CONTENT_BUILDER_OPTIONS'
+ * getPluginOptionsToken('playground') // 'PLUGIN_PLAYGROUND_OPTIONS'
  * ```
  */
 export function getPluginOptionsToken(pluginName: string): string {

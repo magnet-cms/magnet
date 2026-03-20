@@ -1,5 +1,6 @@
 import type { QueryClient } from '@tanstack/react-query'
 import { ThemeProvider } from 'next-themes'
+import { ThemeRootSync } from './components/ThemeRootSync'
 import type {
 	MagnetApiAdapter,
 	MagnetConfig,
@@ -180,16 +181,18 @@ export function MagnetAdmin({
 
 	return (
 		<ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-			<AppIntlProvider locale={locale} messages={messages}>
-				<MagnetProvider config={config}>
-					<MagnetRouter
-						type={router}
-						basePath={basePath}
-						routes={routes}
-						initialEntries={initialEntries}
-					/>
-				</MagnetProvider>
-			</AppIntlProvider>
+			<ThemeRootSync>
+				<AppIntlProvider locale={locale} messages={messages}>
+					<MagnetProvider config={config}>
+						<MagnetRouter
+							type={router}
+							basePath={basePath}
+							routes={routes}
+							initialEntries={initialEntries}
+						/>
+					</MagnetProvider>
+				</AppIntlProvider>
+			</ThemeRootSync>
 		</ThemeProvider>
 	)
 }

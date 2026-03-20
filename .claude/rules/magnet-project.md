@@ -36,7 +36,7 @@ Bun-based Turbo monorepo — headless CMS framework built on NestJS.
 | `@magnet-cms/email-resend` | `packages/adapters/email-resend` | Resend email adapter |
 | `@magnet-cms/admin` | `packages/client/admin` | React admin UI (Vite) |
 | `@magnet-cms/ui` | `packages/client/ui` | Shared UI component library |
-| `@magnet-cms/plugin-content-builder` | `packages/plugins/content-builder` | Content builder plugin |
+| `@magnet-cms/plugin-playground` | `packages/plugins/playground` | Playground (schema builder) plugin |
 | `@magnet-cms/plugin-seo` | `packages/plugins/seo` | SEO plugin |
 | `@magnet-cms/utils` | `packages/utils` | Utility functions |
 | `create-magnet` | `packages/create-magnet` | CLI scaffolding tool |
@@ -70,7 +70,7 @@ magnet/
 │   ├── common/                  # Shared types/decorators
 │   ├── core/                    # Core NestJS module
 │   ├── create-magnet/           # CLI scaffolding
-│   ├── plugins/{content-builder,seo}/
+│   ├── plugins/{playground,seo}/
 │   ├── tooling/{biome,tsup,typescript}/
 │   └── utils/
 ├── plans/                       # Feature/architecture plans

@@ -25,7 +25,7 @@ export function FolderGrid({ folders, onFolderClick }: FolderGridProps) {
 						type="button"
 						key={folder.id}
 						onClick={() => onFolderClick(folder.id)}
-						className="group flex flex-col items-center p-4 bg-white border border-gray-200 rounded-xl hover:border-gray-300 hover:shadow-sm transition-all text-center cursor-pointer"
+						className="group flex flex-col items-center p-4 bg-card border border-border rounded-xl hover:border-muted-foreground/30 hover:shadow-sm transition-all text-center cursor-pointer"
 					>
 						<FolderIcon className="w-10 h-10 text-gray-400 group-hover:text-yellow-500 transition-colors mb-2" />
 						<span className="text-sm font-medium text-gray-900 truncate w-full">

@@ -11,6 +11,7 @@ import PhoneInput, {
 
 import 'react-phone-number-input/style.css'
 
+import { cn } from '../../../lib/utils'
 import {
 	FormControl,
 	FormDescription,
@@ -26,7 +27,6 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '../../atoms/select'
-import { cn } from '../../../lib/utils'
 
 type Props = {
 	name: string

@@ -44,6 +44,22 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 		const response = ctx.getResponse()
 		const request = ctx.getRequest<RequestWithUser>()
 
+		// Forward to Sentry if the @magnet-cms/plugin-sentry plugin is installed
+		// and Sentry has been initialized. This is a no-op when the plugin is absent.
+		// @sentry/nestjs is an optional peer dependency of @magnet-cms/core.
+		try {
+			// eslint-disable-next-line @typescript-eslint/no-require-imports
+			const Sentry = require('@sentry/nestjs') as {
+				getClient: () => unknown
+				captureException: (e: unknown) => void
+			}
+			if (Sentry.getClient()) {
+				Sentry.captureException(exception)
+			}
+		} catch {
+			// @sentry/nestjs not installed — no-op
+		}
+
 		// Handle MagnetError types (new error infrastructure)
 		if (exception instanceof MagnetError) {
 			this.logError(exception, request)

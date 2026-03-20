@@ -7,17 +7,19 @@ The Admin Module serves the Magnet CMS admin interface and provides configuratio
 
 ## Enabling and Disabling Admin
 
-Control admin UI serving via `MagnetModule.forRoot()`:
+Control admin UI serving via the second argument to `MagnetModule.forRoot()`:
 
 ```typescript
-// Enable admin UI (default when admin: true)
-MagnetModule.forRoot({ db: {...}, jwt: {...}, admin: true })
+// Admin UI is enabled by default — omit `admin` or pass true
+MagnetModule.forRoot([DrizzleDatabaseAdapter.forRoot(), ...])
+
+MagnetModule.forRoot([...], { admin: true })
 
 // API-only / headless mode — no admin UI served
-MagnetModule.forRoot({ db: {...}, jwt: {...}, admin: false })
+MagnetModule.forRoot([...], { admin: false })
 ```
 
-When `admin: false`, the CMS runs in headless mode: REST APIs are available but no admin static files are served.
+When `admin` is omitted or `true`, Nest serves the built admin SPA at `/admin` when a dist is found (see below). When `admin: false`, only REST APIs are available from the same app.
 
 ## Overview
 

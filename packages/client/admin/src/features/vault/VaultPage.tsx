@@ -24,22 +24,22 @@ export function VaultPage() {
 	}
 
 	return (
-		<div className="flex-1 flex flex-col min-w-0 bg-white h-full relative overflow-hidden">
+		<div className="flex-1 flex flex-col min-w-0 bg-background h-full relative overflow-hidden">
 			{/* Header */}
 			<PageHeader>
 				<div className="h-16 flex items-center justify-between gap-3 px-6">
 					<div className="flex items-center gap-3">
-						<div className="w-8 h-8 rounded-lg bg-gray-900 flex items-center justify-center">
-							<KeyRound className="w-4 h-4 text-white" />
+						<div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+							<KeyRound className="w-4 h-4 text-primary-foreground" />
 						</div>
 						<div>
-							<h1 className="text-lg font-semibold text-gray-900 tracking-tight">
+							<h1 className="text-lg font-semibold text-foreground tracking-tight">
 								{intl.formatMessage({
 									id: 'vault.title',
 									defaultMessage: 'Vault',
 								})}
 							</h1>
-							<p className="text-xs text-gray-500">
+							<p className="text-xs text-muted-foreground">
 								{intl.formatMessage({
 									id: 'vault.description',
 									defaultMessage:
@@ -59,8 +59,8 @@ export function VaultPage() {
 			</PageHeader>
 
 			{/* Two-column body: table area (same pattern as Access Control) + sidebar */}
-			<div className="flex-1 flex overflow-hidden bg-gray-50/50">
-				<div className="flex-1 flex flex-col overflow-hidden bg-gray-50">
+			<div className="flex-1 flex overflow-hidden bg-muted/50">
+				<div className="flex-1 flex flex-col overflow-hidden bg-muted">
 					<div className="flex-1 overflow-hidden relative">
 						<div className="absolute inset-0 overflow-auto">
 							<SecretBrowser

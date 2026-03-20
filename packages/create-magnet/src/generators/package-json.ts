@@ -40,9 +40,9 @@ export function generatePackageJson(config: ProjectConfig): string {
 	}
 
 	// Add plugins
-	if (plugins.includes('content-builder')) {
-		dependencies['@magnet-cms/plugin-content-builder'] =
-			PACKAGE_VERSIONS['@magnet-cms/plugin-content-builder']
+	if (plugins.includes('playground')) {
+		dependencies['@magnet-cms/plugin-playground'] =
+			PACKAGE_VERSIONS['@magnet-cms/plugin-playground']
 	}
 	if (plugins.includes('seo')) {
 		dependencies['@magnet-cms/plugin-seo'] =

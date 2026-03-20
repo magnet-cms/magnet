@@ -9,7 +9,7 @@ description: Guide for creating a new plugin for Magnet CMS (backend + frontend)
 
 1. **Create package** at `packages/plugins/<name>/`
    - Structure: `src/plugin.ts`, `src/backend/<name>.module.ts`, `src/frontend/index.ts`, `src/index.ts`
-   - Reference: `packages/plugins/content-builder/`
+   - Reference: `packages/plugins/playground/`
 
 2. **Create NestJS module** in `src/backend/<name>.module.ts`
    ```typescript

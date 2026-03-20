@@ -18,14 +18,14 @@ Plugins provide:
 
 | Plugin | Package | Description |
 |--------|---------|-------------|
-| Content Builder | `@magnet-cms/plugin-content-builder` | Visual schema builder |
+| Playground | `@magnet-cms/plugin-playground` | Visual schema builder |
 | SEO | `@magnet-cms/plugin-seo` | SEO metadata management |
 
 ## Installing Plugins
 
 ```bash
-# Content Builder
-bun add @magnet-cms/plugin-content-builder
+# Playground
+bun add @magnet-cms/plugin-playground
 
 # SEO (when available)
 bun add @magnet-cms/plugin-seo
@@ -39,14 +39,14 @@ Add plugins to your `MagnetModule.forRoot()` provider array:
 import { Module } from '@nestjs/common'
 import { MagnetModule } from '@magnet-cms/core'
 import { MongooseDatabaseAdapter } from '@magnet-cms/adapter-db-mongoose'
-import { ContentBuilderPlugin } from '@magnet-cms/plugin-content-builder'
+import { PlaygroundPlugin } from '@magnet-cms/plugin-playground'
 
 @Module({
   imports: [
     MagnetModule.forRoot(
       [
         MongooseDatabaseAdapter.forRoot(),
-        ContentBuilderPlugin.forRoot(),
+        PlaygroundPlugin.forRoot(),
       ],
       { admin: true },
     ),
@@ -63,7 +63,7 @@ Pass options via each plugin's `.forRoot()` method:
 MagnetModule.forRoot(
   [
     MongooseDatabaseAdapter.forRoot(),
-    ContentBuilderPlugin.forRoot({
+    PlaygroundPlugin.forRoot({
       modulesPath: './src/modules',
     }),
   ],
@@ -81,7 +81,7 @@ const providers = [
 ]
 
 if (process.env.NODE_ENV === 'development') {
-  providers.push(ContentBuilderPlugin.forRoot())
+  providers.push(PlaygroundPlugin.forRoot())
 }
 
 MagnetModule.forRoot(providers, { admin: true })
@@ -264,5 +264,5 @@ export class MyPluginService {
 
 ## Next Steps
 
-- [Content Builder Plugin](/docs/plugins/content-builder) - Visual schema builder
+- [Playground Plugin](/docs/plugins/playground) - Visual schema builder
 - [SEO Plugin](/docs/plugins/seo) - SEO metadata management

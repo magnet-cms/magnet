@@ -137,7 +137,7 @@ export const ConfigurationForm = forwardRef<ConfigurationFormRef, object>(
 		if (isLoading) {
 			return (
 				<div className="space-y-8">
-					<Card className="border border-gray-200 overflow-hidden">
+					<Card className="overflow-hidden">
 						<div className="px-6 py-4 border-b border-gray-100">
 							<Skeleton className="h-5 w-32" />
 						</div>
@@ -161,7 +161,7 @@ export const ConfigurationForm = forwardRef<ConfigurationFormRef, object>(
 		return (
 			<div className="space-y-8">
 				{/* Section: Project Identity */}
-				<Card className="border border-gray-200 overflow-hidden">
+				<Card className="overflow-hidden">
 					<div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
 						<Box className="w-[18px] h-[18px] text-gray-400" />
 						<h2 className="text-sm font-semibold text-gray-900">
@@ -272,7 +272,7 @@ export const ConfigurationForm = forwardRef<ConfigurationFormRef, object>(
 				</Card>
 
 				{/* Section: Preferences */}
-				<Card className="border border-gray-200 overflow-hidden">
+				<Card className="overflow-hidden">
 					<div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
 						<SlidersHorizontal className="w-[18px] h-[18px] text-gray-400" />
 						<h2 className="text-sm font-semibold text-gray-900">Preferences</h2>

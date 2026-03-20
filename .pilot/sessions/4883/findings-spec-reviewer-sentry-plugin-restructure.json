@@ -1,0 +1,81 @@
+{
+  "plan_file": "/home/gjsoa/code/magnet/docs/plans/2026-03-20-sentry-plugin-restructure.md",
+  "pass_summary": "The Sentry plugin restructure is largely complete and well-implemented. All 7 tasks are done, backend is reorganized under src/backend/, the @Plugin() decorator has frontend metadata, new API service and controller are present with tests, and all three admin pages are built. One spec deviation exists in the /sentry/admin/status response shape, and the caching test has a potential isolation issue due to module-level import caching in Bun.",
+  "compliance_score": "high",
+  "quality_score": "high",
+  "goal_score": "partial",
+  "truths_verified": 6,
+  "truths_total": 8,
+  "issues": [
+    {
+      "severity": "should_fix",
+      "category": "spec_compliance",
+      "title": "GET /sentry/admin/status missing organization and project fields",
+      "description": "The plan (Task 4, DoD) specifies the status endpoint should return `{ connected, organization, project, lastSync }`. The actual SentryStatusResponse interface in packages/plugins/sentry/src/backend/controllers/sentry-admin.controller.ts (lines 10-13) only has `connected` and `lastSync` — the `organization` and `project` fields are missing. The Settings page also does not display organization/project names. The plan explicitly calls out these fields as part of the settings page connectivity check.",
+      "suggested_fix": "In sentry-admin.controller.ts, add organization and project to SentryStatusResponse: `interface SentryStatusResponse { connected: boolean; organization: string | undefined; project: string | undefined; lastSync: string | null }`. Update getStatus() to return them: `organization: this.sentryApi['organization'], project: this.sentryApi['project']` (or expose via a getter on the service). Update the Settings page to display them in the API Connection card."
+    },
+    {
+      "severity": "should_fix",
+      "category": "test_quality",
+      "title": "Caching test may be fragile due to Bun module-level import caching",
+      "description": "The caching test in packages/plugins/sentry/src/backend/__tests__/sentry-api.service.test.ts (lines 96-113) calls `import('../services/sentry-api.service')` inside each test. Because Bun caches module instances, all tests that import the service share the same service instance's cache map. The caching test creates a fresh SentryApiService but the URL-keyed cache map persists on the class instance (not across instances — this is actually OK since each test constructs `new SentryApiService()`). However, the `globalThis.fetch` mock swap is done with beforeEach/afterEach, but if the module-import-retry pattern (in the controller test) fires during fetch, the restored original fetch may not be in scope. Low likelihood but worth noting. More importantly, the stats test at line 51 creates a new service instance, calls getProjectStats(), and checks `mockFetch.toHaveBeenCalledTimes(1)`, but a prior test with the SAME url-keyed cache could theoretically not call fetch at all if module caching reuses the service. In practice each `new SentryApiService()` creates a fresh Map, so this is fine. The test suite overall is solid.",
+      "suggested_fix": "No urgent change needed, but consider adding a comment explaining that each `new SentryApiService({...})` creates a fresh cache Map, so tests are isolated even with module caching. Optionally add `afterEach(() => { service.clearCache?.() })` if a clearCache method is ever added."
+    },
+    {
+      "severity": "suggestion",
+      "category": "error_handling",
+      "title": "getIssues() on dashboard fetches without ?limit=5 query param",
+      "description": "The plan (Task 5) states the dashboard should call `/sentry/admin/issues?limit=5`. The actual fetch in packages/plugins/sentry/src/admin/pages/sentry-dashboard.tsx (line 64) calls `/sentry/admin/issues` without a limit param and slices client-side with `issuesData.slice(0, 5)`. The backend controller does not forward a limit param to SentryApiService.getIssues() — the Sentry API always returns 25 issues. This means 20 unnecessary records are fetched and discarded on every dashboard load.",
+      "suggested_fix": "In sentry-admin.controller.ts, add an optional `@Query('limit')` param to getIssues() and pass it to the API URL or slice the result. In sentry-dashboard.tsx, change the fetch to `/sentry/admin/issues?limit=5`. Alternatively, keep client-side slicing but acknowledge the over-fetching is acceptable for the initial implementation."
+    },
+    {
+      "severity": "suggestion",
+      "category": "spec_compliance",
+      "title": "SentryModule does not export SentryModule itself from backend/index.ts",
+      "description": "The plan (Task 1, Key Decisions) says the barrel `src/backend/index.ts` should follow the Stripe backend pattern and 'export plugin, module, services, types'. The actual barrel at packages/plugins/sentry/src/backend/index.ts exports SentryPlugin, SentryModule, SENTRY_OPTIONS, initSentryInstrumentation, withSentrySpan, SentrySpan, SentryCron, MagnetSentryCron, and types — it does NOT export SentryApiService. Since SentryApiService is exported from SentryModule's `exports` array, consumers using it via DI don't need a direct import, but the barrel could be made complete.",
+      "suggested_fix": "Add `export { SentryApiService } from './services/sentry-api.service'` to packages/plugins/sentry/src/backend/index.ts for API completeness. This is low priority since the service is not typically needed by consumers directly."
+    }
+  ],
+  "truths": [
+    {
+      "truth": "The Sentry plugin frontend bundle is loaded by the admin UI (visible in GET /plugins/manifests response)",
+      "status": "verified",
+      "evidence": "packages/plugins/sentry/src/backend/plugin.ts has @Plugin() with frontend: { routes, sidebar } matching Stripe pattern. The PluginRegistryService reads PLUGIN_FRONTEND_MANIFEST metadata to generate bundleUrl. The decorator is correctly populated with 3 routes and sidebar items."
+    },
+    {
+      "truth": "The Dashboard page displays metric cards and a recent issues list when authToken is configured",
+      "status": "verified",
+      "evidence": "sentry-dashboard.tsx fetches /sentry/admin/stats and /sentry/admin/issues, renders ErrorMetrics component with 3 metric cards and RecentIssues component with up to 5 issues. Shows SetupCard when isConfigured is false."
+    },
+    {
+      "truth": "The Issues page shows a DataTable of Sentry issues with status, count, and last seen",
+      "status": "verified",
+      "evidence": "sentry-issues.tsx uses DataTable from @magnet-cms/ui/components with columns: Title (with shortId and permalink link), Status (Badge), Events (count), Last Seen (relative time). Empty state 'No issues found' is present."
+    },
+    {
+      "truth": "The Settings page shows connection status, DSN, and API token connectivity",
+      "status": "verified",
+      "evidence": "sentry-settings.tsx renders Connection Status card (DSN masked, enabled status, environment) and API Connection card (connected Badge, lastSync). Fetches /sentry/config and /sentry/admin/status."
+    },
+    {
+      "truth": "The feedback widget renders as a floating button in the admin UI",
+      "status": "uncertain",
+      "evidence": "admin/index.ts registers SentryFeedbackWidget as a global widget. The component lazy-imports './components/feedback-widget' but this file is NOT in the changed_files list. Cannot confirm it exists and is non-stub without reading it. The import path is present in admin/index.ts."
+    },
+    {
+      "truth": "Backend files are organized under src/backend/ with a barrel export at src/backend/index.ts",
+      "status": "verified",
+      "evidence": "Directory listing confirms src/backend/ exists with controllers/, decorators/, helpers/, interceptors/, services/ subdirectories and index.ts barrel. All files are present."
+    },
+    {
+      "truth": "bun run check-types passes across the entire monorepo",
+      "status": "uncertain",
+      "evidence": "Cannot run type-check statically. Code uses correct types throughout — no `any` usage visible, generics are correct, exports align. High confidence it passes but unverified."
+    },
+    {
+      "truth": "All existing and new tests pass",
+      "status": "uncertain",
+      "evidence": "Cannot execute tests. Test files exist for SentryApiService (8 tests) and SentryAdminController (6 tests). The try/catch-retry import pattern for NestJS decorators is correctly applied per test framework constraints. Existing test files (sentry-config.controller.test.ts, plugin.test.ts, etc.) are present in src/backend/__tests__/."
+    }
+  ]
+}

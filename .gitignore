@@ -30,7 +30,6 @@ dist
 # Drizzle auto-migration snapshot (local state, not committed)
 **/.schema_snapshot.json
 
-
 # Debug
 npm-debug.log*
 yarn-debug.log*
@@ -52,3 +51,6 @@ yarn-error.log*
 .worktrees/
 .worktrees/
 apps/examples/drizzle-sqlite/test-sqlite.db
+
+# Plans
+# docs/plans/

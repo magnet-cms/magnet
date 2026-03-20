@@ -51,7 +51,7 @@ export class Permission {
 	group?: string
 
 	/**
-	 * API identifier (e.g., 'api::posts', 'plugin::content-builder', 'system::users')
+	 * API identifier (e.g., 'api::posts', 'plugin::playground', 'system::users')
 	 */
 	@Field.Text()
 	@Field.Validators(IsString(), IsOptional(), MaxLength(100))

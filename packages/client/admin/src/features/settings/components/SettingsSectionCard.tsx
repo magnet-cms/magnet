@@ -28,15 +28,15 @@ export function SettingsSectionCard({
 	return (
 		<Card
 			className={cn(
-				'border overflow-hidden',
-				isDanger ? 'border-red-200 bg-red-50/30' : 'border-gray-200',
+				'overflow-hidden',
+				isDanger && 'border-destructive/40 bg-destructive/5',
 			)}
 		>
 			{/* Section Header */}
 			<div
 				className={cn(
-					'px-6 py-4 border-b flex items-center gap-2',
-					isDanger ? 'border-red-100' : 'border-gray-100',
+					'px-6 py-4 border-b border-border flex items-center gap-2',
+					isDanger && 'border-destructive/30',
 				)}
 			>
 				{isDanger ? (

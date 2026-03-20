@@ -26,7 +26,7 @@ export interface PlaygroundOptions {
 }
 
 export interface AdminConfig {
-	/** Enable static admin serving (default: false) */
+	/** Enable static admin serving (default true when omitted) */
 	enabled?: boolean
 	/** Path to serve admin UI (default: '/admin') */
 	path?: string
@@ -57,9 +57,9 @@ export class MagnetModuleOptions {
 	 */
 	plugins?: PluginConfig[]
 	/**
-	 * Admin panel configuration
+	 * Admin panel configuration (enabled by default when omitted).
 	 * @example
-	 * // Enable with defaults
+	 * // Explicit enable (same as omitting `admin`)
 	 * admin: true
 	 *
 	 * // Custom path

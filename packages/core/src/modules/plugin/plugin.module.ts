@@ -38,7 +38,7 @@ export class PluginModule {
 	 * ```ts
 	 * PluginModule.forRoot({
 	 *   plugins: [
-	 *     { plugin: ContentBuilderPlugin, options: { modulesPath: './src/modules' } },
+	 *     { plugin: PlaygroundPlugin, options: { modulesPath: './src/modules' } },
 	 *     { plugin: SeoPlugin, enabled: true }
 	 *   ]
 	 * })
@@ -150,7 +150,7 @@ export class PluginModule {
 			})
 
 			// Also provide with legacy token for backwards compatibility
-			// e.g., 'CONTENT_BUILDER_OPTIONS' for 'content-builder' plugin
+			// e.g., 'PLAYGROUND_OPTIONS' for 'playground' plugin
 			const legacyToken = `${metadata.name.toUpperCase().replace(/-/g, '_')}_OPTIONS`
 			providers.push({
 				provide: legacyToken,
