@@ -1,6 +1,6 @@
 {
   "name": "magnet-template-drizzle-supabase",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Magnet CMS template with Drizzle ORM and full Supabase integration (database, auth, storage)",
   "author": "",
   "private": true,

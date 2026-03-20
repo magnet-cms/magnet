@@ -1,6 +1,6 @@
 {
   "name": "@magnet-cms/plugin-sentry",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Sentry plugin for Magnet CMS — error tracking, performance monitoring, cron monitoring, and user feedback",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -62,11 +62,11 @@
     "vite": "^6.0.7"
   },
   "peerDependencies": {
-    "@magnet-cms/admin": "^0.1.2",
-    "@magnet-cms/common": "^0.1.0",
-    "@magnet-cms/core": "^1.0.3",
-    "@magnet-cms/ui": "^0.1.0",
-    "@magnet-cms/utils": "^0.1.0",
+    "@magnet-cms/admin": "^0.2.0",
+    "@magnet-cms/common": "^0.2.0",
+    "@magnet-cms/core": "^2.0.0",
+    "@magnet-cms/ui": "^0.1.3",
+    "@magnet-cms/utils": "^0.1.1",
     "@nestjs/common": "^11.1.12",
     "@sentry/nestjs": "^9.0.0",
     "lucide-react": ">=0.400.0",
