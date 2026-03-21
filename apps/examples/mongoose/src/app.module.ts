@@ -1,8 +1,8 @@
 import { MongooseDatabaseAdapter } from '@magnet-cms/adapter-db-mongoose'
+import { GraphQLAdapter } from '@magnet-cms/adapter-graphql'
 import { HashiCorpVaultAdapter } from '@magnet-cms/adapter-vault-hashicorp'
 import { MagnetModule } from '@magnet-cms/core'
 import { PlaygroundPlugin } from '@magnet-cms/plugin-playground'
-import { StripePlugin } from '@magnet-cms/plugin-stripe'
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { CatsModule } from './modules/cats/cats.module'
@@ -20,7 +20,6 @@ import { VeterinariansModule } from './modules/veterinarians/veterinarians.modul
  * - HashiCorp Vault for secrets management
  * - Built-in email (console-only; add NodemailerEmailAdapter for SMTP)
  * - Playground plugin
- * - Stripe plugin
  * - Admin UI serving
  *
  * To run this example:
@@ -36,13 +35,7 @@ import { VeterinariansModule } from './modules/veterinarians/veterinarians.modul
 				MongooseDatabaseAdapter.forRoot(),
 				HashiCorpVaultAdapter.forRoot(),
 				PlaygroundPlugin.forRoot(),
-				StripePlugin.forRoot({
-					currency: 'usd',
-					features: {
-						pro: ['unlimited-servers', 'priority-support'],
-						basic: ['5-servers'],
-					},
-				}),
+				GraphQLAdapter.forRoot(),
 			],
 			{ admin: true },
 		),

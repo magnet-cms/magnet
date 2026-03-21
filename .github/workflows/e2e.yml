@@ -1,5 +1,5 @@
 # E2E Tests — all credentials below are dev-mode/demo values for isolated CI environments.
-# TODO: Re-enable after fixing flaky tests and plugin-specific test skipping
+# TODO: Re-enable after fixing flaky tests
 name: E2E Tests
 
 on:
@@ -91,8 +91,6 @@ jobs:
           SMTP_HOST: localhost
           SMTP_PORT: "1025"
           EMAIL_FROM: noreply@magnet.local
-          STRIPE_SECRET_KEY: sk_test_fake_key_for_ci
-          STRIPE_WEBHOOK_SECRET: whsec_fake_secret_for_ci
 
       - name: Start admin UI
         run: |

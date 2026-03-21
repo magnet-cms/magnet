@@ -4,7 +4,6 @@ import { SupabaseStorageAdapter } from '@magnet-cms/adapter-storage-supabase'
 import { SupabaseVaultAdapter } from '@magnet-cms/adapter-vault-supabase'
 import { MagnetModule } from '@magnet-cms/core'
 import { PlaygroundPlugin } from '@magnet-cms/plugin-playground'
-import { SentryPlugin } from '@magnet-cms/plugin-sentry'
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { CatsModule } from './modules/cats/cats.module'
@@ -21,7 +20,6 @@ import { VeterinariansModule } from './modules/veterinarians/veterinarians.modul
  * - Supabase Storage adapter for file uploads
  * - Supabase Vault (pgsodium) for secrets management
  * - Playground plugin
- * - Sentry plugin (set SENTRY_DSN in .env)
  * - Admin UI serving
  * - Local development with Docker Compose
  *
@@ -46,7 +44,6 @@ import { VeterinariansModule } from './modules/veterinarians/veterinarians.modul
 			SupabaseStorageAdapter.forRoot(),
 			SupabaseVaultAdapter.forRoot(),
 			PlaygroundPlugin.forRoot(),
-			SentryPlugin.forRoot(),
 		]),
 		CatsModule,
 		OwnersModule,
