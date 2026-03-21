@@ -1,6 +1,6 @@
 {
   "name": "@magnet-cms/adapter-auth-supabase",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "Supabase auth strategy for Magnet CMS",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -34,7 +34,7 @@
     "@types/passport-jwt": "^4.0.1"
   },
   "peerDependencies": {
-    "@magnet-cms/common": "^0.2.0",
+    "@magnet-cms/common": "^0.3.0",
     "@nestjs/common": "^11.1.12",
     "@supabase/supabase-js": "^2.49.0",
     "passport-jwt": "^4.0.1"
