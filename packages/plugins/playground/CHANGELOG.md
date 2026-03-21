@@ -1,5 +1,15 @@
 # @magnet-cms/plugin-playground
 
+## 3.0.0
+
+### Patch Changes
+
+- Updated dependencies [[`5f4dc9e`](https://github.com/magnet-cms/magnet/commit/5f4dc9e042a84ba552be67c8c06024630cf447d5)]:
+  - @magnet-cms/core@3.0.0
+  - @magnet-cms/admin@0.3.0
+  - @magnet-cms/common@0.3.0
+  - @magnet-cms/utils@0.1.1
+
 ## 2.0.0
 
 ### Patch Changes

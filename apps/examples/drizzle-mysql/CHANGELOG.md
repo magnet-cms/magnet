@@ -1,5 +1,17 @@
 # magnet-template-drizzle-mysql
 
+## 0.0.4
+
+### Patch Changes
+
+- Updated dependencies [[`5f4dc9e`](https://github.com/magnet-cms/magnet/commit/5f4dc9e042a84ba552be67c8c06024630cf447d5)]:
+  - @magnet-cms/core@3.0.0
+  - @magnet-cms/common@0.3.0
+  - @magnet-cms/adapter-db-drizzle@3.0.0
+  - @magnet-cms/plugin-playground@3.0.0
+  - @magnet-cms/email-nodemailer@2.0.0
+  - @magnet-cms/adapter-storage-s3@3.0.0
+
 ## 0.0.3
 
 ### Patch Changes

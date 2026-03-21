@@ -1,6 +1,6 @@
 {
   "name": "@magnet-cms/adapter-db-mongoose",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "Mongoose database adapter for Magnet CMS",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -35,7 +35,7 @@
     "reflect-metadata": "0.2.2"
   },
   "peerDependencies": {
-    "@magnet-cms/common": "^0.2.0",
+    "@magnet-cms/common": "^0.3.0",
     "@nestjs/common": "^11.1.12",
     "@nestjs/mongoose": "^11.0.0",
     "mongoose": "^8.10.0",

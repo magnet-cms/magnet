@@ -1,6 +1,6 @@
 {
   "name": "magnet-template-drizzle-sqlite",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Magnet CMS template with Drizzle ORM and SQLite",
   "author": "",
   "private": true,
