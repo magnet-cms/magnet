@@ -53,4 +53,7 @@ yarn-error.log*
 apps/examples/drizzle-sqlite/test-sqlite.db
 
 # Plans
-# docs/plans/
+docs/plans/
+
+# Pilot sessions
+.pilot/sessions/
