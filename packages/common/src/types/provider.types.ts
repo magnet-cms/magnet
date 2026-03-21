@@ -3,6 +3,7 @@ import type { AuthConfig } from './auth.types'
 import type { CacheAdapter } from './cache.types'
 import type {
 	AdminConfig,
+	GraphQLConfig,
 	InternationalizationOptions,
 	PlaygroundOptions,
 } from './config.types'
@@ -158,6 +159,33 @@ export interface PluginMagnetProvider extends BaseMagnetProvider {
 }
 
 /**
+ * GraphQL adapter provider.
+ * Returned by GraphQLAdapter.forRoot().
+ * Carries the pre-built DynamicModule that wires Apollo Server + auto-generated schema.
+ *
+ * @example
+ * ```typescript
+ * MagnetModule.forRoot([
+ *   MongooseDatabaseAdapter.forRoot(),
+ *   GraphQLAdapter.forRoot(),
+ * ])
+ * ```
+ */
+export interface GraphQLMagnetProvider extends BaseMagnetProvider {
+	type: 'graphql'
+	/**
+	 * Pre-built NestJS DynamicModule for the GraphQL server.
+	 * Typed as `object` (not `DynamicModule`) to avoid a TypeScript error caused by
+	 * `@nestjs/graphql` pulling in its own copy of `@nestjs/common` via `@nestjs/core`,
+	 * creating two structurally identical but nominally different `DynamicModule` types.
+	 * Cast to `DynamicModule` in `magnet-module-imports.ts` when adding to the imports array.
+	 */
+	module: object
+	/** Resolved GraphQL configuration */
+	config: GraphQLConfig
+}
+
+/**
  * Cache adapter provider.
  * Returned by cache adapter `.forRoot()` methods.
  *
@@ -197,3 +225,4 @@ export type MagnetProvider =
 	| AuthMagnetProvider
 	| PluginMagnetProvider
 	| CacheMagnetProvider
+	| GraphQLMagnetProvider

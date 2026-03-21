@@ -3,6 +3,7 @@ import {
 	type CacheMagnetProvider,
 	type DatabaseMagnetProvider,
 	type EmailMagnetProvider,
+	type GraphQLMagnetProvider,
 	type MagnetGlobalOptions,
 	MagnetModuleOptions,
 	type MagnetProvider,
@@ -28,16 +29,100 @@ import { LoggingInterceptor } from './modules/logging/logging.interceptor'
 import { LoggingModule } from './modules/logging/logging.module'
 import { normalizeMagnetAdminConfig, validateEnvironment } from './utils'
 
+const MAGNET_PROVIDER_TYPE_IDS = new Set<string>([
+	'database',
+	'storage',
+	'email',
+	'vault',
+	'auth',
+	'plugin',
+	'cache',
+	'graphql',
+])
+
+function isMagnetProvider(value: unknown): value is MagnetProvider {
+	if (value === null || typeof value !== 'object') return false
+	const t = (value as { type?: unknown }).type
+	return typeof t === 'string' && MAGNET_PROVIDER_TYPE_IDS.has(t)
+}
+
+function parseMagnetForRootArgs(args: unknown[]): {
+	providers: MagnetProvider[]
+	globalOptions?: MagnetGlobalOptions
+} {
+	if (args.length === 0) {
+		throw new Error('MagnetModule.forRoot() requires at least one argument.')
+	}
+	const [head, ...tail] = args
+
+	if (Array.isArray(head)) {
+		const providers = [...head] as MagnetProvider[]
+		if (tail.length > 1) {
+			throw new Error(
+				'MagnetModule.forRoot(): with the array form, pass at most one second argument (global options).',
+			)
+		}
+		const maybeGlobal = tail[0]
+		if (maybeGlobal === undefined) {
+			return { providers }
+		}
+		if (isMagnetProvider(maybeGlobal)) {
+			throw new Error(
+				'MagnetModule.forRoot(): second argument must be global options, not a provider. ' +
+					'Put all providers in the first array, or use the variadic form: forRoot(p1, p2, …).',
+			)
+		}
+		return { providers, globalOptions: maybeGlobal as MagnetGlobalOptions }
+	}
+
+	const sequence = [head, ...tail]
+	const last = sequence.at(-1)
+	if (last === undefined) {
+		throw new Error('MagnetModule.forRoot() requires at least one provider.')
+	}
+
+	if (isMagnetProvider(last)) {
+		for (const item of sequence) {
+			if (!isMagnetProvider(item)) {
+				throw new Error(
+					'MagnetModule.forRoot(): every argument must be a provider unless the last argument is global options.',
+				)
+			}
+		}
+		return { providers: sequence as MagnetProvider[] }
+	}
+
+	const globalOptions = last as MagnetGlobalOptions
+	const providerSlice = sequence.slice(0, -1)
+	if (providerSlice.length === 0) {
+		throw new Error(
+			'MagnetModule.forRoot(): at least one magnet provider is required before global options.',
+		)
+	}
+	for (const item of providerSlice) {
+		if (!isMagnetProvider(item)) {
+			throw new Error(
+				'MagnetModule.forRoot(): only the last argument may be global options.',
+			)
+		}
+	}
+	return {
+		providers: providerSlice as MagnetProvider[],
+		globalOptions,
+	}
+}
+
 /**
  * Categorize providers by type from the flat array.
  */
-function categorizeProviders(providers: MagnetProvider[]): {
+function categorizeProviders(providers: readonly MagnetProvider[]): {
 	database?: DatabaseMagnetProvider
 	storage?: StorageMagnetProvider
 	email?: EmailMagnetProvider
 	vault?: VaultMagnetProvider
 	auth?: AuthMagnetProvider
 	cache?: CacheMagnetProvider
+	graphql?: GraphQLMagnetProvider
 	plugins: PluginMagnetProvider[]
 } {
 	let database: DatabaseMagnetProvider | undefined
@@ -46,6 +131,7 @@ function categorizeProviders(providers: MagnetProvider[]): {
 	let vault: VaultMagnetProvider | undefined
 	let auth: AuthMagnetProvider | undefined
 	let cache: CacheMagnetProvider | undefined
+	let graphql: GraphQLMagnetProvider | undefined
 	const plugins: PluginMagnetProvider[] = []
 
 	for (const provider of providers) {
@@ -68,13 +154,16 @@ function categorizeProviders(providers: MagnetProvider[]): {
 			case 'cache':
 				cache = provider
 				break
+			case 'graphql':
+				graphql = provider
+				break
 			case 'plugin':
 				plugins.push(provider)
 				break
 		}
 	}
 
-	return { database, storage, email, vault, auth, cache, plugins }
+	return { database, storage, email, vault, auth, cache, graphql, plugins }
 }
 
 /**
@@ -131,11 +220,31 @@ export class MagnetModule {
 	 *   StripePlugin.forRoot({ currency: 'usd' }),
 	 * ])
 	 * ```
+	 *
+	 * Variadic form (recommended when `@typescript-eslint/no-unsafe-argument` flags a providers
+	 * array as `any[]`): each adapter is type-checked as its own argument, so a single loose
+	 * `forRoot()` does not widen the whole list.
+	 *
+	 * @example Variadic with global options as the last argument
+	 * ```typescript
+	 * MagnetModule.forRoot(
+	 *   DrizzleDatabaseAdapter.forRoot({ dialect: 'postgresql', driver: 'pg' }),
+	 *   RedisCacheAdapter.forRoot(),
+	 *   { admin: true },
+	 * )
+	 * ```
 	 */
 	static forRoot(
-		providers: MagnetProvider[],
+		providers: readonly MagnetProvider[],
 		globalOptions?: MagnetGlobalOptions,
-	): DynamicModule {
+	): DynamicModule
+	static forRoot(
+		provider: MagnetProvider,
+		...rest: (MagnetProvider | MagnetGlobalOptions)[]
+	): DynamicModule
+	static forRoot(...args: unknown[]): DynamicModule {
+		const { providers, globalOptions } = parseMagnetForRootArgs(args)
+
 		// 1. Categorize providers by type
 		const categorized = categorizeProviders(providers)
 

@@ -8,6 +8,8 @@ const PROVIDER_TYPE_LABELS: Record<string, string> = {
 	vault: 'Vault',
 	auth: 'Auth',
 	plugin: 'Plugin',
+	graphql: 'GraphQL',
+	cache: 'Cache',
 }
 
 interface ValidateOptions {
@@ -25,7 +27,7 @@ interface ValidateOptions {
  * @param options - Validation behavior options
  */
 export function validateEnvironment(
-	providers: MagnetProvider[],
+	providers: readonly MagnetProvider[],
 	globalOptions?: MagnetGlobalOptions,
 	options?: ValidateOptions,
 ): void {

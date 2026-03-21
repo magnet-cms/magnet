@@ -1,0 +1,143 @@
+---
+title: GraphQL Adapter
+description: Auto-generated GraphQL API with Apollo Server for all content schemas
+---
+
+# GraphQL Adapter
+
+The `@magnet-cms/adapter-graphql` package adds a fully-functional GraphQL API to Magnet CMS. At startup it reads all discovered content schemas and auto-generates GraphQL types, queries, and mutations — no manual resolver code required.
+
+## Installation
+
+```bash
+bun add @magnet-cms/adapter-graphql @nestjs/graphql @nestjs/apollo @apollo/server graphql graphql-scalars
+```
+
+## Usage
+
+Add `GraphQLAdapter.forRoot()` to your `MagnetModule.forRoot()` providers array:
+
+```typescript
+import { MagnetModule } from '@magnet-cms/core'
+import { MongooseDatabaseAdapter } from '@magnet-cms/adapter-db-mongoose'
+import { GraphQLAdapter } from '@magnet-cms/adapter-graphql'
+
+@Module({
+  imports: [
+    MagnetModule.forRoot([
+      MongooseDatabaseAdapter.forRoot(),
+      GraphQLAdapter.forRoot(),
+    ]),
+  ],
+})
+export class AppModule {}
+```
+
+Once added, the GraphQL playground is available at `http://localhost:3000/graphql`.
+
+## Configuration
+
+`GraphQLAdapter.forRoot()` accepts an optional config object:
+
+```typescript
+GraphQLAdapter.forRoot({
+  path: '/graphql',        // endpoint path (default: '/graphql')
+  playground: true,        // enable Apollo Sandbox (default: true)
+  introspection: true,     // enable schema introspection (default: true)
+  debug: false,            // enable debug mode (default: false)
+})
+```
+
+## Auto-Generated Schema
+
+For every content schema decorated with `@Schema()`, the adapter generates:
+
+### Types
+
+| Type | Description |
+|------|-------------|
+| `{Name}Type` | GraphQL object type with document metadata + schema fields |
+| `{Name}Input` | Input type for create mutations |
+| `{Name}UpdateInput` | Input type for update mutations (all fields optional) |
+
+All `{Name}Type` objects include these document metadata fields: `_id`, `documentId`, `locale`, `status`, `createdAt`, `updatedAt`, `version`.
+
+### Queries
+
+| Query | Description |
+|-------|-------------|
+| `list{Name}(locale, status)` | List all documents |
+| `find{Name}(documentId!, locale, status)` | Find a document by ID |
+| `{name}Versions(documentId!, locale)` | Get all versions of a document |
+
+### Mutations
+
+| Mutation | Description |
+|----------|-------------|
+| `create{Name}(input!, locale, createdBy)` | Create a new document |
+| `update{Name}(documentId!, input!, locale, status, updatedBy)` | Update a document |
+| `delete{Name}(documentId!)` | Delete a document |
+| `publish{Name}(documentId!, locale, publishedBy)` | Publish a document |
+| `unpublish{Name}(documentId!, locale)` | Unpublish a document |
+| `add{Name}Locale(documentId!, locale!, input!, createdBy)` | Add a locale variant |
+| `delete{Name}Locale(documentId!, locale!)` | Remove a locale variant |
+
+## Example
+
+Given a `Cat` schema:
+
+```typescript
+@Schema()
+export class Cat {
+  @Field.Text({ required: true })
+  name: string
+
+  @Field.Text()
+  breed: string
+
+  @Field.Number()
+  weight: number
+}
+```
+
+The following GraphQL operations are available:
+
+```graphql
+# List all cats
+query {
+  listCat(status: "published") {
+    documentId
+    name
+    breed
+    weight
+  }
+}
+
+# Create a cat
+mutation {
+  createCat(input: { name: "Whiskers", breed: "Siamese", weight: 4.5 }) {
+    documentId
+    status
+  }
+}
+
+# Publish a cat
+mutation {
+  publishCat(documentId: "abc123") {
+    documentId
+    status
+  }
+}
+```
+
+## Field Type Mapping
+
+| Schema field type | GraphQL type |
+|-------------------|--------------|
+| `String` | `String` |
+| `Number` | `Float` |
+| `Boolean` | `Boolean` |
+| `Date` | `String` (ISO 8601) |
+| `Object` | `JSON` (via `graphql-scalars`) |
+| `Array` | `[JSON]` |
+| Reference fields | `String` (document ID) |

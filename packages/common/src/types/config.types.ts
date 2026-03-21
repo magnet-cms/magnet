@@ -25,6 +25,17 @@ export interface PlaygroundOptions {
 	schemasPath?: string
 }
 
+export interface GraphQLConfig {
+	/** GraphQL endpoint path (default: '/graphql') */
+	path?: string
+	/** Enable Apollo Sandbox/Playground (default: true) */
+	playground?: boolean
+	/** Enable introspection queries (default: true) */
+	introspection?: boolean
+	/** Enable debug mode (default: false) */
+	debug?: boolean
+}
+
 export interface AdminConfig {
 	/** Enable static admin serving (default true when omitted) */
 	enabled?: boolean

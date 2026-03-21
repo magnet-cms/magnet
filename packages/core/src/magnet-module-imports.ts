@@ -7,6 +7,7 @@
  */
 import type {
 	CacheAdapter,
+	GraphQLMagnetProvider,
 	PluginConfig,
 	RBACModuleOptions,
 } from '@magnet-cms/common'
@@ -59,6 +60,7 @@ export interface BuildImportsParams {
 			defaults?: { from?: string; replyTo?: string }
 		}
 		cache?: { adapter?: CacheAdapter | null }
+		graphql?: GraphQLMagnetProvider
 	}
 	globalOptions: { rbac?: RBACModuleOptions } | undefined
 	adminConfig: AdminServeOptions
@@ -120,6 +122,10 @@ export function buildMagnetImports(params: BuildImportsParams): {
 		WebhookModule.forRoot(),
 		ViewConfigModule,
 	]
+
+	if (categorized.graphql) {
+		imports.push(categorized.graphql.module as DynamicModule)
+	}
 
 	if (adminConfig.enabled) {
 		const adminModule = AdminServeModule.forRoot(adminConfig)

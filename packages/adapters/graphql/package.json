@@ -1,0 +1,52 @@
+{
+  "name": "@magnet-cms/adapter-graphql",
+  "version": "0.1.0",
+  "description": "GraphQL adapter for Magnet CMS — auto-generates Apollo Server with schema from content models",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "exports": {
+    "import": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "require": {
+      "types": "./dist/index.d.cts",
+      "default": "./dist/index.cjs"
+    }
+  },
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build:dev": "tsup --watch",
+    "build": "tsup",
+    "check-types": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@magnet-cms/common": "workspace:*",
+    "@magnet-cms/core": "workspace:*",
+    "@nestjs/apollo": "^13.0.0",
+    "@nestjs/common": "^10.0.0",
+    "@nestjs/core": "^10.0.0",
+    "@nestjs/graphql": "^13.0.0",
+    "@apollo/server": "^4.0.0",
+    "graphql": "^16.0.0",
+    "graphql-scalars": "^1.24.0",
+    "@repo/biome": "workspace:*",
+    "@repo/tsup": "workspace:*",
+    "@repo/typescript-config": "workspace:*"
+  },
+  "peerDependencies": {
+    "@magnet-cms/common": "^0.2.0",
+    "@magnet-cms/core": "^1.0.0",
+    "@nestjs/apollo": "^13.0.0",
+    "@nestjs/common": "^10.0.0",
+    "@nestjs/core": "^10.0.0",
+    "@nestjs/graphql": "^13.0.0",
+    "@apollo/server": "^4.0.0",
+    "graphql": "^16.0.0",
+    "graphql-scalars": "^1.24.0"
+  }
+}

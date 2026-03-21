@@ -18,3 +18,5 @@ export { AuthStrategyFactory } from './modules/auth/auth-strategy.factory'
 // Guards - no DB deps, safe to load before forRoot()
 export { JwtAuthGuard } from './modules/auth/guards/auth.guard'
 export { PermissionGuard } from './modules/rbac/guards/permission.guard'
+// Service class references for adapter injection (class only, not module — no DB side-effects)
+export { ContentService } from './modules/content/content.service'
