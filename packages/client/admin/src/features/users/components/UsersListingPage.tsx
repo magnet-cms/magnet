@@ -32,38 +32,92 @@ import {
 
 import { CreateUserDrawer } from './CreateUserDrawer'
 
+type UserStatusKey = 'Active' | 'Inactive' | 'Pending'
+
 interface User {
 	id: string
 	name: string
 	email: string
 	role: string
-	status: 'Active' | 'Inactive' | 'Pending'
+	status: UserStatusKey
 	lastLogin: string
 	createdAt: string
 }
 
-const statusColors: Record<string, { bg: string; text: string; ring: string }> =
-	{
-		Active: {
-			bg: 'bg-green-50 dark:bg-green-950/40',
-			text: 'text-green-700 dark:text-green-400',
-			ring: 'ring-green-600/20 dark:ring-green-500/30',
-		},
-		Inactive: {
-			bg: 'bg-muted',
-			text: 'text-muted-foreground',
-			ring: 'ring-border',
-		},
-		Pending: {
-			bg: 'bg-yellow-50 dark:bg-yellow-950/40',
-			text: 'text-yellow-800 dark:text-yellow-300',
-			ring: 'ring-yellow-600/20 dark:ring-yellow-500/30',
-		},
+const statusColors: Record<
+	UserStatusKey,
+	{ bg: string; text: string; ring: string }
+> = {
+	Active: {
+		bg: 'bg-green-50 dark:bg-green-950/40',
+		text: 'text-green-700 dark:text-green-400',
+		ring: 'ring-green-600/20 dark:ring-green-500/30',
+	},
+	Inactive: {
+		bg: 'bg-muted',
+		text: 'text-muted-foreground',
+		ring: 'ring-border',
+	},
+	Pending: {
+		bg: 'bg-yellow-50 dark:bg-yellow-950/40',
+		text: 'text-yellow-800 dark:text-yellow-300',
+		ring: 'ring-yellow-600/20 dark:ring-yellow-500/30',
+	},
+}
+
+function formatUserRelativeTime(
+	date: Date,
+	intl: ReturnType<typeof useAppIntl>,
+): string {
+	const now = new Date()
+	const diffMs = now.getTime() - date.getTime()
+	const diffMins = Math.floor(diffMs / 60000)
+	const diffHours = Math.floor(diffMs / 3600000)
+	const diffDays = Math.floor(diffMs / 86400000)
+
+	if (diffMins < 1) {
+		return intl.formatMessage({
+			id: 'common.time.justNow',
+			defaultMessage: 'Just now',
+		})
 	}
+	if (diffMins < 60) {
+		return intl.formatMessage(
+			{
+				id: 'common.time.minutesAgo',
+				defaultMessage:
+					'{count, plural, one {# minute ago} other {# minutes ago}}',
+			},
+			{ count: diffMins },
+		)
+	}
+	if (diffHours < 24) {
+		return intl.formatMessage(
+			{
+				id: 'common.time.hoursAgo',
+				defaultMessage: '{count, plural, one {# hour ago} other {# hours ago}}',
+			},
+			{ count: diffHours },
+		)
+	}
+	if (diffDays < 7) {
+		return intl.formatMessage(
+			{
+				id: 'common.time.daysAgo',
+				defaultMessage: '{count, plural, one {# day ago} other {# days ago}}',
+			},
+			{ count: diffDays },
+		)
+	}
+	return date.toLocaleDateString()
+}
 
 // Transform API user to display user
-function transformUser(apiUser: ApiUser): User {
-	const status: User['status'] =
+function transformUser(
+	apiUser: ApiUser,
+	intl: ReturnType<typeof useAppIntl>,
+): User {
+	const status: UserStatusKey =
 		apiUser.isActive === false
 			? 'Inactive'
 			: apiUser.lastLogin
@@ -77,8 +131,11 @@ function transformUser(apiUser: ApiUser): User {
 		role: apiUser.role,
 		status,
 		lastLogin: apiUser.lastLogin
-			? formatRelativeTime(new Date(apiUser.lastLogin))
-			: 'Never',
+			? formatUserRelativeTime(new Date(apiUser.lastLogin), intl)
+			: intl.formatMessage({
+					id: 'contentManager.metadata.never',
+					defaultMessage: 'Never',
+				}),
 		createdAt: apiUser.createdAt
 			? new Date(apiUser.createdAt).toLocaleDateString(undefined, {
 					month: 'short',
@@ -89,25 +146,33 @@ function transformUser(apiUser: ApiUser): User {
 	}
 }
 
-// Format relative time
-function formatRelativeTime(date: Date): string {
-	const now = new Date()
-	const diffMs = now.getTime() - date.getTime()
-	const diffMins = Math.floor(diffMs / 60000)
-	const diffHours = Math.floor(diffMs / 3600000)
-	const diffDays = Math.floor(diffMs / 86400000)
-
-	if (diffMins < 1) return 'Just now'
-	if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`
-	if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`
-	if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`
-	return date.toLocaleDateString()
+function statusDisplayLabel(
+	status: UserStatusKey,
+	intl: ReturnType<typeof useAppIntl>,
+): string {
+	switch (status) {
+		case 'Active':
+			return intl.formatMessage({
+				id: 'users.statusActive',
+				defaultMessage: 'Active',
+			})
+		case 'Inactive':
+			return intl.formatMessage({
+				id: 'users.statusInactive',
+				defaultMessage: 'Inactive',
+			})
+		case 'Pending':
+			return intl.formatMessage({
+				id: 'users.statusPending',
+				defaultMessage: 'Pending',
+			})
+	}
 }
 
 export function UsersListingPage() {
 	const intl = useAppIntl()
 	const [searchQuery, setSearchQuery] = useState('')
-	const [statusFilter, setStatusFilter] = useState<string>('All Status')
+	const [statusFilter, setStatusFilter] = useState<string>('__all_status__')
 	const [createUserModalOpen, setCreateUserModalOpen] = useState(false)
 	const [page, _setPage] = useState(1)
 
@@ -121,8 +186,8 @@ export function UsersListingPage() {
 	// Transform API users to display format
 	const users: User[] = useMemo(() => {
 		if (!usersData?.users) return []
-		return usersData.users.map(transformUser)
-	}, [usersData])
+		return usersData.users.map((u) => transformUser(u, intl))
+	}, [usersData, intl])
 
 	// Build role options from API
 	const roleOptions = useMemo(() => {
@@ -147,7 +212,7 @@ export function UsersListingPage() {
 				onSuccess: () => {
 					toast.success(
 						intl.formatMessage({
-							id: 'users.createSuccess',
+							id: 'users.roleUpdatedSuccess',
 							defaultMessage: 'User role updated',
 						}),
 					)
@@ -157,7 +222,7 @@ export function UsersListingPage() {
 					toast.error(
 						err.message ||
 							intl.formatMessage({
-								id: 'users.createError',
+								id: 'users.roleUpdatedError',
 								defaultMessage: 'Failed to update role',
 							}),
 					)
@@ -203,7 +268,16 @@ export function UsersListingPage() {
 	}
 
 	const handleDeleteUser = (userId: string) => {
-		if (!window.confirm('Are you sure you want to delete this user?')) return
+		if (
+			!window.confirm(
+				intl.formatMessage({
+					id: 'users.deleteConfirm',
+					defaultMessage: 'Are you sure you want to delete this user?',
+				}),
+			)
+		) {
+			return
+		}
 
 		deleteUser(userId, {
 			onSuccess: () => {
@@ -240,7 +314,10 @@ export function UsersListingPage() {
 		},
 		{
 			type: 'text',
-			header: 'Email',
+			header: intl.formatMessage({
+				id: 'users.columnEmail',
+				defaultMessage: 'Email',
+			}),
 			accessorKey: 'email',
 			format: (value) => (
 				<div className="text-sm text-muted-foreground">{value as string}</div>
@@ -248,17 +325,26 @@ export function UsersListingPage() {
 		},
 		{
 			type: 'selector',
-			header: 'Role',
+			header: intl.formatMessage({
+				id: 'users.columnRole',
+				defaultMessage: 'Role',
+			}),
 			accessorKey: 'role',
 			options: roleOptions,
-			placeholder: 'Select role',
+			placeholder: intl.formatMessage({
+				id: 'users.rolePlaceholder',
+				defaultMessage: 'Select role',
+			}),
 			onChange: (value, row) => {
 				handleRoleChange(row.id, value)
 			},
 		},
 		{
 			type: 'custom',
-			header: 'Status',
+			header: intl.formatMessage({
+				id: 'users.columnStatus',
+				defaultMessage: 'Status',
+			}),
 			cell: (row) => {
 				const status = row.original.status
 				const colors = statusColors[status] ?? {
@@ -270,14 +356,17 @@ export function UsersListingPage() {
 					<span
 						className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${colors.bg} ${colors.text} ${colors.ring}`}
 					>
-						{status}
+						{statusDisplayLabel(status, intl)}
 					</span>
 				)
 			},
 		},
 		{
 			type: 'text',
-			header: 'Last Login',
+			header: intl.formatMessage({
+				id: 'users.columnLastLogin',
+				defaultMessage: 'Last Login',
+			}),
 			accessorKey: 'lastLogin',
 			format: (value) => (
 				<span className="text-sm text-muted-foreground">{value as string}</span>
@@ -285,7 +374,10 @@ export function UsersListingPage() {
 		},
 		{
 			type: 'text',
-			header: 'Created',
+			header: intl.formatMessage({
+				id: 'users.columnCreated',
+				defaultMessage: 'Created',
+			}),
 			accessorKey: 'createdAt',
 			format: (value) => (
 				<span className="text-sm text-muted-foreground">{value as string}</span>
@@ -298,7 +390,7 @@ export function UsersListingPage() {
 			user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
 			user.email.toLowerCase().includes(searchQuery.toLowerCase())
 		const matchesStatus =
-			statusFilter === 'All Status' || user.status === statusFilter
+			statusFilter === '__all_status__' || user.status === statusFilter
 		return matchesSearch && matchesStatus
 	})
 
@@ -350,10 +442,30 @@ export function UsersListingPage() {
 							<SelectValue />
 						</SelectTrigger>
 						<SelectContent>
-							<SelectItem value="All Status">All Status</SelectItem>
-							<SelectItem value="Active">Active</SelectItem>
-							<SelectItem value="Inactive">Inactive</SelectItem>
-							<SelectItem value="Pending">Pending</SelectItem>
+							<SelectItem value="__all_status__">
+								{intl.formatMessage({
+									id: 'users.filterAllStatus',
+									defaultMessage: 'All Status',
+								})}
+							</SelectItem>
+							<SelectItem value="Active">
+								{intl.formatMessage({
+									id: 'users.statusActive',
+									defaultMessage: 'Active',
+								})}
+							</SelectItem>
+							<SelectItem value="Inactive">
+								{intl.formatMessage({
+									id: 'users.statusInactive',
+									defaultMessage: 'Inactive',
+								})}
+							</SelectItem>
+							<SelectItem value="Pending">
+								{intl.formatMessage({
+									id: 'users.statusPending',
+									defaultMessage: 'Pending',
+								})}
+							</SelectItem>
 						</SelectContent>
 					</Select>
 
@@ -364,7 +476,7 @@ export function UsersListingPage() {
 							className="px-2 py-1 text-xs font-medium text-muted-foreground hover:text-foreground"
 							onClick={() => {
 								setSearchQuery('')
-								setStatusFilter('All Status')
+								setStatusFilter('__all_status__')
 							}}
 						>
 							{intl.formatMessage({
@@ -387,11 +499,13 @@ export function UsersListingPage() {
 		return (
 			<div className="flex-none px-6 py-4 border-t border-border bg-background flex items-center justify-between">
 				<div className="text-xs text-muted-foreground">
-					Showing{' '}
-					<span className="font-medium text-foreground">{startRow}</span> to{' '}
-					<span className="font-medium text-foreground">{endRow}</span> of{' '}
-					<span className="font-medium text-foreground">{totalRows}</span>{' '}
-					results
+					{intl.formatMessage(
+						{
+							id: 'common.pagination.showing',
+							defaultMessage: 'Showing {start} to {end} of {total} results',
+						},
+						{ start: startRow, end: endRow, total: totalRows },
+					)}
 				</div>
 				<div className="flex items-center gap-2">
 					<Button
@@ -401,7 +515,10 @@ export function UsersListingPage() {
 						disabled={!table.getCanPreviousPage()}
 						onClick={() => table.previousPage()}
 					>
-						Previous
+						{intl.formatMessage({
+							id: 'common.actions.previous',
+							defaultMessage: 'Previous',
+						})}
 					</Button>
 					<Button
 						variant="outline"
@@ -410,7 +527,10 @@ export function UsersListingPage() {
 						disabled={!table.getCanNextPage()}
 						onClick={() => table.nextPage()}
 					>
-						Next
+						{intl.formatMessage({
+							id: 'common.actions.next',
+							defaultMessage: 'Next',
+						})}
 					</Button>
 				</div>
 			</div>
@@ -445,7 +565,10 @@ export function UsersListingPage() {
 					<div className="h-16 flex items-center justify-between px-6">
 						<div>
 							<h1 className="text-lg font-semibold text-foreground tracking-tight">
-								Users
+								{intl.formatMessage({
+									id: 'users.title',
+									defaultMessage: 'Users',
+								})}
 							</h1>
 							<p className="text-xs text-muted-foreground">
 								{intl.formatMessage({
@@ -459,9 +582,18 @@ export function UsersListingPage() {
 				<div className="flex-1 flex items-center justify-center">
 					<div className="text-center">
 						<p className="text-muted-foreground mb-4">
-							{error.message || 'Failed to load users'}
+							{error.message ||
+								intl.formatMessage({
+									id: 'users.loadFailed',
+									defaultMessage: 'Failed to load users',
+								})}
 						</p>
-						<Button onClick={() => refetch()}>Retry</Button>
+						<Button onClick={() => refetch()}>
+							{intl.formatMessage({
+								id: 'common.actions.retry',
+								defaultMessage: 'Retry',
+							})}
+						</Button>
 					</div>
 				</div>
 			</div>
@@ -477,21 +609,34 @@ export function UsersListingPage() {
 					{/* Left: Title */}
 					<div>
 						<h1 className="text-lg font-semibold text-foreground tracking-tight">
-							Users
+							{intl.formatMessage({
+								id: 'users.title',
+								defaultMessage: 'Users',
+							})}
 						</h1>
 						<p className="text-xs text-muted-foreground">
 							{intl.formatMessage({
 								id: 'users.subtitle',
 								defaultMessage: 'Manage users and their roles.',
 							})}{' '}
-							{usersData?.total || 0} user(s) total.
+							{intl.formatMessage(
+								{
+									id: 'users.totalSummary',
+									defaultMessage:
+										'{count, plural, one {# user} other {# users}} total.',
+								},
+								{ count: usersData?.total ?? 0 },
+							)}
 						</p>
 					</div>
 
 					{/* Right: Actions */}
 					<div className="flex items-center gap-3">
 						<Button size="sm" onClick={() => setCreateUserModalOpen(true)}>
-							Create User
+							{intl.formatMessage({
+								id: 'users.createUser',
+								defaultMessage: 'Create User',
+							})}
 						</Button>
 					</div>
 				</div>
@@ -510,13 +655,19 @@ export function UsersListingPage() {
 								rowActions: {
 									items: [
 										{
-											label: 'Edit',
+											label: intl.formatMessage({
+												id: 'common.actions.edit',
+												defaultMessage: 'Edit',
+											}),
 											onSelect: () => {
 												// Would open edit drawer
 											},
 										},
 										{
-											label: 'Delete',
+											label: intl.formatMessage({
+												id: 'common.actions.delete',
+												defaultMessage: 'Delete',
+											}),
 											onSelect: (row) => handleDeleteUser(row.id),
 											destructive: true,
 										},

@@ -4,8 +4,8 @@ export * from './login'
 // Register
 export * from './register'
 
-// Profile Setup
-export * from './profile-setup'
+// Setup (project onboarding)
+export * from './setup'
 
 // Shared components
 export * from './shared'

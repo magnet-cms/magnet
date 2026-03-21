@@ -1,6 +1,7 @@
 import {
 	type DBConfig,
 	DatabaseAdapter,
+	getDatabaseAdapterSingletonForFeature,
 	getModelToken,
 	getSchemaToken,
 	registerModel,
@@ -62,15 +63,19 @@ export class DatabaseModule {
 	/**
 	 * Register schemas for database access.
 	 *
-	 * IMPORTANT: Feature modules that call forFeature() must be listed AFTER
-	 * MagnetModule.forRoot() in the AppModule imports array so that the database
-	 * adapter is initialized before feature modules access it.
+	 * Nest’s compiled CJS output often `require()`s feature modules before the
+	 * `AppModule` decorator runs `MagnetModule.forRoot()`, so `register()` may
+	 * not have run yet. In that case we fall back to the adapter singleton
+	 * registered by the official DB packages via
+	 * `registerDatabaseAdapterSingletonForFeature()` (same instance as `forRoot()`).
 	 */
 	static forFeature(schemas: Type | Type[]): DynamicModule {
-		const adapter = getSharedAdapter()
+		const adapter =
+			getSharedAdapter() ?? getDatabaseAdapterSingletonForFeature()
 		if (!adapter) {
 			throw new Error(
-				'DatabaseModule.register() must be called before DatabaseModule.forFeature(). ' +
+				'DatabaseModule.register() must be called before DatabaseModule.forFeature(), ' +
+					'or the active DB adapter package must call registerDatabaseAdapterSingletonForFeature() on import. ' +
 					'Ensure MagnetModule.forRoot() includes a database provider.',
 			)
 		}

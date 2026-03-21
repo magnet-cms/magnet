@@ -9,13 +9,20 @@ interface AuthenticatedFixtures {
 }
 
 export const test = base.extend<AuthenticatedFixtures>({
-	testUser: async ({ apiClient }, use) => {
+	testUser: async ({ apiClient, request, apiBaseURL }, use) => {
 		const userData = testData.user.create()
 		const status = await apiClient.getAuthStatus()
 
 		let authResponse: AuthResponse
 		if (status.requiresSetup) {
 			authResponse = await apiClient.register(userData)
+			// First user is admin — complete onboarding so PrivateRoute
+			// doesn't redirect to /setup and block dashboard access.
+			const setupClient = new ApiClient(request, apiBaseURL)
+			setupClient.setToken(authResponse.access_token)
+			await setupClient.updateSettings('general', {
+				siteName: 'Magnet E2E',
+			})
 		} else {
 			// Try registering; if it fails (e.g. 409 Conflict), fall back to login
 			try {

@@ -11,6 +11,7 @@ import {
 	UseGuards,
 } from '@nestjs/common'
 import type { Request } from 'express'
+import { SettingsService } from '../settings/settings.service'
 import type { RequestContext, SessionInfo } from './auth.service'
 import { AuthService } from './auth.service'
 import { ChangePasswordDto } from './dto/change-password.dto'
@@ -20,7 +21,10 @@ import { RefreshTokenDto } from './dto/refresh-token.dto'
 import { RegisterDTO } from './dto/register.dto'
 import { ResetPasswordDto } from './dto/reset-password.dto'
 import { UpdateProfileDto } from './dto/update-profile.dto'
-import { DynamicAuthGuard } from './guards/dynamic-auth.guard'
+import {
+	DynamicAuthGuard,
+	OptionalDynamicAuthGuard,
+} from './guards/dynamic-auth.guard'
 
 /**
  * Authenticated user from JWT payload
@@ -49,7 +53,10 @@ interface AuthenticatedRequest extends Request {
  */
 @Controller('auth')
 export class AuthController {
-	constructor(private authService: AuthService) {}
+	constructor(
+		private authService: AuthService,
+		private settingsService: SettingsService,
+	) {}
 
 	// ============================================================================
 	// Authentication
@@ -147,14 +154,17 @@ export class AuthController {
 	}
 
 	/**
-	 * Get auth status (public endpoint).
+	 * Get auth status (public endpoint with optional auth).
 	 * Returns authentication state, setup requirement, the list of
 	 * enabled OAuth providers, and the active auth strategy info.
+	 * When a valid token is present, also returns onboardingCompleted.
 	 */
+	@UseGuards(OptionalDynamicAuthGuard)
 	@Get('status')
 	async status(@Req() req: Request & { user?: AuthenticatedUser }): Promise<{
 		authenticated: boolean
 		requiresSetup?: boolean
+		onboardingCompleted?: boolean
 		message?: string
 		user?: AuthenticatedUser
 		providers?: string[]
@@ -172,7 +182,14 @@ export class AuthController {
 		}
 
 		if (req.user) {
-			return { authenticated: true, user: req.user, providers, ...base }
+			const onboardingCompleted = await this.checkOnboardingCompleted()
+			return {
+				authenticated: true,
+				onboardingCompleted,
+				user: req.user,
+				providers,
+				...base,
+			}
 		}
 
 		const existingUser = await this.authService.exists()
@@ -185,6 +202,23 @@ export class AuthController {
 				: 'No users found. Initial setup required.',
 			providers,
 			...base,
+		}
+	}
+
+	/**
+	 * Check if the project onboarding has been completed by verifying
+	 * whether general settings differ from their defaults.
+	 */
+	private async checkOnboardingCompleted(): Promise<boolean> {
+		try {
+			const settings = await this.settingsService.getSettingsByGroup('general')
+			const siteNameSetting = settings.find((s) => s.key === 'siteName')
+			const baseUrlSetting = settings.find((s) => s.key === 'baseUrl')
+			const siteName = siteNameSetting?.value ?? 'Magnet CMS'
+			const baseUrl = baseUrlSetting?.value ?? 'http://localhost:3000'
+			return siteName !== 'Magnet CMS' || baseUrl !== 'http://localhost:3000'
+		} catch {
+			return false
 		}
 	}
 

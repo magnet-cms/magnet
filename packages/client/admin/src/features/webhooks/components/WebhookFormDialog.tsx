@@ -18,6 +18,7 @@ import { toast } from 'sonner'
 
 import type { WebhookConfig } from '~/hooks/useWebhooks'
 import { useWebhookCreate, useWebhookUpdate } from '~/hooks/useWebhooks'
+import { useAppIntl } from '~/i18n'
 
 export interface WebhookFormDialogProps {
 	open: boolean
@@ -25,11 +26,36 @@ export interface WebhookFormDialogProps {
 	webhook: WebhookConfig | null
 }
 
+type WebhookCategoryId =
+	| 'content'
+	| 'user'
+	| 'auth'
+	| 'role'
+	| 'settings'
+	| 'media'
+	| 'apiKey'
+	| 'plugin'
+	| 'notification'
+	| 'system'
+
+const CATEGORY_ORDER: WebhookCategoryId[] = [
+	'content',
+	'user',
+	'auth',
+	'role',
+	'settings',
+	'media',
+	'apiKey',
+	'plugin',
+	'notification',
+	'system',
+]
+
 /**
- * Event categories for the multi-select picker.
+ * Event categories for the multi-select picker (keys map to webhooks.category.* messages).
  */
-const EVENT_CATEGORIES: Record<string, string[]> = {
-	Content: [
+const EVENTS_BY_CATEGORY: Record<WebhookCategoryId, string[]> = {
+	content: [
 		'content.created',
 		'content.updated',
 		'content.deleted',
@@ -38,7 +64,7 @@ const EVENT_CATEGORIES: Record<string, string[]> = {
 		'content.version.created',
 		'content.version.restored',
 	],
-	User: [
+	user: [
 		'user.created',
 		'user.updated',
 		'user.deleted',
@@ -49,30 +75,30 @@ const EVENT_CATEGORIES: Record<string, string[]> = {
 		'user.password_reset_completed',
 		'user.email_verified',
 	],
-	Auth: [
+	auth: [
 		'auth.token_refreshed',
 		'auth.session_created',
 		'auth.session_revoked',
 		'auth.failed_login_attempt',
 	],
-	Role: [
+	role: [
 		'role.created',
 		'role.updated',
 		'role.deleted',
 		'role.permissions_updated',
 		'role.user_assigned',
 	],
-	Settings: ['settings.updated', 'settings.group_updated'],
-	Media: [
+	settings: ['settings.updated', 'settings.group_updated'],
+	media: [
 		'media.uploaded',
 		'media.deleted',
 		'media.folder_created',
 		'media.folder_deleted',
 	],
-	'API Key': ['api_key.created', 'api_key.revoked', 'api_key.used'],
-	Plugin: ['plugin.initialized', 'plugin.destroyed'],
-	Notification: ['notification.created'],
-	System: ['system.startup', 'system.shutdown'],
+	apiKey: ['api_key.created', 'api_key.revoked', 'api_key.used'],
+	plugin: ['plugin.initialized', 'plugin.destroyed'],
+	notification: ['notification.created'],
+	system: ['system.startup', 'system.shutdown'],
 }
 
 /**
@@ -83,6 +109,7 @@ export function WebhookFormDialog({
 	onOpenChange,
 	webhook,
 }: WebhookFormDialogProps) {
+	const intl = useAppIntl()
 	const createMutation = useWebhookCreate()
 	const updateMutation = useWebhookUpdate()
 	const isEditing = !!webhook
@@ -125,9 +152,20 @@ export function WebhookFormDialog({
 		}
 	}
 
+	const categoryLabel = (id: WebhookCategoryId) =>
+		intl.formatMessage({
+			id: `webhooks.category.${id}`,
+			defaultMessage: id,
+		})
+
 	const handleSubmit = () => {
 		if (!name.trim() || !url.trim() || selectedEvents.length === 0) {
-			toast.error('Name, URL, and at least one event are required')
+			toast.error(
+				intl.formatMessage({
+					id: 'webhooks.form.validationRequired',
+					defaultMessage: 'Name, URL, and at least one event are required',
+				}),
+			)
 			return
 		}
 
@@ -144,21 +182,51 @@ export function WebhookFormDialog({
 				{ id: webhook.id, data },
 				{
 					onSuccess: () => {
-						toast.success('Webhook updated')
+						toast.success(
+							intl.formatMessage({
+								id: 'webhooks.toast.updated',
+								defaultMessage: 'Webhook updated',
+							}),
+						)
 						onOpenChange(false)
 					},
-					onError: (err) => toast.error(`Update failed: ${err.message}`),
+					onError: (err) =>
+						toast.error(
+							intl.formatMessage(
+								{
+									id: 'webhooks.toast.updateMutationFailed',
+									defaultMessage: 'Update failed: {message}',
+								},
+								{ message: err.message },
+							),
+						),
 				},
 			)
 		} else {
 			createMutation.mutate(data, {
 				onSuccess: (created) => {
 					toast.success(
-						`Webhook created. Secret: ${created.secret} (save this — it won't be shown again)`,
+						intl.formatMessage(
+							{
+								id: 'webhooks.toast.createdWithSecret',
+								defaultMessage:
+									"Webhook created. Secret: {secret} (save this — it won't be shown again)",
+							},
+							{ secret: created.secret },
+						),
 					)
 					onOpenChange(false)
 				},
-				onError: (err) => toast.error(`Create failed: ${err.message}`),
+				onError: (err) =>
+					toast.error(
+						intl.formatMessage(
+							{
+								id: 'webhooks.toast.createMutationFailed',
+								defaultMessage: 'Create failed: {message}',
+							},
+							{ message: err.message },
+						),
+					),
 			})
 		}
 	}
@@ -170,36 +238,68 @@ export function WebhookFormDialog({
 			<DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
 				<DialogHeader>
 					<DialogTitle>
-						{isEditing ? 'Edit Webhook' : 'Create Webhook'}
+						{isEditing
+							? intl.formatMessage({
+									id: 'webhooks.dialog.editTitle',
+									defaultMessage: 'Edit Webhook',
+								})
+							: intl.formatMessage({
+									id: 'webhooks.dialog.createTitle',
+									defaultMessage: 'Create Webhook',
+								})}
 					</DialogTitle>
 				</DialogHeader>
 
 				<div className="space-y-4 py-4">
 					<div className="space-y-2">
-						<Label htmlFor="webhook-name">Name</Label>
+						<Label htmlFor="webhook-name">
+							{intl.formatMessage({
+								id: 'webhooks.form.name',
+								defaultMessage: 'Name',
+							})}
+						</Label>
 						<Input
 							id="webhook-name"
-							placeholder="e.g., Deploy Hook"
+							placeholder={intl.formatMessage({
+								id: 'webhooks.form.namePlaceholder',
+								defaultMessage: 'e.g., Deploy Hook',
+							})}
 							value={name}
 							onChange={(e) => setName(e.target.value)}
 						/>
 					</div>
 
 					<div className="space-y-2">
-						<Label htmlFor="webhook-url">URL</Label>
+						<Label htmlFor="webhook-url">
+							{intl.formatMessage({
+								id: 'webhooks.form.url',
+								defaultMessage: 'URL',
+							})}
+						</Label>
 						<Input
 							id="webhook-url"
-							placeholder="https://example.com/webhook"
+							placeholder={intl.formatMessage({
+								id: 'webhooks.form.urlPlaceholder',
+								defaultMessage: 'https://example.com/webhook',
+							})}
 							value={url}
 							onChange={(e) => setUrl(e.target.value)}
 						/>
 					</div>
 
 					<div className="space-y-2">
-						<Label htmlFor="webhook-description">Description (optional)</Label>
+						<Label htmlFor="webhook-description">
+							{intl.formatMessage({
+								id: 'webhooks.form.descriptionOptional',
+								defaultMessage: 'Description (optional)',
+							})}
+						</Label>
 						<Textarea
 							id="webhook-description"
-							placeholder="What does this webhook do?"
+							placeholder={intl.formatMessage({
+								id: 'webhooks.form.descriptionPlaceholder',
+								defaultMessage: 'What does this webhook do?',
+							})}
 							value={description}
 							onChange={(e) => setDescription(e.target.value)}
 							rows={2}
@@ -208,13 +308,27 @@ export function WebhookFormDialog({
 
 					<div className="flex items-center gap-2">
 						<Switch checked={enabled} onCheckedChange={setEnabled} />
-						<Label>Enabled</Label>
+						<Label>
+							{intl.formatMessage({
+								id: 'webhooks.form.enabled',
+								defaultMessage: 'Enabled',
+							})}
+						</Label>
 					</div>
 
 					<div className="space-y-3">
-						<Label>Events ({selectedEvents.length} selected)</Label>
+						<Label>
+							{intl.formatMessage(
+								{
+									id: 'webhooks.form.eventsSelected',
+									defaultMessage: 'Events ({count} selected)',
+								},
+								{ count: selectedEvents.length },
+							)}
+						</Label>
 						<div className="border rounded-lg p-3 space-y-3 max-h-[300px] overflow-y-auto">
-							{Object.entries(EVENT_CATEGORIES).map(([category, events]) => {
+							{CATEGORY_ORDER.map((categoryId) => {
+								const events = EVENTS_BY_CATEGORY[categoryId]
 								const allSelected = events.every((e) =>
 									selectedEvents.includes(e),
 								)
@@ -222,7 +336,7 @@ export function WebhookFormDialog({
 									!allSelected && events.some((e) => selectedEvents.includes(e))
 
 								return (
-									<div key={category} className="space-y-1">
+									<div key={categoryId} className="space-y-1">
 										<button
 											type="button"
 											onClick={() => toggleCategory(events)}
@@ -237,7 +351,7 @@ export function WebhookFormDialog({
 												readOnly
 												className="rounded"
 											/>
-											{category}
+											{categoryLabel(categoryId)}
 										</button>
 										<div className="ml-6 flex flex-wrap gap-1">
 											{events.map((event) => (
@@ -268,14 +382,26 @@ export function WebhookFormDialog({
 						onClick={() => onOpenChange(false)}
 						disabled={isPending}
 					>
-						Cancel
+						{intl.formatMessage({
+							id: 'common.actions.cancel',
+							defaultMessage: 'Cancel',
+						})}
 					</Button>
 					<Button onClick={handleSubmit} disabled={isPending}>
 						{isPending
-							? 'Saving...'
+							? intl.formatMessage({
+									id: 'webhooks.form.saving',
+									defaultMessage: 'Saving...',
+								})
 							: isEditing
-								? 'Update Webhook'
-								: 'Create Webhook'}
+								? intl.formatMessage({
+										id: 'webhooks.form.submitUpdate',
+										defaultMessage: 'Update Webhook',
+									})
+								: intl.formatMessage({
+										id: 'webhooks.form.submitCreate',
+										defaultMessage: 'Create Webhook',
+									})}
 					</Button>
 				</DialogFooter>
 			</DialogContent>

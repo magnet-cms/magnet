@@ -74,6 +74,7 @@ export interface RegisterData {
 export interface AuthStatus {
 	authenticated: boolean
 	requiresSetup?: boolean
+	onboardingCompleted?: boolean
 	message?: string
 	/** OAuth providers that are configured and enabled */
 	providers?: string[]

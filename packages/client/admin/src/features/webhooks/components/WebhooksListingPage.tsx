@@ -37,6 +37,7 @@ import {
 	useWebhookTest,
 	useWebhookUpdate,
 } from '~/hooks/useWebhooks'
+import { useAppIntl } from '~/i18n'
 
 import { WebhookDeliveryLog } from './WebhookDeliveryLog'
 import { WebhookFormDialog } from './WebhookFormDialog'
@@ -45,6 +46,7 @@ import { WebhookFormDialog } from './WebhookFormDialog'
  * Admin page listing all configured webhooks with inline actions.
  */
 export function WebhooksListingPage() {
+	const intl = useAppIntl()
 	const { data: webhooks, isLoading, error } = useWebhookList()
 	const updateMutation = useWebhookUpdate()
 	const deleteMutation = useWebhookDelete()
@@ -64,11 +66,29 @@ export function WebhooksListingPage() {
 			{
 				onSuccess: () => {
 					toast.success(
-						`Webhook "${webhook.name}" ${webhook.enabled ? 'disabled' : 'enabled'}`,
+						intl.formatMessage(
+							{
+								id: webhook.enabled
+									? 'webhooks.toast.disabled'
+									: 'webhooks.toast.enabled',
+								defaultMessage: webhook.enabled
+									? 'Webhook "{name}" disabled'
+									: 'Webhook "{name}" enabled',
+							},
+							{ name: webhook.name },
+						),
 					)
 				},
 				onError: (err) => {
-					toast.error(`Failed to update webhook: ${err.message}`)
+					toast.error(
+						intl.formatMessage(
+							{
+								id: 'webhooks.toast.updateFailed',
+								defaultMessage: 'Failed to update webhook: {message}',
+							},
+							{ message: err.message },
+						),
+					)
 				},
 			},
 		)
@@ -77,10 +97,26 @@ export function WebhooksListingPage() {
 	const handleDelete = (webhook: WebhookConfig) => {
 		deleteMutation.mutate(webhook.id, {
 			onSuccess: () => {
-				toast.success(`Webhook "${webhook.name}" deleted`)
+				toast.success(
+					intl.formatMessage(
+						{
+							id: 'webhooks.toast.deleted',
+							defaultMessage: 'Webhook "{name}" deleted',
+						},
+						{ name: webhook.name },
+					),
+				)
 			},
 			onError: (err) => {
-				toast.error(`Failed to delete webhook: ${err.message}`)
+				toast.error(
+					intl.formatMessage(
+						{
+							id: 'webhooks.toast.deleteFailed',
+							defaultMessage: 'Failed to delete webhook: {message}',
+						},
+						{ message: err.message },
+					),
+				)
 			},
 		})
 	}
@@ -90,14 +126,40 @@ export function WebhooksListingPage() {
 			onSuccess: (result) => {
 				if (result.success) {
 					toast.success(
-						`Test delivery successful (${result.statusCode}, ${result.duration}ms)`,
+						intl.formatMessage(
+							{
+								id: 'webhooks.toast.testSuccess',
+								defaultMessage:
+									'Test delivery successful ({statusCode}, {duration}ms)',
+							},
+							{
+								statusCode: String(result.statusCode ?? 'OK'),
+								duration: String(result.duration ?? 0),
+							},
+						),
 					)
 				} else {
-					toast.error(`Test delivery failed: ${result.error}`)
+					toast.error(
+						intl.formatMessage(
+							{
+								id: 'webhooks.toast.testFailed',
+								defaultMessage: 'Test delivery failed: {error}',
+							},
+							{ error: result.error ?? '' },
+						),
+					)
 				}
 			},
 			onError: (err) => {
-				toast.error(`Test failed: ${err.message}`)
+				toast.error(
+					intl.formatMessage(
+						{
+							id: 'webhooks.toast.testRequestFailed',
+							defaultMessage: 'Test failed: {message}',
+						},
+						{ message: err.message },
+					),
+				)
 			},
 		})
 	}
@@ -116,10 +178,21 @@ export function WebhooksListingPage() {
 		return (
 			<div className="p-6">
 				<PageHeader>
-					<h1 className="text-2xl font-bold">Webhooks</h1>
+					<h1 className="text-2xl font-bold">
+						{intl.formatMessage({
+							id: 'webhooks.title',
+							defaultMessage: 'Webhooks',
+						})}
+					</h1>
 				</PageHeader>
 				<div className="text-red-500">
-					Failed to load webhooks: {error.message}
+					{intl.formatMessage(
+						{
+							id: 'webhooks.loadFailed',
+							defaultMessage: 'Failed to load webhooks: {message}',
+						},
+						{ message: error.message },
+					)}
 				</div>
 			</div>
 		)
@@ -129,11 +202,19 @@ export function WebhooksListingPage() {
 		<div className="p-6 space-y-6">
 			<div className="flex items-center justify-between">
 				<PageHeader>
-					<h1 className="text-2xl font-bold">Webhooks</h1>
+					<h1 className="text-2xl font-bold">
+						{intl.formatMessage({
+							id: 'webhooks.title',
+							defaultMessage: 'Webhooks',
+						})}
+					</h1>
 				</PageHeader>
 				<Button onClick={handleCreate}>
 					<Plus className="h-4 w-4 mr-2" />
-					Create Webhook
+					{intl.formatMessage({
+						id: 'webhooks.createWebhook',
+						defaultMessage: 'Create Webhook',
+					})}
 				</Button>
 			</div>
 
@@ -147,11 +228,36 @@ export function WebhooksListingPage() {
 				<Table>
 					<TableHeader>
 						<TableRow>
-							<TableHead>Name</TableHead>
-							<TableHead>URL</TableHead>
-							<TableHead>Events</TableHead>
-							<TableHead>Enabled</TableHead>
-							<TableHead className="text-right">Actions</TableHead>
+							<TableHead>
+								{intl.formatMessage({
+									id: 'webhooks.table.name',
+									defaultMessage: 'Name',
+								})}
+							</TableHead>
+							<TableHead>
+								{intl.formatMessage({
+									id: 'webhooks.table.url',
+									defaultMessage: 'URL',
+								})}
+							</TableHead>
+							<TableHead>
+								{intl.formatMessage({
+									id: 'webhooks.table.events',
+									defaultMessage: 'Events',
+								})}
+							</TableHead>
+							<TableHead>
+								{intl.formatMessage({
+									id: 'webhooks.table.enabled',
+									defaultMessage: 'Enabled',
+								})}
+							</TableHead>
+							<TableHead className="text-right">
+								{intl.formatMessage({
+									id: 'webhooks.table.actions',
+									defaultMessage: 'Actions',
+								})}
+							</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
@@ -173,8 +279,14 @@ export function WebhooksListingPage() {
 								</TableCell>
 								<TableCell>
 									<Badge variant="secondary">
-										{webhook.events.length} event
-										{webhook.events.length !== 1 ? 's' : ''}
+										{intl.formatMessage(
+											{
+												id: 'webhooks.table.eventCount',
+												defaultMessage:
+													'{count, plural, one {# event} other {# events}}',
+											},
+											{ count: webhook.events.length },
+										)}
 									</Badge>
 								</TableCell>
 								<TableCell>
@@ -193,24 +305,36 @@ export function WebhooksListingPage() {
 										<DropdownMenuContent align="end">
 											<DropdownMenuItem onClick={() => handleEdit(webhook)}>
 												<Pencil className="h-4 w-4 mr-2" />
-												Edit
+												{intl.formatMessage({
+													id: 'webhooks.actions.edit',
+													defaultMessage: 'Edit',
+												})}
 											</DropdownMenuItem>
 											<DropdownMenuItem onClick={() => handleTest(webhook)}>
 												<Send className="h-4 w-4 mr-2" />
-												Test
+												{intl.formatMessage({
+													id: 'webhooks.actions.test',
+													defaultMessage: 'Test',
+												})}
 											</DropdownMenuItem>
 											<DropdownMenuItem
 												onClick={() => setDeliveryWebhookId(webhook.id)}
 											>
 												<ExternalLink className="h-4 w-4 mr-2" />
-												Deliveries
+												{intl.formatMessage({
+													id: 'webhooks.actions.deliveries',
+													defaultMessage: 'Deliveries',
+												})}
 											</DropdownMenuItem>
 											<DropdownMenuItem
 												onClick={() => handleDelete(webhook)}
 												className="text-red-600"
 											>
 												<Trash2 className="h-4 w-4 mr-2" />
-												Delete
+												{intl.formatMessage({
+													id: 'webhooks.actions.delete',
+													defaultMessage: 'Delete',
+												})}
 											</DropdownMenuItem>
 										</DropdownMenuContent>
 									</DropdownMenu>
@@ -221,13 +345,25 @@ export function WebhooksListingPage() {
 				</Table>
 			) : (
 				<div className="text-center py-12 text-muted-foreground">
-					<p className="text-lg font-medium">No webhooks configured</p>
+					<p className="text-lg font-medium">
+						{intl.formatMessage({
+							id: 'webhooks.empty.title',
+							defaultMessage: 'No webhooks configured',
+						})}
+					</p>
 					<p className="text-sm mt-1">
-						Create a webhook to start receiving event notifications via HTTP.
+						{intl.formatMessage({
+							id: 'webhooks.empty.description',
+							defaultMessage:
+								'Create a webhook to start receiving event notifications via HTTP.',
+						})}
 					</p>
 					<Button onClick={handleCreate} className="mt-4">
 						<Plus className="h-4 w-4 mr-2" />
-						Create Webhook
+						{intl.formatMessage({
+							id: 'webhooks.createWebhook',
+							defaultMessage: 'Create Webhook',
+						})}
 					</Button>
 				</div>
 			)}

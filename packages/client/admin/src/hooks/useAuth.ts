@@ -50,9 +50,10 @@ export const useLogin = () => {
 				tokenStorage.setTokenExpiry(expiryTime)
 			}
 
-			// Invalidate queries to refetch user data
+			// Invalidate queries to refetch user data (including status for onboardingCompleted)
 			queryClient.invalidateQueries({ queryKey: AUTH_USER_KEY })
 			queryClient.invalidateQueries({ queryKey: AUTH_ME_KEY })
+			queryClient.invalidateQueries({ queryKey: AUTH_STATUS_KEY })
 		},
 	})
 }
@@ -83,9 +84,10 @@ export const useRegister = () => {
 				tokenStorage.setTokenExpiry(expiryTime)
 			}
 
-			// Invalidate queries to refetch user data
+			// Invalidate queries to refetch user data (including status for onboardingCompleted)
 			queryClient.invalidateQueries({ queryKey: AUTH_USER_KEY })
 			queryClient.invalidateQueries({ queryKey: AUTH_ME_KEY })
+			queryClient.invalidateQueries({ queryKey: AUTH_STATUS_KEY })
 		},
 	})
 }

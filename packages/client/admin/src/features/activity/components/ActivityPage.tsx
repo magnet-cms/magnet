@@ -51,42 +51,47 @@ function getActionIcon(action: string) {
 	return Activity
 }
 
-function formatRelativeTime(timestamp: string): string {
+function formatRelativeTime(
+	timestamp: string,
+	intl: ReturnType<typeof useAppIntl>,
+): string {
 	const diff = Date.now() - new Date(timestamp).getTime()
 	const seconds = Math.floor(diff / 1000)
-	if (seconds < 60) return 'Just now'
+	if (seconds < 60) {
+		return intl.formatMessage({
+			id: 'activity.relativeJustNow',
+			defaultMessage: 'Just now',
+		})
+	}
 	const minutes = Math.floor(seconds / 60)
-	if (minutes < 60) return `${minutes}m ago`
+	if (minutes < 60) {
+		return intl.formatMessage(
+			{
+				id: 'activity.relativeMinutes',
+				defaultMessage: '{count}m ago',
+			},
+			{ count: minutes },
+		)
+	}
 	const hours = Math.floor(minutes / 60)
-	if (hours < 24) return `${hours}h ago`
+	if (hours < 24) {
+		return intl.formatMessage(
+			{
+				id: 'activity.relativeHours',
+				defaultMessage: '{count}h ago',
+			},
+			{ count: hours },
+		)
+	}
 	const days = Math.floor(hours / 24)
-	return `${days}d ago`
+	return intl.formatMessage(
+		{
+			id: 'activity.relativeDays',
+			defaultMessage: '{count}d ago',
+		},
+		{ count: days },
+	)
 }
-
-// ============================================================================
-// Filter Options
-// ============================================================================
-
-const ACTION_OPTIONS = [
-	{ label: 'All Actions', value: 'all' },
-	{ label: 'Content Created', value: 'content.created' },
-	{ label: 'Content Updated', value: 'content.updated' },
-	{ label: 'Content Deleted', value: 'content.deleted' },
-	{ label: 'Content Published', value: 'content.published' },
-	{ label: 'User Login', value: 'user.login' },
-	{ label: 'User Logout', value: 'user.logout' },
-	{ label: 'Settings Updated', value: 'settings.updated' },
-	{ label: 'API Key Created', value: 'api_key.created' },
-	{ label: 'API Key Revoked', value: 'api_key.revoked' },
-]
-
-const ENTITY_TYPE_OPTIONS = [
-	{ label: 'All Types', value: 'all' },
-	{ label: 'Content', value: 'content' },
-	{ label: 'User', value: 'user' },
-	{ label: 'Settings', value: 'settings' },
-	{ label: 'API Key', value: 'api_key' },
-]
 
 // ============================================================================
 // Component
@@ -97,6 +102,123 @@ export function ActivityPage() {
 	const [actionFilter, setActionFilter] = useState('all')
 	const [entityTypeFilter, setEntityTypeFilter] = useState('all')
 	const [userFilter, setUserFilter] = useState('all')
+
+	const actionOptions = useMemo(
+		() => [
+			{
+				label: intl.formatMessage({
+					id: 'activity.filterActionAll',
+					defaultMessage: 'All Actions',
+				}),
+				value: 'all',
+			},
+			{
+				label: intl.formatMessage({
+					id: 'activity.filterActionContentCreated',
+					defaultMessage: 'Content Created',
+				}),
+				value: 'content.created',
+			},
+			{
+				label: intl.formatMessage({
+					id: 'activity.filterActionContentUpdated',
+					defaultMessage: 'Content Updated',
+				}),
+				value: 'content.updated',
+			},
+			{
+				label: intl.formatMessage({
+					id: 'activity.filterActionContentDeleted',
+					defaultMessage: 'Content Deleted',
+				}),
+				value: 'content.deleted',
+			},
+			{
+				label: intl.formatMessage({
+					id: 'activity.filterActionContentPublished',
+					defaultMessage: 'Content Published',
+				}),
+				value: 'content.published',
+			},
+			{
+				label: intl.formatMessage({
+					id: 'activity.filterActionUserLogin',
+					defaultMessage: 'User Login',
+				}),
+				value: 'user.login',
+			},
+			{
+				label: intl.formatMessage({
+					id: 'activity.filterActionUserLogout',
+					defaultMessage: 'User Logout',
+				}),
+				value: 'user.logout',
+			},
+			{
+				label: intl.formatMessage({
+					id: 'activity.filterActionSettingsUpdated',
+					defaultMessage: 'Settings Updated',
+				}),
+				value: 'settings.updated',
+			},
+			{
+				label: intl.formatMessage({
+					id: 'activity.filterActionApiKeyCreated',
+					defaultMessage: 'API Key Created',
+				}),
+				value: 'api_key.created',
+			},
+			{
+				label: intl.formatMessage({
+					id: 'activity.filterActionApiKeyRevoked',
+					defaultMessage: 'API Key Revoked',
+				}),
+				value: 'api_key.revoked',
+			},
+		],
+		[intl],
+	)
+
+	const entityTypeOptions = useMemo(
+		() => [
+			{
+				label: intl.formatMessage({
+					id: 'activity.filterEntityAll',
+					defaultMessage: 'All Types',
+				}),
+				value: 'all',
+			},
+			{
+				label: intl.formatMessage({
+					id: 'activity.filterEntityContent',
+					defaultMessage: 'Content',
+				}),
+				value: 'content',
+			},
+			{
+				label: intl.formatMessage({
+					id: 'activity.filterEntityUser',
+					defaultMessage: 'User',
+				}),
+				value: 'user',
+			},
+			{
+				label: intl.formatMessage({
+					id: 'activity.filterEntitySettings',
+					defaultMessage: 'Settings',
+				}),
+				value: 'settings',
+			},
+			{
+				label: intl.formatMessage({
+					id: 'activity.filterEntityApiKey',
+					defaultMessage: 'API Key',
+				}),
+				value: 'api_key',
+			},
+		],
+		[intl],
+	)
 
 	// Fetch users for the dropdown
 	const { data: usersData } = useUserList(1, 100)
@@ -117,11 +239,23 @@ export function ActivityPage() {
 	// Build user options for dropdown: All + System + real users
 	const userOptions = useMemo(
 		() => [
-			{ label: 'All Users', value: 'all' },
-			{ label: 'System', value: 'system' },
+			{
+				label: intl.formatMessage({
+					id: 'activity.filterUserAll',
+					defaultMessage: 'All Users',
+				}),
+				value: 'all',
+			},
+			{
+				label: intl.formatMessage({
+					id: 'activity.filterUserSystem',
+					defaultMessage: 'System',
+				}),
+				value: 'system',
+			},
 			...users.map((u) => ({ label: u.name || u.email, value: u.id })),
 		],
-		[users],
+		[intl, users],
 	)
 
 	// Determine items to show — for 'system' filter, filter client-side
@@ -138,62 +272,77 @@ export function ActivityPage() {
 	// Columns
 	// ============================================================================
 
-	const columns: DataTableColumn<ActivityRecord>[] = [
-		{
-			type: 'custom',
-			header: 'Action',
-			cell: (row) => {
-				const record = row.original
-				const Icon = getActionIcon(record.action)
-				return (
-					<div className="flex items-center gap-2">
-						<div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-muted">
-							<Icon className="size-3 text-muted-foreground" />
+	const columns: DataTableColumn<ActivityRecord>[] = useMemo(
+		() => [
+			{
+				type: 'custom',
+				header: intl.formatMessage({
+					id: 'activity.columnAction',
+					defaultMessage: 'Action',
+				}),
+				cell: (row) => {
+					const record = row.original
+					const Icon = getActionIcon(record.action)
+					return (
+						<div className="flex items-center gap-2">
+							<div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-muted">
+								<Icon className="size-3 text-muted-foreground" />
+							</div>
+							<span className="text-sm font-medium text-foreground">
+								{record.action}
+							</span>
 						</div>
-						<span className="text-sm font-medium text-foreground">
-							{record.action}
-						</span>
-					</div>
-				)
+					)
+				},
 			},
-		},
-		{
-			type: 'custom',
-			header: 'Entity',
-			cell: (row) => {
-				const record = row.original
-				const label = record.entityName || record.entityId
-				return (
-					<div className="text-sm text-muted-foreground">
-						<span className="font-medium">{record.entityType}</span>
-						{label ? (
-							<span className="text-muted-foreground/70"> · {label}</span>
-						) : null}
-					</div>
-				)
+			{
+				type: 'custom',
+				header: intl.formatMessage({
+					id: 'activity.columnEntity',
+					defaultMessage: 'Entity',
+				}),
+				cell: (row) => {
+					const record = row.original
+					const label = record.entityName || record.entityId
+					return (
+						<div className="text-sm text-muted-foreground">
+							<span className="font-medium">{record.entityType}</span>
+							{label ? (
+								<span className="text-muted-foreground/70"> · {label}</span>
+							) : null}
+						</div>
+					)
+				},
 			},
-		},
-		{
-			type: 'text',
-			header: 'User',
-			accessorKey: 'userName',
-			format: (value, row) => (
-				<span className="text-sm text-muted-foreground">
-					{(value as string) || row.userId || '—'}
-				</span>
-			),
-		},
-		{
-			type: 'text',
-			header: 'Timestamp',
-			accessorKey: 'timestamp',
-			format: (value) => (
-				<span className="text-sm text-muted-foreground/80">
-					{formatRelativeTime(value as string)}
-				</span>
-			),
-		},
-	]
+			{
+				type: 'text',
+				header: intl.formatMessage({
+					id: 'activity.columnUser',
+					defaultMessage: 'User',
+				}),
+				accessorKey: 'userName',
+				format: (value, row) => (
+					<span className="text-sm text-muted-foreground">
+						{(value as string) || row.userId || '—'}
+					</span>
+				),
+			},
+			{
+				type: 'text',
+				header: intl.formatMessage({
+					id: 'activity.columnTimestamp',
+					defaultMessage: 'Timestamp',
+				}),
+				accessorKey: 'timestamp',
+				format: (value) => (
+					<span className="text-sm text-muted-foreground/80">
+						{formatRelativeTime(value as string, intl)}
+					</span>
+				),
+			},
+		],
+		[intl],
+	)
 
 	// ============================================================================
 	// Toolbar
@@ -207,7 +356,7 @@ export function ActivityPage() {
 						<SelectValue />
 					</SelectTrigger>
 					<SelectContent>
-						{ACTION_OPTIONS.map((opt) => (
+						{actionOptions.map((opt) => (
 							<SelectItem key={opt.value} value={opt.value}>
 								{opt.label}
 							</SelectItem>
@@ -220,7 +369,7 @@ export function ActivityPage() {
 						<SelectValue />
 					</SelectTrigger>
 					<SelectContent>
-						{ENTITY_TYPE_OPTIONS.map((opt) => (
+						{entityTypeOptions.map((opt) => (
 							<SelectItem key={opt.value} value={opt.value}>
 								{opt.label}
 							</SelectItem>
@@ -252,7 +401,10 @@ export function ActivityPage() {
 							setUserFilter('all')
 						}}
 					>
-						Clear Filters
+						{intl.formatMessage({
+							id: 'common.actions.clearFilters',
+							defaultMessage: 'Clear Filters',
+						})}
 					</Button>
 				</div>
 			</div>
@@ -272,11 +424,13 @@ export function ActivityPage() {
 		return (
 			<div className="flex-none flex items-center justify-between border-t border-border bg-background px-6 py-4">
 				<div className="text-xs text-muted-foreground">
-					Showing{' '}
-					<span className="font-medium text-foreground">{startRow}</span> to{' '}
-					<span className="font-medium text-foreground">{endRow}</span> of{' '}
-					<span className="font-medium text-foreground">{totalRows}</span>{' '}
-					results
+					{intl.formatMessage(
+						{
+							id: 'common.pagination.showing',
+							defaultMessage: 'Showing {start} to {end} of {total} results',
+						},
+						{ start: startRow, end: endRow, total: totalRows },
+					)}
 				</div>
 				<div className="flex items-center gap-2">
 					<Button
@@ -286,7 +440,10 @@ export function ActivityPage() {
 						disabled={!table.getCanPreviousPage()}
 						onClick={() => table.previousPage()}
 					>
-						Previous
+						{intl.formatMessage({
+							id: 'common.actions.previous',
+							defaultMessage: 'Previous',
+						})}
 					</Button>
 					<Button
 						variant="outline"
@@ -295,7 +452,10 @@ export function ActivityPage() {
 						disabled={!table.getCanNextPage()}
 						onClick={() => table.nextPage()}
 					>
-						Next
+						{intl.formatMessage({
+							id: 'common.actions.next',
+							defaultMessage: 'Next',
+						})}
 					</Button>
 				</div>
 			</div>
@@ -340,14 +500,23 @@ export function ActivityPage() {
 									defaultMessage: 'Activity Log',
 								})}
 							</h1>
-							<p className="text-xs text-red-500">Error loading activity</p>
+							<p className="text-xs text-red-500">
+								{intl.formatMessage({
+									id: 'activity.errorLoadingShort',
+									defaultMessage: 'Error loading activity',
+								})}
+							</p>
 						</div>
 					</div>
 				</PageHeader>
 				<div className="flex flex-1 items-center justify-center">
 					<div className="text-center">
 						<p className="mb-4 text-muted-foreground">
-							{error.message || 'Failed to load activity records'}
+							{error.message ||
+								intl.formatMessage({
+									id: 'activity.failedToLoadRecords',
+									defaultMessage: 'Failed to load activity records',
+								})}
 						</p>
 					</div>
 				</div>
@@ -366,11 +535,26 @@ export function ActivityPage() {
 				<div className="h-16 flex items-center justify-between px-6">
 					<div>
 						<h1 className="text-lg font-semibold text-foreground tracking-tight">
-							Activity Log
+							{intl.formatMessage({
+								id: 'activity.title',
+								defaultMessage: 'Activity Log',
+							})}
 						</h1>
 						<p className="text-xs text-muted-foreground">
-							Audit trail of all user actions.{' '}
-							{data?.total !== undefined ? `${data.total} records total.` : ''}
+							{intl.formatMessage({
+								id: 'activity.auditSubtitle',
+								defaultMessage: 'Audit trail of all user actions.',
+							})}{' '}
+							{data?.total !== undefined
+								? intl.formatMessage(
+										{
+											id: 'activity.recordsTotal',
+											defaultMessage:
+												'{count, plural, one {# record total.} other {# records total.}}',
+										},
+										{ count: data.total },
+									)
+								: ''}
 						</p>
 					</div>
 				</div>
@@ -396,7 +580,10 @@ export function ActivityPage() {
 								<div className="py-16 text-center">
 									<Activity className="mx-auto mb-3 size-10 text-muted-foreground/40" />
 									<p className="text-sm text-muted-foreground">
-										No activity records found
+										{intl.formatMessage({
+											id: 'activity.noRecordsFound',
+											defaultMessage: 'No activity records found',
+										})}
 									</p>
 								</div>
 							)}

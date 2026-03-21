@@ -1,9 +1,16 @@
 import 'reflect-metadata'
-import { setDatabaseAdapter } from '@magnet-cms/common'
+import {
+	registerDatabaseAdapterSingletonForFeature,
+	setDatabaseAdapter,
+} from '@magnet-cms/common'
+import { DrizzleDatabaseAdapter } from './drizzle.adapter'
 
 // Auto-register drizzle adapter on import — ensures @Schema() decorator
 // finds the correct adapter even before forRoot() is called.
 setDatabaseAdapter('drizzle')
+registerDatabaseAdapterSingletonForFeature(() =>
+	DrizzleDatabaseAdapter.getInstance(),
+)
 
 export * from './decorators'
 export * from './schema'

@@ -31,3 +31,23 @@ export class DynamicAuthGuard implements CanActivate {
 		return guard.canActivate(context) as Promise<boolean> | boolean
 	}
 }
+
+/**
+ * OptionalDynamicAuthGuard populates req.user when a valid token is present
+ * but allows the request through even without authentication.
+ *
+ * Use this for endpoints that behave differently when authenticated
+ * (e.g., /auth/status returns onboardingCompleted only for authenticated users).
+ */
+@Injectable()
+export class OptionalDynamicAuthGuard implements CanActivate {
+	async canActivate(context: ExecutionContext): Promise<boolean> {
+		const guard = new (AuthGuard(DynamicAuthGuard.strategyName))()
+		try {
+			await guard.canActivate(context)
+		} catch {
+			// Authentication failed — allow request through without req.user
+		}
+		return true
+	}
+}

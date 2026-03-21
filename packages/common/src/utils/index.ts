@@ -1,3 +1,4 @@
+export * from './database-adapter-singleton-for-feature.util'
 export * from './detect-adapter.util'
 export * from './get-model-token.util'
 export * from './get-schema-token.util'

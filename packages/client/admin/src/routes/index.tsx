@@ -19,6 +19,8 @@ import {
 	usePluginRegistry,
 } from '~/core/plugins/PluginRegistry'
 import { useLogin, useRegister } from '~/hooks/useAuth'
+import { useSettingData, useSettingMutation } from '~/hooks/useSetting'
+import { useAppIntl } from '~/i18n'
 import { PrivateRoute } from './PrivateRoute'
 import { PublicRoute } from './PublicRoute'
 
@@ -34,8 +36,9 @@ import { ActivityPage } from '~/features/activity'
 import { ApiKeysListingPage } from '~/features/api-keys'
 import { LoginForm } from '~/features/auth/login'
 import { OAuthCallbackPage } from '~/features/auth/oauth-callback'
-import { ProfileSetupForm } from '~/features/auth/profile-setup'
 import { SignupForm } from '~/features/auth/register'
+import { SetupForm } from '~/features/auth/setup'
+import type { SetupFormValues } from '~/features/auth/setup'
 import {
 	ContentManagerHomePage,
 	ContentManagerListingPage,
@@ -112,7 +115,7 @@ function SignupPage() {
 			{
 				onSuccess: () => {
 					toast.success('Account created successfully!')
-					navigate('/profile-setup')
+					navigate('/setup')
 				},
 				onError: (error) => {
 					toast.error(
@@ -126,28 +129,68 @@ function SignupPage() {
 	return <SignupForm onSubmit={handleSubmit} isLoading={isPending} />
 }
 
-interface ProfileSetupFormValues {
-	displayName: string
-	username: string
-	location?: string
-}
-
 /**
- * ProfileSetupPage wrapper that handles profile setup
+ * SetupPage wrapper — collects initial project settings after signup.
+ * Saves to the 'general' settings group via the settings API.
  */
-function ProfileSetupPage() {
+function SetupPage() {
 	const navigate = useNavigate()
-	// TODO: Wire to useUpdateProfile when profile setup API is available
-	const isLoading = false
+	const intl = useAppIntl()
+	const { data: generalSettings } =
+		useSettingData<Record<string, unknown>>('general')
+	const { mutate: saveSettings, isPending } =
+		useSettingMutation<Record<string, unknown>>('general')
 
-	const handleSubmit = (_data: ProfileSetupFormValues) => {
-		// For now, just navigate to dashboard
-		// This will be wired to useUpdateProfile in Phase 5
-		toast.success('Profile setup complete!')
+	const handleSubmit = (data: SetupFormValues) => {
+		// Build payload: only include baseUrl if non-empty
+		const payload: Record<string, unknown> = {
+			siteName: data.siteName,
+			defaultLocale: data.defaultLocale,
+			timezone: data.timezone,
+		}
+		if (data.baseUrl) {
+			payload.baseUrl = `https://${data.baseUrl}`
+		}
+		saveSettings(payload, {
+			onSuccess: () => {
+				toast.success(
+					intl.formatMessage({
+						id: 'auth.setup.successMessage',
+						defaultMessage: 'Project configured successfully!',
+					}),
+				)
+				navigate('/')
+			},
+			onError: (err) => {
+				toast.error(err.message || 'Failed to save settings')
+			},
+		})
+	}
+
+	const handleSkip = () => {
+		sessionStorage.setItem('magnet_onboarding_skipped', 'true')
 		navigate('/')
 	}
 
-	return <ProfileSetupForm onSubmit={handleSubmit} isLoading={isLoading} />
+	// Strip https:// prefix from saved baseUrl for the text input
+	const savedBaseUrl = ((generalSettings?.baseUrl as string) ?? '').replace(
+		/^https?:\/\//,
+		'',
+	)
+
+	return (
+		<SetupForm
+			onSubmit={handleSubmit}
+			onSkip={handleSkip}
+			isLoading={isPending}
+			defaultValues={{
+				siteName: (generalSettings?.siteName as string) ?? 'Magnet CMS',
+				baseUrl: savedBaseUrl,
+				defaultLocale: (generalSettings?.defaultLocale as string) ?? 'en',
+				timezone: (generalSettings?.timezone as string) ?? 'utc',
+			}}
+		/>
+	)
 }
 
 /**
@@ -417,12 +460,12 @@ export const routes: RouteObject[] = [
 				],
 			},
 			{
-				path: '/profile-setup',
+				path: '/setup',
 				element: <PrivateRoute />,
 				children: [
 					{
 						element: <AuthLayoutWrapper />,
-						children: [{ path: '', element: <ProfileSetupPage /> }],
+						children: [{ path: '', element: <SetupPage /> }],
 					},
 				],
 			},

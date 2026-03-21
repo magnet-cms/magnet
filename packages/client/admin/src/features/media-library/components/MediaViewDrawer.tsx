@@ -298,7 +298,10 @@ export function MediaViewDrawer({
 					{/* Quick Actions */}
 					<div>
 						<h3 className="text-xs font-semibold text-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
-							Actions
+							{intl.formatMessage({
+								id: 'media.viewDrawer.actionsSection',
+								defaultMessage: 'Actions',
+							})}
 						</h3>
 						<div className="grid grid-cols-2 gap-3">
 							<label className="flex items-center justify-center gap-2 w-full px-3 py-2 bg-background border border-border rounded-lg text-xs font-medium text-muted-foreground hover:bg-muted/50 hover:border-border transition-all cursor-pointer">
@@ -309,7 +312,10 @@ export function MediaViewDrawer({
 									accept="image/*,video/*,.pdf,.doc,.docx"
 								/>
 								<Download className="w-3.5 h-3.5" />
-								Replace File
+								{intl.formatMessage({
+									id: 'media.viewDrawer.replaceFile',
+									defaultMessage: 'Replace File',
+								})}
 							</label>
 							<button
 								type="button"
@@ -324,7 +330,11 @@ export function MediaViewDrawer({
 							</button>
 						</div>
 						<p className="text-[10px] text-muted-foreground mt-2 px-1">
-							Tip: Drag and drop a new file here to replace current version.
+							{intl.formatMessage({
+								id: 'media.viewDrawer.replaceTip',
+								defaultMessage:
+									'Tip: Drag and drop a new file here to replace current version.',
+							})}
 						</p>
 					</div>
 
@@ -426,7 +436,10 @@ export function MediaViewDrawer({
 											setShowMoveSelect(false)
 										}}
 									>
-										Root
+										{intl.formatMessage({
+											id: 'media.viewDrawer.root',
+											defaultMessage: 'Root',
+										})}
 									</button>
 									{folders.map((folder) => (
 										<button
@@ -454,7 +467,10 @@ export function MediaViewDrawer({
 								onClick={() => setShowSubfolderInput(!showSubfolderInput)}
 							>
 								<span className="text-xs">+</span>
-								Create new subfolder
+								{intl.formatMessage({
+									id: 'media.viewDrawer.createSubfolder',
+									defaultMessage: 'Create new subfolder',
+								})}
 							</button>
 							{showSubfolderInput && onCreateSubfolder && (
 								<div className="mt-2 flex items-center gap-2">
@@ -462,7 +478,10 @@ export function MediaViewDrawer({
 										type="text"
 										value={subfolderName}
 										onChange={(e) => setSubfolderName(e.target.value)}
-										placeholder="Subfolder name"
+										placeholder={intl.formatMessage({
+											id: 'media.viewDrawer.subfolderPlaceholder',
+											defaultMessage: 'Subfolder name',
+										})}
 										className="text-xs h-8 flex-1"
 										onKeyDown={(e) => {
 											if (e.key === 'Enter' && subfolderName.trim()) {
@@ -491,7 +510,10 @@ export function MediaViewDrawer({
 											}
 										}}
 									>
-										Create
+										{intl.formatMessage({
+											id: 'common.actions.create',
+											defaultMessage: 'Create',
+										})}
 									</Button>
 								</div>
 							)}
@@ -500,12 +522,18 @@ export function MediaViewDrawer({
 						{/* Info Grid */}
 						<div>
 							<h4 className="text-xs font-medium text-foreground mb-3 border-t border-border pt-4">
-								Information
+								{intl.formatMessage({
+									id: 'media.viewDrawer.informationSection',
+									defaultMessage: 'Information',
+								})}
 							</h4>
 							<dl className="grid grid-cols-2 gap-x-4 gap-y-4">
 								<div>
 									<dt className="text-[10px] text-muted-foreground uppercase tracking-wide">
-										File Size
+										{intl.formatMessage({
+											id: 'media.viewDrawer.fileSize',
+											defaultMessage: 'File Size',
+										})}
 									</dt>
 									<dd className="mt-0.5 text-xs font-medium text-foreground">
 										{asset.size}
@@ -513,7 +541,10 @@ export function MediaViewDrawer({
 								</div>
 								<div>
 									<dt className="text-[10px] text-muted-foreground uppercase tracking-wide">
-										Created
+										{intl.formatMessage({
+											id: 'media.viewDrawer.created',
+											defaultMessage: 'Created',
+										})}
 									</dt>
 									<dd className="mt-0.5 text-xs font-medium text-foreground">
 										{asset.createdAt ||
@@ -525,7 +556,10 @@ export function MediaViewDrawer({
 								</div>
 								<div>
 									<dt className="text-[10px] text-muted-foreground uppercase tracking-wide">
-										Uploaded By
+										{intl.formatMessage({
+											id: 'media.viewDrawer.uploadedBy',
+											defaultMessage: 'Uploaded by',
+										})}
 									</dt>
 									<dd className="mt-0.5 flex items-center gap-1.5 text-xs font-medium text-foreground">
 										<div className="w-4 h-4 rounded-full bg-muted flex items-center justify-center text-[8px]">
@@ -540,7 +574,10 @@ export function MediaViewDrawer({
 								</div>
 								<div>
 									<dt className="text-[10px] text-muted-foreground uppercase tracking-wide">
-										Extension
+										{intl.formatMessage({
+											id: 'media.viewDrawer.extension',
+											defaultMessage: 'Extension',
+										})}
 									</dt>
 									<dd className="mt-0.5 text-xs font-medium uppercase text-foreground">
 										{asset.format}

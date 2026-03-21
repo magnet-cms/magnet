@@ -1,5 +1,5 @@
 import React from 'react'
-import { Navigate, Outlet } from 'react-router-dom'
+import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useAuth, useStatus } from '../hooks/useAuth'
 
 type PrivateRouteProps = {
@@ -9,8 +9,9 @@ type PrivateRouteProps = {
 export const PrivateRoute: React.FC<PrivateRouteProps> = ({
 	redirectTo = '/auth',
 }) => {
-	const { isAuthenticated, isLoading } = useAuth()
+	const { isAuthenticated, isLoading, user } = useAuth()
 	const { data: status, isLoading: isStatusLoading } = useStatus()
+	const location = useLocation()
 
 	if (isLoading || isStatusLoading) {
 		return (
@@ -21,6 +22,16 @@ export const PrivateRoute: React.FC<PrivateRouteProps> = ({
 	}
 
 	if (isAuthenticated) {
+		// Redirect admin users to onboarding if project settings are still defaults,
+		// unless they've already skipped this session or are already on the setup page.
+		if (
+			!status?.onboardingCompleted &&
+			user?.role === 'admin' &&
+			!sessionStorage.getItem('magnet_onboarding_skipped') &&
+			location.pathname !== '/setup'
+		) {
+			return <Navigate to="/setup" replace />
+		}
 		return <Outlet />
 	}
 

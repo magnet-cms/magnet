@@ -105,6 +105,7 @@ export interface AuthUser {
 export interface AuthStatus {
 	authenticated: boolean
 	requiresSetup: boolean
+	onboardingCompleted?: boolean
 	message: string
 	/** OAuth providers that are configured and enabled. Used to render provider buttons on login page. */
 	providers?: string[]

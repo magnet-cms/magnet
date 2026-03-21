@@ -87,6 +87,21 @@ test.describe('Auth API', () => {
 		expect(response.status()).toBe(401)
 	})
 
+	test('GET /auth/status returns onboardingCompleted for authenticated user', async ({
+		apiClient,
+	}) => {
+		const status = await apiClient.getAuthStatus()
+		test.skip(status.requiresSetup === true, 'Setup required first')
+
+		const userData = testData.user.create()
+		const auth = await apiClient.register(userData)
+		apiClient.setToken(auth.access_token)
+
+		const authStatus = await apiClient.getAuthStatus()
+		expect(authStatus.authenticated).toBe(true)
+		expect(typeof authStatus.onboardingCompleted).toBe('boolean')
+	})
+
 	test('first registered user gets admin role automatically', async ({
 		apiClient,
 	}) => {

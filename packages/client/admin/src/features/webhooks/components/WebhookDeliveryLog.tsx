@@ -19,6 +19,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useState } from 'react'
 
 import { useWebhookDeliveries } from '~/hooks/useWebhooks'
+import { useAppIntl } from '~/i18n'
 
 export interface WebhookDeliveryLogProps {
 	webhookId: string
@@ -34,6 +35,7 @@ export function WebhookDeliveryLog({
 	open,
 	onOpenChange,
 }: WebhookDeliveryLogProps) {
+	const intl = useAppIntl()
 	const [page, setPage] = useState(1)
 	const { data, isLoading } = useWebhookDeliveries(webhookId, page)
 
@@ -41,7 +43,12 @@ export function WebhookDeliveryLog({
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
 				<DialogHeader>
-					<DialogTitle>Delivery Log</DialogTitle>
+					<DialogTitle>
+						{intl.formatMessage({
+							id: 'webhooks.deliveryLog.title',
+							defaultMessage: 'Delivery Log',
+						})}
+					</DialogTitle>
 				</DialogHeader>
 
 				{isLoading ? (
@@ -55,11 +62,36 @@ export function WebhookDeliveryLog({
 						<Table>
 							<TableHeader>
 								<TableRow>
-									<TableHead>Event</TableHead>
-									<TableHead>Status</TableHead>
-									<TableHead>Duration</TableHead>
-									<TableHead>Retries</TableHead>
-									<TableHead>Time</TableHead>
+									<TableHead>
+										{intl.formatMessage({
+											id: 'webhooks.deliveryLog.columnEvent',
+											defaultMessage: 'Event',
+										})}
+									</TableHead>
+									<TableHead>
+										{intl.formatMessage({
+											id: 'webhooks.deliveryLog.columnStatus',
+											defaultMessage: 'Status',
+										})}
+									</TableHead>
+									<TableHead>
+										{intl.formatMessage({
+											id: 'webhooks.deliveryLog.columnDuration',
+											defaultMessage: 'Duration',
+										})}
+									</TableHead>
+									<TableHead>
+										{intl.formatMessage({
+											id: 'webhooks.deliveryLog.columnRetries',
+											defaultMessage: 'Retries',
+										})}
+									</TableHead>
+									<TableHead>
+										{intl.formatMessage({
+											id: 'webhooks.deliveryLog.columnTime',
+											defaultMessage: 'Time',
+										})}
+									</TableHead>
 								</TableRow>
 							</TableHeader>
 							<TableBody>
@@ -74,7 +106,11 @@ export function WebhookDeliveryLog({
 											>
 												{delivery.success
 													? `${delivery.statusCode ?? 'OK'}`
-													: (delivery.error ?? 'Failed')}
+													: (delivery.error ??
+														intl.formatMessage({
+															id: 'webhooks.deliveryLog.statusFailed',
+															defaultMessage: 'Failed',
+														}))}
 											</Badge>
 										</TableCell>
 										<TableCell className="text-sm">
@@ -94,7 +130,18 @@ export function WebhookDeliveryLog({
 						{data.totalPages > 1 && (
 							<div className="flex items-center justify-between pt-4">
 								<span className="text-sm text-muted-foreground">
-									Page {data.page} of {data.totalPages} ({data.total} total)
+									{intl.formatMessage(
+										{
+											id: 'webhooks.deliveryLog.pageOf',
+											defaultMessage:
+												'Page {page} of {totalPages} ({total} total)',
+										},
+										{
+											page: data.page,
+											totalPages: data.totalPages,
+											total: data.total,
+										},
+									)}
 								</span>
 								<div className="flex gap-2">
 									<Button
@@ -119,7 +166,10 @@ export function WebhookDeliveryLog({
 					</>
 				) : (
 					<div className="text-center py-8 text-muted-foreground">
-						No deliveries recorded yet.
+						{intl.formatMessage({
+							id: 'webhooks.deliveryLog.empty',
+							defaultMessage: 'No deliveries recorded yet.',
+						})}
 					</div>
 				)}
 			</DialogContent>

@@ -211,7 +211,8 @@ async function waitForHttpEndpoint(
 }
 
 /** Max time to wait for the test process to exit before forcing exit. */
-const TEST_RUN_TIMEOUT_MS = 15 * 60 * 1000 // 15 minutes
+// Full api+ui suite (300+ tests, workers:1 in CI) can exceed 15m on slower hosts.
+const TEST_RUN_TIMEOUT_MS = 25 * 60 * 1000 // 25 minutes
 
 function killProcess(proc: ChildProcess | null): void {
 	if (!proc?.pid) return

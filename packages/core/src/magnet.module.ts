@@ -153,8 +153,7 @@ export class MagnetModule {
 		// 4. Build legacy options for DI backward compatibility
 		const legacyOptions = buildLegacyOptions(categorized, globalOptions)
 
-		// 5. Register database FIRST — magnet-module-imports loads modules that call
-		// DatabaseModule.forFeature(), so register() must run before that require().
+		// 5. Register database (sets shared adapter for DI and forFeature fallback).
 		const DBModule = DatabaseModule.register(
 			categorized.database.adapter,
 			categorized.database.config,
