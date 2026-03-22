@@ -54,15 +54,15 @@ import { ConfigModule } from '@nestjs/config'
 export class AppModule {}
 ```
 
-Environment variables (`SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_KEY`, etc.) are auto-resolved from `process.env`. Pass explicit config to override.
+Environment variables (`SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`, etc.) are auto-resolved from `process.env`. Pass explicit config to override.
 
 ### Auth Configuration Options
 
 | Option | Type | Required | Description |
 |--------|------|----------|-------------|
 | `supabaseUrl` | `string` | Yes | Your Supabase project URL (`https://xxx.supabase.co`) |
-| `supabaseKey` | `string` | Yes | Supabase anon/public key |
-| `supabaseServiceKey` | `string` | No | Service role key — required for `listUsers()` and user management |
+| `supabaseKey` | `string` | Yes | Supabase publishable key |
+| `supabaseServiceKey` | `string` | No | Secret key — required for `listUsers()` and user management |
 | `defaultRole` | `string` | No | Default role assigned to new users (default: `'user'`) |
 
 ### How Auth Works
@@ -82,8 +82,8 @@ The Supabase auth strategy integrates with Magnet's auth module:
 ```bash
 # Supabase project settings (Dashboard → Settings → API)
 SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_ANON_KEY=your-anon-key
-SUPABASE_SERVICE_KEY=your-service-role-key  # Optional
+SUPABASE_PUBLISHABLE_KEY=your-publishable-key
+SUPABASE_SECRET_KEY=your-secret-key  # Optional
 
 # Database connection (Supabase PostgreSQL via Drizzle)
 DATABASE_URL=postgresql://postgres:password@db.your-project.supabase.co:5432/postgres
@@ -115,14 +115,14 @@ import { Module } from '@nestjs/common'
 export class AppModule {}
 ```
 
-Environment variables (`SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, `SUPABASE_STORAGE_BUCKET`) are auto-resolved from `process.env`.
+Environment variables (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_STORAGE_BUCKET`) are auto-resolved from `process.env`.
 
 ### Storage Adapter Options
 
 | Option | Type | Required | Description |
 |--------|------|----------|-------------|
 | `supabaseUrl` | `string` | Yes | Your Supabase project URL |
-| `supabaseKey` | `string` | Yes | Service role key (needed for write operations) |
+| `supabaseKey` | `string` | Yes | Secret key (needed for write operations) |
 | `bucket` | `string` | Yes | Storage bucket name (create it in Supabase dashboard) |
 
 ### Creating the Storage Bucket

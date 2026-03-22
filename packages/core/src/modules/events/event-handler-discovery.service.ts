@@ -1,7 +1,6 @@
 import {
 	EVENT_HANDLER_METADATA,
 	type EventHandlerMetadata,
-	type EventName,
 } from '@magnet-cms/common'
 import { Injectable, OnModuleInit } from '@nestjs/common'
 import { DiscoveryService, MetadataScanner, Reflector } from '@nestjs/core'
@@ -80,7 +79,10 @@ export class EventHandlerDiscoveryService implements OnModuleInit {
 							) => Promise<void> | void
 							const handlerName = `${instance.constructor.name}.${methodName}`
 
-							this.eventService.on(metadata.event as EventName, boundHandler, {
+							// Use registerHandler (string-based) rather than on() (EventName-generic)
+							// because metadata.event is a runtime string from the decorator.
+							// Type safety was enforced at the @OnEvent call site.
+							this.eventService.registerHandler(metadata.event, boundHandler, {
 								...metadata.options,
 								name: handlerName,
 							})

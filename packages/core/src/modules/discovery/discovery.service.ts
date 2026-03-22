@@ -3,7 +3,7 @@ import {
 	MethodMetadata,
 	SchemaMetadata,
 } from '@magnet-cms/common'
-import { Injectable, OnModuleInit } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import { ControllerDiscoveryService } from './services/controller-discovery.service'
 import { MethodDiscoveryService } from './services/method-discovery.service'
 import { SchemaDiscoveryService } from './services/schema-discovery.service'
@@ -11,7 +11,7 @@ import { SchemaDiscoveryService } from './services/schema-discovery.service'
 const EXCLUDED_SCHEMAS = ['setting', 'history']
 
 @Injectable()
-export class DiscoveryService implements OnModuleInit {
+export class DiscoveryService {
 	private controllers: ControllerMetadata[] = []
 	private schemas: SchemaMetadata[] = []
 	private settingsSchemas: SchemaMetadata[] = []
@@ -20,9 +20,12 @@ export class DiscoveryService implements OnModuleInit {
 		private readonly controllerDiscovery: ControllerDiscoveryService,
 		private readonly schemaDiscovery: SchemaDiscoveryService,
 		private readonly methodDiscovery: MethodDiscoveryService,
-	) {}
-
-	onModuleInit() {
+	) {
+		// Discover schemas in the constructor rather than onModuleInit so that
+		// GraphQLModule.forRootAsync().useFactory (which runs during provider creation,
+		// before any onModuleInit hooks) can access the discovered schemas.
+		// ModulesContainer is fully populated during module compilation — all provider
+		// metatypes are registered before any constructor runs — so this is safe.
 		const { schemas, settings } = this.schemaDiscovery.discoverSchemas()
 		this.controllers = this.controllerDiscovery.discoverControllers()
 		this.schemas = schemas

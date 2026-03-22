@@ -38,7 +38,7 @@ export class PermissionService {
 
 		if (existing) {
 			await this.permissionModel.update(
-				{ permissionId: def.id } as Partial<Permission>,
+				{ id: existing.id } as Partial<Permission>,
 				{
 					...data,
 					updatedAt: now,

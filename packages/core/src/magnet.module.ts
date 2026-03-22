@@ -18,11 +18,13 @@ import {
 	APP_INTERCEPTOR,
 	APP_PIPE,
 	DiscoveryModule,
+	Reflector,
 } from '@nestjs/core'
 import { RestrictedGuard } from './guards/restricted.guard'
 import { GlobalExceptionFilter } from './handlers'
 import { DatabaseModule } from './modules/database/database.module'
 import { EventContextInterceptor } from './modules/events/event-context.interceptor'
+import { EventHandlerDiscoveryService } from './modules/events/event-handler-discovery.service'
 import { EventsModule } from './modules/events/events.module'
 import { HealthModule } from './modules/health/health.module'
 import { LoggingInterceptor } from './modules/logging/logging.interceptor'
@@ -273,6 +275,7 @@ export class MagnetModule {
 			ApiKeysModule,
 			CacheModule,
 			ContentModule,
+			DiscoveryModule: MagnetDiscoveryModule,
 			DocumentModule,
 			HistoryModule,
 			NotificationModule,
@@ -295,6 +298,7 @@ export class MagnetModule {
 			ApiKeysModule: Type
 			CacheModule: Type
 			ContentModule: Type
+			DiscoveryModule: Type
 			DocumentModule: Type
 			HistoryModule: Type
 			NotificationModule: Type
@@ -334,6 +338,8 @@ export class MagnetModule {
 				{ provide: APP_INTERCEPTOR, useClass: LoggingInterceptor },
 				{ provide: MagnetModuleOptions, useValue: legacyOptions },
 				{ provide: APP_GUARD, useClass: RestrictedGuard },
+				EventHandlerDiscoveryService,
+				Reflector,
 			],
 			exports: [
 				MagnetModuleOptions,
@@ -341,6 +347,7 @@ export class MagnetModule {
 				CacheModuleConfig,
 				ContentModule,
 				DiscoveryModule,
+				MagnetDiscoveryModule,
 				DBModule,
 				DocumentModule,
 				SettingsModule,

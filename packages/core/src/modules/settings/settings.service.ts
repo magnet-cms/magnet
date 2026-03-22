@@ -338,14 +338,17 @@ export class SettingsService implements OnApplicationBootstrap {
 		type: SettingType | string,
 		value: SettingValue,
 	): Promise<Setting> {
-		const existingSetting: Setting | null = await this.settingModel.findOne({
+		const existingSetting = await this.settingModel.findOne({
 			group,
 			key,
 		})
 		if (existingSetting) {
 			// Only update type if changed, preserve user's value
 			if (existingSetting.type !== type) {
-				return this.settingModel.update({ group, key }, { type })
+				return this.settingModel.update(
+					{ id: existingSetting.id } as Partial<Setting>,
+					{ type },
+				)
 			}
 			return existingSetting
 		}
@@ -368,7 +371,7 @@ export class SettingsService implements OnApplicationBootstrap {
 				// Only update type if changed, but preserve user's value
 				if (existingSetting.type !== setting.type) {
 					await this.settingModel.update(
-						{ key: setting.key, group } as Partial<Setting>,
+						{ id: existingSetting.id } as Partial<Setting>,
 						{ type: setting.type } as Partial<Setting>,
 					)
 				}

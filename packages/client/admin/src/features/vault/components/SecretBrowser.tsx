@@ -89,7 +89,7 @@ export function SecretBrowser({
 	const intl = useAppIntl()
 	const [search, setSearch] = useState('')
 
-	const { data, refetch } = useVaultSecrets()
+	const { data, error, isError, refetch } = useVaultSecrets()
 	const { mutate: deleteSecret } = useVaultDeleteSecret()
 	const { data: secretDetail } = useVaultSecret(editingKey ?? '')
 
@@ -247,6 +247,33 @@ export function SecretBrowser({
 						})}
 					</Button>
 				</div>
+			</div>
+		)
+	}
+
+	if (isError) {
+		return (
+			<div className="flex flex-col items-center justify-center py-16 text-center">
+				<Key className="mb-3 size-8 text-destructive/40" />
+				<p className="text-sm font-medium text-destructive">
+					{intl.formatMessage({
+						id: 'vault.secrets.loadError',
+						defaultMessage: 'Failed to load secrets',
+					})}
+				</p>
+				<p className="mt-1 text-xs text-muted-foreground/70">
+					{error?.message}
+				</p>
+				<button
+					type="button"
+					onClick={() => refetch()}
+					className="mt-4 text-xs text-primary underline underline-offset-2"
+				>
+					{intl.formatMessage({
+						id: 'common.actions.retry',
+						defaultMessage: 'Retry',
+					})}
+				</button>
 			</div>
 		)
 	}

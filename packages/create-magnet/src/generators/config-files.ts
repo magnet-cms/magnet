@@ -121,8 +121,8 @@ export function generateEnvExample(config: ProjectConfig): string {
 		lines.push('')
 		lines.push('# Supabase')
 		lines.push('SUPABASE_URL=https://your-project.supabase.co')
-		lines.push('SUPABASE_ANON_KEY=your-anon-key')
-		lines.push('SUPABASE_SERVICE_KEY=your-service-key')
+		lines.push('SUPABASE_PUBLISHABLE_KEY=your-publishable-key')
+		lines.push('SUPABASE_SECRET_KEY=your-secret-key')
 	}
 	lines.push('')
 
@@ -190,8 +190,8 @@ export function generateDotEnv(config: ProjectConfig): string {
 		lines.push('')
 		lines.push('# Supabase (update these with your project values)')
 		lines.push('SUPABASE_URL=http://localhost:54321')
-		lines.push('SUPABASE_ANON_KEY=your-anon-key')
-		lines.push('SUPABASE_SERVICE_KEY=your-service-key')
+		lines.push('SUPABASE_PUBLISHABLE_KEY=your-publishable-key')
+		lines.push('SUPABASE_SECRET_KEY=your-secret-key')
 	}
 	lines.push('')
 

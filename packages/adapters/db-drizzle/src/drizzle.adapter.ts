@@ -258,11 +258,21 @@ export class DrizzleDatabaseAdapter extends DatabaseAdapter {
 			columns.push(colDef.join(' '))
 		}
 
-		// Add primary key constraint
+		// Add primary key constraint.
+		// Prefer table-level composite PKs (config.primaryKeys); fall back to
+		// column-level .primaryKey() which drizzle stores as column.primary = true.
 		const primaryKeys = config.primaryKeys as string[] | undefined
 		if (primaryKeys && primaryKeys.length > 0) {
 			const pkColumns = primaryKeys.map((pk) => q(pk)).join(', ')
 			columns.push(`PRIMARY KEY (${pkColumns})`)
+		} else {
+			// Detect column-level primary keys (single-column PKs from .primaryKey())
+			const columnPKs = columnsArray
+				.filter((col) => (col as Record<string, unknown>).primary === true)
+				.map((col) => q((col as Record<string, unknown>).name as string))
+			if (columnPKs.length > 0) {
+				columns.push(`PRIMARY KEY (${columnPKs.join(', ')})`)
+			}
 		}
 
 		// Generate and execute CREATE TABLE IF NOT EXISTS
@@ -273,6 +283,61 @@ export class DrizzleDatabaseAdapter extends DatabaseAdapter {
 		`)
 
 		await this.execRawSQL(createTableSQL)
+
+		// Add missing columns to existing tables (ALTER TABLE ADD COLUMN IF NOT EXISTS).
+		// Handles schema evolution when a table exists but new columns were added to the schema.
+		// User-defined columns are intentionally nullable, so these statements are safe on
+		// tables with existing rows.  All columns are batched into one ALTER TABLE per table
+		// to minimise database round-trips on startup.
+		const addColumnClauses: string[] = []
+		for (const col of columnsArray) {
+			const column = col as Record<string, unknown>
+			const colName = column.name as string
+
+			let sqlType: string
+			if (typeof column.getSQLType === 'function') {
+				sqlType = (column.getSQLType as () => string)()
+			} else {
+				sqlType =
+					this.inferSQLType(column, dialect) ||
+					(dialect === 'mysql' ? 'VARCHAR(255)' : 'TEXT')
+			}
+			sqlType = this.mapSQLTypeForDialect(sqlType, dialect)
+
+			// Omit NOT NULL — can't add NOT NULL columns to existing tables without a DEFAULT.
+			// Omit DEFAULT for empty arrays (same rule as CREATE TABLE).
+			const colDefParts = [q(colName), sqlType]
+			if (column.default !== undefined) {
+				const dv = column.default
+				if (!(Array.isArray(dv) && dv.length === 0)) {
+					const defaultSQL = this.formatDefaultValue(dv, sqlType, dialect)
+					if (defaultSQL) colDefParts.push(`DEFAULT ${defaultSQL}`)
+				}
+			}
+			const colDefinition = colDefParts.join(' ')
+
+			if (dialect === 'postgresql') {
+				addColumnClauses.push(`ADD COLUMN IF NOT EXISTS ${colDefinition}`)
+			} else {
+				// MySQL/SQLite: no IF NOT EXISTS support, run individually with try-catch
+				const addColSQL = sql.raw(
+					`ALTER TABLE ${q(tableName)} ADD COLUMN ${colDefinition}`,
+				)
+				await this.execRawSQL(addColSQL).catch(() => {
+					// Column already exists — ignore
+				})
+			}
+		}
+
+		// PostgreSQL: one batched ALTER TABLE per table instead of N round-trips
+		if (addColumnClauses.length > 0 && dialect === 'postgresql') {
+			const batchSQL = sql.raw(
+				`ALTER TABLE ${q(tableName)} ${addColumnClauses.join(', ')}`,
+			)
+			await this.execRawSQL(batchSQL).catch(() => {
+				// IF NOT EXISTS makes column-already-exists errors impossible here
+			})
+		}
 
 		// Create indexes separately (they might already exist)
 		const indexes = config.indexes as Record<string, unknown> | undefined

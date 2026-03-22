@@ -151,6 +151,7 @@ export class AuthModule {
 				DynamicAuthGuard,
 				JwtModule,
 				PassportModule,
+				UserModule,
 			],
 		}
 	}

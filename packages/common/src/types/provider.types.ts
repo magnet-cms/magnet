@@ -11,7 +11,7 @@ import type { DBConfig, DatabaseAdapter } from './database.types'
 import type { EmailAdapter } from './email.types'
 import type { RBACModuleOptions } from './rbac.types'
 import type { StorageAdapter } from './storage.types'
-import type { VaultAdapter } from './vault.types'
+import type { VaultAdapter, VaultAdapterType } from './vault.types'
 
 // ============================================================================
 // Environment Variable Types
@@ -132,6 +132,8 @@ export interface VaultMagnetProvider extends BaseMagnetProvider {
 	adapter?: VaultAdapter
 	/** Factory function for adapters that need NestJS ModuleRef */
 	adapterFactory?: (moduleRef: unknown) => VaultAdapter
+	/** Vault adapter type identifier (used to report adapter in status endpoint) */
+	adapterType?: VaultAdapterType
 	/** Vault configuration */
 	config?: { cacheTtl?: number }
 }

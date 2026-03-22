@@ -49,8 +49,8 @@ function formatRelativeTime(dateStr: string | undefined): string {
 function transformRole(role: RoleListItem): RoleDisplay {
 	return {
 		id: role.id,
-		name: role.name,
-		displayName: role.displayName,
+		name: role.name ?? '',
+		displayName: role.displayName ?? '',
 		description: role.description || '',
 		userCount: role.userCount,
 		lastUpdated: formatRelativeTime(role.updatedAt || role.createdAt),
@@ -193,9 +193,13 @@ export function AccessControlListingPage() {
 
 	const filteredData = roles.filter((role) => {
 		const matchesSearch =
-			role.displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-			role.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-			role.name.toLowerCase().includes(searchQuery.toLowerCase())
+			(role.displayName ?? '')
+				.toLowerCase()
+				.includes(searchQuery.toLowerCase()) ||
+			(role.description ?? '')
+				.toLowerCase()
+				.includes(searchQuery.toLowerCase()) ||
+			(role.name ?? '').toLowerCase().includes(searchQuery.toLowerCase())
 		return matchesSearch
 	})
 

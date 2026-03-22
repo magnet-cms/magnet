@@ -46,9 +46,13 @@ export function PermissionMatrix({
 				...group,
 				permissions: group.permissions.filter(
 					(p) =>
-						p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-						p.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-						group.name.toLowerCase().includes(searchQuery.toLowerCase()),
+						(p.name ?? '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+						(p.description ?? '')
+							.toLowerCase()
+							.includes(searchQuery.toLowerCase()) ||
+						(group.name ?? '')
+							.toLowerCase()
+							.includes(searchQuery.toLowerCase()),
 				),
 			}))
 			.filter((group) => group.permissions.length > 0)

@@ -8,6 +8,7 @@ import {
 	Post,
 	Put,
 	Req,
+	UnauthorizedException,
 	UseGuards,
 } from '@nestjs/common'
 import type { Request } from 'express'
@@ -71,10 +72,16 @@ export class AuthController {
 		@Req() req: Request,
 	): Promise<AuthResult> {
 		await this.authService.register(registerDto)
-		return this.authService.login(
-			{ email: registerDto.email, password: registerDto.password },
-			this.getRequestContext(req),
-		)
+		try {
+			return await this.authService.login(
+				{ email: registerDto.email, password: registerDto.password },
+				this.getRequestContext(req),
+			)
+		} catch {
+			throw new UnauthorizedException(
+				'Registration successful. Please check your email to confirm your account before signing in.',
+			)
+		}
 	}
 
 	/**

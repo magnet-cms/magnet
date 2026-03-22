@@ -165,9 +165,12 @@ export class ResendEmailAdapter extends EmailAdapter {
 
 	async verify(): Promise<boolean> {
 		try {
-			// Verify API key by listing domains (lightweight API call)
+			// Verify API key by listing domains (lightweight API call).
+			// A "restricted_api_key" error means the key authenticated successfully
+			// but is scoped to sending only — it's still a valid key.
 			const { error } = await this.client.domains.list()
-			return !error
+			if (!error) return true
+			return (error as { name?: string }).name === 'restricted_api_key'
 		} catch {
 			return false
 		}

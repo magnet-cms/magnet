@@ -99,7 +99,7 @@ export function SetupForm({
 	return (
 		<form
 			onSubmit={handleSubmit((data) => onSubmit?.(data))}
-			className="flex w-full max-w-sm flex-col gap-8"
+			className="flex w-full max-w-md flex-col gap-8"
 		>
 			{/* Header */}
 			<div className="flex flex-col gap-2">
@@ -180,54 +180,57 @@ export function SetupForm({
 					</p>
 				</div>
 
-				{/* Default Locale */}
-				<div className="flex flex-col gap-1.5">
-					<Label htmlFor="defaultLocale" className="text-xs font-medium">
-						{intl.formatMessage({
-							id: 'auth.setup.localeLabel',
-							defaultMessage: 'Default Language',
-						})}
-					</Label>
-					<Select
-						value={defaultLocale}
-						onValueChange={(v) => setValue('defaultLocale', v)}
-					>
-						<SelectTrigger id="defaultLocale" className="bg-muted/50">
-							<SelectValue />
-						</SelectTrigger>
-						<SelectContent>
-							{locales.map((l) => (
-								<SelectItem key={l.value} value={l.value}>
-									{l.label}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
-				</div>
+				{/* Default Locale + Timezone (two-column grid) */}
+				<div className="grid grid-cols-2 gap-4">
+					{/* Default Locale */}
+					<div className="flex flex-col gap-1.5">
+						<Label htmlFor="defaultLocale" className="text-xs font-medium">
+							{intl.formatMessage({
+								id: 'auth.setup.localeLabel',
+								defaultMessage: 'Default Language',
+							})}
+						</Label>
+						<Select
+							value={defaultLocale}
+							onValueChange={(v) => setValue('defaultLocale', v)}
+						>
+							<SelectTrigger id="defaultLocale" className="w-full bg-muted/50">
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								{locales.map((l) => (
+									<SelectItem key={l.value} value={l.value}>
+										{l.label}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					</div>
 
-				{/* Timezone */}
-				<div className="flex flex-col gap-1.5">
-					<Label htmlFor="timezone" className="text-xs font-medium">
-						{intl.formatMessage({
-							id: 'auth.setup.timezoneLabel',
-							defaultMessage: 'Timezone',
-						})}
-					</Label>
-					<Select
-						value={timezone}
-						onValueChange={(v) => setValue('timezone', v)}
-					>
-						<SelectTrigger id="timezone" className="bg-muted/50">
-							<SelectValue />
-						</SelectTrigger>
-						<SelectContent>
-							{timezones.map((tz) => (
-								<SelectItem key={tz.value} value={tz.value}>
-									{tz.label}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
+					{/* Timezone */}
+					<div className="flex flex-col gap-1.5">
+						<Label htmlFor="timezone" className="text-xs font-medium">
+							{intl.formatMessage({
+								id: 'auth.setup.timezoneLabel',
+								defaultMessage: 'Timezone',
+							})}
+						</Label>
+						<Select
+							value={timezone}
+							onValueChange={(v) => setValue('timezone', v)}
+						>
+							<SelectTrigger id="timezone" className="w-full bg-muted/50">
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								{timezones.map((tz) => (
+									<SelectItem key={tz.value} value={tz.value}>
+										{tz.label}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					</div>
 				</div>
 
 				<Button

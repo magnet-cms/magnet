@@ -85,12 +85,13 @@ export function AuthedLayout({ children, header, sidebar }: AuthedLayoutProps) {
 		if (!schemas || schemas.length === 0) {
 			return [{ title: 'No schemas yet', url: '/content-manager' }]
 		}
-		return schemas.map((schemaName) => ({
-			title:
-				schemaName.charAt(0).toUpperCase() +
-				schemaName.slice(1).replace(/([A-Z])/g, ' $1'),
-			url: `/content-manager/${schemaName}`,
-		}))
+		return schemas.map((schemaName) => {
+			const n = names(schemaName)
+			return {
+				title: n.title,
+				url: `/content-manager/${schemaName}`,
+			}
+		})
 	}, [schemas])
 
 	const pluginNavItems = useMemo(

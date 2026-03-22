@@ -17,9 +17,9 @@ import { SupabaseClient, createClient } from '@supabase/supabase-js'
 export interface SupabaseAuthConfig extends AuthConfig {
 	/** Supabase project URL */
 	supabaseUrl: string
-	/** Supabase anon/public key */
+	/** Supabase publishable key */
 	supabaseKey: string
-	/** Supabase service role key (required for admin operations like listUsers) */
+	/** Supabase secret key (required for admin operations like listUsers) */
 	supabaseServiceKey?: string
 	/** Default role for new users */
 	defaultRole?: string
@@ -40,7 +40,7 @@ export interface SupabaseAuthConfig extends AuthConfig {
  *   auth: {
  *     strategy: 'supabase',
  *     supabaseUrl: process.env.SUPABASE_URL,
- *     supabaseKey: process.env.SUPABASE_ANON_KEY,
+ *     supabaseKey: process.env.SUPABASE_PUBLISHABLE_KEY,
  *     jwt: { secret: process.env.SUPABASE_JWT_SECRET },
  *   },
  * })
@@ -177,7 +177,14 @@ export class SupabaseAuthStrategy extends AuthStrategy {
 			password,
 		})
 
-		if (error || !data.user) {
+		if (error) {
+			// Propagate email confirmation errors so callers can guide the user
+			if (error.message?.toLowerCase().includes('email not confirmed')) {
+				throw new Error(error.message)
+			}
+			return null
+		}
+		if (!data.user) {
 			return null
 		}
 
@@ -335,14 +342,14 @@ export class SupabaseAuthStrategy extends AuthStrategy {
 			description: 'Supabase project URL',
 		},
 		{
-			name: 'SUPABASE_ANON_KEY',
+			name: 'SUPABASE_PUBLISHABLE_KEY',
 			required: true,
-			description: 'Supabase anon/public key',
+			description: 'Supabase publishable key',
 		},
 		{
-			name: 'SUPABASE_SERVICE_KEY',
+			name: 'SUPABASE_SECRET_KEY',
 			required: false,
-			description: 'Supabase service role key',
+			description: 'Supabase secret key',
 		},
 	]
 
@@ -355,10 +362,20 @@ export class SupabaseAuthStrategy extends AuthStrategy {
 		const resolvedConfig: AuthConfig = {
 			strategy: 'supabase',
 			supabaseUrl: config?.supabaseUrl ?? process.env.SUPABASE_URL ?? '',
-			supabaseKey: config?.supabaseKey ?? process.env.SUPABASE_ANON_KEY ?? '',
+			supabaseKey:
+				config?.supabaseKey ?? process.env.SUPABASE_PUBLISHABLE_KEY ?? '',
 			supabaseServiceKey:
-				config?.supabaseServiceKey ?? process.env.SUPABASE_SERVICE_KEY,
+				config?.supabaseServiceKey ?? process.env.SUPABASE_SECRET_KEY,
 			defaultRole: config?.defaultRole,
+			jwt: {
+				// Prefer PEM public key (ES256 asymmetric) over shared secret (HS256)
+				secret:
+					config?.jwt?.secret ??
+					process.env.SUPABASE_JWT_PUBLIC_KEY ??
+					process.env.SUPABASE_JWT_SECRET ??
+					process.env.JWT_SECRET ??
+					'',
+			},
 		}
 
 		// Register strategy so AuthModule finds it — lazy import to avoid circular deps

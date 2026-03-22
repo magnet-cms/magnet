@@ -1,5 +1,6 @@
 import { Toaster } from '@magnet-cms/ui/components/atoms'
 import { names } from '@magnet-cms/utils'
+import { useQueryClient } from '@tanstack/react-query'
 import React, { Suspense } from 'react'
 import {
 	Navigate,
@@ -18,7 +19,7 @@ import {
 	PluginRegistryProvider,
 	usePluginRegistry,
 } from '~/core/plugins/PluginRegistry'
-import { useLogin, useRegister } from '~/hooks/useAuth'
+import { AUTH_STATUS_KEY, useLogin, useRegister } from '~/hooks/useAuth'
 import { useSettingData, useSettingMutation } from '~/hooks/useSetting'
 import { useAppIntl } from '~/i18n'
 import { PrivateRoute } from './PrivateRoute'
@@ -118,9 +119,16 @@ function SignupPage() {
 					navigate('/setup')
 				},
 				onError: (error) => {
-					toast.error(
-						error.message || 'Failed to create account. Please try again.',
-					)
+					if (error.message?.toLowerCase().includes('check your email')) {
+						toast.success(
+							'Account created! Please check your email to confirm your account.',
+						)
+						navigate('/auth')
+					} else {
+						toast.error(
+							error.message || 'Failed to create account. Please try again.',
+						)
+					}
 				},
 			},
 		)
@@ -136,6 +144,7 @@ function SignupPage() {
 function SetupPage() {
 	const navigate = useNavigate()
 	const intl = useAppIntl()
+	const queryClient = useQueryClient()
 	const { data: generalSettings } =
 		useSettingData<Record<string, unknown>>('general')
 	const { mutate: saveSettings, isPending } =
@@ -159,6 +168,8 @@ function SetupPage() {
 						defaultMessage: 'Project configured successfully!',
 					}),
 				)
+				// Invalidate auth status so PrivateRoute gets fresh onboardingCompleted value
+				queryClient.invalidateQueries({ queryKey: AUTH_STATUS_KEY })
 				navigate('/')
 			},
 			onError: (err) => {

@@ -1,5 +1,10 @@
 import { randomUUID } from 'node:crypto'
-import { PropOptions, getSchemaOptions } from '@magnet-cms/common'
+import {
+	PropOptions,
+	getFieldMetadata,
+	getSchemaOptions,
+	mapFieldTypeToProp,
+} from '@magnet-cms/common'
 import { pluralize, toSnakeCase } from '@magnet-cms/utils'
 import type { Type } from '@nestjs/common'
 import { and, eq } from 'drizzle-orm'
@@ -48,7 +53,22 @@ export function generateSchema(schemaClass: Type): {
 	tableName: string
 } {
 	const schemaOptions = getSchemaOptions(schemaClass)
-	const propsMetadata = getDrizzlePropsMetadata(schemaClass)
+	let propsMetadata = getDrizzlePropsMetadata(schemaClass)
+
+	// Fallback: if no Drizzle-specific prop metadata was registered (e.g., applyAdapterProp
+	// in @magnet-cms/common silently failed because the adapter was not yet detected),
+	// rebuild props from the @Field.* metadata which is always stored by @magnet-cms/common.
+	if (propsMetadata.size === 0) {
+		const fieldMeta = getFieldMetadata(schemaClass)
+		if (fieldMeta.length > 0) {
+			propsMetadata = new Map(
+				fieldMeta.map((field) => [
+					field.propertyKey,
+					mapFieldTypeToProp(field.type, field.options),
+				]),
+			)
+		}
+	}
 
 	// Generate table name (lowercase pluralized class name)
 	const tableName = pluralize(schemaClass.name.toLowerCase())

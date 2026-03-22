@@ -120,13 +120,45 @@ describe('ResendEmailAdapter', () => {
 		expect(mockDomainsList).toHaveBeenCalledTimes(1)
 	})
 
-	it('should handle verify failure', async () => {
+	it('should return false for verify when domains.list returns a non-restricted error', async () => {
 		mockDomainsList.mockImplementationOnce(() =>
 			Promise.resolve({
 				error: { message: 'Unauthorized', name: 'auth_error' },
 			}),
 		)
 		const adapter = new ResendEmailAdapter({ apiKey: 're_bad_key' })
+		const result = await adapter.verify()
+		expect(result).toBe(false)
+	})
+
+	it('should return true for verify when API key is sending-only (restricted_api_key)', async () => {
+		mockDomainsList.mockImplementationOnce(() =>
+			Promise.resolve({
+				data: null,
+				error: {
+					statusCode: 401,
+					message: 'This API key is restricted to only send emails',
+					name: 'restricted_api_key',
+				},
+			}),
+		)
+		const adapter = new ResendEmailAdapter({ apiKey: 're_sending_only_key' })
+		const result = await adapter.verify()
+		expect(result).toBe(true)
+	})
+
+	it('should return false for verify when API key is invalid (validation_error)', async () => {
+		mockDomainsList.mockImplementationOnce(() =>
+			Promise.resolve({
+				data: null,
+				error: {
+					statusCode: 400,
+					message: 'API key is invalid',
+					name: 'validation_error',
+				},
+			}),
+		)
+		const adapter = new ResendEmailAdapter({ apiKey: 're_invalid' })
 		const result = await adapter.verify()
 		expect(result).toBe(false)
 	})

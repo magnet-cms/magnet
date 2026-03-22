@@ -29,6 +29,7 @@ import { ApiKeysModule } from './modules/api-keys/api-keys.module'
 import { AuthModule } from './modules/auth/auth.module'
 import { CacheModule } from './modules/cache/cache.module'
 import { ContentModule } from './modules/content/content.module'
+import { DiscoveryModule } from './modules/discovery/discovery.module'
 import { DocumentModule } from './modules/document/document.module'
 import { EmailModule } from './modules/email/email.module'
 import { EnvironmentModule } from './modules/environment/environment.module'
@@ -51,6 +52,7 @@ export interface BuildImportsParams {
 		vault?: {
 			adapter?: unknown
 			adapterFactory?: (moduleRef: unknown) => unknown
+			adapterType?: 'db' | 'hashicorp' | 'supabase'
 			config?: unknown
 		}
 		auth?: { config?: AuthConfig }
@@ -87,7 +89,14 @@ export function buildMagnetImports(params: BuildImportsParams): {
 		categorized.vault?.adapterFactory as
 			| ((moduleRef: unknown) => VaultAdapter)
 			| undefined,
-		categorized.vault?.config as { cacheTtl?: number } | undefined,
+		{
+			...(categorized.vault?.config as { cacheTtl?: number } | undefined),
+			adapter: categorized.vault?.adapterType as
+				| 'db'
+				| 'hashicorp'
+				| 'supabase'
+				| undefined,
+		},
 	)
 	const AuthModuleConfig = AuthModule.forRoot(
 		categorized.auth?.config ?? { strategy: 'jwt' },
@@ -100,6 +109,7 @@ export function buildMagnetImports(params: BuildImportsParams): {
 	const imports: Array<DynamicModule | Type> = [
 		DBModule,
 		ActivityModule,
+		DiscoveryModule,
 		AdminModule,
 		ApiKeysModule,
 		AuthModuleConfig,
@@ -148,6 +158,7 @@ export {
 	ApiKeysModule,
 	CacheModule,
 	ContentModule,
+	DiscoveryModule,
 	DocumentModule,
 	HistoryModule,
 	NotificationModule,

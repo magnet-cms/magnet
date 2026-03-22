@@ -27,10 +27,14 @@ export class VaultModule {
 	static forRoot(
 		adapter?: VaultAdapter | null,
 		adapterFactory?: ((moduleRef: unknown) => VaultAdapter) | null,
-		config?: { cacheTtl?: number } | null,
+		config?: {
+			cacheTtl?: number
+			adapter?: 'db' | 'hashicorp' | 'supabase'
+		} | null,
 	): DynamicModule {
 		const moduleConfig: VaultModuleConfig = {
 			cacheTtl: config?.cacheTtl,
+			adapter: config?.adapter,
 		}
 
 		return {

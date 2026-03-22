@@ -1,10 +1,4 @@
-import {
-	Field,
-	Mixed,
-	Prop,
-	Schema,
-	type SettingValue,
-} from '@magnet-cms/common'
+import { Field, Schema, type SettingValue } from '@magnet-cms/common'
 
 @Schema({
 	versioning: false,
@@ -16,8 +10,8 @@ export class Setting {
 	@Field.Text({ required: true })
 	key!: string
 
-	// Mixed type for arbitrary values - keep as @Prop
-	@Prop({ type: Mixed, required: true })
+	// Stored as TEXT in SQL adapters; coerceSettingValue() restores the original type on read
+	@Field.Text({})
 	value!: SettingValue
 
 	@Field.Text({ required: true })

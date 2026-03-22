@@ -43,10 +43,10 @@ import { MagnetLogger } from '~/modules/logging/logger.service'
  */
 @Injectable()
 export class EventService implements OnModuleDestroy {
-	private readonly handlers = new Map<
-		EventName,
-		RegisteredHandler<EventName>[]
-	>()
+	// Keyed by string to support user-defined events via module augmentation.
+	// Public API methods constrain to EventName; the string key honestly reflects
+	// that at runtime any event name (including augmented ones) can be registered.
+	private readonly handlers = new Map<string, RegisteredHandler<EventName>[]>()
 	private readonly eventHistory: EventHistoryEntry[] = []
 	private readonly maxHistorySize = 1000
 
@@ -90,6 +90,43 @@ export class EventService implements OnModuleDestroy {
 
 		// Return unsubscribe function
 		return () => this.off(event, handler)
+	}
+
+	/**
+	 * Register an event handler by string name.
+	 *
+	 * Used internally by EventHandlerDiscoveryService to register @OnEvent handlers
+	 * discovered at runtime. Bypasses the EventName generic constraint because the
+	 * discovery service reads string metadata from decorators — the type was already
+	 * validated at the user's call site when @OnEvent was applied.
+	 *
+	 * @internal
+	 */
+	registerHandler(
+		event: string,
+		handler: (payload: unknown) => Promise<void> | void,
+		options: EventHandlerOptions = {},
+	): void {
+		const registeredHandler: RegisteredHandler<EventName> = {
+			// Safe cast: type safety was validated at the @OnEvent decorator call site.
+			// EventHandler<EventName> is the union of all typed handlers; at runtime
+			// the handler receives the payload for the specific event it was decorated with.
+			handler: handler as EventHandler<EventName>,
+			options: {
+				priority: options.priority ?? 100,
+				async: options.async ?? false,
+				name: options.name ?? (handler.name || 'anonymous'),
+			},
+		}
+
+		const handlers = this.handlers.get(event) ?? []
+		handlers.push(registeredHandler)
+		handlers.sort((a, b) => a.options.priority - b.options.priority)
+		this.handlers.set(event, handlers)
+
+		this.logger.debug(
+			`Registered handler '${registeredHandler.options.name}' for event '${event}'`,
+		)
 	}
 
 	/**
@@ -213,14 +250,17 @@ export class EventService implements OnModuleDestroy {
 	/**
 	 * Get all registered handlers (for debugging)
 	 *
+	 * Returns a map keyed by string to include handlers registered for
+	 * user-defined events (via module augmentation) as well as built-in events.
+	 *
 	 * @returns Map of event names to handler info
 	 */
 	getHandlers(): Map<
-		EventName,
+		string,
 		Array<{ name: string; priority: number; async: boolean }>
 	> {
 		const result = new Map<
-			EventName,
+			string,
 			Array<{ name: string; priority: number; async: boolean }>
 		>()
 
@@ -241,10 +281,10 @@ export class EventService implements OnModuleDestroy {
 	/**
 	 * Check if an event has any handlers registered
 	 *
-	 * @param event - The event name to check
+	 * @param event - The event name (accepts any string to support custom events)
 	 * @returns True if at least one handler is registered
 	 */
-	hasHandlers(event: EventName): boolean {
+	hasHandlers(event: string): boolean {
 		const handlers = this.handlers.get(event)
 		return handlers !== undefined && handlers.length > 0
 	}
@@ -252,10 +292,10 @@ export class EventService implements OnModuleDestroy {
 	/**
 	 * Get the number of handlers for an event
 	 *
-	 * @param event - The event name
+	 * @param event - The event name (accepts any string to support custom events)
 	 * @returns Number of registered handlers
 	 */
-	getHandlerCount(event: EventName): number {
+	getHandlerCount(event: string): number {
 		const handlers = this.handlers.get(event)
 		return handlers?.length ?? 0
 	}
@@ -275,7 +315,7 @@ export class EventService implements OnModuleDestroy {
 		this.eventHistory.length = 0
 	}
 
-	private addToHistory(event: EventName, payload: BaseEventPayload): void {
+	private addToHistory(event: string, payload: BaseEventPayload): void {
 		this.eventHistory.push({ event, payload, timestamp: new Date() })
 
 		// Trim history if too large
@@ -288,7 +328,7 @@ export class EventService implements OnModuleDestroy {
 	}
 
 	private logHandlerError(
-		event: EventName,
+		event: string,
 		options: RequiredEventHandlerOptions,
 		error: unknown,
 	): void {

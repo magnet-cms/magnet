@@ -23,15 +23,17 @@
     "build:dev": "tsup --watch",
     "build": "tsup"
   },
+  "dependencies": {
+    "pg": "^8.13.0"
+  },
   "devDependencies": {
     "@magnet-cms/common": "workspace:*",
     "@repo/biome": "workspace:*",
     "@repo/tsup": "workspace:*",
     "@repo/typescript-config": "workspace:*",
-    "@supabase/supabase-js": "^2.0.0"
+    "@types/pg": "^8.11.0"
   },
   "peerDependencies": {
-    "@magnet-cms/common": "^0.3.0",
-    "@supabase/supabase-js": "^2.0.0"
+    "@magnet-cms/common": "^0.3.0"
   }
 }

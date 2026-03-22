@@ -5,201 +5,168 @@ import type {
 	VaultMagnetProvider,
 	VaultSecretMeta,
 } from '@magnet-cms/common'
-import { type SupabaseClient, createClient } from '@supabase/supabase-js'
-
-interface DecryptedSecretRow {
-	name: string
-	decrypted_secret: string
-}
-
-interface SecretRow {
-	name: string
-	description: string | null
-	updated_at?: string | null
-}
+import { Pool } from 'pg'
 
 /**
  * Supabase Vault adapter for Magnet CMS.
  *
- * Uses Supabase's native Vault extension (pgsodium) via SQL RPC functions.
- * Secrets are encrypted at rest using Supabase's built-in key management.
+ * Uses a direct PostgreSQL connection to access the Supabase Vault extension,
+ * bypassing PostgREST entirely. This means no schema exposure configuration
+ * is needed (`PGRST_DB_SCHEMAS` does not need to include `vault`).
  *
- * Prerequisites:
- *   - Supabase project with the Vault extension enabled
- *   - Service role key (required for vault operations)
- *   - PostgREST must expose the `vault` schema (PGRST_DB_SCHEMAS includes `vault`)
+ * **Prerequisites:**
+ *   - Supabase project with the Vault extension enabled (pgsodium + supabase_vault)
+ *   - PostgreSQL connection string (e.g. from `DATABASE_URL` env var)
  *
  * @example
  * ```typescript
- * MagnetModule.forRoot({
- *   vault: {
- *     adapter: 'supabase',
- *     supabase: {
- *       supabaseUrl: 'https://xxx.supabase.co',
- *       supabaseServiceKey: 'service-role-key',
- *     },
- *   },
- * })
+ * MagnetModule.forRoot([
+ *   SupabaseVaultAdapter.forRoot(),
+ *   // or with explicit config:
+ *   SupabaseVaultAdapter.forRoot({
+ *     connectionString: 'postgresql://postgres:password@db.xxx.supabase.co:5432/postgres',
+ *   }),
+ * ])
  * ```
  */
 export class SupabaseVaultAdapter implements VaultAdapter {
-	private readonly client: SupabaseClient
+	private readonly pool: Pool
 
 	/** Environment variables used by this adapter */
 	static readonly envVars: EnvVarRequirement[] = [
 		{
-			name: 'SUPABASE_URL',
+			name: 'DATABASE_URL',
 			required: true,
-			description: 'Supabase project URL',
-		},
-		{
-			name: 'SUPABASE_SERVICE_KEY',
-			required: true,
-			description: 'Supabase service role key',
+			description: 'PostgreSQL connection string for the Supabase database',
 		},
 	]
 
-	/**
-	 * Create a configured vault provider for MagnetModule.forRoot().
-	 * Auto-resolves config values from environment variables if not provided.
-	 *
-	 * @example
-	 * ```typescript
-	 * MagnetModule.forRoot([
-	 *   SupabaseVaultAdapter.forRoot(),
-	 *   // or with explicit config:
-	 *   SupabaseVaultAdapter.forRoot({
-	 *     supabaseUrl: 'https://xxx.supabase.co',
-	 *     supabaseServiceKey: 'service-role-key',
-	 *   }),
-	 * ])
-	 * ```
-	 */
 	static forRoot(config?: Partial<SupabaseVaultConfig>): VaultMagnetProvider {
 		const resolvedConfig: SupabaseVaultConfig = {
-			supabaseUrl: config?.supabaseUrl ?? process.env.SUPABASE_URL ?? '',
-			supabaseServiceKey:
-				config?.supabaseServiceKey ?? process.env.SUPABASE_SERVICE_KEY ?? '',
+			connectionString:
+				config?.connectionString ?? process.env.DATABASE_URL ?? '',
 		}
 
 		return {
 			type: 'vault',
 			adapter: new SupabaseVaultAdapter(resolvedConfig),
+			adapterType: 'supabase',
 			envVars: SupabaseVaultAdapter.envVars,
 		}
 	}
 
 	constructor(config: SupabaseVaultConfig) {
-		this.client = createClient(config.supabaseUrl, config.supabaseServiceKey, {
-			auth: { persistSession: false },
+		this.pool = new Pool({
+			connectionString: config.connectionString,
+			max: 3,
+			idleTimeoutMillis: 30000,
 		})
 	}
 
-	/** Query builder scoped to the vault schema (sets Accept-Profile header for PostgREST). */
-	private vault() {
-		return this.client.schema('vault')
-	}
-
 	async get(key: string): Promise<string | null> {
-		const { data, error } = await this.vault()
-			.from('decrypted_secrets')
-			.select('name, decrypted_secret')
-			.eq('name', key)
-			.maybeSingle<DecryptedSecretRow>()
-
-		if (error) {
-			throw new Error(`Supabase Vault get failed: ${error.message}`)
+		const client = await this.pool.connect()
+		try {
+			const result = await client.query<{ decrypted_secret: string | null }>(
+				'SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name = $1',
+				[key],
+			)
+			return result.rows[0]?.decrypted_secret ?? null
+		} catch (err) {
+			throw new Error(
+				`Supabase Vault get failed: ${err instanceof Error ? err.message : String(err)}`,
+			)
+		} finally {
+			client.release()
 		}
-		if (!data) {
-			return null
-		}
-
-		return data.decrypted_secret
 	}
 
 	async set(key: string, value: string, description?: string): Promise<void> {
-		// Check if secret already exists
-		const { data: existing } = await this.vault()
-			.from('decrypted_secrets')
-			.select('id')
-			.eq('name', key)
-			.maybeSingle<{ id: string }>()
-
-		if (existing?.id) {
-			const { error } = await this.vault().rpc('update_secret', {
-				secret_id: existing.id,
-				new_secret: value,
-				new_name: key,
-				new_description: description ?? null,
-			})
-			if (error) {
-				throw new Error(`Supabase Vault update failed: ${error.message}`)
+		const client = await this.pool.connect()
+		try {
+			const existing = await client.query<{ id: string }>(
+				'SELECT id FROM vault.decrypted_secrets WHERE name = $1',
+				[key],
+			)
+			if (existing.rows[0]?.id) {
+				await client.query('SELECT vault.update_secret($1, $2, $3, $4)', [
+					existing.rows[0].id,
+					value,
+					key,
+					description ?? null,
+				])
+			} else {
+				await client.query('SELECT vault.create_secret($1, $2, $3)', [
+					value,
+					key,
+					description ?? null,
+				])
 			}
-		} else {
-			const { error } = await this.vault().rpc('create_secret', {
-				new_secret: value,
-				new_name: key,
-				new_description: description ?? null,
-			})
-			if (error) {
-				throw new Error(`Supabase Vault create failed: ${error.message}`)
-			}
+		} catch (err) {
+			throw new Error(
+				`Supabase Vault set failed: ${err instanceof Error ? err.message : String(err)}`,
+			)
+		} finally {
+			client.release()
 		}
 	}
 
 	async delete(key: string): Promise<void> {
-		const { data: existing } = await this.vault()
-			.from('decrypted_secrets')
-			.select('id')
-			.eq('name', key)
-			.maybeSingle<{ id: string }>()
-
-		if (!existing?.id) {
-			return
-		}
-
-		const { error } = await this.vault()
-			.from('secrets')
-			.delete()
-			.eq('id', existing.id)
-
-		if (error) {
-			throw new Error(`Supabase Vault delete failed: ${error.message}`)
+		const client = await this.pool.connect()
+		try {
+			const existing = await client.query<{ id: string }>(
+				'SELECT id FROM vault.decrypted_secrets WHERE name = $1',
+				[key],
+			)
+			if (existing.rows[0]?.id) {
+				await client.query('DELETE FROM vault.secrets WHERE id = $1', [
+					existing.rows[0].id,
+				])
+			}
+		} catch (err) {
+			throw new Error(
+				`Supabase Vault delete failed: ${err instanceof Error ? err.message : String(err)}`,
+			)
+		} finally {
+			client.release()
 		}
 	}
 
 	async list(prefix?: string): Promise<VaultSecretMeta[]> {
-		let query = this.vault()
-			.from('secrets')
-			.select('name, description, updated_at')
-
-		if (prefix) {
-			query = query.like('name', `${prefix}%`)
+		const client = await this.pool.connect()
+		try {
+			const result = await client.query<{
+				name: string
+				description: string | null
+				updated_at: string | null
+			}>(
+				prefix
+					? 'SELECT name, description, updated_at FROM vault.secrets WHERE name LIKE $1 ORDER BY name'
+					: 'SELECT name, description, updated_at FROM vault.secrets ORDER BY name',
+				prefix ? [`${prefix}%`] : [],
+			)
+			return result.rows.map((row) => ({
+				name: row.name,
+				description: row.description ?? undefined,
+				lastUpdated: row.updated_at ?? undefined,
+			}))
+		} catch (err) {
+			throw new Error(
+				`Supabase Vault list failed: ${err instanceof Error ? err.message : String(err)}`,
+			)
+		} finally {
+			client.release()
 		}
-
-		const { data, error } = await query.returns<SecretRow[]>()
-
-		if (error) {
-			throw new Error(`Supabase Vault list failed: ${error.message}`)
-		}
-
-		return (data ?? []).map((row) => ({
-			name: row.name,
-			description: row.description ?? undefined,
-			lastUpdated: row.updated_at ?? undefined,
-		}))
 	}
 
 	async healthCheck(): Promise<boolean> {
+		const client = await this.pool.connect()
 		try {
-			const { error } = await this.vault()
-				.from('decrypted_secrets')
-				.select('name')
-				.limit(1)
-
-			return !error
+			await client.query('SELECT name FROM vault.decrypted_secrets LIMIT 1')
+			return true
 		} catch {
 			return false
+		} finally {
+			client.release()
 		}
 	}
 }

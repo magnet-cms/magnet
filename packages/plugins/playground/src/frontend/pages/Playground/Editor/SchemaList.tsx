@@ -48,22 +48,24 @@ export function SchemaList() {
 				) : (
 					<div className="py-1">
 						{schemas.map((schema) => {
-							const name = names(schema)
-							const isSelected = schemaName === name.key
+							const n = names(schema)
+							const slug = n.fileName
+							const isSelected =
+								schemaName != null && names(schemaName).fileName === slug
 							return (
 								<button
 									key={schema}
 									type="button"
-									onClick={() => navigate(`/playground/${name.key}`)}
+									onClick={() => navigate(`/playground/${slug}`)}
 									className={`w-full text-left px-3 py-2 text-sm transition-colors ${
 										isSelected
 											? 'bg-accent text-accent-foreground'
 											: 'hover:bg-muted/50 text-muted-foreground hover:text-foreground'
 									}`}
 								>
-									<div className="font-medium truncate">{name.title}</div>
+									<div className="font-medium truncate">{n.title}</div>
 									<div className="text-xs opacity-70 font-mono truncate">
-										{name.key}
+										{slug}
 									</div>
 								</button>
 							)

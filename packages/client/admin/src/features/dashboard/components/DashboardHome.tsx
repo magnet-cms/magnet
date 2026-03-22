@@ -1,6 +1,7 @@
 'use client'
 
 import { Badge, Button, Skeleton } from '@magnet-cms/ui'
+import { names } from '@magnet-cms/utils'
 import {
 	Book,
 	Box,
@@ -271,23 +272,24 @@ export function DashboardHome() {
 	// Transform schemas to collection cards
 	const collections = useMemo(() => {
 		if (!schemas) return []
-		return schemas.slice(0, 4).map((schemaName) => ({
-			icon: getSchemaIcon(schemaName),
-			title:
-				schemaName.charAt(0).toUpperCase() +
-				schemaName.slice(1).replace(/([A-Z])/g, ' $1'),
-			description: intl.formatMessage(
-				{
-					id: 'dashboard.collections.manageContent',
-					defaultMessage: 'Manage {schema} content',
-				},
-				{ schema: schemaName },
-			),
-			itemCount: 0,
-			href: `/content-manager/${schemaName}`,
-			iconBgColor: 'bg-muted',
-			iconColor: 'text-muted-foreground',
-		}))
+		return schemas.slice(0, 4).map((schemaName) => {
+			const n = names(schemaName)
+			return {
+				icon: getSchemaIcon(schemaName),
+				title: n.title,
+				description: intl.formatMessage(
+					{
+						id: 'dashboard.collections.manageContent',
+						defaultMessage: 'Manage {schema} content',
+					},
+					{ schema: n.title },
+				),
+				itemCount: 0,
+				href: `/content-manager/${schemaName}`,
+				iconBgColor: 'bg-muted',
+				iconColor: 'text-muted-foreground',
+			}
+		})
 	}, [schemas, intl])
 
 	// Transform media items for preview
@@ -424,7 +426,7 @@ export function DashboardHome() {
 						) : (
 							<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
 								{collections.map((collection) => (
-									<CollectionCard key={collection.title} {...collection} />
+									<CollectionCard key={collection.href} {...collection} />
 								))}
 								{collections.length < 4 && (
 									<CollectionCard

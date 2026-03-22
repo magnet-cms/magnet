@@ -88,8 +88,8 @@ describe('generateDotEnv — Drizzle Supabase (postgres mode)', () => {
 
 	it('includes SUPABASE placeholder env vars', () => {
 		expect(output).toContain('SUPABASE_URL=')
-		expect(output).toContain('SUPABASE_ANON_KEY=')
-		expect(output).toContain('SUPABASE_SERVICE_KEY=')
+		expect(output).toContain('SUPABASE_PUBLISHABLE_KEY=')
+		expect(output).toContain('SUPABASE_SECRET_KEY=')
 	})
 })
 

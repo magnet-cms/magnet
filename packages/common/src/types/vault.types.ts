@@ -46,10 +46,18 @@ export interface HashiCorpVaultConfig {
  * Configuration for the Supabase Vault adapter.
  */
 export interface SupabaseVaultConfig {
-	/** Supabase project URL */
-	supabaseUrl: string
-	/** Supabase service role key (required for vault operations) */
-	supabaseServiceKey: string
+	/**
+	 * Direct PostgreSQL connection string to the Supabase database.
+	 * Used to access the vault schema without PostgREST schema exposure.
+	 * Defaults to the `DATABASE_URL` environment variable.
+	 *
+	 * @example "postgresql://postgres:password@db.xxx.supabase.co:5432/postgres"
+	 */
+	connectionString?: string
+	/** @deprecated Use connectionString instead. Kept for backwards compatibility. */
+	supabaseUrl?: string
+	/** @deprecated Use connectionString instead. Kept for backwards compatibility. */
+	supabaseServiceKey?: string
 }
 
 /**

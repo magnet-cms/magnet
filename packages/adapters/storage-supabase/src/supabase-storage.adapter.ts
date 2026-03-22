@@ -16,7 +16,7 @@ import { SupabaseClient, createClient } from '@supabase/supabase-js'
 export interface SupabaseStorageConfig {
 	/** Supabase project URL */
 	supabaseUrl: string
-	/** Supabase service role key (required for storage operations) */
+	/** Supabase secret key (required for storage operations) */
 	supabaseKey: string
 	/** Storage bucket name */
 	bucket: string
@@ -54,7 +54,7 @@ function generateFilename(originalFilename: string): string {
  *
  * const storage = new SupabaseStorageAdapter({
  *   supabaseUrl: process.env.SUPABASE_URL,
- *   supabaseKey: process.env.SUPABASE_SERVICE_KEY,
+ *   supabaseKey: process.env.SUPABASE_SECRET_KEY,
  *   bucket: 'media',
  * })
  *
@@ -383,9 +383,9 @@ export class SupabaseStorageAdapter extends StorageAdapter {
 			description: 'Supabase project URL',
 		},
 		{
-			name: 'SUPABASE_SERVICE_KEY',
+			name: 'SUPABASE_SECRET_KEY',
 			required: true,
-			description: 'Supabase service role key',
+			description: 'Supabase secret key',
 		},
 		{
 			name: 'SUPABASE_STORAGE_BUCKET',
@@ -403,8 +403,7 @@ export class SupabaseStorageAdapter extends StorageAdapter {
 	): StorageMagnetProvider {
 		const resolvedConfig: SupabaseStorageConfig = {
 			supabaseUrl: config?.supabaseUrl ?? process.env.SUPABASE_URL ?? '',
-			supabaseKey:
-				config?.supabaseKey ?? process.env.SUPABASE_SERVICE_KEY ?? '',
+			supabaseKey: config?.supabaseKey ?? process.env.SUPABASE_SECRET_KEY ?? '',
 			bucket: config?.bucket ?? process.env.SUPABASE_STORAGE_BUCKET ?? 'media',
 			publicUrl: config?.publicUrl,
 		}

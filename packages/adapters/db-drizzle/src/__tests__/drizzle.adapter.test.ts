@@ -1,5 +1,13 @@
-import { beforeEach, describe, expect, it, spyOn } from 'bun:test'
+import { afterEach, beforeEach, describe, expect, it, spyOn } from 'bun:test'
 import { Adapter } from '../drizzle.adapter'
+
+// Helper to extract SQL string from drizzle sql.raw() object
+function extractSQL(rawObj: unknown): string {
+	const obj = rawObj as {
+		queryChunks?: Array<{ value?: string[] }>
+	}
+	return obj?.queryChunks?.[0]?.value?.[0] ?? ''
+}
 
 // Reset adapter state between tests by casting to access private fields
 function resetAdapter() {
@@ -99,5 +107,102 @@ describe('DrizzleAdapter.ensureTablesCreated', () => {
 		await Adapter.ensureTablesCreated()
 
 		expect(a.tablesInitialized).toBe(true)
+	})
+})
+
+describe('DrizzleAdapter.createTableFromConfig — primary key detection', () => {
+	let capturedSQLs: string[]
+	let execSpy: ReturnType<typeof spyOn>
+
+	beforeEach(() => {
+		capturedSQLs = []
+		const a = Adapter as unknown as Record<string, unknown>
+		a.db = { execute: async () => {} }
+		a.options = { dialect: 'postgresql' }
+		a.tablesInitialized = false
+
+		// Spy on execRawSQL to capture generated SQL strings
+		execSpy = spyOn(
+			Adapter as unknown as { execRawSQL: (s: unknown) => Promise<void> },
+			'execRawSQL',
+		).mockImplementation(async (rawSQL: unknown) => {
+			capturedSQLs.push(extractSQL(rawSQL))
+		})
+	})
+
+	afterEach(() => {
+		execSpy.mockRestore()
+	})
+
+	it('emits PRIMARY KEY constraint for column-level .primaryKey()', async () => {
+		const config = {
+			name: 'users',
+			primaryKeys: [], // empty — simulates getTableConfig() for single-column PK
+			columns: [
+				{
+					name: 'id',
+					primary: true,
+					notNull: true,
+					hasDefault: false,
+					getSQLType: () => 'uuid',
+				},
+				{
+					name: 'email',
+					primary: false,
+					notNull: false,
+					hasDefault: false,
+					getSQLType: () => 'text',
+				},
+			],
+			indexes: {},
+		}
+
+		const adapter = Adapter as unknown as {
+			createTableFromConfig: (
+				config: Record<string, unknown>,
+				dialect: string,
+			) => Promise<void>
+		}
+		await adapter.createTableFromConfig(
+			config as unknown as Record<string, unknown>,
+			'postgresql',
+		)
+
+		// First SQL call is CREATE TABLE
+		const createSQL = capturedSQLs[0] ?? ''
+		expect(createSQL).toContain('PRIMARY KEY')
+		expect(createSQL).toContain('"id"')
+	})
+
+	it('does not double-emit PRIMARY KEY when table-level primaryKeys is set', async () => {
+		const config = {
+			name: 'users',
+			primaryKeys: ['id'], // table-level PK already specified
+			columns: [
+				{
+					name: 'id',
+					primary: false, // column-level not set (as drizzle does for composite)
+					notNull: true,
+					hasDefault: false,
+					getSQLType: () => 'uuid',
+				},
+			],
+			indexes: {},
+		}
+
+		const adapter = Adapter as unknown as {
+			createTableFromConfig: (
+				config: Record<string, unknown>,
+				dialect: string,
+			) => Promise<void>
+		}
+		await adapter.createTableFromConfig(
+			config as unknown as Record<string, unknown>,
+			'postgresql',
+		)
+
+		const createSQL = capturedSQLs[0] ?? ''
+		const pkCount = (createSQL.match(/PRIMARY KEY/g) ?? []).length
+		expect(pkCount).toBe(1)
 	})
 })

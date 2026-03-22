@@ -199,10 +199,12 @@ export function UsersListingPage() {
 				{ label: 'Viewer', value: 'viewer' },
 			]
 		}
-		return roles.map((role) => ({
-			label: role.name.charAt(0).toUpperCase() + role.name.slice(1),
-			value: role.name,
-		}))
+		return roles
+			.filter((role) => role.name)
+			.map((role) => ({
+				label: role.name.charAt(0).toUpperCase() + role.name.slice(1),
+				value: role.name,
+			}))
 	}, [roles])
 
 	const handleRoleChange = (userId: string, newRole: string) => {

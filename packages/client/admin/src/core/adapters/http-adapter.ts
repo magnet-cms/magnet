@@ -97,10 +97,24 @@ export function createHttpAdapter(config: HttpAdapterConfig): MagnetApiAdapter {
 		}
 
 		if (!res.ok) {
-			const error = new HttpError(
-				`Error ${res.status}: ${res.statusText}`,
-				res.status,
-			)
+			let message = `Error ${res.status}: ${res.statusText}`
+			try {
+				const contentType = res.headers.get('content-type')
+				if (contentType?.includes('application/json')) {
+					const body = (await res.json()) as {
+						message?: string | string[]
+						error?: string
+					}
+					if (body.message) {
+						message = Array.isArray(body.message)
+							? body.message.join(', ')
+							: body.message
+					}
+				}
+			} catch {
+				// body could not be parsed — keep generic message
+			}
+			const error = new HttpError(message, res.status)
 			onError?.(error)
 			throw error
 		}

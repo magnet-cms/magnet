@@ -3,73 +3,30 @@
  *
  * Type-safe event system for decoupled communication between modules.
  * Used by: Activity logging, Webhooks, Auth events, RBAC events, etc.
+ *
+ * ## Extending with Custom Events
+ *
+ * Application code can add custom events via TypeScript module augmentation
+ * without modifying this package:
+ *
+ * ```typescript
+ * // In your app code (e.g., src/types/events.ts)
+ * import type { BaseEventPayload } from '@magnet-cms/common'
+ *
+ * declare module '@magnet-cms/common' {
+ *   interface EventPayloadMap {
+ *     'my.custom.event': MyCustomPayload
+ *   }
+ * }
+ *
+ * export interface MyCustomPayload extends BaseEventPayload {
+ *   someField: string
+ * }
+ * ```
+ *
+ * After augmentation, `EventName` automatically includes `'my.custom.event'`,
+ * and `EventPayload<'my.custom.event'>` resolves to `MyCustomPayload`.
  */
-
-/**
- * All event names in the system
- * Adding new events requires updating this union
- */
-export type EventName =
-	// Content events
-	| 'content.created'
-	| 'content.updated'
-	| 'content.deleted'
-	| 'content.published'
-	| 'content.unpublished'
-	| 'content.version.created'
-	| 'content.version.restored'
-	// User events
-	| 'user.created'
-	| 'user.updated'
-	| 'user.deleted'
-	| 'user.registered'
-	| 'user.login'
-	| 'user.logout'
-	| 'user.logout_all'
-	| 'user.password_changed'
-	| 'user.password_reset_requested'
-	| 'user.password_reset'
-	| 'user.password_reset_completed'
-	| 'user.email_verification_requested'
-	| 'user.email_verified'
-	| 'user.session_revoked'
-	// Auth events
-	| 'auth.token_refreshed'
-	| 'auth.session_created'
-	| 'auth.session_revoked'
-	| 'auth.failed_login_attempt'
-	// Role events
-	| 'role.created'
-	| 'role.updated'
-	| 'role.deleted'
-	| 'role.permissions_updated'
-	| 'role.user_assigned'
-	// Settings events
-	| 'settings.updated'
-	| 'settings.group_updated'
-	// Media events
-	| 'media.uploaded'
-	| 'media.deleted'
-	| 'media.folder_created'
-	| 'media.folder_deleted'
-	// API Key events
-	| 'api_key.created'
-	| 'api_key.revoked'
-	| 'api_key.used'
-	// Webhook events
-	| 'webhook.created'
-	| 'webhook.updated'
-	| 'webhook.deleted'
-	| 'webhook.delivery_success'
-	| 'webhook.delivery_failed'
-	// Plugin events
-	| 'plugin.initialized'
-	| 'plugin.destroyed'
-	// Notification events
-	| 'notification.created'
-	// System events
-	| 'system.startup'
-	| 'system.shutdown'
 
 /**
  * Base event payload with common fields
@@ -238,7 +195,11 @@ export interface NotificationEventPayload extends BaseEventPayload {
 }
 
 /**
- * Event payload map - maps event names to their payload types
+ * Event payload map - maps event names to their payload types.
+ *
+ * This interface is intentionally open for extension via TypeScript module
+ * augmentation. Application code can add custom events without modifying
+ * this package. See the file-level JSDoc comment for usage.
  */
 export interface EventPayloadMap {
 	// Content events
@@ -323,6 +284,14 @@ export interface EventPayloadMap {
 }
 
 /**
+ * All event names in the system.
+ *
+ * Derived from EventPayloadMap — automatically includes any events added
+ * via module augmentation. Never edit this line; extend EventPayloadMap instead.
+ */
+export type EventName = keyof EventPayloadMap
+
+/**
  * Get payload type for an event name
  */
 export type EventPayload<E extends EventName> = EventPayloadMap[E]
@@ -367,7 +336,8 @@ export interface RegisteredHandler<E extends EventName> {
  * Event history entry for debugging
  */
 export interface EventHistoryEntry {
-	event: EventName
+	/** Event name — string to support user-defined events via module augmentation */
+	event: string
 	payload: BaseEventPayload
 	timestamp: Date
 }
@@ -376,6 +346,7 @@ export interface EventHistoryEntry {
  * Event handler metadata (used by @OnEvent decorator)
  */
 export interface EventHandlerMetadata {
-	event: EventName
+	/** Event name as string — the decorator validates EventName at the call site */
+	event: string
 	options: EventHandlerOptions
 }
