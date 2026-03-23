@@ -1,4 +1,4 @@
 {
   "title": "Plugins",
-  "pages": ["index", "playground", "sentry", "seo", "vault"]
+  "pages": ["index", "playground", "sentry", "seo", "stripe", "polar"]
 }

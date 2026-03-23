@@ -5,11 +5,19 @@ description: Get up and running with Magnet in minutes
 
 # Quick Start
 
-Follow this guide to set up a basic Magnet application.
+This page shows a **minimal manual setup** (add Magnet to an existing NestJS app). For a **generated project** (database, storage, vault, plugins chosen for you), use the CLI first:
 
-## Installation
+```bash
+bunx create-magnet
+```
 
-First, install the required packages:
+See [Installation](/docs/getting-started/installation) for the full `create-magnet` workflow, flags, and what gets scaffolded.
+
+---
+
+## Manual installation
+
+Install the required packages in an existing project:
 
 ```bash
 bun add @magnet-cms/core @magnet-cms/adapter-db-mongoose @magnet-cms/common
@@ -26,9 +34,7 @@ import { MongooseDatabaseAdapter } from '@magnet-cms/adapter-db-mongoose'
 
 @Module({
   imports: [
-    MagnetModule.forRoot([
-      MongooseDatabaseAdapter.forRoot(),
-    ], { admin: true }),
+    MagnetModule.forRoot([MongooseDatabaseAdapter.forRoot()]),
   ],
 })
 export class AppModule {}
@@ -48,5 +54,6 @@ Your Magnet application is now running! The admin UI is available at `http://loc
 
 ## Next Steps
 
-- Learn about [Core Concepts](/docs/core)
-- Explore [Database Adapters](/docs/adapters)
+- [Core](/docs/core) — Built-in modules overview
+- [Configuration](/docs/getting-started/configuration) — Providers and env validation
+- [Adapters](/docs/adapters) — Database and integration packages

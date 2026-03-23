@@ -23,13 +23,10 @@ import { PlaygroundPlugin } from '@magnet-cms/plugin-playground'
 
 @Module({
   imports: [
-    MagnetModule.forRoot(
-      [
-        MongooseDatabaseAdapter.forRoot(),
-        PlaygroundPlugin.forRoot({ modulesPath: './src/modules' }),
-      ],
-      { admin: true },
-    ),
+    MagnetModule.forRoot([
+      MongooseDatabaseAdapter.forRoot(),
+      PlaygroundPlugin.forRoot({ modulesPath: './src/modules' }),
+    ]),
   ],
 })
 export class AppModule {}

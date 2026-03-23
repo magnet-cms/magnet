@@ -5,13 +5,16 @@ description: Configure the Magnet CMS migration system for your project
 
 # Migration Configuration
 
-The migration system is configured through the `migrations` property in your `db` config inside `MagnetModule.forRoot()`.
+The migration system is configured through the `migrations` property passed to `DrizzleDatabaseAdapter.forRoot()`, which you include in the provider array passed to `MagnetModule.forRoot([...])`.
 
 ## Full Configuration
 
 ```typescript
-MagnetModule.forRoot({
-  db: {
+import { DrizzleDatabaseAdapter } from '@magnet-cms/adapter-db-drizzle'
+import { MagnetModule } from '@magnet-cms/core'
+
+MagnetModule.forRoot([
+  DrizzleDatabaseAdapter.forRoot({
     connectionString: process.env.DATABASE_URL || '',
     dialect: 'postgresql',
     driver: 'neon',
@@ -37,8 +40,8 @@ MagnetModule.forRoot({
       // Default: true
       transactional: true,
     },
-  },
-})
+  }),
+])
 ```
 
 ## Configuration Options
@@ -104,15 +107,16 @@ When `true`, a failing migration is automatically rolled back. When `false`, mig
 If you omit the `migrations` config entirely, Magnet falls back to its previous behavior: `CREATE TABLE IF NOT EXISTS` for each schema on startup. This preserves compatibility for projects that haven't adopted the migration system yet.
 
 ```typescript
-// No migrations config = legacy behavior (no migration files)
-MagnetModule.forRoot({
-  db: {
+import { DrizzleDatabaseAdapter } from '@magnet-cms/adapter-db-drizzle'
+
+// No migrations property = legacy behavior (no migration files)
+MagnetModule.forRoot([
+  DrizzleDatabaseAdapter.forRoot({
     connectionString: process.env.DATABASE_URL || '',
     dialect: 'postgresql',
     driver: 'neon',
-    // No migrations property = CREATE TABLE IF NOT EXISTS on startup
-  },
-})
+  }),
+])
 ```
 
 ## Environment-Based Configuration
@@ -121,17 +125,22 @@ A common pattern for multi-environment setups:
 
 ```typescript
 // config/database.config.ts
-export const getDatabaseConfig = () => ({
+import type { DrizzleConfig } from '@magnet-cms/adapter-db-drizzle'
+
+export const getDrizzleConfig = (): Partial<DrizzleConfig> => ({
   connectionString: process.env.DATABASE_URL || '',
-  dialect: 'postgresql' as const,
+  dialect: 'postgresql',
   driver: (process.env.DB_DRIVER || 'neon') as 'neon' | 'pg',
-  migrations: process.env.MIGRATIONS_ENABLED === 'false'
-    ? undefined
-    : {
-        mode: (process.env.NODE_ENV === 'production' ? 'manual' : 'auto') as 'auto' | 'manual',
-        directory: process.env.MIGRATIONS_DIR || './migrations',
-        lockTimeout: parseInt(process.env.MIGRATIONS_LOCK_TIMEOUT || '60000'),
-      },
+  migrations:
+    process.env.MIGRATIONS_ENABLED === 'false'
+      ? undefined
+      : {
+          mode: (process.env.NODE_ENV === 'production' ? 'manual' : 'auto') as
+            | 'auto'
+            | 'manual',
+          directory: process.env.MIGRATIONS_DIR || './migrations',
+          lockTimeout: parseInt(process.env.MIGRATIONS_LOCK_TIMEOUT || '60000', 10),
+        },
 })
 ```
 
@@ -139,10 +148,18 @@ Then in your app module:
 
 ```typescript
 // app.module.ts
-import { getDatabaseConfig } from './config/database.config'
+import { Module } from '@nestjs/common'
+import { MagnetModule } from '@magnet-cms/core'
+import { DrizzleDatabaseAdapter } from '@magnet-cms/adapter-db-drizzle'
+import { getDrizzleConfig } from './config/database.config'
 
-MagnetModule.forRoot({
-  db: getDatabaseConfig(),
-  jwt: { secret: process.env.JWT_SECRET || '' },
+@Module({
+  imports: [
+    MagnetModule.forRoot(
+      [DrizzleDatabaseAdapter.forRoot(getDrizzleConfig())],
+      { jwt: { secret: process.env.JWT_SECRET || '' } },
+    ),
+  ],
 })
+export class AppModule {}
 ```

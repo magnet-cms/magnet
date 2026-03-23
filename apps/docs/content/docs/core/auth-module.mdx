@@ -28,14 +28,14 @@ import { MongooseDatabaseAdapter } from '@magnet-cms/adapter-db-mongoose'
 
 @Module({
   imports: [
-    MagnetModule.forRoot([
-      MongooseDatabaseAdapter.forRoot(),
-    ], {
-      admin: true,
-      jwt: {
-        expiresIn: '7d',
+    MagnetModule.forRoot(
+      [MongooseDatabaseAdapter.forRoot()],
+      {
+        jwt: {
+          expiresIn: '7d',
+        },
       },
-    }),
+    ),
   ],
 })
 export class AppModule {}
@@ -51,7 +51,7 @@ import { SupabaseAuthAdapter } from '@magnet-cms/adapter-auth-supabase'
 MagnetModule.forRoot([
   DrizzleDatabaseAdapter.forRoot({ dialect: 'postgresql' }),
   SupabaseAuthAdapter.forRoot(),
-], { admin: true })
+])
 ```
 
 `SupabaseAuthAdapter.forRoot()` auto-resolves `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, and `SUPABASE_SECRET_KEY` from `process.env`.

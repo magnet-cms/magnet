@@ -1,0 +1,166 @@
+---
+title: Email Module
+description: Transactional email with optional Resend, Nodemailer, or console-only development
+---
+
+## Overview
+
+`EmailModule` is registered automatically when you call `MagnetModule.forRoot()`. It sends and templates mail used by features such as verification flows and [notifications](/docs/core/notifications-module) (when the email channel is enabled).
+
+## With or without an adapter
+
+- **No email provider** in your `MagnetModule.forRoot([...])` array: Magnet uses a **console-only** path—messages are logged, not delivered. This is fine for local development.
+- **With an email provider**: add `ResendEmailAdapter.forRoot()` or `NodemailerEmailAdapter.forRoot()` from [`@magnet-cms/email-resend`](https://www.npmjs.com/package/@magnet-cms/email-resend) or [`@magnet-cms/email-nodemailer`](https://www.npmjs.com/package/@magnet-cms/email-nodemailer). Outbound mail goes through that adapter.
+
+## Registering an email provider
+
+Pass the adapter in the **same array** as your database adapter:
+
+```typescript
+import { Module } from '@nestjs/common'
+import { MagnetModule } from '@magnet-cms/core'
+import { MongooseDatabaseAdapter } from '@magnet-cms/adapter-db-mongoose'
+import { ResendEmailAdapter } from '@magnet-cms/email-resend'
+
+@Module({
+  imports: [
+    MagnetModule.forRoot(
+      [MongooseDatabaseAdapter.forRoot(), ResendEmailAdapter.forRoot()],
+      {
+        email: {
+          // Optional: React Email layout wrapping HTML bodies
+          // layout: EmailLayout,
+        },
+      },
+    ),
+  ],
+})
+export class AppModule {}
+```
+
+## Email layout (base template)
+
+Email bodies are created in the database via the admin panel. The **layout** is the wrapper that surrounds every email body — header, footer, branding, container styles. It lives in your codebase, not the database.
+
+### How layout resolution works
+
+Magnet resolves the layout in this order:
+
+1. **Programmatic** — passed via `email.layout` in `MagnetModule.forRoot` global options
+2. **Convention path** — auto-discovered from `templates/email/layout` at your project root (tries `.js`, `.ts`, `.tsx`, `dist/templates/email/layout.js`)
+3. **Built-in default** — minimal `@react-email/components` layout used when no custom layout is found
+
+### Convention path (recommended)
+
+Create `templates/email/layout.tsx` at your project root. Magnet discovers it automatically — no configuration needed.
+
+```tsx
+// templates/email/layout.tsx
+import { Body, Container, Head, Hr, Html, Section, Text } from '@react-email/components'
+import React from 'react'
+
+interface LayoutProps {
+  /** Compiled HTML body content from the email template */
+  content: string
+  [key: string]: unknown
+}
+
+export default function Layout({ content }: LayoutProps): React.ReactElement {
+  return (
+    <Html lang="en">
+      <Head />
+      <Body style={{ backgroundColor: '#f4f4f5', fontFamily: 'sans-serif', margin: 0 }}>
+        <Container style={{ backgroundColor: '#fff', borderRadius: 12, maxWidth: 560, margin: '40px auto', padding: 0 }}>
+          {/* Header */}
+          <Section style={{ padding: '24px 40px' }}>
+            <Text style={{ fontWeight: 700, fontSize: 20, color: '#18181b', margin: 0 }}>
+              My App
+            </Text>
+          </Section>
+          <Hr style={{ borderColor: '#f4f4f5', margin: 0 }} />
+
+          {/* Body — rendered Handlebars content */}
+          <Section style={{ padding: '32px 40px' }}>
+            <div dangerouslySetInnerHTML={{ __html: content }} />
+          </Section>
+
+          <Hr style={{ borderColor: '#f4f4f5', margin: 0 }} />
+          {/* Footer */}
+          <Section style={{ padding: '16px 40px 24px' }}>
+            <Text style={{ color: '#a1a1aa', fontSize: 12, margin: 0 }}>
+              © {new Date().getFullYear()} My App. All rights reserved.
+            </Text>
+          </Section>
+        </Container>
+      </Body>
+    </Html>
+  )
+}
+```
+
+The layout receives `content` (the rendered Handlebars HTML) plus any template context variables passed to `TemplateService.render()`.
+
+### Programmatic approach
+
+Pass the layout component directly in `MagnetModule.forRoot`:
+
+```typescript
+import { EmailLayout } from './templates/email/layout'
+
+MagnetModule.forRoot(
+  [...adapters],
+  { email: { layout: EmailLayout } },
+)
+```
+
+### Production build (NestJS)
+
+NestJS compiles only `src/` by default. To include `templates/` in the build output, update your project config:
+
+**`tsconfig.json`** — add `rootDir` and `include`:
+
+```json
+{
+  "compilerOptions": {
+    "rootDir": ".",
+    "jsx": "react",
+    "outDir": "./dist"
+  },
+  "include": ["src/**/*", "templates/**/*"],
+  "exclude": ["migrations", "dist", "node_modules"]
+}
+```
+
+**`nest-cli.json`** — add `entryFile` to match the new output path:
+
+```json
+{
+  "sourceRoot": "src",
+  "entryFile": "src/main",
+  "compilerOptions": { "deleteOutDir": true }
+}
+```
+
+After `nest build`, Magnet discovers the layout at `dist/templates/email/layout.js`.
+
+**Required dependencies:**
+
+```bash
+npm install @react-email/components react
+```
+
+## Defaults (`from` / `replyTo`)
+
+Adapters accept `defaults` in `forRoot()` and also read `EMAIL_FROM` from the environment when configured. See:
+
+- [Resend adapter](/docs/adapters/email-resend)
+- [Nodemailer adapter](/docs/adapters/email-nodemailer)
+
+## Injecting `EmailService`
+
+Use `@magnet-cms/core` exports to send mail from your own services (check your version’s public API for `EmailService` and related helpers).
+
+## Next steps
+
+- [Notifications module](/docs/core/notifications-module) — Email channel and adapters
+- [Resend](/docs/adapters/email-resend) / [Nodemailer](/docs/adapters/email-nodemailer) — Install and environment variables

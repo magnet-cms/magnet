@@ -1,21 +1,97 @@
 ---
 title: Installation
-description: Install Magnet and its dependencies
+description: Scaffold a new project with create-magnet or add Magnet to an existing NestJS app
 ---
 
 # Installation
 
-This guide covers installing Magnet in your project.
+You can start in either of these ways:
 
-## Package Manager
+1. **Create Magnet CLI** (`create-magnet`) — scaffolds a new NestJS + Magnet app with adapters, optional plugins, storage, and vault choices.
+2. **Manual install** — add `@magnet-cms/core` and adapters to an **existing** NestJS project.
 
-We recommend using Bun for the best experience:
+For database **migrations** in an existing Drizzle project, use [`@magnet-cms/cli`](https://www.npmjs.com/package/@magnet-cms/cli) (see [Migrations](/docs/migrations)); that package does not create new apps.
+
+## Scaffold a new project (`create-magnet`)
+
+The [`create-magnet`](https://www.npmjs.com/package/create-magnet) package generates a ready-to-run Magnet CMS project.
+
+### Run the CLI
+
+```bash
+# Interactive wizard (recommended)
+bunx create-magnet
+
+# Or with npx / pnpm / yarn
+npx create-magnet
+pnpm create magnet my-project
+yarn create magnet my-project
+```
+
+With a **project name**, files are created under that directory (you still get prompts for options not passed via flags):
+
+```bash
+bunx create-magnet my-project
+```
+
+### What the wizard asks
+
+- **Project name** — directory name (if you did not pass it on the command line).
+- **Database adapter** — Mongoose (MongoDB), Drizzle + Neon (PostgreSQL), or Drizzle + Supabase (PostgreSQL + Supabase Auth).
+- **Supabase local dev** (Supabase template only) — Docker PostgreSQL only, or full stack via Supabase CLI.
+- **Plugins** — optional Playground, SEO, Sentry.
+- **Storage** — local filesystem, S3, R2, Supabase Storage, or none (configure later).
+- **Vault** — built-in database vault, HashiCorp Vault, or Supabase Vault.
+- **Example module** — sample CRUD module (can skip with `--no-example`).
+- **Package manager** — npm, Bun, pnpm, or yarn (detected when available).
+
+### CLI flags
+
+```text
+Usage: create-magnet [options] [project-name]
+
+Options:
+  -V, --version             Show version
+  -d, --database <adapter>  mongoose | drizzle-neon | drizzle-supabase
+  --no-install              Skip dependency installation
+  --no-example              Skip example module
+  -h, --help                Help
+```
+
+Examples:
+
+```bash
+bunx create-magnet my-cms --database mongoose --no-install
+bunx create-magnet my-cms --no-example
+```
+
+### After scaffolding
+
+```bash
+cd my-project
+cp .env.example .env
+# Start local DB when the template includes Docker Compose:
+bun run docker:up   # or npm run docker:up
+bun run dev         # or npm run dev
+```
+
+Generated layout typically includes `src/app.module.ts`, `src/main.ts`, optional `src/modules/...`, `docker/`, `.env.example`, and Nest/TypeScript config. See the template `README.md` inside the new project for template-specific notes.
+
+---
+
+## Add Magnet to an existing NestJS app
+
+Use this path when you already have a Nest application and only need the packages.
+
+### Core package
+
+We recommend Bun:
 
 ```bash
 bun add @magnet-cms/core
 ```
 
-You can also use npm or yarn:
+Or npm / yarn:
 
 ```bash
 npm install @magnet-cms/core
@@ -23,33 +99,33 @@ npm install @magnet-cms/core
 yarn add @magnet-cms/core
 ```
 
-## Additional Packages
-
-Depending on your needs, you may want to install additional packages:
+### Additional packages
 
 ```bash
-# Database adapter (required)
+# Database adapter (required — pick one)
 bun add @magnet-cms/adapter-db-mongoose mongoose
+# or
+bun add @magnet-cms/adapter-db-drizzle drizzle-orm pg
 
-# Common utilities and types
+# Shared types and decorators (recommended)
 bun add @magnet-cms/common
 
-# Admin UI (bundled with core when admin: true)
+# Admin UI (for embedding or custom builds; core can serve the bundle by default)
 bun add @magnet-cms/admin
 ```
 
-## Development Dependencies
-
-For development, you may want:
+### Development dependencies
 
 ```bash
 bun add -d typescript @types/node
 ```
 
-## Peer Dependencies
+### Peer dependencies
 
-Magnet requires NestJS. If you haven't installed it:
+Magnet expects NestJS. If it is not installed yet:
 
 ```bash
 bun add @nestjs/core @nestjs/common reflect-metadata
 ```
+
+Wire `MagnetModule.forRoot([...])` in your root module — see [Quick Start](/docs/getting-started/quick-start) and [Configuration](/docs/getting-started/configuration).

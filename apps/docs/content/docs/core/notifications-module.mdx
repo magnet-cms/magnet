@@ -132,25 +132,33 @@ The platform channel is always available — no configuration required. It:
 
 ### Email channel (adapter-based)
 
-Email delivery requires registering an adapter. Enable the channel in Settings and pass an adapter when registering the module:
+Email delivery requires registering an **email** `MagnetProvider` in the same provider array as your database adapter (for example Resend or Nodemailer). Enable the email channel in Settings. See [Email module](/docs/core/email-module) and the [Resend](/docs/adapters/email-resend) / [Nodemailer](/docs/adapters/email-nodemailer) adapter pages.
 
 ```typescript
 // app.module.ts
+import { Module } from '@nestjs/common'
 import { MagnetModule } from '@magnet-cms/core'
-import { MyEmailAdapter } from './my-email-adapter'
+import { MongooseDatabaseAdapter } from '@magnet-cms/adapter-db-mongoose'
+import { ResendEmailAdapter } from '@magnet-cms/email-resend'
 
 @Module({
   imports: [
-    MagnetModule.forRoot({
-      // ...
-    }),
+    MagnetModule.forRoot(
+      [MongooseDatabaseAdapter.forRoot(), ResendEmailAdapter.forRoot()],
+      {
+        email: {
+          // Optional: React Email layout wrapping notification bodies
+          // layout: EmailLayout,
+        },
+      },
+    ),
   ],
 })
 export class AppModule {}
 ```
 
 <Callout type="info">
-  `NotificationModule` is registered automatically inside `MagnetModule.forRoot()`. To supply channel adapters, pass them when bootstrapping using the adapter registration API described in [Custom Channel Adapters](#custom-channel-adapters).
+  `NotificationModule` is registered automatically inside `MagnetModule.forRoot()`. For fully custom SMTP logic you can still implement [Custom Channel Adapters](#custom-channel-adapters) instead of the built-in email integration.
 </Callout>
 
 ### Custom channel adapters

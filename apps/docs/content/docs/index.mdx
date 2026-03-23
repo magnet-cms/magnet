@@ -5,27 +5,31 @@ description: Welcome to the Magnet documentation
 
 # Welcome to Magnet
 
-Magnet is a headless CMS framework built on NestJS, designed to provide a flexible and extensible content management system for modern applications.
+Magnet is a headless CMS framework built on NestJS: schema-driven content, a React admin UI, and a **provider-based** bootstrap so you can mix databases, auth, storage, email, cache, vault, GraphQL, and plugins in one `MagnetModule.forRoot([...])` call.
 
 ## Features
 
-- **NestJS-based** - Built on top of the powerful NestJS framework
-- **Headless Architecture** - API-first approach for maximum flexibility
-- **Plugin System** - Extend functionality with plugins
-- **Admin UI** - Built-in React admin interface
-- **Database Adapters** - Support for multiple databases through adapters
+- **NestJS-native** — Modules, DI, and validation patterns you already use
+- **Headless API** — REST (and optional GraphQL) for any frontend
+- **Composable providers** — One array for DB + Supabase/Clerk auth + S3/R2 storage + Resend email + Redis cache + Vault + plugins; required env vars validated at startup
+- **Admin UI** — Served from the core app or embedded (e.g. Next.js) via `@magnet-cms/admin`
+- **Drizzle migrations** — First-class migration workflow for SQL databases
+- **RBAC, webhooks, notifications, settings** — Built-in modules documented under [Core](/docs/core)
 
 ## Getting Started
 
-Ready to start building with Magnet? Check out our [Quick Start](/docs/getting-started/quick-start) guide to get up and running in minutes.
+- [Installation](/docs/getting-started/installation) — **`create-magnet` CLI** (new project) or manual packages
+- [Quick Start](/docs/getting-started/quick-start) — Minimal manual Mongoose `AppModule`
+- [Configuration](/docs/getting-started/configuration) — Providers and global options
 
-## Packages
-
-Magnet is organized as a monorepo with several packages:
+## Packages (overview)
 
 | Package | Description |
 |---------|-------------|
-| `@magnet-cms/core` | Core NestJS module |
-| `@magnet-cms/common` | Shared types and utilities |
-| `@magnet-cms/admin` | React admin UI |
-| `@magnet-cms/adapter-db-mongoose` | Mongoose database adapter |
+| `@magnet-cms/core` | `MagnetModule`, HTTP modules, admin serving |
+| `@magnet-cms/common` | Decorators, types, `MagnetProvider` contracts |
+| `@magnet-cms/admin` | Admin UI bundle |
+| `@magnet-cms/adapter-db-mongoose` | MongoDB |
+| `@magnet-cms/adapter-db-drizzle` | PostgreSQL / MySQL / SQLite |
+
+See [Adapters](/docs/adapters) for auth, storage, email, cache, vault, and GraphQL packages.

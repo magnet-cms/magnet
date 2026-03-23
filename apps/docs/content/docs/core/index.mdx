@@ -5,46 +5,43 @@ description: Learn about Magnet's core module
 
 # Core Module
 
-The `@magnet-cms/core` package provides the main functionality for building a headless CMS with NestJS.
+The `@magnet-cms/core` package bootstraps the CMS: HTTP APIs, admin serving, database abstraction, plugins, and cross-cutting services.
 
-## Overview
-
-The core module includes:
-
-- **MagnetModule** - The main module that bootstraps the CMS
-- **Content Module** - Manages content types and entries
-- **Auth Module** - Authentication and authorization
-- **Admin Module** - Admin API endpoints
-- **Database Module** - Database abstraction layer
-
-## Configuration
+## Bootstrapping
 
 ```typescript
+import { Module } from '@nestjs/common'
 import { MagnetModule } from '@magnet-cms/core'
 import { MongooseDatabaseAdapter } from '@magnet-cms/adapter-db-mongoose'
 
 @Module({
   imports: [
-    MagnetModule.forRoot([
-      MongooseDatabaseAdapter.forRoot(),
-    ], { admin: true }),
+    MagnetModule.forRoot([MongooseDatabaseAdapter.forRoot()]),
   ],
 })
 export class AppModule {}
 ```
 
-Each adapter and plugin provides a static `.forRoot()` method that auto-resolves configuration from environment variables. Pass explicit values to override defaults.
+Pass **providers** (database, auth, storage, vault, email, cache, GraphQL, plugins) in the first argument. Optional **global** options are the second argument when using the array form (`jwt`, `rbac`, `internationalization`, `playground`, `email.layout`, …). The admin UI is enabled by default; use `admin: false` for API-only apps. See [Configuration](/docs/getting-started/configuration).
 
-## Modules
+Each adapter or plugin exposes `static forRoot()` and declares environment variables for startup validation.
 
-### Content Module
+## Built-in areas
 
-Handles content type definitions and CRUD operations for content entries.
+| Area | Role |
+|------|------|
+| [Content](/docs/core/content-module) | Schemas, CRUD, drafts, locales, versions |
+| [Auth](/docs/core/auth-module) | Strategies (JWT, Supabase, Clerk, …), sessions |
+| [API keys](/docs/core/api-keys-module) | Programmatic access |
+| [RBAC](/docs/core/rbac-module) | Roles and permissions |
+| [Admin API](/docs/core/admin-module) | Endpoints backing the admin UI |
+| [Database](/docs/core/database-module) | Adapter registration and schemas |
+| [Email](/docs/core/email-module) | Transactional email adapters |
+| [Cache](/docs/core/cache-module) | Memory or Redis-backed cache |
+| [Vault](/docs/core/vault-module) | Encrypted secrets |
+| [Settings](/docs/core/settings-module) | Typed settings and `/settings` API |
+| [Storage](/docs/core/storage-module) | Object storage adapters |
+| [Notifications](/docs/core/notifications-module) | Platform and email channels |
+| [Webhooks](/docs/core/webhooks-module) | Outbound webhook delivery |
 
-### Auth Module
-
-Provides JWT-based authentication and role-based access control.
-
-### Admin Module
-
-Exposes REST API endpoints for the admin interface.
+Plugins add more routes and sidebar entries; see [Plugins](/docs/plugins).

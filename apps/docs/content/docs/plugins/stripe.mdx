@@ -1,0 +1,53 @@
+---
+title: Stripe plugin
+description: Payments, subscriptions, webhooks, and admin dashboard via Stripe
+---
+
+# Stripe plugin
+
+`@magnet-cms/plugin-stripe` adds Stripe billing: products, prices, customers, subscriptions, Checkout, Customer Portal, webhooks with idempotency, and admin UI routes under `/stripe`.
+
+## Installation
+
+```bash
+bun add @magnet-cms/plugin-stripe
+```
+
+## Registration
+
+Plugins are entries in the **same** `MagnetModule.forRoot([...])` array as your database adapter.
+
+```typescript
+import { Module } from '@nestjs/common'
+import { MagnetModule } from '@magnet-cms/core'
+import { MongooseDatabaseAdapter } from '@magnet-cms/adapter-db-mongoose'
+import { StripePlugin } from '@magnet-cms/plugin-stripe'
+
+@Module({
+  imports: [
+    MagnetModule.forRoot([
+      MongooseDatabaseAdapter.forRoot(),
+      StripePlugin.forRoot({ currency: 'usd' }),
+    ]),
+  ],
+})
+export class AppModule {}
+```
+
+## Environment variables
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `STRIPE_SECRET_KEY` | Yes | Stripe secret API key |
+| `STRIPE_WEBHOOK_SECRET` | Yes | Webhook signing secret |
+| `STRIPE_PUBLISHABLE_KEY` | No | Publishable key (admin UI) |
+
+Configure the webhook endpoint in the Stripe dashboard to match your Magnet API URL (see plugin controllers for paths).
+
+## Admin UI
+
+The admin sidebar includes **Stripe Payments** (dashboard, customers, products, subscriptions, payments) when the admin UI is served (the default).
+
+## Further reading
+
+- [Plugins overview](/docs/plugins)

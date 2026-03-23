@@ -42,13 +42,10 @@ import { ConfigModule } from '@nestjs/config'
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    MagnetModule.forRoot(
-      [
-        DrizzleDatabaseAdapter.forRoot({ dialect: 'postgresql', driver: 'pg' }),
-        SupabaseAuthStrategy.forRoot(),
-      ],
-      { admin: true },
-    ),
+    MagnetModule.forRoot([
+      DrizzleDatabaseAdapter.forRoot({ dialect: 'postgresql', driver: 'pg' }),
+      SupabaseAuthStrategy.forRoot(),
+    ]),
   ],
 })
 export class AppModule {}
@@ -103,13 +100,10 @@ import { Module } from '@nestjs/common'
 
 @Module({
   imports: [
-    MagnetModule.forRoot(
-      [
-        DrizzleDatabaseAdapter.forRoot({ dialect: 'postgresql', driver: 'pg' }),
-        SupabaseStorageAdapter.forRoot({ bucket: 'media' }),
-      ],
-      { admin: true },
-    ),
+    MagnetModule.forRoot([
+      DrizzleDatabaseAdapter.forRoot({ dialect: 'postgresql', driver: 'pg' }),
+      SupabaseStorageAdapter.forRoot({ bucket: 'media' }),
+    ]),
   ],
 })
 export class AppModule {}
@@ -149,13 +143,10 @@ The vault adapter uses Supabase Vault (pgsodium) for encrypted secrets managemen
 ```typescript
 import { SupabaseVaultAdapter } from '@magnet-cms/adapter-vault-supabase'
 
-MagnetModule.forRoot(
-  [
-    DrizzleDatabaseAdapter.forRoot({ dialect: 'postgresql', driver: 'pg' }),
-    SupabaseVaultAdapter.forRoot(),
-  ],
-  { admin: true },
-)
+MagnetModule.forRoot([
+  DrizzleDatabaseAdapter.forRoot({ dialect: 'postgresql', driver: 'pg' }),
+  SupabaseVaultAdapter.forRoot(),
+])
 ```
 
 ## Combined Setup: Drizzle + Supabase
@@ -175,20 +166,17 @@ import { ConfigModule } from '@nestjs/config'
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    MagnetModule.forRoot(
-      [
-        DrizzleDatabaseAdapter.forRoot({
-          dialect: 'postgresql',
-          driver: 'pg',
-          migrations: { mode: 'auto', directory: './migrations' },
-        }),
-        SupabaseAuthStrategy.forRoot(),
-        SupabaseStorageAdapter.forRoot(),
-        SupabaseVaultAdapter.forRoot(),
-        PlaygroundPlugin.forRoot(),
-      ],
-      { admin: true },
-    ),
+    MagnetModule.forRoot([
+      DrizzleDatabaseAdapter.forRoot({
+        dialect: 'postgresql',
+        driver: 'pg',
+        migrations: { mode: 'auto', directory: './migrations' },
+      }),
+      SupabaseAuthStrategy.forRoot(),
+      SupabaseStorageAdapter.forRoot(),
+      SupabaseVaultAdapter.forRoot(),
+      PlaygroundPlugin.forRoot(),
+    ]),
   ],
 })
 export class AppModule {}

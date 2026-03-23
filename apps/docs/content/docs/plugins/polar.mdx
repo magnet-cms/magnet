@@ -1,0 +1,49 @@
+---
+title: Polar plugin
+description: Polar.sh payments, subscriptions, orders, benefits, and webhooks
+---
+
+# Polar plugin
+
+`@magnet-cms/plugin-polar` integrates [Polar.sh](https://polar.sh): products, subscriptions, orders, benefits, Checkout, Customer Portal, webhooks, and admin routes under `/polar`.
+
+## Installation
+
+```bash
+bun add @magnet-cms/plugin-polar
+```
+
+## Registration
+
+```typescript
+import { Module } from '@nestjs/common'
+import { MagnetModule } from '@magnet-cms/core'
+import { MongooseDatabaseAdapter } from '@magnet-cms/adapter-db-mongoose'
+import { PolarPlugin } from '@magnet-cms/plugin-polar'
+
+@Module({
+  imports: [
+    MagnetModule.forRoot([
+      MongooseDatabaseAdapter.forRoot(),
+      PolarPlugin.forRoot({ currency: 'usd' }),
+    ]),
+  ],
+})
+export class AppModule {}
+```
+
+## Environment variables
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `POLAR_ACCESS_TOKEN` | Yes | Polar API access token |
+| `POLAR_WEBHOOK_SECRET` | Yes | Webhook signing secret |
+| `POLAR_ORGANIZATION_ID` | No | Organization ID |
+
+## Admin UI
+
+The admin sidebar includes **Polar Payments** (dashboard, customers, products, subscriptions, orders, benefits) when the admin UI is served (the default).
+
+## Further reading
+
+- [Plugins overview](/docs/plugins)

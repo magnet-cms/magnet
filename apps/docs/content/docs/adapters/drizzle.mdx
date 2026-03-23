@@ -46,7 +46,7 @@ import { ConfigModule } from '@nestjs/config'
         driver: 'neon',
         debug: process.env.NODE_ENV === 'development',
       }),
-    ], { admin: true }),
+    ]),
   ],
 })
 export class AppModule {}
@@ -73,7 +73,7 @@ import { Module } from '@nestjs/common'
           directory: './migrations',
         },
       }),
-    ], { admin: true }),
+    ]),
   ],
 })
 export class AppModule {}

@@ -1,0 +1,88 @@
+---
+title: Configuration
+description: Magnet providers, global options, and a full-stack example
+---
+
+# Configuration
+
+`MagnetModule.forRoot` accepts:
+
+1. **Providers** — Either a single array `forRoot([...])` or variadic `forRoot(p1, p2, …)`. Each item is a **Magnet provider** (discriminated by `type`: `database`, `auth`, `storage`, `vault`, `email`, `cache`, `graphql`, `plugin`).
+2. **Global options** (optional second argument when using the array form) — `jwt`, `rbac`, `internationalization`, `playground`, `email` (React Email `layout`), etc. The admin UI is **on by default**; pass `admin: false` for API-only mode ([Admin module](/docs/core/admin-module)).
+
+You must pass **exactly one database** provider. Everything else is optional.
+
+## Minimal app
+
+```typescript
+import { Module } from '@nestjs/common'
+import { MagnetModule } from '@magnet-cms/core'
+import { MongooseDatabaseAdapter } from '@magnet-cms/adapter-db-mongoose'
+
+@Module({
+  imports: [
+    MagnetModule.forRoot([MongooseDatabaseAdapter.forRoot()]),
+  ],
+})
+export class AppModule {}
+```
+
+## Composite example
+
+Typical production setup with Drizzle, Supabase auth and storage, vault, cache, email, and a plugin:
+
+```typescript
+import { Module } from '@nestjs/common'
+import { ConfigModule } from '@nestjs/config'
+import { MagnetModule } from '@magnet-cms/core'
+import { DrizzleDatabaseAdapter } from '@magnet-cms/adapter-db-drizzle'
+import { SupabaseAuthStrategy } from '@magnet-cms/adapter-auth-supabase'
+import { SupabaseStorageAdapter } from '@magnet-cms/adapter-storage-supabase'
+import { SupabaseVaultAdapter } from '@magnet-cms/adapter-vault-supabase'
+import { RedisCacheAdapter } from '@magnet-cms/adapter-cache-redis'
+import { ResendEmailAdapter } from '@magnet-cms/email-resend'
+import { PlaygroundPlugin } from '@magnet-cms/plugin-playground'
+
+@Module({
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+    MagnetModule.forRoot([
+      DrizzleDatabaseAdapter.forRoot({
+        dialect: 'postgresql',
+        driver: 'pg',
+      }),
+      SupabaseAuthStrategy.forRoot(),
+      SupabaseStorageAdapter.forRoot(),
+      SupabaseVaultAdapter.forRoot(),
+      RedisCacheAdapter.forRoot(),
+      ResendEmailAdapter.forRoot(),
+      PlaygroundPlugin.forRoot(),
+    ]),
+  ],
+})
+export class AppModule {}
+```
+
+The same provider composition is illustrated in the monorepo at `apps/examples/drizzle-supabase`.
+
+To pass global options (for example a React Email layout), use the second argument: `MagnetModule.forRoot([...], { email: { layout: EmailLayout } })`.
+
+## Environment validation
+
+Magnet collects `envVars` from each provider and validates required variables **before** Nest finishes bootstrapping—missing keys fail fast with a clear error.
+
+## Module reference
+
+| Topic | Doc |
+|-------|-----|
+| Email | [Email module](/docs/core/email-module) |
+| Cache | [Cache module](/docs/core/cache-module) |
+| Vault | [Vault module](/docs/core/vault-module) |
+| Storage | [Storage module](/docs/core/storage-module) |
+| Settings | [Settings module](/docs/core/settings-module) |
+| Adapters index | [Adapters](/docs/adapters) |
+
+## Next steps
+
+- [Quick Start](/docs/getting-started/quick-start)
+- [Database migrations](/docs/migrations) (Drizzle)

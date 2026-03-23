@@ -22,20 +22,22 @@ Configure RBAC in `MagnetModule.forRoot()`:
 ```typescript
 import { Module } from '@nestjs/common'
 import { MagnetModule } from '@magnet-cms/core'
+import { MongooseDatabaseAdapter } from '@magnet-cms/adapter-db-mongoose'
 
 @Module({
   imports: [
-    MagnetModule.forRoot({
-      db: { uri: process.env.MONGODB_URI },
-      jwt: { secret: process.env.JWT_SECRET },
-      rbac: {
-        enabled: true,
-        defaultRole: 'authenticated',
-        allowPublicAccess: false,
-        cachePermissions: true,
-        cacheTTL: 300, // seconds
+    MagnetModule.forRoot(
+      [MongooseDatabaseAdapter.forRoot()],
+      {
+        rbac: {
+          enabled: true,
+          defaultRole: 'authenticated',
+          allowPublicAccess: false,
+          cachePermissions: true,
+          cacheTTL: 300, // seconds
+        },
       },
-    }),
+    ),
   ],
 })
 export class AppModule {}

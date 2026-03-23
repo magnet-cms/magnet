@@ -20,23 +20,34 @@ The migration system has two modes:
 
 ## Quick Start
 
-### 1. Add migrations config to your app module
+### 1. Add migrations config on the Drizzle adapter
+
+Migrations are configured on `DrizzleDatabaseAdapter.forRoot()`, which you pass as the **database** entry in the `MagnetModule.forRoot([...])` provider array.
 
 ```typescript
 // app.module.ts
-MagnetModule.forRoot({
-  db: {
-    connectionString: process.env.DATABASE_URL || '',
-    dialect: 'postgresql',
-    driver: 'neon',
-    migrations: {
-      mode: process.env.NODE_ENV === 'production' ? 'manual' : 'auto',
-      directory: './migrations',
-    },
-  },
-  jwt: { secret: process.env.JWT_SECRET || 'dev-secret' },
+import { Module } from '@nestjs/common'
+import { MagnetModule } from '@magnet-cms/core'
+import { DrizzleDatabaseAdapter } from '@magnet-cms/adapter-db-drizzle'
+
+@Module({
+  imports: [
+    MagnetModule.forRoot([
+      DrizzleDatabaseAdapter.forRoot({
+        dialect: 'postgresql',
+        driver: 'neon',
+        migrations: {
+          mode: process.env.NODE_ENV === 'production' ? 'manual' : 'auto',
+          directory: './migrations',
+        },
+      }),
+    ]),
+  ],
 })
+export class AppModule {}
 ```
+
+`connectionString` is resolved from `DATABASE_URL` when omitted. Use `{ jwt: { secret: '...' } }` as the second argument to `MagnetModule.forRoot` only if you need to override JWT options.
 
 ### 2. Install the CLI (for manual/production use)
 

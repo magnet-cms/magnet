@@ -24,15 +24,15 @@ import { MongooseDatabaseAdapter } from '@magnet-cms/adapter-db-mongoose'
 
 @Module({
   imports: [
-    MagnetModule.forRoot([
-      MongooseDatabaseAdapter.forRoot(),
-    ], {
-      admin: true,
-      internationalization: {
-        locales: ['en', 'es', 'pt'],
-        defaultLocale: 'en',
+    MagnetModule.forRoot(
+      [MongooseDatabaseAdapter.forRoot()],
+      {
+        internationalization: {
+          locales: ['en', 'es', 'pt'],
+          defaultLocale: 'en',
+        },
       },
-    }),
+    ),
   ],
 })
 export class AppModule {}

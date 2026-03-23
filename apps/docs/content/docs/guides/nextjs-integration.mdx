@@ -210,17 +210,22 @@ You can choose between two deployment approaches:
 
 ### Standalone (Served by NestJS)
 
-Enable admin serving in your Magnet backend:
+Enable admin serving in your Magnet backend from `AppModule` (or equivalent root module):
 
-```typescript title="apps/api/src/main.ts"
+```typescript title="apps/api/src/app.module.ts"
+import { Module } from '@nestjs/common'
 import { MagnetModule } from '@magnet-cms/core'
+import { MongooseDatabaseAdapter } from '@magnet-cms/adapter-db-mongoose'
 
-MagnetModule.forRoot({
-  db: { uri: process.env.DB_URI },
-  jwt: { secret: process.env.JWT_SECRET },
-  admin: true, // Enable admin at /admin
+@Module({
+  imports: [
+    MagnetModule.forRoot([MongooseDatabaseAdapter.forRoot()]),
+  ],
 })
+export class AppModule {}
 ```
+
+Use `DrizzleDatabaseAdapter.forRoot({ ... })` instead of Mongoose if you use PostgreSQL/MySQL/SQLite via Drizzle.
 
 ### Embedded (In Next.js)
 
@@ -261,4 +266,4 @@ If admin routes conflict with your app routes:
 
 - [Configure Authentication](/docs/core/auth)
 - [Create Custom Schemas](/docs/common/decorators)
-- [Build Plugins](/docs/plugins/overview)
+- [Plugins](/docs/plugins)

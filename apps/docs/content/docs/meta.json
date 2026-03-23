@@ -9,6 +9,7 @@
     "adapters",
     "migrations",
     "plugins",
-    "client"
+    "client",
+    "admin"
   ]
 }

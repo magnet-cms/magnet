@@ -1,0 +1,58 @@
+---
+title: Nodemailer email adapter
+description: SMTP email with @magnet-cms/email-nodemailer
+---
+
+# Nodemailer email adapter
+
+[`@magnet-cms/email-nodemailer`](https://www.npmjs.com/package/@magnet-cms/email-nodemailer) implements `EmailMagnetProvider` for any SMTP server (Gmail, SES, Mailgun, etc.).
+
+## Installation
+
+```bash
+bun add @magnet-cms/email-nodemailer nodemailer
+```
+
+## Registration
+
+```typescript
+import { Module } from '@nestjs/common'
+import { MagnetModule } from '@magnet-cms/core'
+import { MongooseDatabaseAdapter } from '@magnet-cms/adapter-db-mongoose'
+import { NodemailerEmailAdapter } from '@magnet-cms/email-nodemailer'
+
+@Module({
+  imports: [
+    MagnetModule.forRoot([
+      MongooseDatabaseAdapter.forRoot(),
+      NodemailerEmailAdapter.forRoot({
+        host: process.env.SMTP_HOST,
+        port: 587,
+        secure: false,
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS,
+        },
+        defaults: { from: 'Magnet <noreply@example.com>' },
+      }),
+    ]),
+  ],
+})
+export class AppModule {}
+```
+
+You can omit explicit config when `SMTP_*` and optional `EMAIL_FROM` are set in the environment.
+
+## Environment variables
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `SMTP_HOST` | Yes | SMTP hostname |
+| `SMTP_PORT` | No | Port (default 587) |
+| `SMTP_USER` | No | Username |
+| `SMTP_PASS` | No | Password |
+| `EMAIL_FROM` | No | Default `from` |
+
+## Further reading
+
+- [Email module](/docs/core/email-module)

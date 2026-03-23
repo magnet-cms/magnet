@@ -1,18 +1,18 @@
 ---
-title: Database Adapters
-description: Database adapters for Magnet CMS
+title: Adapters
+description: Database, auth, storage, email, cache, vault, and GraphQL providers for Magnet
 ---
 
-Magnet CMS uses an adapter pattern to support multiple databases. All adapters implement a unified contract ensuring consistent behavior across different database backends.
+Magnet composes **providers** you pass to `MagnetModule.forRoot([...])`. The database adapter is required; other adapters add auth, media storage, secrets, email, cache, or GraphQL.
 
-## Available Adapters
+See [Configuration](/docs/getting-started/configuration) for how providers and global options fit together.
+
+## Database adapters
 
 | Adapter | Package | Databases | Features |
 |---------|---------|-----------|----------|
-| Mongoose | `@magnet-cms/adapter-db-mongoose` | MongoDB | Transactions, Full-text search, Geospatial, Change streams |
-| Drizzle | `@magnet-cms/adapter-db-drizzle` | PostgreSQL, MySQL, SQLite | Transactions, Full-text search, Migrations |
-
-## Quick Start
+| Mongoose | `@magnet-cms/adapter-db-mongoose` | MongoDB | Transactions, full-text search, geospatial, change streams |
+| Drizzle | `@magnet-cms/adapter-db-drizzle` | PostgreSQL, MySQL, SQLite | Transactions, full-text search, migrations |
 
 ### MongoDB (Mongoose)
 
@@ -27,9 +27,7 @@ import { MongooseDatabaseAdapter } from '@magnet-cms/adapter-db-mongoose'
 
 @Module({
   imports: [
-    MagnetModule.forRoot([
-      MongooseDatabaseAdapter.forRoot(),
-    ], { admin: true }),
+    MagnetModule.forRoot([MongooseDatabaseAdapter.forRoot()]),
   ],
 })
 export class AppModule {}
@@ -42,230 +40,66 @@ bun add @magnet-cms/adapter-db-drizzle drizzle-orm pg
 ```
 
 ```typescript
+import { Module } from '@nestjs/common'
+import { MagnetModule } from '@magnet-cms/core'
 import { DrizzleDatabaseAdapter } from '@magnet-cms/adapter-db-drizzle'
 
-MagnetModule.forRoot([
-  DrizzleDatabaseAdapter.forRoot({
-    dialect: 'postgresql',
-    driver: 'pg',
-  }),
-], { admin: true })
+@Module({
+  imports: [
+    MagnetModule.forRoot(
+      [
+        DrizzleDatabaseAdapter.forRoot({
+          dialect: 'postgresql',
+          driver: 'pg',
+        }),
+      ],
+    ),
+  ],
+})
+export class AppModule {}
 ```
 
-Environment variables like `DATABASE_URL` and `JWT_SECRET` are auto-resolved from `process.env`.
+`DATABASE_URL`, `MONGODB_URI`, and `JWT_SECRET` are typically read from `process.env` when you use adapter defaults.
 
-## Unified Adapter Contract
+## Auth, storage, email, cache, vault, GraphQL
 
-All adapters implement the `DatabaseAdapter` abstract class with a consistent API:
+| Kind | Package | Doc |
+|------|---------|-----|
+| Supabase Auth / Storage / Vault | `@magnet-cms/adapter-auth-supabase`, `adapter-storage-supabase`, `adapter-vault-supabase` | [Supabase](/docs/adapters/supabase) |
+| Clerk | `@magnet-cms/adapter-auth-clerk` | [Clerk](/docs/adapters/auth-clerk) |
+| Amazon S3 | `@magnet-cms/adapter-storage-s3` | [S3](/docs/adapters/storage-s3) |
+| Cloudflare R2 | `@magnet-cms/adapter-storage-r2` | [R2](/docs/adapters/storage-r2) |
+| Resend | `@magnet-cms/email-resend` | [Resend](/docs/adapters/email-resend) |
+| Nodemailer (SMTP) | `@magnet-cms/email-nodemailer` | [Nodemailer](/docs/adapters/email-nodemailer) |
+| Redis / Dragonfly cache | `@magnet-cms/adapter-cache-redis` | [Redis cache](/docs/adapters/cache-redis) |
+| HashiCorp Vault (KV v2) | `@magnet-cms/adapter-vault-hashicorp` | [HashiCorp Vault](/docs/adapters/hashicorp-vault) |
+| GraphQL API | `@magnet-cms/adapter-graphql` | [GraphQL](/docs/adapters/graphql) |
 
-```typescript
-abstract class DatabaseAdapter implements OnModuleDestroy {
-  // Adapter identifier
-  abstract readonly name: AdapterName
+## Database adapter contract
 
-  // Connect to database
-  abstract connect(config: DBConfig): DynamicModule
+All database adapters implement the `DatabaseAdapter` abstract class from `@magnet-cms/common` (`connect`, `forFeature`, `model`, `supports`, `getCapabilities`, etc.). For the full surface area (features, capabilities, `Model`, query builder), refer to the types and JSDoc in **`@magnet-cms/common`** and the [Mongoose](/docs/adapters/mongoose) / [Drizzle](/docs/adapters/drizzle) guides.
 
-  // Register schemas
-  abstract forFeature(schemas: Type | Type[]): DynamicModule
-
-  // Get model wrapper
-  abstract model<T>(modelInstance: unknown): ModelClass<T>
-
-  // Generate injection token
-  abstract token(schema: string): string
-
-  // Cleanup on module destroy
-  abstract onModuleDestroy(): Promise<void>
-
-  // Check feature support
-  abstract supports(feature: AdapterFeature): boolean
-
-  // Get adapter capabilities
-  abstract getCapabilities(): AdapterCapabilities
-}
-```
-
-### Adapter Features
-
-Check if an adapter supports specific features:
-
-```typescript
-type AdapterFeature =
-  | 'transactions'
-  | 'nested-transactions'
-  | 'json-queries'
-  | 'full-text-search'
-  | 'geospatial'
-  | 'change-streams'
-  | 'migrations'
-
-// Check feature support
-if (adapter.supports('transactions')) {
-  // Use transactions
-}
-```
-
-### Adapter Capabilities
-
-Get comprehensive information about adapter capabilities:
-
-```typescript
-const caps = adapter.getCapabilities()
-// {
-//   databases: ['mongodb'],
-//   features: ['transactions', 'json-queries', 'full-text-search'],
-//   handlesVersioning: false,
-//   supportsLazyCreation: true,
-// }
-```
-
-## Unified Model Interface
-
-All adapter models implement the same interface:
-
-```typescript
-abstract class Model<Schema> {
-  // CRUD Operations
-  abstract create(data, options?): Promise<BaseSchema<Schema>>
-  abstract find(): Promise<BaseSchema<Schema>[]>
-  abstract findById(id: string): Promise<BaseSchema<Schema> | null>
-  abstract findOne(query): Promise<BaseSchema<Schema> | null>
-  abstract findMany(query): Promise<BaseSchema<Schema>[]>
-  abstract update(query, data, options?): Promise<BaseSchema<Schema>>
-  abstract delete(query): Promise<boolean>
-
-  // Locale & Versioning
-  abstract locale(locale: string): this
-  getLocale(): string
-  version(versionId: string): this
-  isVersioningEnabled(): boolean
-  createVersion(documentId, data): Promise<VersionDocument | null>
-  findVersions(documentId): Promise<VersionDocument[]>
-  findVersionById(versionId): Promise<VersionDocument | null>
-  restoreVersion(versionId): Promise<BaseSchema<Schema> | null>
-
-  // Query Builder
-  query(): QueryBuilder<Schema>
-
-  // Native Access
-  native(): NativeAccess<Schema>
-
-  // Metadata
-  getSchemaName(): string
-  getMetadata(): SchemaMetadata
-}
-```
-
-### Native Access
-
-For advanced use cases, access the underlying database directly:
-
-```typescript
-const nativeAccess = model.native()
-
-// Get adapter name for conditional logic
-if (nativeAccess.adapterName === 'mongoose') {
-  // MongoDB-specific operations
-  const mongooseModel = nativeAccess.raw
-}
-
-// Execute raw queries
-const result = await nativeAccess.rawQuery('SELECT * FROM users')
-```
-
-## Unified Query Builder
-
-All adapters support the same query builder interface:
-
-```typescript
-const results = await model.query()
-  .where({ status: 'active', age: { $gte: 18 } })
-  .sort({ createdAt: -1 })
-  .limit(10)
-  .skip(20)
-  .select({ name: 1, email: 1 })
-  .exec()
-
-// Pagination
-const paginated = await model.query()
-  .where({ status: 'active' })
-  .paginate(1, 20) // page 1, 20 items per page
-```
-
-## Token Generation
-
-Use the unified token functions:
+## Injection tokens
 
 ```typescript
 import { getModelToken, getSchemaToken, getAdapterToken } from '@magnet-cms/common'
 
-// Get model injection token
-const token = getModelToken('User') // 'MAGNET_MODEL_USER'
-
-// Get schema token
-const schemaToken = getSchemaToken('User') // 'MAGNET_SCHEMA_USER'
-
-// Get adapter token
-const adapterToken = getAdapterToken() // 'MAGNET_DATABASE_ADAPTER'
+const modelToken = getModelToken('User')
+const schemaToken = getSchemaToken('User')
+const adapterToken = getAdapterToken()
 ```
 
-## Creating Custom Adapters
+## Custom database adapters
 
-To create a custom adapter:
+To support a new database:
 
-1. Extend `DatabaseAdapter` abstract class
-2. Implement all required methods
-3. Ensure the Model implementation matches the contract
-4. Run the compliance test suite
+1. Subclass `DatabaseAdapter` in `@magnet-cms/common`.
+2. Implement `connect`, `forFeature`, `model`, `token`, `onModuleDestroy`, `supports`, and `getCapabilities`.
+3. Return a `DatabaseMagnetProvider` from a static `forRoot()` factory (see existing adapters).
 
-```typescript
-import {
-  DatabaseAdapter,
-  AdapterName,
-  AdapterFeature,
-  AdapterCapabilities,
-  getModelToken,
-} from '@magnet-cms/common'
+## Next steps
 
-class CustomAdapter extends DatabaseAdapter {
-  readonly name: AdapterName = 'custom' as AdapterName
-
-  connect(config: DBConfig): DynamicModule {
-    // Setup database connection
-  }
-
-  forFeature(schemas: Type | Type[]): DynamicModule {
-    // Register schemas with database
-  }
-
-  model<T>(modelInstance: unknown): ModelClass<T> {
-    // Return model wrapper class
-  }
-
-  token(schema: string): string {
-    return getModelToken(schema)
-  }
-
-  async onModuleDestroy(): Promise<void> {
-    // Cleanup connections
-  }
-
-  supports(feature: AdapterFeature): boolean {
-    return ['transactions'].includes(feature)
-  }
-
-  getCapabilities(): AdapterCapabilities {
-    return {
-      databases: ['custom'],
-      features: ['transactions'],
-      handlesVersioning: false,
-      supportsLazyCreation: true,
-    }
-  }
-}
-```
-
-## Next Steps
-
-- [Mongoose Adapter](/docs/adapters/mongoose) - MongoDB setup and features
+- [Mongoose](/docs/adapters/mongoose)
+- [Drizzle](/docs/adapters/drizzle)
+- [Supabase](/docs/adapters/supabase)
+- [Configuration](/docs/getting-started/configuration)

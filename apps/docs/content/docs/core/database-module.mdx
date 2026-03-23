@@ -35,9 +35,7 @@ import { MongooseDatabaseAdapter } from '@magnet-cms/adapter-db-mongoose'
 
 @Module({
   imports: [
-    MagnetModule.forRoot([
-      MongooseDatabaseAdapter.forRoot(),
-    ], { admin: true }),
+    MagnetModule.forRoot([MongooseDatabaseAdapter.forRoot()]),
   ],
 })
 export class AppModule {}
@@ -53,9 +51,9 @@ import { DrizzleDatabaseAdapter } from '@magnet-cms/adapter-db-drizzle'
 MagnetModule.forRoot([
   DrizzleDatabaseAdapter.forRoot({
     dialect: 'postgresql',
-    driver: 'neon',  // or 'pg'
+    driver: 'neon', // or 'pg'
   }),
-], { admin: true })
+])
 ```
 
 ### MySQL (Drizzle)
@@ -66,7 +64,7 @@ MagnetModule.forRoot([
     dialect: 'mysql',
     driver: 'mysql2',
   }),
-], { admin: true })
+])
 ```
 
 ### SQLite (Drizzle)
@@ -78,7 +76,7 @@ MagnetModule.forRoot([
     dialect: 'sqlite',
     driver: 'better-sqlite3',
   }),
-], { admin: true })
+])
 ```
 
 `DrizzleDatabaseAdapter.forRoot()` auto-resolves `DATABASE_URL` from `process.env` for the connection string.
@@ -150,15 +148,15 @@ No `setDatabaseAdapter()` call is needed in your application code.
 Configure internationalization in the global options:
 
 ```typescript
-MagnetModule.forRoot([
-  MongooseDatabaseAdapter.forRoot(),
-], {
-  admin: true,
-  internationalization: {
-    locales: ['en', 'pt-BR', 'es'],
-    defaultLocale: 'en',
+MagnetModule.forRoot(
+  [MongooseDatabaseAdapter.forRoot()],
+  {
+    internationalization: {
+      locales: ['en', 'pt-BR', 'es'],
+      defaultLocale: 'en',
+    },
   },
-})
+)
 ```
 
 This enables:

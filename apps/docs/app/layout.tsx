@@ -1,7 +1,7 @@
 import { RootProvider } from 'fumadocs-ui/provider/next'
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
-import type { ReactNode } from 'react'
+import type { ReactElement, ReactNode } from 'react'
 
 import 'fumadocs-ui/style.css'
 
@@ -24,7 +24,7 @@ export default function RootLayout({
 	children,
 }: Readonly<{
 	children: ReactNode
-}>) {
+}>): ReactElement {
 	return (
 		<html lang="en" suppressHydrationWarning>
 			<body className={`${fontSans.variable} ${fontMono.variable}`}>

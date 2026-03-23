@@ -1,0 +1,32 @@
+---
+title: Settings module
+description: Typed settings groups, REST API, and @Settings schemas
+---
+
+## Overview
+
+The Settings module stores key–value configuration in the database, validates updates against class definitions, and exposes HTTP endpoints for the admin UI and APIs. It is always registered by `MagnetModule.forRoot()`.
+
+## Defining settings
+
+Use the `@Settings` decorator from `@magnet-cms/common` on a class to declare a **group** of settings with defaults and validators. Register that class with `SettingsModule.forFeature()` from `@magnet-cms/core` in your feature module (see internal examples and the **magnet-new-settings** skill in the repo for the full pattern).
+
+At runtime, `SettingsService` can return typed instances (e.g. `settings.get(EmailSettings)`).
+
+## HTTP API
+
+Base path: `/settings`.
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/settings` | All settings records |
+| `GET` | `/settings/:group` | Flat object for a group (defaults merged) |
+| `GET` | `/settings/:group/:key` | Single setting |
+| `PUT` | `/settings/:group` | Bulk update for a group (validated) |
+
+Responses use your schema’s keys and stored values; unknown groups may return `404`.
+
+## Further reading
+
+- [Common package](/docs/common) — Decorators and types
+- [Admin UI](/docs/client/admin) — Settings screens in the dashboard

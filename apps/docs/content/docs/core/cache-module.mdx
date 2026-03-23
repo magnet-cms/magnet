@@ -1,0 +1,54 @@
+---
+title: Cache Module
+description: In-memory cache by default; optional Redis or Dragonfly via adapter
+---
+
+## Overview
+
+`CacheModule` is registered automatically with `MagnetModule.forRoot()`. It exposes `CacheService` and powers cache-related decorators (`@Cacheable`, `@CachePut`, `@CacheEvict`, TTL helpers) for application-level caching.
+
+## Default: in-memory cache
+
+If you **do not** pass a `CacheMagnetProvider`, Magnet uses the built-in `MemoryCacheAdapter`. No Redis or extra services are required—ideal for development and small deployments.
+
+```typescript
+import { Module } from '@nestjs/common'
+import { MagnetModule } from '@magnet-cms/core'
+import { MongooseDatabaseAdapter } from '@magnet-cms/adapter-db-mongoose'
+
+@Module({
+  imports: [MagnetModule.forRoot([MongooseDatabaseAdapter.forRoot()])],
+})
+export class AppModule {}
+```
+
+## Redis or Dragonfly
+
+For shared or durable cache across processes, add `@magnet-cms/adapter-cache-redis`:
+
+```typescript
+import { Module } from '@nestjs/common'
+import { MagnetModule } from '@magnet-cms/core'
+import { MongooseDatabaseAdapter } from '@magnet-cms/adapter-db-mongoose'
+import { RedisCacheAdapter } from '@magnet-cms/adapter-cache-redis'
+
+@Module({
+  imports: [
+    MagnetModule.forRoot([
+      MongooseDatabaseAdapter.forRoot(),
+      RedisCacheAdapter.forRoot(),
+    ]),
+  ],
+})
+export class AppModule {}
+```
+
+Connection URL is resolved from `CACHE_REDIS_URL` or `REDIS_URL`. See [Redis cache adapter](/docs/adapters/cache-redis).
+
+## Settings and other caches
+
+Some subsystems keep **their own** small in-memory caches (for example, typed settings use a short TTL inside `SettingsService`). The cache module’s adapter is the shared facility for `CacheService` and HTTP-level / decorator-driven caching—not a replacement for every internal map.
+
+## Next steps
+
+- [Redis cache adapter](/docs/adapters/cache-redis) — Configuration and health checks

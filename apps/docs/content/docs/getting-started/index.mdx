@@ -12,17 +12,30 @@ This section covers everything you need to know to get started with Magnet.
 Before you begin, make sure you have:
 
 - Node.js 18 or higher
-- Bun (recommended) or npm/yarn
-- MongoDB (or your preferred database)
+- Bun (recommended) or npm / pnpm / yarn
+- A database (or Docker, if your template ships Compose) when you run the app
 
-## Quick Start
+## Choose your path
 
-1. Install Magnet packages:
+| Path | When to use |
+|------|-------------|
+| **[Installation → Scaffold](/docs/getting-started/installation#scaffold-a-new-project-create-magnet)** | New project — run `create-magnet` for a full Nest + Magnet layout. |
+| **[Installation → Manual](/docs/getting-started/installation#add-magnet-to-an-existing-nestjs-app)** | Existing NestJS app — add packages and configure `MagnetModule`. |
+| **[Quick Start](/docs/getting-started/quick-start)** | Minimal manual `AppModule` example (Mongoose). |
+| **[Configuration](/docs/getting-started/configuration)** | Provider array, global options, and a composite example. |
+
+## Quick commands
+
+**New app (CLI):**
 
 ```bash
-bun add @magnet-cms/core @magnet-cms/adapter-db-mongoose mongoose
+bunx create-magnet
 ```
 
-2. Configure your NestJS application to use Magnet.
+**Existing app (manual):**
 
-Check out the [Quick Start Guide](/docs/getting-started/quick-start) for a complete walkthrough.
+```bash
+bun add @magnet-cms/core @magnet-cms/adapter-db-mongoose mongoose @magnet-cms/common
+```
+
+Then follow [Quick Start](/docs/getting-started/quick-start) or [Configuration](/docs/getting-started/configuration).

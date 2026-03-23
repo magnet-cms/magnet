@@ -2,6 +2,7 @@ import defaultMdxComponents from 'fumadocs-ui/mdx'
 import { DocsBody, DocsPage } from 'fumadocs-ui/page'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import type { ReactElement } from 'react'
 
 import { source } from '@/lib/source'
 
@@ -9,7 +10,9 @@ interface PageProps {
 	params: Promise<{ slug?: string[] }>
 }
 
-export default async function Page({ params }: PageProps) {
+export default async function Page({
+	params,
+}: PageProps): Promise<ReactElement> {
 	const { slug } = await params
 	const page = source.getPage(slug ?? [])
 

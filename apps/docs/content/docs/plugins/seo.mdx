@@ -27,20 +27,20 @@ bun add @magnet-cms/plugin-seo
 
 ## Configuration (Coming Soon)
 
+The `@magnet-cms/plugin-seo` package does not yet export a `forRoot()` provider. When it ships, registration will follow the same pattern as other plugins: add the plugin’s provider to the **first** argument of `MagnetModule.forRoot` (the provider array), alongside your database adapter.
+
 ```typescript
 import { Module } from '@nestjs/common'
 import { MagnetModule } from '@magnet-cms/core'
-import { SeoPlugin } from '@magnet-cms/plugin-seo'
+import { MongooseDatabaseAdapter } from '@magnet-cms/adapter-db-mongoose'
+// import { SeoPlugin } from '@magnet-cms/plugin-seo'
 
 @Module({
   imports: [
-    MagnetModule.forRoot({
-      db: { uri: process.env.MONGODB_URI },
-      jwt: { secret: process.env.JWT_SECRET },
-      plugins: [
-        { plugin: SeoPlugin },
-      ],
-    }),
+    MagnetModule.forRoot([
+      MongooseDatabaseAdapter.forRoot(),
+      // SeoPlugin.forRoot(),
+    ]),
   ],
 })
 export class AppModule {}

@@ -1,0 +1,55 @@
+---
+title: Cloudflare R2 storage adapter
+description: S3-compatible storage with @magnet-cms/adapter-storage-r2
+---
+
+# Cloudflare R2 storage adapter
+
+`@magnet-cms/adapter-storage-r2` registers a `StorageMagnetProvider` for **Cloudflare R2** (S3-compatible API).
+
+## Installation
+
+```bash
+bun add @magnet-cms/adapter-storage-r2 @aws-sdk/client-s3 @aws-sdk/s3-request-presigner
+```
+
+## Registration
+
+```typescript
+import { Module } from '@nestjs/common'
+import { MagnetModule } from '@magnet-cms/core'
+import { MongooseDatabaseAdapter } from '@magnet-cms/adapter-db-mongoose'
+import { R2StorageAdapter } from '@magnet-cms/adapter-storage-r2'
+
+@Module({
+  imports: [
+    MagnetModule.forRoot([
+      MongooseDatabaseAdapter.forRoot(),
+      R2StorageAdapter.forRoot({
+        bucket: 'media',
+        accountId: process.env.R2_ACCOUNT_ID,
+        publicUrl: 'https://pub-xxxx.r2.dev',
+      }),
+    ]),
+  ],
+})
+export class AppModule {}
+```
+
+`publicUrl` (or `R2_PUBLIC_URL`) is required for public file URLs.
+
+## Environment variables
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `R2_BUCKET` | Yes* | Bucket name |
+| `R2_ACCOUNT_ID` | Yes* | Cloudflare account ID |
+| `R2_ACCESS_KEY_ID` | Yes* | R2 API token access key |
+| `R2_SECRET_ACCESS_KEY` | Yes* | R2 API token secret |
+| `R2_PUBLIC_URL` | Yes* | Public URL (custom domain or `r2.dev`) |
+
+\*Omit if you pass values in `forRoot()`.
+
+## Further reading
+
+- [Storage module](/docs/core/storage-module)

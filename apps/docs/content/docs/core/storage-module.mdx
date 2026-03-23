@@ -1,0 +1,43 @@
+---
+title: Storage module
+description: Media and uploads via optional S3, R2, or Supabase storage providers
+---
+
+## Overview
+
+Magnet registers `StorageModule` when you bootstrap the app. To persist uploads to object storage, add a **storage** `MagnetProvider` to `MagnetModule.forRoot([...])` alongside your database adapter.
+
+Without a storage provider, features that expect external storage may be limited—choose an adapter that matches your stack.
+
+## Official adapters
+
+| Adapter | Package | Use case |
+|---------|---------|----------|
+| Supabase Storage | `@magnet-cms/adapter-storage-supabase` | Supabase-hosted buckets |
+| Amazon S3 | `@magnet-cms/adapter-storage-s3` | AWS S3 or S3-compatible APIs |
+| Cloudflare R2 | `@magnet-cms/adapter-storage-r2` | R2 with public URL |
+
+## Example (S3)
+
+```typescript
+import { Module } from '@nestjs/common'
+import { MagnetModule } from '@magnet-cms/core'
+import { MongooseDatabaseAdapter } from '@magnet-cms/adapter-db-mongoose'
+import { S3StorageAdapter } from '@magnet-cms/adapter-storage-s3'
+
+@Module({
+  imports: [
+    MagnetModule.forRoot([
+      MongooseDatabaseAdapter.forRoot(),
+      S3StorageAdapter.forRoot(),
+    ]),
+  ],
+})
+export class AppModule {}
+```
+
+## Further reading
+
+- [S3 adapter](/docs/adapters/storage-s3)
+- [R2 adapter](/docs/adapters/storage-r2)
+- [Supabase adapters](/docs/adapters/supabase) — Auth, storage, and vault together
