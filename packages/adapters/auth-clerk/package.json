@@ -27,6 +27,7 @@
     "@clerk/backend": "^3.2.0",
     "@magnet-cms/common": "workspace:*",
     "@nestjs/common": "^11.1.12",
+    "@nestjs/passport": "^11.0.5",
     "@repo/biome": "workspace:*",
     "@repo/tsup": "workspace:*",
     "@repo/typescript-config": "workspace:*",

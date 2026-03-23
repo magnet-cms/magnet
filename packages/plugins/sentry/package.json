@@ -49,6 +49,7 @@
     "@magnet-cms/ui": "workspace:*",
     "@magnet-cms/utils": "workspace:*",
     "@nestjs/common": "^11.1.12",
+    "@nestjs/core": "^11.1.12",
     "@repo/biome": "workspace:*",
     "@repo/tsup": "workspace:*",
     "@repo/typescript-config": "workspace:*",
