@@ -16,6 +16,8 @@
     "release": "bun run build && changeset publish"
   },
   "devDependencies": {
+    "@biomejs/biome": "1.9.4",
+    "@repo/biome": "workspace:*",
     "@changesets/changelog-github": "0.5.2",
     "@changesets/cli": "2.29.8",
     "@commitlint/cli": "^20.3.1",
@@ -29,7 +31,7 @@
   "engines": {
     "node": ">=18"
   },
-  "packageManager": "bun@1.2.2",
+  "packageManager": "bun@1.3.10",
   "workspaces": [
     "apps/**/*",
     "packages/**/*"

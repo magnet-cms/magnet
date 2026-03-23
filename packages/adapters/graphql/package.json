@@ -39,8 +39,8 @@
     "@repo/typescript-config": "workspace:*"
   },
   "peerDependencies": {
-    "@magnet-cms/common": "^0.2.0",
-    "@magnet-cms/core": "^1.0.0",
+    "@magnet-cms/common": "^0.3.0",
+    "@magnet-cms/core": "^3.0.0",
     "@nestjs/apollo": "^13.0.0",
     "@nestjs/common": "^11.0.0",
     "@nestjs/core": "^11.0.0",

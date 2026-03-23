@@ -8,10 +8,12 @@
         "@clerk/backend": "3.2.0",
       },
       "devDependencies": {
+        "@biomejs/biome": "1.9.4",
         "@changesets/changelog-github": "0.5.2",
         "@changesets/cli": "2.29.8",
         "@commitlint/cli": "^20.3.1",
         "@commitlint/config-conventional": "^20.3.1",
+        "@repo/biome": "workspace:*",
         "cross-env": "^7.0.3",
         "husky": "^9.1.7",
         "lint-staged": "^16.2.7",
@@ -380,8 +382,8 @@
       },
       "peerDependencies": {
         "@apollo/server": "^4.0.0",
-        "@magnet-cms/common": "^0.2.0",
-        "@magnet-cms/core": "^1.0.0",
+        "@magnet-cms/common": "^0.3.0",
+        "@magnet-cms/core": "^3.0.0",
         "@nestjs/apollo": "^13.0.0",
         "@nestjs/common": "^11.0.0",
         "@nestjs/core": "^11.0.0",
