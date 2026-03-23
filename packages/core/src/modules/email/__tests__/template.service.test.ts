@@ -6,6 +6,7 @@
  * - Default HTML layout wrapping
  * - Fallback to empty string when template not found
  * - Version-capping is tested in email-template.service.test.ts
+ * - discoverLayout() extension probing logic
  *
  * Full DB and React Email SSR integration is covered in:
  * apps/e2e/tests/api/email-templates.spec.ts
@@ -97,5 +98,67 @@ describe('TemplateService — in-memory template registry', () => {
 		templates.set('msg', Handlebars.compile('v2 {{x}}'))
 		const tpl = resolveTemplate(templates, 'msg')
 		expect(tpl?.({ x: '!' })).toBe('v2 !')
+	})
+})
+
+// ======================================================================
+// discoverLayout() candidate path logic
+// ======================================================================
+
+/**
+ * Pure helper that mirrors the candidate-path probing logic in discoverLayout().
+ * Returns the first path that exists, or null if none found.
+ */
+function findLayoutPath(
+	cwd: string,
+	checkExists: (p: string) => boolean,
+): string | null {
+	const candidates = [
+		`${cwd}/templates/email/layout.js`,
+		`${cwd}/templates/email/layout.ts`,
+		`${cwd}/templates/email/layout.tsx`,
+		`${cwd}/dist/templates/email/layout.js`,
+	]
+	return candidates.find(checkExists) ?? null
+}
+
+describe('discoverLayout() — candidate path probing', () => {
+	it('should return null when no layout file exists', () => {
+		const result = findLayoutPath('/app', () => false)
+		expect(result).toBeNull()
+	})
+
+	it('should prefer .js over .ts and .tsx (compiled output first)', () => {
+		const result = findLayoutPath(
+			'/app',
+			(p) => p.endsWith('.js') || p.endsWith('.ts'),
+		)
+		expect(result).toBe('/app/templates/email/layout.js')
+	})
+
+	it('should fall back to .ts when only .ts exists', () => {
+		const result = findLayoutPath(
+			'/app',
+			(p) => p.endsWith('.ts') && !p.endsWith('.tsx'),
+		)
+		expect(result).toBe('/app/templates/email/layout.ts')
+	})
+
+	it('should fall back to .tsx when only .tsx exists', () => {
+		const result = findLayoutPath('/app', (p) => p.endsWith('.tsx'))
+		expect(result).toBe('/app/templates/email/layout.tsx')
+	})
+
+	it('should fall back to dist/templates path as last resort', () => {
+		const result = findLayoutPath('/app', (p) => p.includes('/dist/'))
+		expect(result).toBe('/app/dist/templates/email/layout.js')
+	})
+
+	it('should use the provided cwd to build paths', () => {
+		const result = findLayoutPath(
+			'/custom/path',
+			(p) => p.endsWith('.js') && !p.includes('dist'),
+		)
+		expect(result).toBe('/custom/path/templates/email/layout.js')
 	})
 })

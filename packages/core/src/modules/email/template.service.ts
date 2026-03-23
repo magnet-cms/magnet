@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs'
 import { Inject, Injectable, OnModuleInit, Optional } from '@nestjs/common'
 import { Body, Container, Html } from '@react-email/components'
 import { render as renderEmail } from '@react-email/render'
@@ -173,21 +174,39 @@ export class TemplateService implements OnModuleInit {
 	}
 
 	private async discoverLayout(): Promise<void> {
-		const conventionPath = `${process.cwd()}/templates/email/layout`
+		const cwd = process.cwd()
+		const candidates = [
+			`${cwd}/templates/email/layout.js`,
+			`${cwd}/templates/email/layout.ts`,
+			`${cwd}/templates/email/layout.tsx`,
+			`${cwd}/dist/templates/email/layout.js`,
+		]
+		const resolvedPath = candidates.find((p) => existsSync(p))
+
+		if (!resolvedPath) {
+			this.logger.debug(
+				'No custom email layout found — using built-in default layout',
+			)
+			return
+		}
+
 		try {
-			const mod = await import(conventionPath)
+			const mod = await import(resolvedPath)
 			const component =
 				(mod.default as LayoutComponent | undefined) ??
 				(mod.Layout as LayoutComponent | undefined) ??
 				(mod.layout as LayoutComponent | undefined)
 			if (typeof component === 'function') {
 				this.layoutComponent = component
-				this.logger.log(`Email layout discovered at ${conventionPath}`)
+				this.logger.log(`Email layout discovered at ${resolvedPath}`)
+			} else {
+				this.logger.warn(
+					`Email layout file found at ${resolvedPath} but exports no valid component — using built-in default layout`,
+				)
 			}
-		} catch {
-			// No layout file at convention path — using built-in default layout
-			this.logger.debug(
-				'No custom email layout found — using built-in default layout',
+		} catch (error) {
+			this.logger.warn(
+				`Failed to load email layout from ${resolvedPath}: ${error instanceof Error ? error.message : String(error)} — using built-in default layout`,
 			)
 		}
 	}
