@@ -34,7 +34,7 @@
     "@types/passport-jwt": "^4.0.1"
   },
   "peerDependencies": {
-    "@magnet-cms/common": "^0.3.0",
+    "@magnet-cms/common": "^0.3.1",
     "@nestjs/common": "^11.1.12",
     "@supabase/supabase-js": "^2.49.0",
     "passport-jwt": "^4.0.1"
