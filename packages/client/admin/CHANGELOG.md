@@ -1,5 +1,11 @@
 # @magnet-cms/admin
 
+## 0.4.1
+
+### Patch Changes
+
+- [`219430a`](https://github.com/magnet-cms/magnet/commit/219430a3bef252ae9ddea47e2020d62395ee37a3) Thanks [@gjsoaresc](https://github.com/gjsoaresc)! - Fix workspace:\* dependency references in published package.json that caused ERR_PNPM_WORKSPACE_PKG_NOT_FOUND errors when installing in external projects
+
 ## 0.4.0
 
 ### Minor Changes
