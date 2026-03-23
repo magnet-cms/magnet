@@ -16,8 +16,8 @@ import { cn } from '@magnet-cms/ui/lib/utils'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { formatDistanceToNow } from 'date-fns'
 import { Check, Clock, Copy, Edit3, Globe, Info } from 'lucide-react'
-import { useCallback, useMemo, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useBlocker, useLocation, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 
 import { ContentHeader } from '~/components/ContentHeader'
@@ -29,9 +29,11 @@ import { useSchema } from '~/hooks/useDiscovery'
 import {
 	CONTENT_KEYS,
 	useContentAddLocale,
+	useContentCreate,
 	useContentItem,
 	useContentPublish,
 	useContentUnpublish,
+	useContentUpdate,
 	useContentVersions,
 	useLocaleStatuses,
 } from '~/hooks/useSchema'
@@ -126,6 +128,10 @@ export function SchemaFormPage({
 	const hasVersioning = schemaOptions
 		? schemaOptions.versioning !== false
 		: false
+	const isReadOnly = schemaOptions?.readOnly === true
+	const hasAutoSave = schemaOptions?.autoSave !== false
+	// Create mode: entryId is empty string when opened via /schema/new
+	const isCreateMode = !entryId
 
 	// Fetch available locales from settings
 	const { data: localesConfig } = useQuery({
@@ -172,6 +178,40 @@ export function SchemaFormPage({
 		schema,
 		entryId,
 		hasI18n ? currentLocale : undefined,
+	)
+
+	// Explicit-save mutations (used when autoSave is false)
+	const latestFormDataRef = useRef<ContentData | undefined>(undefined)
+	const [isDirty, setIsDirty] = useState(false)
+	const { mutate: createContent, isPending: isCreating } =
+		useContentCreate<ContentData>()
+	const { mutate: updateContent, isPending: isUpdating } =
+		useContentUpdate<ContentData>()
+	const isExplicitSaving = isCreating || isUpdating
+
+	// Block in-app React Router navigation when form is dirty and auto-save is off
+	useBlocker(
+		useCallback(
+			({
+				currentLocation,
+				nextLocation,
+			}: {
+				currentLocation: { pathname: string }
+				nextLocation: { pathname: string }
+			}) => {
+				if (
+					!hasAutoSave &&
+					isDirty &&
+					currentLocation.pathname !== nextLocation.pathname
+				) {
+					return !window.confirm(
+						'You have unsaved changes. Leave without saving?',
+					)
+				}
+				return false
+			},
+			[hasAutoSave, isDirty],
+		),
 	)
 
 	// Mutations
@@ -292,7 +332,7 @@ export function SchemaFormPage({
 		documentId: entryId,
 		schema,
 		locale: hasI18n ? currentLocale : undefined,
-		enabled: !!entryId && !!schema,
+		enabled: !!entryId && !!schema && hasAutoSave && !isReadOnly,
 		onSuccess: () => {
 			// Invalidate locale statuses to update the status badge
 			queryClient.invalidateQueries({
@@ -316,13 +356,107 @@ export function SchemaFormPage({
 		},
 	})
 
-	// Handle form changes - trigger auto-save
+	// Handle form changes - trigger auto-save (or track dirty state for explicit-save mode)
 	const handleFormChange = useCallback(
 		(data: ContentData) => {
+			latestFormDataRef.current = data
+			if (!hasAutoSave) {
+				setIsDirty(true)
+				return
+			}
 			autoSave.save(data)
 		},
-		[autoSave],
+		[autoSave, hasAutoSave],
 	)
+
+	// Navigation guard: warn on unload when form is dirty and auto-save is off
+	useEffect(() => {
+		if (!hasAutoSave && isDirty) {
+			const handler = (e: BeforeUnloadEvent) => {
+				e.preventDefault()
+			}
+			window.addEventListener('beforeunload', handler)
+			return () => window.removeEventListener('beforeunload', handler)
+		}
+	}, [hasAutoSave, isDirty])
+
+	// Handle explicit save draft (used when autoSave is false)
+	const handleSaveDraft = useCallback(() => {
+		if (isCreateMode && !latestFormDataRef.current) {
+			toast.error(
+				intl.formatMessage({
+					id: 'contentManager.form.failedToSave',
+					defaultMessage: 'Fill in at least one field before saving',
+				}),
+			)
+			return
+		}
+		const data = latestFormDataRef.current ?? {}
+		if (isCreateMode) {
+			createContent(
+				{ schema, data },
+				{
+					onSuccess: (created) => {
+						setIsDirty(false)
+						const newId =
+							(created as ContentData).documentId ||
+							(created as ContentData)._id
+						if (newId) navigate(`/content-manager/${schema}/${newId}`)
+					},
+					onError: (error) => {
+						toast.error(
+							error.message ||
+								intl.formatMessage({
+									id: 'contentManager.form.failedToPublish',
+									defaultMessage: 'Failed to save',
+								}),
+						)
+					},
+				},
+			)
+		} else {
+			updateContent(
+				{
+					schema,
+					documentId: entryId,
+					data,
+					options: hasI18n ? { locale: currentLocale } : undefined,
+				},
+				{
+					onSuccess: () => {
+						setIsDirty(false)
+						toast.success(
+							intl.formatMessage({
+								id: 'contentManager.form.publishedSuccess',
+								defaultMessage: 'Saved successfully',
+							}),
+						)
+						queryClient.invalidateQueries({ queryKey: CONTENT_KEYS.lists() })
+					},
+					onError: (error) => {
+						toast.error(
+							error.message ||
+								intl.formatMessage({
+									id: 'contentManager.form.failedToPublish',
+									defaultMessage: 'Failed to save',
+								}),
+						)
+					},
+				},
+			)
+		}
+	}, [
+		isCreateMode,
+		schema,
+		entryId,
+		hasI18n,
+		currentLocale,
+		createContent,
+		updateContent,
+		navigate,
+		intl,
+		queryClient,
+	])
 
 	// Handle discard
 	const handleDiscard = useCallback(() => {
@@ -529,6 +663,7 @@ export function SchemaFormPage({
 
 	// Build more menu items
 	const moreMenuItems = useMemo(() => {
+		if (isReadOnly) return []
 		const items: {
 			label: string
 			onClick: () => void
@@ -545,7 +680,7 @@ export function SchemaFormPage({
 			})
 		}
 		return items
-	}, [hasVersioning, currentLocaleStatus, handleUnpublish])
+	}, [isReadOnly, hasVersioning, currentLocaleStatus, handleUnpublish])
 
 	// Loading state
 	if (isLoading) {
@@ -640,14 +775,25 @@ export function SchemaFormPage({
 						to: 'api',
 					},
 				]}
-				onDiscard={handleDiscard}
-				onPublish={hasVersioning ? handlePublish : undefined}
+				onDiscard={isReadOnly ? undefined : handleDiscard}
+				onPublish={
+					!isReadOnly && hasVersioning && !isCreateMode
+						? handlePublish
+						: undefined
+				}
 				isPublishing={isPublishing}
-				autoSaveStatus={{
-					isSaving: autoSave.isSaving,
-					lastSaved: autoSave.lastSaved,
-					error: autoSave.error,
-				}}
+				onSave={!isReadOnly && !hasAutoSave ? handleSaveDraft : undefined}
+				isSaving={isExplicitSaving}
+				saveLabel={`${intl.formatMessage({ id: 'contentManager.form.saveDraft', defaultMessage: 'Save Draft' })}${isDirty ? ' •' : ''}`}
+				autoSaveStatus={
+					isReadOnly || !hasAutoSave
+						? undefined
+						: {
+								isSaving: autoSave.isSaving,
+								lastSaved: autoSave.lastSaved,
+								error: autoSave.error,
+							}
+				}
 				localeProps={
 					hasI18n
 						? {
@@ -685,7 +831,8 @@ export function SchemaFormPage({
 					<FormBuilder
 						schema={schemaMetadata}
 						initialValues={normalizedData}
-						onChange={handleFormChange}
+						onChange={isReadOnly ? undefined : handleFormChange}
+						disabled={isReadOnly}
 						metadata={{
 							createdAt: normalizedData?.createdAt,
 							updatedAt: normalizedData?.updatedAt,

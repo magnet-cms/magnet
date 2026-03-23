@@ -86,11 +86,11 @@ export function AuthedLayout({ children, header, sidebar }: AuthedLayoutProps) {
 		if (!schemas || schemas.length === 0) {
 			return [{ title: 'No schemas yet', url: '/content-manager' }]
 		}
-		return schemas.map((schemaName) => {
-			const n = names(schemaName)
+		return schemas.map((s) => {
+			const slug = s.apiName || s.name
 			return {
-				title: n.title,
-				url: `/content-manager/${schemaName}`,
+				title: s.displayName || names(slug).title,
+				url: `/content-manager/${slug}`,
 			}
 		})
 	}, [schemas])

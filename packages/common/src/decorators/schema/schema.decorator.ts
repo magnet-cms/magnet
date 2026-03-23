@@ -6,6 +6,8 @@ const defaultSchemaOptions: SchemaOptions = {
 	versioning: true,
 	i18n: true,
 	visible: true,
+	autoSave: true,
+	readOnly: false,
 }
 
 export function Schema(options: SchemaOptions = {}): ClassDecorator {

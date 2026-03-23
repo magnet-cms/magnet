@@ -1,0 +1,116 @@
+---
+title: Auto-Save & Read-Only Schemas
+description: Control how entries are created and edited in the admin panel — disable auto-draft creation or make schemas fully read-only.
+---
+
+## The problem
+
+By default, clicking **New Entry** in the admin panel immediately creates an empty draft document in the database. As the user types, the form auto-saves continuously. This works well for most content — but it creates two common pain points:
+
+- **Phantom drafts** — Users who open the form and then navigate away leave behind empty draft records that clutter the content list.
+- **API-only schemas** — Some collections are populated exclusively by external systems (webhooks, imports, background jobs). Exposing create/edit/delete buttons in the admin panel is misleading and potentially dangerous.
+
+Both pain points can be solved with two options on the `@Schema()` decorator.
+
+---
+
+## Disabling auto-save (`autoSave: false`)
+
+```typescript
+import { Schema, Prop } from '@magnet-cms/common'
+
+@Schema({ autoSave: false })
+export class Order {
+  @Prop({ required: true })
+  reference: string
+
+  @Prop({ required: true })
+  total: number
+}
+```
+
+**Behavior when `autoSave: false`:**
+
+- Clicking **New Entry** opens an empty form **without** creating any database record.
+- The form shows a **Save Draft** button in the header bar instead of auto-saving as the user types.
+- A dot indicator appears on the Save Draft button when there are unsaved changes.
+- Clicking **Save Draft** creates (or updates) the document with the current form data and navigates to the entry URL.
+- Navigating away from a dirty (unsaved) form triggers a browser warning.
+
+**Default behavior (`autoSave: true`):**
+
+The existing behavior is preserved. Clicking New Entry immediately creates an empty draft and the form auto-saves within ~1 second of the user stopping typing.
+
+---
+
+## Read-only schemas (`readOnly: true`)
+
+```typescript
+import { Schema, Prop } from '@magnet-cms/common'
+
+@Schema({ readOnly: true })
+export class AnalyticsEvent {
+  @Prop({ required: true })
+  event: string
+
+  @Prop({ required: true })
+  userId: string
+
+  @Prop()
+  metadata: Record<string, unknown>
+}
+```
+
+**What is hidden when `readOnly: true`:**
+
+| Location | Hidden |
+|----------|--------|
+| Listing page header | **New Entry** button |
+| Listing page empty state | Create button and prompt |
+| Listing page row actions | **Edit** and **Delete** (only **View** remains) |
+| Entry form | **Save Draft**, **Publish**, **Unpublish**, and **Discard** buttons |
+| Entry form | Auto-save status indicator |
+
+**What remains visible:**
+
+- The schema appears in the admin sidebar navigation.
+- Existing entries are listed and can be opened in a read-only view.
+- The API (`POST /api/:schema`, `PATCH /api/:schema/:id`, `DELETE /api/:schema/:id`) is **not** restricted — read-only is an admin UI concern only.
+
+---
+
+## Combining both options
+
+You can use both options together for a schema that is API-only and where you also want to view existing entries without any risk of accidental edits:
+
+```typescript
+@Schema({ autoSave: false, readOnly: true })
+export class WebhookLog {
+  @Prop({ required: true })
+  source: string
+
+  @Prop({ required: true })
+  payload: Record<string, unknown>
+
+  @Prop()
+  processedAt: Date
+}
+```
+
+In this configuration the admin panel shows existing webhook logs in read-only mode, and the only way to create new records is through the API.
+
+---
+
+## Hiding a schema entirely
+
+If a schema should not appear in the admin panel at all, use `visible: false`:
+
+```typescript
+@Schema({ visible: false })
+export class InternalAuditLog {
+  @Prop({ required: true })
+  action: string
+}
+```
+
+Unlike `readOnly: true`, schemas with `visible: false` do not appear in the sidebar or content manager home page.

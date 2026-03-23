@@ -272,20 +272,21 @@ export function DashboardHome() {
 	// Transform schemas to collection cards
 	const collections = useMemo(() => {
 		if (!schemas) return []
-		return schemas.slice(0, 4).map((schemaName) => {
-			const n = names(schemaName)
+		return schemas.slice(0, 4).map((s) => {
+			const slug = s.apiName || s.name
+			const title = s.displayName || names(slug).title
 			return {
-				icon: getSchemaIcon(schemaName),
-				title: n.title,
+				icon: getSchemaIcon(slug),
+				title,
 				description: intl.formatMessage(
 					{
 						id: 'dashboard.collections.manageContent',
 						defaultMessage: 'Manage {schema} content',
 					},
-					{ schema: n.title },
+					{ schema: title },
 				),
 				itemCount: 0,
-				href: `/content-manager/${schemaName}`,
+				href: `/content-manager/${slug}`,
 				iconBgColor: 'bg-muted',
 				iconColor: 'text-muted-foreground',
 			}

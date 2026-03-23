@@ -33,7 +33,6 @@
   "common.boolean.yes": "Yes",
   "common.boolean.no": "No",
   "common.itemCount": "{count, plural, one {# item} other {# items}}",
-
   "auth.login.title": "Welcome back",
   "auth.login.subtitle": "Please enter your details to sign in.",
   "auth.login.emailLabel": "Email",
@@ -44,7 +43,6 @@
   "auth.login.signIn": "Sign in",
   "auth.login.signingIn": "Signing in...",
   "auth.login.oauthContinueWith": "Or continue with",
-
   "auth.signup.title": "Create your account",
   "auth.signup.subtitle": "Start planning your next adventure together.",
   "auth.signup.firstNameLabel": "First name",
@@ -58,7 +56,6 @@
   "auth.signup.getStarted": "Get started",
   "auth.signup.creatingAccount": "Creating account...",
   "auth.signup.oauthContinueWith": "Or continue with",
-
   "auth.setup.title": "Set up your project",
   "auth.setup.subtitle": "Configure the basics for your Magnet CMS project. You can change these settings at any time.",
   "auth.setup.siteNameLabel": "Site Name",
@@ -73,18 +70,13 @@
   "auth.setup.saving": "Saving...",
   "auth.setup.skip": "Skip for now",
   "auth.setup.successMessage": "Project configured successfully!",
-
-
   "auth.layout.dontHaveAccount": "Don't have an account?",
   "auth.layout.signUp": "Sign up",
   "auth.layout.coverAlt": "Travel background",
-
   "auth.tripPreview.active": "Active",
   "auth.tripPreview.totalBudget": "Total Budget",
   "auth.tripPreview.othersCount": "+{count} others",
-
   "auth.oauthCallback.signingIn": "Signing you in…",
-
   "dashboard.welcomeBack": "Welcome back, {userName}",
   "dashboard.subtitle": "Here's what's happening in your project.",
   "dashboard.documentation": "Documentation",
@@ -121,13 +113,11 @@
   "dashboard.footer.readDocs": "Read Docs",
   "dashboard.footer.manageTeam": "Manage Team",
   "dashboard.footer.manageTeamDescription": "Invite new members, manage roles and permissions for your project.",
-
   "contentManager.home.title": "Content Manager",
   "contentManager.home.subtitle": "Select a collection to manage its content.",
   "contentManager.home.noCollections": "No collections yet",
   "contentManager.home.createSchema": "Create a schema to get started.",
   "contentManager.home.manageContent": "Manage {title} content",
-
   "contentManager.listing.searchPlaceholder": "Search entries...",
   "contentManager.listing.manageEntries": "Manage your {schema} entries and publications.",
   "contentManager.listing.configureView": "Configure View",
@@ -140,7 +130,6 @@
   "contentManager.listing.deleteNoId": "Cannot delete entry: missing ID",
   "contentManager.listing.createSuccess": "New entry created",
   "contentManager.listing.createError": "Failed to create entry",
-
   "contentManager.form.backToList": "Back to List",
   "contentManager.form.failedToLoadContent": "Failed to load content",
   "contentManager.form.editTab": "Edit",
@@ -157,7 +146,6 @@
   "contentManager.form.localeAdded": "Locale added",
   "contentManager.form.localeAddedDescription": "{locale} translation was created",
   "contentManager.form.failedToAddLocale": "Failed to add locale",
-
   "contentManager.versions.title": "Version History",
   "contentManager.versions.versionsFound": "{count} versions found",
   "contentManager.versions.currentDraft": "Current Draft",
@@ -183,7 +171,6 @@
   "contentManager.versions.versionRestored": "Version restored",
   "contentManager.versions.versionRestoredDescription": "The selected version has been published",
   "contentManager.versions.failedToRestoreVersion": "Failed to restore version: {error}",
-
   "contentManager.api.endpoints": "Endpoints",
   "contentManager.api.getAll": "Get All",
   "contentManager.api.getAllDescription": "Retrieve all entries",
@@ -202,7 +189,6 @@
   "contentManager.api.copy": "Copy",
   "contentManager.api.authRequired": "Authentication Required",
   "contentManager.api.authDescription": "Include your API token in the header:",
-
   "contentManager.configureView.title": "Configure View",
   "contentManager.configureView.columns": "Columns",
   "contentManager.configureView.columnsDescription": "Toggle visibility and drag to reorder.",
@@ -216,14 +202,12 @@
   "contentManager.configureView.descending": "Descending",
   "contentManager.configureView.resetToDefaults": "Reset to Defaults",
   "contentManager.configureView.apply": "Apply",
-
   "contentManager.diff.title": "Version Comparison",
   "contentManager.diff.failedToLoad": "Failed to load comparison: {error}",
   "contentManager.diff.noDifferences": "No differences between these versions.",
   "contentManager.diff.fieldsChanged": "{count, plural, one {# field changed} other {# fields changed}}",
   "contentManager.diff.before": "Before",
   "contentManager.diff.after": "After",
-
   "contentManager.metadata.relations": "Relations",
   "contentManager.metadata.additionalInfo": "Additional Info",
   "contentManager.metadata.title": "Metadata",
@@ -237,7 +221,6 @@
   "contentManager.metadata.weeksAgo": "{count, plural, one {# week ago} other {# weeks ago}}",
   "contentManager.metadata.monthsAgo": "{count, plural, one {# month ago} other {# months ago}}",
   "contentManager.metadata.yearsAgo": "{count, plural, one {# year ago} other {# years ago}}",
-
   "media.title": "Media Library",
   "media.subtitle": "Manage and organize your project's digital assets.",
   "media.assetCount": "{count} assets",
@@ -266,7 +249,6 @@
   "media.folders": "Folders",
   "media.itemCount": "{count} items",
   "media.video": "Video",
-
   "media.filters.searchPlaceholder": "Search assets...",
   "media.filters.allTypes": "All Types",
   "media.filters.images": "Images",
@@ -278,13 +260,11 @@
   "media.filters.nameZA": "Name (Z-A)",
   "media.filters.sizeLarge": "Size (Large-Small)",
   "media.filters.sizeSmall": "Size (Small-Large)",
-
   "media.newFolderDrawer.title": "New Folder",
   "media.newFolderDrawer.description": "Create a new folder to organize your assets.",
   "media.newFolderDrawer.submitLabel": "Create Folder",
   "media.newFolderDrawer.folderName": "Folder Name",
   "media.newFolderDrawer.placeholder": "e.g. Product Images",
-
   "media.uploadDrawer.title": "Upload Assets",
   "media.uploadDrawer.description": "Select files to upload to your media library.",
   "media.uploadDrawer.dropHere": "Drop files here",
@@ -295,7 +275,6 @@
   "media.uploadDrawer.completed": "{completed} of {total} completed",
   "media.uploadDrawer.tip": "Tip: Drag and drop files here or click to browse.",
   "media.uploadDrawer.startUpload": "Start Upload",
-
   "media.viewDrawer.fileDetails": "File Details",
   "media.viewDrawer.collapse": "Collapse",
   "media.viewDrawer.expand": "Expand",
@@ -326,7 +305,6 @@
   "media.viewDrawer.informationSection": "Information",
   "media.viewDrawer.fileSize": "File Size",
   "media.viewDrawer.extension": "Extension",
-
   "settings.title": "Settings",
   "settings.noSettingsRegistered": "No settings have been registered yet.",
   "settings.noSettingsSchemas": "No settings schemas found.",
@@ -335,7 +313,6 @@
   "settings.saveError": "Failed to save settings",
   "settings.loadError": "Failed to load settings schema for \"{group}\"",
   "settings.noAvailable": "No settings available for this group",
-
   "profile.title": "Profile",
   "profile.subtitle": "Manage your account settings and security preferences.",
   "profile.personalTab": "Personal",
@@ -372,7 +349,6 @@
   "profile.currentSession": "Current Session",
   "profile.revoke": "Revoke",
   "profile.sessionManagementComingSoon": "Session management coming soon",
-
   "users.title": "Users",
   "users.subtitle": "Manage users and their roles.",
   "users.createUser": "Create User",
@@ -406,7 +382,6 @@
   "users.deleteConfirm": "Are you sure you want to delete this user?",
   "users.roleUpdatedSuccess": "User role updated",
   "users.roleUpdatedError": "Failed to update role",
-
   "apiKeys.title": "API Keys",
   "apiKeys.subtitle": "Manage API keys for your application.",
   "apiKeys.createKey": "Create API Key",
@@ -426,7 +401,6 @@
   "apiKeys.createDrawer.keyNamePlaceholder": "e.g. Production API Key",
   "apiKeys.createDrawer.expirationDate": "Expiration Date (Optional)",
   "apiKeys.createDrawer.expirationHint": "Leave empty for keys that never expire",
-
   "webhooks.title": "Webhooks",
   "webhooks.createWebhook": "Create Webhook",
   "webhooks.loadFailed": "Failed to load webhooks: {message}",
@@ -487,7 +461,6 @@
   "webhooks.category.plugin": "Plugin",
   "webhooks.category.notification": "Notification",
   "webhooks.category.system": "System",
-
   "accessControl.title": "Access Control",
   "accessControl.subtitle": "Manage roles and permissions.",
   "accessControl.createRole": "Create Role",
@@ -511,7 +484,6 @@
   "accessControl.duplicateDialog.title": "Duplicate Role",
   "accessControl.duplicateDialog.newRoleName": "New role name",
   "accessControl.duplicateDialog.duplicate": "Duplicate",
-
   "activity.title": "Activity Log",
   "activity.subtitle": "Track all actions and changes.",
   "activity.searchPlaceholder": "Search activity...",
@@ -549,7 +521,6 @@
   "activity.relativeHours": "{count}h ago",
   "activity.relativeDays": "{count}d ago",
   "activity.noRecordsFound": "No activity records found",
-
   "nav.contentManager": "Content Manager",
   "nav.media": "Media",
   "nav.activity": "Activity",
@@ -560,14 +531,11 @@
   "nav.account": "Account",
   "nav.notifications": "Notifications",
   "nav.logOut": "Log out",
-
   "common.errors.addTranslation": "Add Translation",
-
   "common.time.justNow": "Just now",
   "common.time.minutesAgo": "{count, plural, one {# minute ago} other {# minutes ago}}",
   "common.time.hoursAgo": "{count, plural, one {# hour ago} other {# hours ago}}",
   "common.time.daysAgo": "{count, plural, one {# day ago} other {# days ago}}",
-
   "validation.emailRequired": "Email is required",
   "validation.emailInvalid": "Invalid email address",
   "validation.passwordRequired": "Password is required",
@@ -583,21 +551,18 @@
   "validation.usernameTooLong": "Username is too long",
   "validation.usernameFormat": "Username can only contain letters, numbers, and underscores",
   "validation.siteNameRequired": "Site name is required",
-
   "settings.language.title": "Language",
   "settings.language.description": "Choose the language for the admin interface.",
   "settings.language.label": "Interface Language",
   "settings.language.en": "English",
   "settings.language.pt-BR": "Português (Brasil)",
   "settings.language.es": "Español",
-
   "settings.auth.externalBanner.title": "Authentication managed by {provider}",
   "settings.auth.externalBanner.description": "Authentication settings are configured in your {provider} dashboard. Changes to login methods, password policies, and security settings should be made there.",
   "settings.auth.externalBanner.providers": "Configured Login Providers",
   "settings.auth.externalBanner.providerSettings": "Provider Settings",
   "settings.auth.externalBanner.enabled": "Enabled",
   "settings.auth.externalBanner.disabled": "Disabled",
-
   "vault.title": "Vault",
   "vault.description": "Manage encrypted secrets stored securely in your CMS",
   "vault.tabs.overview": "Overview",
@@ -642,5 +607,10 @@
   "vault.drawer.saveError": "Failed to save secret",
   "vault.cache.clearSuccess": "Cache cleared",
   "vault.cache.clearError": "Failed to clear cache",
-  "vault.cache.clearButton": "Clear Cache"
+  "vault.cache.clearButton": "Clear Cache",
+  "contentManager.listing.noEntriesReadOnly": "No {schema} entries have been created via API yet.",
+  "common.actions.view": "View",
+  "contentManager.form.savedSuccess": "Saved successfully",
+  "contentManager.form.failedToSave": "Failed to save",
+  "contentManager.form.saveDraft": "Save Draft"
 }

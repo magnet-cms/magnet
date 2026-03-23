@@ -228,8 +228,8 @@ export function createHttpAdapter(config: HttpAdapterConfig): MagnetApiAdapter {
 		},
 
 		discovery: {
-			async getSchemas(): Promise<string[]> {
-				return request<string[]>('/discovery/schemas')
+			async getSchemas(): Promise<SchemaMetadata[]> {
+				return request<SchemaMetadata[]>('/discovery/schemas')
 			},
 
 			async getSchema(name: string): Promise<SchemaMetadata> {

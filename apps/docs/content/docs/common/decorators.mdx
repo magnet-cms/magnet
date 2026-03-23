@@ -26,6 +26,9 @@ export class Article {
 |--------|------|---------|-------------|
 | `versioning` | `boolean` | `true` | Enable version history tracking |
 | `i18n` | `boolean` | `true` | Enable multi-locale content support |
+| `autoSave` | `boolean` | `true` | Auto-save drafts as the user types. Set to `false` to require an explicit Save action — no DB record is created until the user clicks Save |
+| `readOnly` | `boolean` | `false` | Hide all create, edit, and delete actions in the admin panel. Entries are visible but can only be created or modified via the API |
+| `visible` | `boolean` | `true` | Show this schema in the admin sidebar and content manager. Set to `false` to hide it entirely from the admin UI |
 
 ### @Prop()
 

@@ -18,10 +18,22 @@ export const useControllers = () => {
 export const useSchemas = () => {
 	const adapter = useAdapter()
 
-	return useQuery<string[], Error>({
+	return useQuery<SchemaMetadata[], Error>({
 		queryKey: SCHEMAS_KEY,
 		queryFn: () => adapter.discovery.getSchemas(),
 	})
+}
+
+/**
+ * Convenience hook returning schema API names as strings.
+ * Useful for plugins that previously consumed useSchemas() as string[].
+ */
+export const useSchemaNames = () => {
+	const { data, ...rest } = useSchemas()
+	return {
+		data: data?.map((s) => s.apiName || s.name),
+		...rest,
+	}
 }
 
 export const useSettings = () => {

@@ -308,7 +308,7 @@ export interface MagnetApiAdapter {
 	 * Discovery operations for schema/settings/controller metadata
 	 */
 	discovery: {
-		getSchemas(): Promise<string[]>
+		getSchemas(): Promise<SchemaMetadata[]>
 		getSchema(name: string): Promise<SchemaMetadata>
 		getSettings(): Promise<string[]>
 		getSetting(name: string): Promise<SchemaMetadata>

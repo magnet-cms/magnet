@@ -32,11 +32,8 @@ export class DiscoveryService {
 		this.settingsSchemas = settings
 	}
 
-	getDiscoveredSchemas(): string[] {
-		return this.schemas
-			.filter((schema) => !EXCLUDED_SCHEMAS.includes(schema.name.toLowerCase()))
-			.filter((schema) => schema.options?.visible !== false) // Filter out hidden schemas
-			.map((schema) => schema.apiName || schema.name) // Use apiName (kebab-case) for routes, fallback to name
+	getDiscoveredSchemas(): SchemaMetadata[] {
+		return this.getAllDiscoveredSchemas()
 	}
 
 	getAllDiscoveredSchemas(): SchemaMetadata[] {

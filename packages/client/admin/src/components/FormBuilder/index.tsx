@@ -46,6 +46,11 @@ type FormBuilderProps<T> = {
 	 * The internal sidebar will not be rendered.
 	 */
 	renderSidebar?: (props: SidebarRenderProps) => ReactElement
+	/**
+	 * When true, all form fields are disabled (read-only view mode).
+	 * Uses HTML fieldset[disabled] to disable all contained inputs natively.
+	 */
+	disabled?: boolean
 }
 
 /**
@@ -120,6 +125,7 @@ export const FormBuilder = <T extends Record<string, unknown>>({
 	initialValues,
 	metadata,
 	renderSidebar,
+	disabled = false,
 }: FormBuilderProps<T>) => {
 	const formSchema = buildFormSchema(schema)
 	type FormValues = z.infer<typeof formSchema>
@@ -354,15 +360,17 @@ export const FormBuilder = <T extends Record<string, unknown>>({
 				className="flex-1 flex w-full overflow-hidden"
 				{...methods}
 			>
-				<div className="flex-1 min-w-0 overflow-y-auto p-8">
-					{mainFormContent}
-				</div>
-				{renderSidebar({
-					relationshipFields,
-					sidePanelFields,
-					renderField,
-					metadata,
-				})}
+				<fieldset disabled={disabled} className="contents">
+					<div className="flex-1 min-w-0 overflow-y-auto p-8">
+						{mainFormContent}
+					</div>
+					{renderSidebar({
+						relationshipFields,
+						sidePanelFields,
+						renderField,
+						metadata,
+					})}
+				</fieldset>
 			</FormProvider>
 		)
 	}
@@ -370,78 +378,80 @@ export const FormBuilder = <T extends Record<string, unknown>>({
 	// Default grid layout with internal sidebar
 	return (
 		<FormProvider onSubmit={submitHandler} {...methods}>
-			<div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-				{/* Main Form Column */}
-				<div className={hasSidebar ? 'lg:col-span-8' : 'lg:col-span-12'}>
-					{mainFormContent}
-				</div>
+			<fieldset disabled={disabled} className="contents">
+				<div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+					{/* Main Form Column */}
+					<div className={hasSidebar ? 'lg:col-span-8' : 'lg:col-span-12'}>
+						{mainFormContent}
+					</div>
 
-				{/* Sidebar Column */}
-				{hasSidebar && (
-					<div className="lg:col-span-4 space-y-8 lg:border-l lg:border-border lg:pl-8">
-						{/* Relationship fields */}
-						{relationshipFields.length > 0 && (
-							<div className="space-y-6">
-								<h4 className="text-xs font-semibold text-foreground uppercase tracking-wide">
-									Relations
-								</h4>
-								<div className="space-y-4">
-									{relationshipFields.map((prop) => (
-										<div key={prop.name}>{renderField(prop)}</div>
-									))}
-								</div>
-							</div>
-						)}
-
-						{/* Side panel fields */}
-						{sidePanelFields.length > 0 && (
-							<div className="space-y-6">
-								<h4 className="text-xs font-semibold text-foreground uppercase tracking-wide">
-									Additional Info
-								</h4>
-								<div className="space-y-4">
-									{sidePanelFields.map((prop) => (
-										<div key={prop.name}>{renderField(prop)}</div>
-									))}
-								</div>
-							</div>
-						)}
-
-						{/* Metadata section */}
-						{metadata && (
-							<div className="border-t border-border pt-6 space-y-4">
-								<h4 className="text-xs font-semibold text-foreground uppercase tracking-wide">
-									Metadata
-								</h4>
-								<div className="space-y-3">
-									<div className="flex items-center justify-between text-sm">
-										<span className="text-muted-foreground">Created</span>
-										<span className="font-medium">
-											{formatDate(metadata.createdAt)}
-										</span>
+					{/* Sidebar Column */}
+					{hasSidebar && (
+						<div className="lg:col-span-4 space-y-8 lg:border-l lg:border-border lg:pl-8">
+							{/* Relationship fields */}
+							{relationshipFields.length > 0 && (
+								<div className="space-y-6">
+									<h4 className="text-xs font-semibold text-foreground uppercase tracking-wide">
+										Relations
+									</h4>
+									<div className="space-y-4">
+										{relationshipFields.map((prop) => (
+											<div key={prop.name}>{renderField(prop)}</div>
+										))}
 									</div>
-									{metadata.updatedAt && (
+								</div>
+							)}
+
+							{/* Side panel fields */}
+							{sidePanelFields.length > 0 && (
+								<div className="space-y-6">
+									<h4 className="text-xs font-semibold text-foreground uppercase tracking-wide">
+										Additional Info
+									</h4>
+									<div className="space-y-4">
+										{sidePanelFields.map((prop) => (
+											<div key={prop.name}>{renderField(prop)}</div>
+										))}
+									</div>
+								</div>
+							)}
+
+							{/* Metadata section */}
+							{metadata && (
+								<div className="border-t border-border pt-6 space-y-4">
+									<h4 className="text-xs font-semibold text-foreground uppercase tracking-wide">
+										Metadata
+									</h4>
+									<div className="space-y-3">
 										<div className="flex items-center justify-between text-sm">
-											<span className="text-muted-foreground">Updated</span>
+											<span className="text-muted-foreground">Created</span>
 											<span className="font-medium">
-												{formatDate(metadata.updatedAt)}
+												{formatDate(metadata.createdAt)}
 											</span>
 										</div>
-									)}
-									<div className="flex items-center justify-between text-sm">
-										<span className="text-muted-foreground">
-											Last Published
-										</span>
-										<span className="font-medium">
-											{formatDate(metadata.publishedAt)}
-										</span>
+										{metadata.updatedAt && (
+											<div className="flex items-center justify-between text-sm">
+												<span className="text-muted-foreground">Updated</span>
+												<span className="font-medium">
+													{formatDate(metadata.updatedAt)}
+												</span>
+											</div>
+										)}
+										<div className="flex items-center justify-between text-sm">
+											<span className="text-muted-foreground">
+												Last Published
+											</span>
+											<span className="font-medium">
+												{formatDate(metadata.publishedAt)}
+											</span>
+										</div>
 									</div>
 								</div>
-							</div>
-						)}
-					</div>
-				)}
-			</div>
+							)}
+						</div>
+					)}
+				</div>
+			</fieldset>
 		</FormProvider>
 	)
 }

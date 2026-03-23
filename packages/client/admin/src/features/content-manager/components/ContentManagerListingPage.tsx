@@ -252,6 +252,13 @@ export function ContentManagerListingPage({
 	// Fetch schema metadata for column generation
 	const { data: schemaMetadata, isLoading: isSchemaLoading } = useSchema(schema)
 
+	// Derive schema option flags
+	const schemaOptions =
+		schemaMetadata && !('error' in schemaMetadata)
+			? schemaMetadata.options
+			: undefined
+	const isReadOnly = schemaOptions?.readOnly ?? false
+
 	// Fetch content data
 	const {
 		data: contentData,
@@ -313,6 +320,11 @@ export function ContentManagerListingPage({
 
 	// Handle create new entry
 	const handleCreate = () => {
+		// When autoSave is disabled, navigate to a blank form without pre-creating a DB record
+		if (schemaOptions?.autoSave === false) {
+			navigate(`/content-manager/${schema}/new`)
+			return
+		}
 		createEmpty(
 			{ schema },
 			{
@@ -605,17 +617,19 @@ export function ContentManagerListingPage({
 								defaultMessage: 'Configure View',
 							})}
 						</Button>
-						<Button size="sm" onClick={handleCreate} disabled={isCreating}>
-							{isCreating
-								? intl.formatMessage({
-										id: 'contentManager.listing.creating',
-										defaultMessage: 'Creating...',
-									})
-								: intl.formatMessage({
-										id: 'contentManager.listing.createNewEntry',
-										defaultMessage: 'Create New Entry',
-									})}
-						</Button>
+						{!isReadOnly && (
+							<Button size="sm" onClick={handleCreate} disabled={isCreating}>
+								{isCreating
+									? intl.formatMessage({
+											id: 'contentManager.listing.creating',
+											defaultMessage: 'Creating...',
+										})
+									: intl.formatMessage({
+											id: 'contentManager.listing.createNewEntry',
+											defaultMessage: 'Create New Entry',
+										})}
+							</Button>
+						)}
 					</div>
 				</div>
 			</PageHeader>
@@ -650,26 +664,37 @@ export function ContentManagerListingPage({
 									})}
 								</h3>
 								<p className="text-sm text-muted-foreground mb-4">
-									{intl.formatMessage(
-										{
-											id: 'contentManager.listing.getStarted',
-											defaultMessage:
-												'Get started by creating your first {schema} entry.',
-										},
-										{ schema: schemaDisplayName.toLowerCase() },
-									)}
+									{isReadOnly
+										? intl.formatMessage(
+												{
+													id: 'contentManager.listing.noEntriesReadOnly',
+													defaultMessage:
+														'No {schema} entries have been created via API yet.',
+												},
+												{ schema: schemaDisplayName.toLowerCase() },
+											)
+										: intl.formatMessage(
+												{
+													id: 'contentManager.listing.getStarted',
+													defaultMessage:
+														'Get started by creating your first {schema} entry.',
+												},
+												{ schema: schemaDisplayName.toLowerCase() },
+											)}
 								</p>
-								<Button onClick={handleCreate} disabled={isCreating}>
-									{isCreating
-										? intl.formatMessage({
-												id: 'contentManager.listing.creating',
-												defaultMessage: 'Creating...',
-											})
-										: intl.formatMessage({
-												id: 'contentManager.listing.createNewEntry',
-												defaultMessage: 'Create New Entry',
-											})}
-								</Button>
+								{!isReadOnly && (
+									<Button onClick={handleCreate} disabled={isCreating}>
+										{isCreating
+											? intl.formatMessage({
+													id: 'contentManager.listing.creating',
+													defaultMessage: 'Creating...',
+												})
+											: intl.formatMessage({
+													id: 'contentManager.listing.createNewEntry',
+													defaultMessage: 'Create New Entry',
+												})}
+									</Button>
+								)}
 							</div>
 						) : (
 							<DataTable
@@ -679,23 +704,33 @@ export function ContentManagerListingPage({
 								options={{
 									selectable: true,
 									rowActions: {
-										items: [
-											{
-												label: intl.formatMessage({
-													id: 'common.actions.edit',
-													defaultMessage: 'Edit',
-												}),
-												onSelect: (row) => handleEdit(row),
-											},
-											{
-												label: intl.formatMessage({
-													id: 'common.actions.delete',
-													defaultMessage: 'Delete',
-												}),
-												onSelect: (row) => handleDelete(row),
-												destructive: true,
-											},
-										],
+										items: isReadOnly
+											? [
+													{
+														label: intl.formatMessage({
+															id: 'common.actions.view',
+															defaultMessage: 'View',
+														}),
+														onSelect: (row) => handleEdit(row),
+													},
+												]
+											: [
+													{
+														label: intl.formatMessage({
+															id: 'common.actions.edit',
+															defaultMessage: 'Edit',
+														}),
+														onSelect: (row) => handleEdit(row),
+													},
+													{
+														label: intl.formatMessage({
+															id: 'common.actions.delete',
+															defaultMessage: 'Delete',
+														}),
+														onSelect: (row) => handleDelete(row),
+														destructive: true,
+													},
+												],
 									},
 								}}
 								getRowId={(row) => getEntryId(row)}

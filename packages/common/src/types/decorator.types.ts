@@ -61,6 +61,21 @@ export type SchemaOptions = {
 	 */
 	visible?: boolean
 	/**
+	 * Whether the admin panel should auto-save form changes as drafts on typing.
+	 * When false, no database record is created when clicking "New Entry" — the
+	 * document is only saved when the user explicitly clicks "Save Draft".
+	 * @default true
+	 */
+	autoSave?: boolean
+	/**
+	 * Whether the schema is read-only in the admin panel.
+	 * When true, create/edit/delete actions are hidden. Entries can still be
+	 * created and modified via the API. Use for system-generated or import-only
+	 * content types.
+	 * @default false
+	 */
+	readOnly?: boolean
+	/**
 	 * Compound indexes (adapter-specific).
 	 * Mongoose: schema.index(keys, { unique })
 	 */

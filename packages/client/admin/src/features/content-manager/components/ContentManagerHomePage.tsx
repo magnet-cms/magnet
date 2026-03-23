@@ -17,22 +17,23 @@ export function ContentManagerHomePage() {
 	const collections = useMemo(() => {
 		if (!schemas) return []
 		return schemas
-			.filter((s) => s.toLowerCase() !== 'media')
-			.map((schemaName) => {
-				const schemaNames = names(schemaName)
+			.filter((s) => (s.apiName || s.name).toLowerCase() !== 'media')
+			.map((s) => {
+				const slug = s.apiName || s.name
+				const title = s.displayName || names(slug).title
 				return {
-					key: schemaName,
+					key: slug,
 					icon: Box,
-					title: schemaNames.title,
+					title,
 					description: intl.formatMessage(
 						{
 							id: 'contentManager.home.manageContent',
 							defaultMessage: 'Manage {title} content',
 						},
-						{ title: schemaNames.title },
+						{ title },
 					),
 					itemCount: 0,
-					href: `/content-manager/${schemaName}`,
+					href: `/content-manager/${slug}`,
 					iconBgColor: 'bg-muted',
 					iconColor: 'text-muted-foreground',
 				}

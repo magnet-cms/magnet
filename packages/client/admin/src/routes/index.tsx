@@ -237,6 +237,22 @@ function SchemaFormPageWrapper() {
 	)
 }
 
+/**
+ * Wrapper for SchemaFormPage in create mode (no entryId).
+ * Used when autoSave is disabled — form opens empty without pre-creating a DB record.
+ */
+function SchemaFormPageNewWrapper() {
+	const { schema = '' } = useParams<{ schema: string }>()
+	const schemaNames = names(schema)
+	return (
+		<SchemaFormPage
+			schema={schema}
+			schemaDisplayName={schemaNames.title}
+			entryId=""
+		/>
+	)
+}
+
 const withSuspense = (Component: React.ComponentType) => (
 	<Suspense fallback={<Loader />}>
 		<Component />
@@ -288,6 +304,10 @@ const coreDashboardRoutes: RouteObject[] = [
 			{
 				path: ':schema',
 				element: withSuspense(ContentManagerListingPageWrapper),
+			},
+			{
+				path: ':schema/new',
+				element: withSuspense(SchemaFormPageNewWrapper),
 			},
 			{
 				path: ':schema/:id',

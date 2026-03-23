@@ -38,6 +38,7 @@ import {
 	useController,
 	useControllers,
 	useSchema,
+	useSchemaNames,
 	useSchemas,
 	useSetting,
 	useSettings,
@@ -108,6 +109,7 @@ export function exposePluginGlobals(): void {
 		useStatus,
 		// Discovery hooks
 		useSchemas,
+		useSchemaNames,
 		useSchema,
 		useSettings,
 		useSetting,

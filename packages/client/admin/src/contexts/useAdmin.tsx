@@ -1,10 +1,11 @@
+import type { SchemaMetadata } from '@magnet-cms/common'
 import React, { createContext, useContext, ReactNode } from 'react'
 import { useSchemas, useSettings } from '~/hooks/useDiscovery'
 
 type AdminContextType = {
 	isLoading: boolean
 	error: Error | null
-	schemas?: string[]
+	schemas?: SchemaMetadata[]
 	settings?: string[]
 }
 

@@ -1,4 +1,4 @@
 {
   "title": "Guides",
-  "pages": ["nextjs-integration"]
+  "pages": ["nextjs-integration", "auto-save-and-read-only"]
 }
