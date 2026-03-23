@@ -1,5 +1,17 @@
 # @magnet-cms/core
 
+## 4.0.0
+
+### Minor Changes
+
+- [`1b0e309`](https://github.com/magnet-cms/magnet/commit/1b0e309595cc860c50d65f99a418c068b9ecc717) Thanks [@gjsoaresc](https://github.com/gjsoaresc)! - Export `EmailService`, `SettingsService`, and `WebhookService` from the core package public API so they can be injected in user applications without reaching into internal module paths.
+
+### Patch Changes
+
+- Updated dependencies [[`1e54cb4`](https://github.com/magnet-cms/magnet/commit/1e54cb48d65f0ca6a2ccd893357a1aec82722dfa)]:
+  - @magnet-cms/common@0.4.0
+  - @magnet-cms/utils@0.1.1
+
 ## 3.1.0
 
 ### Minor Changes

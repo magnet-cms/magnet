@@ -1,6 +1,6 @@
 {
   "name": "@magnet-cms/adapter-auth-clerk",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "description": "Clerk auth strategy for Magnet CMS",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -36,7 +36,7 @@
   },
   "peerDependencies": {
     "@clerk/backend": "^3.0.0",
-    "@magnet-cms/common": "^0.3.1",
+    "@magnet-cms/common": "^0.4.0",
     "@nestjs/common": "^11.1.12",
     "passport": "^0.7.0"
   }
