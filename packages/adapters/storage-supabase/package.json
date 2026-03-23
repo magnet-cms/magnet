@@ -1,6 +1,6 @@
 {
   "name": "@magnet-cms/adapter-storage-supabase",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "description": "Supabase storage adapter for Magnet CMS",
   "type": "module",
   "main": "./dist/index.cjs",

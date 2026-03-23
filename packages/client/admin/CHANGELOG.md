@@ -1,5 +1,18 @@
 # @magnet-cms/admin
 
+## 0.4.0
+
+### Minor Changes
+
+- [`b6b5350`](https://github.com/magnet-cms/magnet/commit/b6b53501fd647a21bf86eb1283355ec9907a56f3) Thanks [@gjsoaresc](https://github.com/gjsoaresc)! - Add email template management system with Lexical editor and locale support.
+
+  - New `EmailTemplateModule` with CRUD endpoints and version history
+  - `GET /email-templates/by-slug/:slug` for locale-aware template retrieval
+  - Admin UI with Lexical-based rich text editor and live iframe preview
+  - Locale variant switching via ContentHeader locale switcher
+  - Variable badge nodes in the editor for template syntax highlighting
+  - DataTable-based listing page
+
 ## 0.3.0
 
 ### Minor Changes

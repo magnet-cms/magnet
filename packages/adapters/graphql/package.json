@@ -1,6 +1,6 @@
 {
   "name": "@magnet-cms/adapter-graphql",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "GraphQL adapter for Magnet CMS — auto-generates Apollo Server with schema from content models",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -40,7 +40,7 @@
   },
   "peerDependencies": {
     "@magnet-cms/common": "^0.3.0",
-    "@magnet-cms/core": "^3.0.0",
+    "@magnet-cms/core": "^3.1.0",
     "@nestjs/apollo": "^13.0.0",
     "@nestjs/common": "^11.0.0",
     "@nestjs/core": "^11.0.0",
