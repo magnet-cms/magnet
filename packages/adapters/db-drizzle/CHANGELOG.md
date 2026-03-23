@@ -1,5 +1,13 @@
 # @magnet-cms/adapter-drizzle
 
+## 4.0.0
+
+### Patch Changes
+
+- Updated dependencies [[`1e54cb4`](https://github.com/magnet-cms/magnet/commit/1e54cb48d65f0ca6a2ccd893357a1aec82722dfa)]:
+  - @magnet-cms/common@0.4.0
+  - @magnet-cms/utils@0.1.1
+
 ## 3.0.0
 
 ### Patch Changes

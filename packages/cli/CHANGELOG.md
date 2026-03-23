@@ -1,5 +1,12 @@
 # @magnet-cms/cli
 
+## 3.0.0
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @magnet-cms/adapter-db-drizzle@4.0.0
+
 ## 2.0.0
 
 ### Patch Changes

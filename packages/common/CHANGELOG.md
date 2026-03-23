@@ -1,5 +1,14 @@
 # @magnet-cms/common
 
+## 0.4.0
+
+### Minor Changes
+
+- [`1e54cb4`](https://github.com/magnet-cms/magnet/commit/1e54cb48d65f0ca6a2ccd893357a1aec82722dfa) Thanks [@gjsoaresc](https://github.com/gjsoaresc)! - Add `autoSave` and `readOnly` options to the `@Schema` decorator:
+
+  - `autoSave: false` — disables auto-draft creation on "New Entry"; the document is only saved when the user explicitly clicks "Save Draft"
+  - `readOnly: true` — hides create/edit/delete actions in the admin panel; entries can still be managed via the API
+
 ## 0.3.1
 
 ### Patch Changes

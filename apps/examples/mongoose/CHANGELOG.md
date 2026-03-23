@@ -1,5 +1,18 @@
 # magnet-template-mongoose-cats
 
+## 0.0.7
+
+### Patch Changes
+
+- Updated dependencies [[`1b0e309`](https://github.com/magnet-cms/magnet/commit/1b0e309595cc860c50d65f99a418c068b9ecc717), [`b0b4cea`](https://github.com/magnet-cms/magnet/commit/b0b4cea6796fd60a8911396bf0658d67e8f0ac4a), [`1e54cb4`](https://github.com/magnet-cms/magnet/commit/1e54cb48d65f0ca6a2ccd893357a1aec82722dfa)]:
+  - @magnet-cms/core@4.0.0
+  - @magnet-cms/adapter-graphql@2.0.0
+  - @magnet-cms/common@0.4.0
+  - @magnet-cms/plugin-playground@5.0.0
+  - @magnet-cms/adapter-db-mongoose@4.0.0
+  - @magnet-cms/email-nodemailer@3.0.0
+  - @magnet-cms/adapter-vault-hashicorp@4.0.0
+
 ## 0.0.6
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
   "name": "@magnet-cms/common",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "Shared types, decorators, and utilities for Magnet CMS",
   "type": "module",
   "main": "./dist/index.cjs",
