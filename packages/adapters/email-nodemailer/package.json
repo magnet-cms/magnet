@@ -32,7 +32,7 @@
     "@types/nodemailer": "^6.4.0"
   },
   "peerDependencies": {
-    "@magnet-cms/common": "^0.3.0",
+    "@magnet-cms/common": "^0.3.1",
     "nodemailer": "^6.9.0"
   }
 }
