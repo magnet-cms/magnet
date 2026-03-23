@@ -292,14 +292,15 @@ export interface EventPayloadMap {
 export type EventName = keyof EventPayloadMap
 
 /**
- * Get payload type for an event name
+ * Get payload type for an event name.
+ * Uses `keyof EventPayloadMap` so module augmentation extends this type automatically.
  */
-export type EventPayload<E extends EventName> = EventPayloadMap[E]
+export type EventPayload<E extends keyof EventPayloadMap> = EventPayloadMap[E]
 
 /**
  * Event handler function type
  */
-export type EventHandler<E extends EventName> = (
+export type EventHandler<E extends keyof EventPayloadMap> = (
 	payload: EventPayload<E>,
 ) => Promise<void> | void
 
@@ -327,7 +328,7 @@ export interface RequiredEventHandlerOptions {
 /**
  * Registered handler with metadata
  */
-export interface RegisteredHandler<E extends EventName> {
+export interface RegisteredHandler<E extends keyof EventPayloadMap> {
 	handler: EventHandler<E>
 	options: RequiredEventHandlerOptions
 }
