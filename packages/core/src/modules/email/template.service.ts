@@ -1,91 +1,193 @@
-import { existsSync, readFileSync, readdirSync } from 'node:fs'
-import { join } from 'node:path'
-import { Injectable } from '@nestjs/common'
+import { Inject, Injectable, OnModuleInit, Optional } from '@nestjs/common'
+import { Body, Container, Html } from '@react-email/components'
+import { render as renderEmail } from '@react-email/render'
 import Handlebars from 'handlebars'
+import React from 'react'
 import { MagnetLogger } from '~/modules/logging/logger.service'
+import { EmailTemplateService } from './email-template.service'
+
+type LayoutComponent = (
+	props: Record<string, unknown>,
+) => React.ReactElement | null
+
+export const EMAIL_LAYOUT_TOKEN = 'EMAIL_LAYOUT'
 
 /**
- * Service for rendering Handlebars email templates.
+ * Service for rendering email templates.
  *
- * Loads `.hbs` files from the templates directory, compiles them once,
- * and caches the compiled templates for performance.
+ * Fetches message templates from the database (managed via EmailTemplateService),
+ * compiles body content with Handlebars, then wraps in a React Email layout.
+ *
+ * Layout resolution order:
+ *  1. Programmatically set via `setLayout()` (from MagnetModule.forRoot)
+ *  2. Convention path: `${process.cwd()}/templates/email/layout` (dynamic import)
+ *  3. Built-in default layout using @react-email/components
  */
 @Injectable()
-export class TemplateService {
+export class TemplateService implements OnModuleInit {
+	/** In-memory registry for programmatically registered templates (backward compat) */
 	private readonly templates = new Map<string, Handlebars.TemplateDelegate>()
-	private readonly templatesDir: string
+	private layoutComponent: LayoutComponent | null = null
 
-	constructor(private readonly logger: MagnetLogger) {
+	constructor(
+		private readonly logger: MagnetLogger,
+		private readonly emailTemplateService: EmailTemplateService,
+		@Optional()
+		@Inject(EMAIL_LAYOUT_TOKEN)
+		private readonly injectedLayout: unknown,
+	) {
 		this.logger.setContext(TemplateService.name)
-		this.templatesDir = join(__dirname, 'templates')
-		this.loadTemplates()
+	}
+
+	async onModuleInit(): Promise<void> {
+		// Use programmatically provided layout first
+		if (this.injectedLayout && typeof this.injectedLayout === 'function') {
+			this.layoutComponent = this.injectedLayout as LayoutComponent
+			this.logger.log('Email layout component configured via module options')
+			return
+		}
+		// Fall back to convention-path discovery
+		if (!this.layoutComponent) {
+			await this.discoverLayout()
+		}
 	}
 
 	/**
-	 * Render a template by name with the given context variables.
-	 *
-	 * @param templateName - Template name (without .hbs extension)
-	 * @param context - Template variables
-	 * @returns Rendered HTML string
+	 * Set a layout component programmatically (called from EmailModule configuration).
 	 */
-	render(templateName: string, context: Record<string, unknown>): string {
-		const template = this.templates.get(templateName)
-		if (!template) {
-			this.logger.warn(`Email template '${templateName}' not found`)
-			return ''
-		}
+	setLayout(component: LayoutComponent): void {
+		this.layoutComponent = component
+		this.logger.log('Email layout component configured programmatically')
+	}
 
+	/**
+	 * Render an email template by slug.
+	 *
+	 * Resolution order:
+	 *  1. DB template via EmailTemplateService (locale-aware)
+	 *  2. In-memory registered templates (register() backward compat)
+	 *
+	 * @param slug - Template slug (e.g. 'welcome', 'password-reset')
+	 * @param context - Handlebars interpolation variables
+	 * @param locale - Optional locale for template resolution
+	 * @returns Rendered HTML string (layout + compiled body)
+	 */
+	async render(
+		slug: string,
+		context: Record<string, unknown>,
+		locale?: string,
+	): Promise<string> {
 		try {
-			const content = template(context)
+			// Try DB first
+			const template = await this.emailTemplateService.findBySlug(slug, locale)
 
-			// Wrap in base layout if available
-			const layout = this.templates.get('base-layout')
-			if (layout && templateName !== 'base-layout') {
-				return layout({ ...context, content })
+			if (template) {
+				const compiledBody = Handlebars.compile(template.body)(context)
+				return this.wrapInLayout(compiledBody, context)
 			}
 
-			return content
+			// Fall back to in-memory registered templates
+			const compiled = this.templates.get(slug)
+			if (compiled) {
+				const body = compiled(context)
+				return this.wrapInLayout(body, context)
+			}
+
+			this.logger.warn(`Email template '${slug}' not found in DB or registry`)
+			return ''
 		} catch (error) {
 			this.logger.error(
-				`Failed to render template '${templateName}': ${error instanceof Error ? error.message : String(error)}`,
+				`Failed to render template '${slug}': ${error instanceof Error ? error.message : String(error)}`,
 			)
 			return ''
 		}
 	}
 
 	/**
-	 * Check if a template exists.
+	 * Check if a template exists in the in-memory registry.
 	 */
-	has(templateName: string): boolean {
-		return this.templates.has(templateName)
+	has(name: string): boolean {
+		return this.templates.has(name)
 	}
 
 	/**
-	 * Register a custom template at runtime.
+	 * Register a custom template at runtime from a Handlebars source string.
+	 * Used for backward compatibility and programmatic template registration.
 	 */
 	register(name: string, source: string): void {
 		this.templates.set(name, Handlebars.compile(source))
 	}
 
-	private loadTemplates(): void {
+	// --------------------------------------------------------------------------
+	// Private helpers
+	// --------------------------------------------------------------------------
+
+	private async wrapInLayout(
+		compiledBody: string,
+		context: Record<string, unknown>,
+	): Promise<string> {
+		if (this.layoutComponent) {
+			const element = React.createElement(
+				this.layoutComponent as React.ComponentType<Record<string, unknown>>,
+				{ content: compiledBody, ...context },
+			)
+			return renderEmail(element as React.ReactElement)
+		}
+		return this.renderDefaultLayout(compiledBody)
+	}
+
+	private async renderDefaultLayout(compiledBody: string): Promise<string> {
+		const element = React.createElement(
+			Html,
+			{ lang: 'en' },
+			React.createElement(
+				Body,
+				{
+					style: {
+						fontFamily:
+							'-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+						backgroundColor: '#f9fafb',
+						margin: '0',
+						padding: '0',
+					},
+				},
+				React.createElement(
+					Container,
+					{
+						style: {
+							maxWidth: '600px',
+							margin: '0 auto',
+							padding: '40px 20px',
+							backgroundColor: '#ffffff',
+							borderRadius: '8px',
+						},
+					},
+					React.createElement('div', {
+						// biome-ignore lint/security/noDangerouslySetInnerHtml: compiledBody is server-rendered Handlebars output for React Email SSR
+						dangerouslySetInnerHTML: { __html: compiledBody },
+					}),
+				),
+			),
+		)
+		return renderEmail(element as React.ReactElement)
+	}
+
+	private async discoverLayout(): Promise<void> {
+		const conventionPath = `${process.cwd()}/templates/email/layout`
 		try {
-			if (!existsSync(this.templatesDir)) {
-				this.logger.debug(
-					`Email templates dir not found at ${this.templatesDir}, using empty set`,
-				)
-				return
+			const mod = await import(conventionPath)
+			const component =
+				(mod.default as LayoutComponent | undefined) ??
+				(mod.Layout as LayoutComponent | undefined) ??
+				(mod.layout as LayoutComponent | undefined)
+			if (typeof component === 'function') {
+				this.layoutComponent = component
+				this.logger.log(`Email layout discovered at ${conventionPath}`)
 			}
-			const files = readdirSync(this.templatesDir)
-			for (const file of files) {
-				if (!file.endsWith('.hbs')) continue
-				const name = file.replace('.hbs', '')
-				const source = readFileSync(join(this.templatesDir, file), 'utf-8')
-				this.templates.set(name, Handlebars.compile(source))
-			}
-			this.logger.log(`Loaded ${this.templates.size} email template(s)`)
-		} catch (error) {
-			this.logger.warn(
-				`Failed to load email templates: ${error instanceof Error ? error.message : String(error)}`,
+		} catch {
+			// No layout file at convention path — using built-in default layout
+			this.logger.debug(
+				'No custom email layout found — using built-in default layout',
 			)
 		}
 	}

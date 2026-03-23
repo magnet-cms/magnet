@@ -7,13 +7,18 @@ import {
 	Param,
 	Query,
 	Res,
+	UseGuards,
 } from '@nestjs/common'
 import type { Response } from 'express'
+import { OptionalDynamicAuthGuard } from '~/modules/auth/guards/dynamic-auth.guard'
+import { MediaOwnerGuard } from './guards/media-owner.guard'
 import { StorageService } from './storage.service'
 
 /**
  * Controller for serving media files with optional on-demand transforms.
- * These endpoints are PUBLIC (no auth required) for serving media files.
+ *
+ * Public files (no ownerId) are served without authentication.
+ * Private/encrypted files (ownerId set) require the owner or admin.
  */
 @Controller('media')
 export class TransformController {
@@ -37,6 +42,7 @@ export class TransformController {
 	 * - /media/file/abc123?f=webp&q=80 - convert to WebP at 80% quality
 	 */
 	@Get('file/:id')
+	@UseGuards(OptionalDynamicAuthGuard, MediaOwnerGuard)
 	async getFile(
 		@Param('id') id: string,
 		@Query('w') width?: string,
@@ -150,6 +156,7 @@ export class TransformController {
 	 * GET /media/download/:id
 	 */
 	@Get('download/:id')
+	@UseGuards(OptionalDynamicAuthGuard, MediaOwnerGuard)
 	async download(@Param('id') id: string, @Res() res?: Response) {
 		if (!res) {
 			throw new HttpException(

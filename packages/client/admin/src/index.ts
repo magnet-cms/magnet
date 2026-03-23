@@ -164,7 +164,6 @@ export { AdminProvider, useAdmin } from './contexts/useAdmin'
 // =============================================================================
 
 export { FormBuilder } from './components/FormBuilder'
-export { DashboardLayout } from './layouts/DashboardLayout'
 export { AuthLayout } from './layouts/AuthLayout'
 export { Loader } from './components/Loader'
 export {

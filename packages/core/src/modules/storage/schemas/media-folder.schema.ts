@@ -23,4 +23,10 @@ export class MediaFolder {
 
 	@Field.Date({ default: () => new Date() })
 	createdAt!: Date
+
+	@Field.Text()
+	ownerId?: string
+
+	@Field.Boolean({ default: false })
+	isPrivate?: boolean
 }

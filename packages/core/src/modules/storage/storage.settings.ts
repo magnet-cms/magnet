@@ -50,6 +50,13 @@ import { SettingField, Settings } from '@magnet-cms/common'
 			description: 'Configure thumbnail generation',
 			order: 4,
 		},
+		{
+			name: 'security',
+			label: 'Security',
+			icon: 'shield',
+			description: 'Configure file encryption and access control',
+			order: 5,
+		},
 	],
 })
 export class MediaSettings {
@@ -169,4 +176,25 @@ export class MediaSettings {
 		order: 2,
 	})
 	thumbnailWidth = 200
+
+	// Security
+	@SettingField.Boolean({
+		label: 'Enable File Encryption',
+		description:
+			'Allow files to be encrypted at rest using AES-256-GCM. Requires a vault adapter to be configured.',
+		default: false,
+		section: 'security',
+		order: 1,
+	})
+	encryptionEnabled = false
+
+	@SettingField.Boolean({
+		label: 'Auto-create Private Folders',
+		description:
+			'Automatically create a private/{userId} folder when a user uploads an encrypted file.',
+		default: true,
+		section: 'security',
+		order: 2,
+	})
+	autoCreatePrivateFolders = true
 }

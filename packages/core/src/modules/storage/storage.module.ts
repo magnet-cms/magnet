@@ -3,6 +3,8 @@ import { DynamicModule, Module } from '@nestjs/common'
 import { DatabaseModule } from '~/modules/database'
 import { SettingsModule } from '~/modules/settings'
 import { LocalStorageAdapter } from './adapters/local-storage.adapter'
+import { MediaOwnerGuard } from './guards/media-owner.guard'
+import { MediaEncryptionService } from './media-encryption.service'
 import { MediaFolder } from './schemas/media-folder.schema'
 import { Media } from './schemas/media.schema'
 import { STORAGE_ADAPTER, STORAGE_CONFIG } from './storage.constants'
@@ -49,8 +51,10 @@ export class StorageModule {
 					useValue: storageAdapter,
 				},
 				StorageService,
+				MediaEncryptionService,
+				MediaOwnerGuard,
 			],
-			exports: [StorageService, STORAGE_ADAPTER],
+			exports: [StorageService, MediaEncryptionService, STORAGE_ADAPTER],
 		}
 	}
 }

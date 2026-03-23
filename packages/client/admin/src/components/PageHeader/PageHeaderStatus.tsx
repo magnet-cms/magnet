@@ -1,7 +1,7 @@
+import { HEADER_RIGHT_PORTAL_ID } from '@magnet-cms/ui/components/organisms/app-layout'
 import { cn } from '@magnet-cms/ui/lib'
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { HEADER_STATUS_PORTAL_ID } from '~/layouts/DashboardLayout'
 import type { PageHeaderStatusProps, StatusType } from './types'
 
 const statusStyles: Record<StatusType, string> = {
@@ -24,7 +24,7 @@ export function PageHeaderStatus({ badges }: PageHeaderStatusProps) {
 	)
 
 	useEffect(() => {
-		const container = document.getElementById(HEADER_STATUS_PORTAL_ID)
+		const container = document.getElementById(HEADER_RIGHT_PORTAL_ID)
 		setPortalContainer(container)
 
 		return () => {

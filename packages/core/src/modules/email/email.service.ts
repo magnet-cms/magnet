@@ -5,11 +5,13 @@ import type {
 } from '@magnet-cms/common'
 import { OnEvent } from '@magnet-cms/common'
 import { Inject, Injectable, OnModuleInit, forwardRef } from '@nestjs/common'
+import Handlebars from 'handlebars'
 import { AuthSettings } from '~/modules/auth/auth.settings'
 import { GeneralSettings } from '~/modules/general/general.settings'
 import { MagnetLogger } from '~/modules/logging/logger.service'
 import { SettingsService } from '~/modules/settings/settings.service'
 import type { ConsoleEmailAdapter } from './adapters/console-email.adapter'
+import { EmailTemplateService } from './email-template.service'
 import { EmailVerificationService } from './email-verification.service'
 import { EmailSettings } from './email.settings'
 import { TemplateService } from './template.service'
@@ -34,6 +36,7 @@ export class EmailService implements OnModuleInit {
 	constructor(
 		private readonly logger: MagnetLogger,
 		private readonly templateService: TemplateService,
+		private readonly emailTemplateService: EmailTemplateService,
 		private readonly settingsService: SettingsService,
 		@Inject(forwardRef(() => EmailVerificationService))
 		private readonly verificationService: EmailVerificationService,
@@ -105,9 +108,15 @@ export class EmailService implements OnModuleInit {
 	/**
 	 * Send a templated email.
 	 *
+	 * @deprecated Use `sendTemplate(slug, { to, data })` instead. Templates are now
+	 * stored in the database and managed via the Admin UI. This method still resolves
+	 * templates from DB (via TemplateService) but uses the caller-provided subject
+	 * rather than the template's subject. Migrate callers to sendTemplate() to benefit
+	 * from locale resolution and subject Handlebars compilation.
+	 *
 	 * @param to - Recipient email address(es)
-	 * @param subject - Email subject
-	 * @param templateName - Template name (without .hbs)
+	 * @param subject - Email subject (overrides template subject)
+	 * @param templateName - Template slug (previously a .hbs filename without extension)
 	 * @param context - Template variables
 	 * @returns Send result or null if template renders empty
 	 */
@@ -117,7 +126,7 @@ export class EmailService implements OnModuleInit {
 		templateName: string,
 		context: Record<string, unknown> = {},
 	): Promise<SendEmailResult | null> {
-		const html = this.templateService.render(templateName, {
+		const html = await this.templateService.render(templateName, {
 			...context,
 			appUrl: this.appUrl,
 		})
@@ -133,6 +142,56 @@ export class EmailService implements OnModuleInit {
 			to,
 			subject,
 			html,
+		})
+	}
+
+	/**
+	 * Send an email using a DB-managed template by slug.
+	 *
+	 * Fetches the template from the database, compiles subject and body
+	 * with Handlebars, wraps body in the configured layout, and dispatches.
+	 *
+	 * @param slug - Template slug (e.g. 'welcome', 'password-reset')
+	 * @param options - Recipient, data variables, locale, and optional overrides
+	 * @returns Send result or null if template not found
+	 */
+	async sendTemplate(
+		slug: string,
+		options: {
+			to: string | string[]
+			data?: Record<string, unknown>
+			locale?: string
+			from?: string
+			replyTo?: string
+		},
+	): Promise<SendEmailResult | null> {
+		const data = { ...options.data, appUrl: this.appUrl }
+
+		const template = await this.emailTemplateService.findBySlug(
+			slug,
+			options.locale,
+		)
+		if (!template) {
+			this.logger.warn(`Email template '${slug}' not found — email not sent`)
+			return null
+		}
+
+		const subject = Handlebars.compile(template.subject)(data)
+		const html = await this.templateService.render(slug, data, options.locale)
+
+		if (!html) {
+			this.logger.warn(
+				`Template '${slug}' rendered empty content — email not sent`,
+			)
+			return null
+		}
+
+		return this.sendRaw({
+			to: options.to,
+			subject,
+			html,
+			from: options.from,
+			replyTo: options.replyTo,
 		})
 	}
 
@@ -202,15 +261,13 @@ export class EmailService implements OnModuleInit {
 
 		try {
 			const verifyLink = `${this.appUrl}/api/email/verify?token=${payload.verificationToken}`
-			await this.send(
-				payload.email,
-				'Verify Your Email',
-				'email-verification',
-				{
+			await this.sendTemplate('email-verification', {
+				to: payload.email,
+				data: {
 					verifyLink,
 					userName: payload.name || payload.email.split('@')[0],
 				},
-			)
+			})
 		} catch (error) {
 			this.logger.warn(
 				`Failed to send verification email: ${error instanceof Error ? error.message : String(error)}`,
@@ -227,9 +284,12 @@ export class EmailService implements OnModuleInit {
 		try {
 			// Send welcome email
 			const loginUrl = `${this.appUrl}/login`
-			await this.send(payload.email, 'Welcome!', 'welcome', {
-				userName: payload.name || payload.email.split('@')[0],
-				loginUrl,
+			await this.sendTemplate('welcome', {
+				to: payload.email,
+				data: {
+					userName: payload.name || payload.email.split('@')[0],
+					loginUrl,
+				},
 			})
 
 			// Trigger email verification if enabled
@@ -242,15 +302,13 @@ export class EmailService implements OnModuleInit {
 							payload.email,
 						)
 					const verifyLink = `${this.appUrl}/api/email/verify?token=${token}`
-					await this.send(
-						payload.email,
-						'Verify Your Email',
-						'email-verification',
-						{
+					await this.sendTemplate('email-verification', {
+						to: payload.email,
+						data: {
 							verifyLink,
 							userName: payload.name || payload.email.split('@')[0],
 						},
-					)
+					})
 				}
 			} catch (error) {
 				this.logger.warn(
@@ -272,9 +330,12 @@ export class EmailService implements OnModuleInit {
 
 		try {
 			const resetLink = `${this.appUrl}/auth/reset-password?token=${payload.plainToken}`
-			await this.send(payload.email, 'Reset Your Password', 'password-reset', {
-				resetLink,
-				userName: payload.email.split('@')[0],
+			await this.sendTemplate('password-reset', {
+				to: payload.email,
+				data: {
+					resetLink,
+					userName: payload.email.split('@')[0],
+				},
 			})
 		} catch (error) {
 			this.logger.warn(

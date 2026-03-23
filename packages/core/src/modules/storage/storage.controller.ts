@@ -13,17 +13,20 @@ import {
 	Req,
 	UploadedFile,
 	UploadedFiles,
+	UseGuards,
 	UseInterceptors,
 } from '@nestjs/common'
 import { ModuleRef } from '@nestjs/core'
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express'
 import type { Request } from 'express'
 import { RestrictedRoute } from '~/decorators/restricted.route'
+import { OptionalDynamicAuthGuard } from '~/modules/auth/guards/dynamic-auth.guard'
+import { MediaOwnerGuard } from './guards/media-owner.guard'
+import { StorageService } from './storage.service'
 
 interface AuthenticatedRequest extends Request {
 	user?: { id: string }
 }
-import { StorageService } from './storage.service'
 
 // DTO for update operations
 interface UpdateMediaDto {
@@ -73,8 +76,16 @@ export class StorageController {
 	/**
 	 * Upload a single file
 	 * POST /media/upload
+	 *
+	 * Body params:
+	 * - folder?: string — target folder path
+	 * - tags?: string — JSON array of tags
+	 * - alt?: string — alt text
+	 * - encrypt?: string — "true" to encrypt with AES-256-GCM (requires auth)
+	 * - ownerId?: string — user ID for encryption key + access control
 	 */
 	@Post('upload')
+	@UseGuards(OptionalDynamicAuthGuard)
 	@UseInterceptors(
 		FileInterceptor('file', {
 			limits: {
@@ -87,6 +98,7 @@ export class StorageController {
 		@Body('folder') folder?: string,
 		@Body('tags') tagsJson?: string,
 		@Body('alt') alt?: string,
+		@Body('encrypt') encryptStr?: string,
 		@Req() req?: AuthenticatedRequest,
 	) {
 		if (!file) {
@@ -97,6 +109,7 @@ export class StorageController {
 			const tags = tagsJson ? JSON.parse(tagsJson) : undefined
 			const userId = req?.user?.id
 			const userName = await this.resolveUserName(userId)
+			const encrypt = encryptStr === 'true'
 
 			const result = await this.storageService.upload(
 				file.buffer,
@@ -108,6 +121,8 @@ export class StorageController {
 					alt,
 					createdBy: userId,
 					createdByName: userName,
+					encrypt,
+					ownerId: encrypt ? userId : undefined,
 				},
 			)
 
@@ -251,6 +266,7 @@ export class StorageController {
 	 * GET /media/:id
 	 */
 	@Get(':id')
+	@UseGuards(OptionalDynamicAuthGuard, MediaOwnerGuard)
 	async get(@Param('id') id: string) {
 		const media = await this.storageService.findById(id)
 		if (!media) {
@@ -274,6 +290,7 @@ export class StorageController {
 	 * PUT /media/:id
 	 */
 	@Put(':id')
+	@UseGuards(OptionalDynamicAuthGuard, MediaOwnerGuard)
 	async update(@Param('id') id: string, @Body() body: UpdateMediaDto) {
 		try {
 			const result = await this.storageService.update(id, body)
@@ -295,6 +312,7 @@ export class StorageController {
 	 * DELETE /media/:id
 	 */
 	@Delete(':id')
+	@UseGuards(OptionalDynamicAuthGuard, MediaOwnerGuard)
 	async delete(@Param('id') id: string) {
 		const success = await this.storageService.delete(id)
 		if (!success) {

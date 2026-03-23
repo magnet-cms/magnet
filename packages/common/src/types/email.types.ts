@@ -1,4 +1,33 @@
 // ============================================================================
+// Email Template Types
+// ============================================================================
+
+/**
+ * Category for grouping email templates.
+ * Extensible with custom string values.
+ */
+export type EmailTemplateCategory =
+	| 'transactional'
+	| 'marketing'
+	| 'system'
+	| (string & {})
+
+/**
+ * A single historical version entry stored in the EmailTemplate.versions array.
+ * Capped at 5 entries per template.
+ */
+export interface EmailTemplateVersionEntry {
+	/** Subject line at time of edit */
+	subject: string
+	/** HTML body at time of edit */
+	body: string
+	/** User ID who made the edit */
+	editedBy: string
+	/** ISO date string of when the edit occurred */
+	editedAt: string
+}
+
+// ============================================================================
 // Email Configuration Types
 // ============================================================================
 

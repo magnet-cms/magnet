@@ -39,6 +39,8 @@ export interface MediaItem {
 	updatedAt: string
 	createdBy?: string
 	createdByName?: string
+	isEncrypted?: boolean
+	ownerId?: string
 }
 
 export interface PaginatedMedia {
@@ -154,8 +156,8 @@ export class ApiClient {
 		private baseURL: string,
 	) {}
 
-	setToken(token: string) {
-		this.token = token
+	setToken(token: string | null) {
+		this.token = token ?? undefined
 	}
 
 	private getHeaders() {
@@ -370,7 +372,12 @@ export class ApiClient {
 		file: Buffer,
 		filename: string,
 		mimeType: string,
-		options?: { folder?: string; tags?: string[]; alt?: string },
+		options?: {
+			folder?: string
+			tags?: string[]
+			alt?: string
+			encrypt?: boolean
+		},
 	) {
 		return this.request.post(`${this.baseURL}/media/upload`, {
 			headers: {
@@ -385,6 +392,7 @@ export class ApiClient {
 				...(options?.folder ? { folder: options.folder } : {}),
 				...(options?.tags ? { tags: JSON.stringify(options.tags) } : {}),
 				...(options?.alt ? { alt: options.alt } : {}),
+				...(options?.encrypt ? { encrypt: 'true' } : {}),
 			},
 		})
 	}
@@ -1314,6 +1322,93 @@ export class ApiClient {
 	async getSentryConfig() {
 		return this.request.get(`${this.baseURL}/sentry/config`, {
 			headers: this.getHeaders(),
+		})
+	}
+
+	// Email template endpoints
+	async listEmailTemplates(params?: {
+		category?: string
+		search?: string
+		locale?: string
+	}) {
+		const qs = new URLSearchParams()
+		if (params?.category) qs.set('category', params.category)
+		if (params?.search) qs.set('search', params.search)
+		if (params?.locale) qs.set('locale', params.locale)
+		const query = qs.toString()
+		return this.request.get(
+			`${this.baseURL}/email-templates${query ? `?${query}` : ''}`,
+			{ headers: this.getHeaders() },
+		)
+	}
+
+	async getEmailTemplate(id: string) {
+		return this.request.get(`${this.baseURL}/email-templates/${id}`, {
+			headers: this.getHeaders(),
+		})
+	}
+
+	async createEmailTemplate(data: {
+		slug: string
+		subject: string
+		body: string
+		category: string
+		locale?: string
+		variables?: string[]
+		active?: boolean
+	}) {
+		return this.request.post(`${this.baseURL}/email-templates`, {
+			headers: this.getHeaders(),
+			data,
+		})
+	}
+
+	async updateEmailTemplate(
+		id: string,
+		data: {
+			subject?: string
+			body?: string
+			category?: string
+			locale?: string
+			variables?: string[]
+			active?: boolean
+		},
+	) {
+		return this.request.put(`${this.baseURL}/email-templates/${id}`, {
+			headers: this.getHeaders(),
+			data,
+		})
+	}
+
+	async deleteEmailTemplate(id: string) {
+		return this.request.delete(`${this.baseURL}/email-templates/${id}`, {
+			headers: this.getHeaders(),
+		})
+	}
+
+	async previewEmailTemplate(id: string, data: Record<string, unknown> = {}) {
+		return this.request.post(`${this.baseURL}/email-templates/${id}/preview`, {
+			headers: this.getHeaders(),
+			data,
+		})
+	}
+
+	async getEmailTemplateVersions(id: string) {
+		return this.request.get(`${this.baseURL}/email-templates/${id}/versions`, {
+			headers: this.getHeaders(),
+		})
+	}
+
+	async getEmailTemplatesBySlug(slug: string) {
+		return this.request.get(`${this.baseURL}/email-templates/by-slug/${slug}`, {
+			headers: this.getHeaders(),
+		})
+	}
+
+	async testSendEmailTemplate(id: string, data: Record<string, unknown> = {}) {
+		return this.request.post(`${this.baseURL}/email-templates/${id}/test`, {
+			headers: this.getHeaders(),
+			data,
 		})
 	}
 }

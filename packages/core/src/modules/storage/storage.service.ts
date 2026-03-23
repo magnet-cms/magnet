@@ -9,13 +9,22 @@ import {
 	getModelToken,
 	getRegisteredModel,
 } from '@magnet-cms/common'
-import { Inject, Injectable, OnModuleInit } from '@nestjs/common'
+import {
+	BadRequestException,
+	Inject,
+	Injectable,
+	InternalServerErrorException,
+	OnModuleInit,
+} from '@nestjs/common'
 import { ModuleRef } from '@nestjs/core'
 import { EventService, getEventContext } from '~/modules/events'
 import { MagnetLogger } from '~/modules/logging/logger.service'
+import { SettingsService } from '~/modules/settings/settings.service'
+import { MediaEncryptionService } from './media-encryption.service'
 import { MediaFolder } from './schemas/media-folder.schema'
 import { Media } from './schemas/media.schema'
 import { STORAGE_ADAPTER } from './storage.constants'
+import { MediaSettings } from './storage.settings'
 
 export interface FolderInfo {
 	id: string
@@ -39,6 +48,8 @@ export class StorageService implements OnModuleInit {
 		private readonly moduleRef: ModuleRef,
 		private readonly eventService: EventService,
 		private readonly logger: MagnetLogger,
+		private readonly settingsService: SettingsService,
+		private readonly encryptionService: MediaEncryptionService,
 	) {
 		this.logger.setContext(StorageService.name)
 	}
@@ -202,6 +213,38 @@ export class StorageService implements OnModuleInit {
 	}
 
 	/**
+	 * Ensure a folder exists at the given path, creating it if necessary.
+	 * Used for auto-creating private/{userId} folders on encrypted uploads.
+	 */
+	private async ensureFolder(
+		folderPath: string,
+		ownerId?: string,
+	): Promise<void> {
+		const folderModel = this.getFolderModel()
+		const existing = await folderModel.findOne({ path: folderPath })
+		if (existing) return
+
+		const parts = folderPath.split('/')
+		const name = parts[parts.length - 1] ?? folderPath
+		const parentPath =
+			parts.length > 1 ? parts.slice(0, -1).join('/') : undefined
+
+		// Ensure parent exists first (e.g. "private" before "private/user-123")
+		if (parentPath) {
+			await this.ensureFolder(parentPath, undefined)
+		}
+
+		await folderModel.create({
+			name,
+			path: folderPath,
+			parentPath,
+			ownerId,
+			isPrivate: true,
+			createdAt: new Date(),
+		})
+	}
+
+	/**
 	 * Delete a folder. Only allowed if no media files are in it.
 	 */
 	async deleteFolder(path: string): Promise<boolean> {
@@ -297,20 +340,77 @@ export class StorageService implements OnModuleInit {
 	}
 
 	/**
-	 * Upload a file and store its metadata
+	 * Upload a file and store its metadata.
+	 * When `options.encrypt` is true, encrypts the file buffer using AES-256-GCM
+	 * with a per-user key from the vault before passing to the storage adapter.
 	 */
 	async upload(
 		file: Buffer | Readable,
 		originalFilename: string,
-		options?: UploadOptions & {
+		inputOptions?: UploadOptions & {
 			createdBy?: string
 			createdByName?: string
 		},
 	): Promise<Media> {
 		const model = this.getMediaModel()
 
+		let uploadFile: Buffer | Readable = file
+		let encryptionMeta: {
+			isEncrypted: boolean
+			encryptionIv?: string
+			encryptionAuthTag?: string
+		} = { isEncrypted: false }
+
+		// May be mutated below to inject auto-created folder path
+		let options = inputOptions
+
+		if (options?.encrypt) {
+			const settings = await this.settingsService.get(MediaSettings)
+			if (!settings.encryptionEnabled) {
+				throw new BadRequestException(
+					'File encryption is not enabled — toggle it in Settings → Security',
+				)
+			}
+			if (!options.ownerId) {
+				throw new InternalServerErrorException(
+					'ownerId is required when encrypt:true — cannot encrypt without an owner',
+				)
+			}
+
+			// Auto-create private/{ownerId} folder if no folder specified
+			if (!options.folder && settings.autoCreatePrivateFolders) {
+				const privateFolderPath = `private/${options.ownerId}`
+				await this.ensureFolder(privateFolderPath, options.ownerId)
+				options = { ...options, folder: privateFolderPath }
+			}
+
+			// Encrypt buffer (must be Buffer for AES-GCM; Readable not supported for encrypted uploads)
+			if (!Buffer.isBuffer(file)) {
+				throw new InternalServerErrorException(
+					'Encrypted uploads require a Buffer — Readable streams are not supported with encrypt:true',
+				)
+			}
+
+			// options.ownerId is guaranteed non-null here — we threw above if it was missing
+			const ownerId = options.ownerId as string
+			const { encrypted, iv, authTag } = await this.encryptionService.encrypt(
+				file,
+				ownerId,
+			)
+			uploadFile = encrypted
+			encryptionMeta = {
+				isEncrypted: true,
+				encryptionIv: iv,
+				encryptionAuthTag: authTag,
+			}
+		}
+
 		// Upload to storage adapter
-		const result = await this.adapter.upload(file, originalFilename, options)
+		const result = await this.adapter.upload(
+			uploadFile,
+			originalFilename,
+			options,
+		)
 
 		// Save metadata to database
 		const media = await model.create({
@@ -328,6 +428,8 @@ export class StorageService implements OnModuleInit {
 			customFields: result.customFields,
 			createdBy: options?.createdBy,
 			createdByName: options?.createdByName,
+			...encryptionMeta,
+			ownerId: options?.ownerId,
 		})
 
 		await this.emitEvent('media.uploaded', {
@@ -563,7 +665,8 @@ export class StorageService implements OnModuleInit {
 	}
 
 	/**
-	 * Get a readable stream for a media file
+	 * Get a readable stream for a media file.
+	 * Transparently decrypts encrypted files before returning the stream.
 	 */
 	async getStream(id: string): Promise<Readable> {
 		const model = this.getMediaModel()
@@ -571,11 +674,30 @@ export class StorageService implements OnModuleInit {
 		if (!media) {
 			throw new Error('Media not found')
 		}
+
+		if (media.isEncrypted) {
+			if (!media.encryptionIv || !media.encryptionAuthTag || !media.ownerId) {
+				throw new InternalServerErrorException(
+					'Encrypted media is missing decryption metadata',
+				)
+			}
+			const encryptedBuffer = await this.adapter.getBuffer(media.path)
+			const decrypted = await this.encryptionService.decrypt(
+				encryptedBuffer,
+				media.ownerId,
+				media.encryptionIv,
+				media.encryptionAuthTag,
+			)
+			const { Readable } = await import('node:stream')
+			return Readable.from(decrypted)
+		}
+
 		return this.adapter.getStream(media.path)
 	}
 
 	/**
-	 * Get a media file as a buffer
+	 * Get a media file as a buffer.
+	 * Transparently decrypts encrypted files before returning.
 	 */
 	async getBuffer(id: string): Promise<Buffer> {
 		const model = this.getMediaModel()
@@ -583,6 +705,22 @@ export class StorageService implements OnModuleInit {
 		if (!media) {
 			throw new Error('Media not found')
 		}
+
+		if (media.isEncrypted) {
+			if (!media.encryptionIv || !media.encryptionAuthTag || !media.ownerId) {
+				throw new InternalServerErrorException(
+					'Encrypted media is missing decryption metadata',
+				)
+			}
+			const encryptedBuffer = await this.adapter.getBuffer(media.path)
+			return this.encryptionService.decrypt(
+				encryptedBuffer,
+				media.ownerId,
+				media.encryptionIv,
+				media.encryptionAuthTag,
+			)
+		}
+
 		return this.adapter.getBuffer(media.path)
 	}
 

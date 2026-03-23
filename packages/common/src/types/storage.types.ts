@@ -78,6 +78,16 @@ export interface UploadOptions {
 	alt?: string
 	/** Custom metadata fields */
 	customFields?: Record<string, unknown>
+	/**
+	 * Encrypt the file using AES-256-GCM with a per-user key stored in the vault.
+	 * Requires `ownerId` to be set. The vault adapter must be configured.
+	 */
+	encrypt?: boolean
+	/**
+	 * User ID of the file owner. Used for per-user encryption key management
+	 * and access control. Required when `encrypt` is true.
+	 */
+	ownerId?: string
 }
 
 export interface UploadResult {
@@ -111,6 +121,10 @@ export interface UploadResult {
 	createdAt: Date
 	/** Last update timestamp */
 	updatedAt: Date
+	/** Whether the file is stored encrypted (AES-256-GCM) */
+	isEncrypted?: boolean
+	/** User ID of the file owner (set when encrypt:true) */
+	ownerId?: string
 }
 
 // ============================================================================

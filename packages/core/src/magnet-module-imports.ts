@@ -64,7 +64,9 @@ export interface BuildImportsParams {
 		cache?: { adapter?: CacheAdapter | null }
 		graphql?: GraphQLMagnetProvider
 	}
-	globalOptions: { rbac?: RBACModuleOptions } | undefined
+	globalOptions:
+		| { rbac?: RBACModuleOptions; email?: { layout?: unknown } }
+		| undefined
 	adminConfig: AdminServeOptions
 }
 
@@ -119,6 +121,7 @@ export function buildMagnetImports(params: BuildImportsParams): {
 		EmailModule.forRoot(
 			(categorized.email?.adapter as EmailAdapter | null | undefined) ?? null,
 			categorized.email?.defaults,
+			{ layout: globalOptions?.email?.layout },
 		),
 		EnvironmentModule,
 		GeneralModule,

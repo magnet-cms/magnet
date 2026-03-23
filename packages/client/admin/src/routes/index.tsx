@@ -47,6 +47,10 @@ import {
 } from '~/features/content-manager'
 // Import feature pages
 import { DashboardHome } from '~/features/dashboard'
+import {
+	EmailTemplateEditorPage,
+	EmailTemplatesListingPage,
+} from '~/features/email-templates'
 import { MediaLibraryPage } from '~/features/media-library'
 import { ProfilePage, SettingsPage } from '~/features/settings'
 import { UsersListingPage } from '~/features/users'
@@ -336,6 +340,24 @@ const coreDashboardRoutes: RouteObject[] = [
 	{
 		path: 'webhooks',
 		element: withSuspense(WebhooksListingPage),
+	},
+	{
+		path: 'email-templates',
+		element: <Outlet />,
+		children: [
+			{
+				path: '',
+				element: withSuspense(EmailTemplatesListingPage),
+			},
+			{
+				path: 'new',
+				element: withSuspense(EmailTemplateEditorPage),
+			},
+			{
+				path: ':id',
+				element: withSuspense(EmailTemplateEditorPage),
+			},
+		],
 	},
 	{
 		path: 'settings',

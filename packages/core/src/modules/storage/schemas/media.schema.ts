@@ -54,4 +54,16 @@ export class Media {
 
 	@Field.Text()
 	createdByName?: string
+
+	@Field.Boolean({ default: false })
+	isEncrypted?: boolean
+
+	@Field.Text()
+	encryptionIv?: string
+
+	@Field.Text()
+	encryptionAuthTag?: string
+
+	@Field.Text()
+	ownerId?: string
 }

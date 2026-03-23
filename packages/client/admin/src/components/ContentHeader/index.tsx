@@ -10,6 +10,7 @@ import {
 	TabsList,
 	TabsTrigger,
 } from '@magnet-cms/ui/components'
+import { HEADER_RIGHT_PORTAL_ID } from '@magnet-cms/ui/components/organisms/app-layout'
 import { formatDistanceToNow } from 'date-fns'
 import { ChevronDown, Globe, MoreVertical } from 'lucide-react'
 import { useEffect, useState } from 'react'
@@ -17,7 +18,6 @@ import { createPortal } from 'react-dom'
 import { Link, useLocation } from 'react-router-dom'
 import type { LocaleOption } from '~/components/LocaleSwitcher'
 import type { LocaleStatus } from '~/core/adapters/types'
-import { HEADER_STATUS_PORTAL_ID } from '~/layouts/DashboardLayout'
 
 interface LocaleProps {
 	currentLocale: string
@@ -88,7 +88,7 @@ export const ContentHeader = ({
 
 	// Find portal container on mount
 	useEffect(() => {
-		const container = document.getElementById(HEADER_STATUS_PORTAL_ID)
+		const container = document.getElementById(HEADER_RIGHT_PORTAL_ID)
 		setPortalContainer(container)
 
 		// Cleanup: clear portal content on unmount

@@ -67,6 +67,22 @@ export interface MagnetGlobalOptions {
 	internationalization?: InternationalizationOptions
 	/** Global Playground (schema builder) settings */
 	playground?: PlaygroundOptions
+	/**
+	 * Email system configuration.
+	 * Provides layout component for wrapping email body content.
+	 */
+	email?: {
+		/**
+		 * React Email layout component wrapping the email body.
+		 * Typed as `unknown` to avoid a React dependency in @magnet-cms/common.
+		 * Expected shape: `(props: { content: string; [key: string]: unknown }) => ReactElement`
+		 *
+		 * @example
+		 * import { EmailLayout } from './templates/email/layout'
+		 * MagnetModule.forRoot([...], { email: { layout: EmailLayout } })
+		 */
+		layout?: unknown
+	}
 }
 
 // ============================================================================

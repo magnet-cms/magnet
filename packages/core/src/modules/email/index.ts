@@ -1,4 +1,5 @@
 export { EmailModule } from './email.module'
 export { EmailService } from './email.service'
+export { EmailTemplateService } from './email-template.service'
 export { EmailVerificationService } from './email-verification.service'
 export { TemplateService } from './template.service'
