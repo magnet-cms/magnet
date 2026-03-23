@@ -1,5 +1,11 @@
 # @magnet-cms/common
 
+## 0.3.1
+
+### Patch Changes
+
+- [`f278ab2`](https://github.com/magnet-cms/magnet/commit/f278ab2a8932337141a8737ec9280dc23801d466) Thanks [@gjsoaresc](https://github.com/gjsoaresc)! - Fix EventPayload and OnEvent to use `keyof EventPayloadMap` constraints so module augmentation works correctly with published types. Add `encrypt` and `ownerId` fields to `UploadOptions` and `isEncrypted`/`ownerId` to `UploadResult` for per-user AES-256-GCM file encryption.
+
 ## 0.3.0
 
 ### Minor Changes

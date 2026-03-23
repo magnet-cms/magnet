@@ -31,7 +31,7 @@
     "@supabase/supabase-js": "^2.49.0"
   },
   "peerDependencies": {
-    "@magnet-cms/common": "^0.3.0",
+    "@magnet-cms/common": "^0.3.1",
     "@supabase/supabase-js": "^2.49.0"
   }
 }
