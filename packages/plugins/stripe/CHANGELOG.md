@@ -1,5 +1,13 @@
 # @magnet-cms/plugin-stripe
 
+## 3.0.0
+
+### Patch Changes
+
+- Updated dependencies [[`b6b5350`](https://github.com/magnet-cms/magnet/commit/b6b53501fd647a21bf86eb1283355ec9907a56f3)]:
+  - @magnet-cms/core@3.1.0
+  - @magnet-cms/admin@0.4.0
+
 ## 2.0.0
 
 ### Patch Changes
