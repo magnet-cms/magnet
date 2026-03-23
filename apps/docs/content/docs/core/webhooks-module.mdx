@@ -21,6 +21,48 @@ The Webhooks module provides outgoing HTTP webhook support for Magnet CMS. Confi
 
 The webhook module is automatically included when using `MagnetModule.forRoot()`. No additional configuration is required — webhooks are managed entirely via the Admin UI or REST API.
 
+## Injecting WebhookService
+
+`WebhooksModule` is registered globally — inject `WebhookService` in any service for programmatic webhook management:
+
+```typescript
+import { Injectable } from '@nestjs/common'
+import { WebhookService } from '@magnet-cms/core'
+
+@Injectable()
+export class IntegrationService {
+  constructor(private readonly webhookService: WebhookService) {}
+
+  /** Trigger a webhook delivery manually for a custom event */
+  async triggerCustomEvent(webhookId: string, payload: Record<string, unknown>) {
+    // Fetch the full webhook entity (includes secret for HMAC signing)
+    const webhook = await this.webhookService.findByIdWithSecret(webhookId)
+    if (!webhook) return
+    await this.webhookService.deliver(webhook, 'custom.event', payload)
+  }
+
+  /** Get recent delivery history for a webhook (page 1, 20 per page) */
+  async getDeliveryLogs(webhookId: string) {
+    return this.webhookService.getDeliveries(webhookId, 1, 20)
+  }
+}
+```
+
+### WebhookService API
+
+| Method | Description |
+|--------|-------------|
+| `findById(id)` | Get a webhook by ID (secret masked) |
+| `findByIdWithSecret(id)` | Get a webhook by ID with raw secret (required for `deliver()`) |
+| `deliver(webhook, event, payload)` | Trigger a delivery for a full webhook entity |
+| `deliverWithRetry(webhook, event, payload)` | Deliver with automatic retry on failure |
+| `getDeliveries(webhookId, page?, limit?)` | Get paginated delivery history (positional args) |
+| `update(id, data)` | Update a webhook configuration |
+| `delete(id)` | Delete a webhook |
+| `regenerateSecret(id)` | Rotate the HMAC secret for a webhook |
+
+> **Note:** Webhooks fire automatically via Magnet's event system — you rarely need to call `deliver()` manually. Use `WebhookService` when you need programmatic access to delivery history or want to trigger custom payloads.
+
 ## REST API
 
 ### Endpoints

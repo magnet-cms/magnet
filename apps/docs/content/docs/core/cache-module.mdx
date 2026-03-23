@@ -49,6 +49,115 @@ Connection URL is resolved from `CACHE_REDIS_URL` or `REDIS_URL`. See [Redis cac
 
 Some subsystems keep **their own** small in-memory caches (for example, typed settings use a short TTL inside `SettingsService`). The cache module’s adapter is the shared facility for `CacheService` and HTTP-level / decorator-driven caching—not a replacement for every internal map.
 
+## Injecting CacheService
+
+`CacheModule` is registered globally — inject `CacheService` anywhere without importing the module:
+
+```typescript
+import { Injectable } from ‘@nestjs/common’
+import { CacheService } from ‘@magnet-cms/core’
+
+@Injectable()
+export class PostsService {
+  constructor(private readonly cache: CacheService) {}
+
+  async findOne(id: string): Promise<Post> {
+    // Try cache first
+    const cached = await this.cache.get<Post>(`posts:${id}`)
+    if (cached) return cached
+
+    // Fetch from database
+    const post = await this.postRepo.findById(id)
+
+    // Store with 5-minute TTL
+    await this.cache.set(`posts:${id}`, post, 300)
+    return post
+  }
+
+  async update(id: string, data: Partial<Post>): Promise<Post> {
+    const post = await this.postRepo.update(id, data)
+    // Evict the stale entry
+    await this.cache.delete(`posts:${id}`)
+    return post
+  }
+
+  async clearAll(): Promise<void> {
+    // Delete all entries matching a pattern
+    await this.cache.deleteByPattern(‘posts:*’)
+  }
+}
+```
+
+### CacheService API
+
+| Method | Description |
+|--------|-------------|
+| `get<T>(key)` | Returns cached value or `null` |
+| `set<T>(key, value, ttl?)` | Store a value; TTL in seconds (defaults to Settings `defaultTtl`) |
+| `delete(key)` | Remove a single entry |
+| `deleteByPattern(pattern)` | Remove entries matching a glob pattern (e.g. `posts:*`) |
+| `has(key)` | Check if a key exists and has not expired |
+| `clear()` | Remove all cache entries |
+| `healthCheck()` | Check adapter connectivity |
+
+## Controller-level caching with decorators
+
+For HTTP endpoints, use `@Cacheable`, `@CacheEvict`, and `@CachePut` decorators together with `CacheInterceptor`:
+
+```typescript
+import { Controller, Get, Put, Param, Body, UseInterceptors } from ‘@nestjs/common’
+import {
+  CacheInterceptor,
+  Cacheable,
+  CacheEvict,
+  CachePut,
+  CacheTTL,
+} from ‘@magnet-cms/core’
+
+@Controller(‘posts’)
+@UseInterceptors(CacheInterceptor)  // Apply to entire controller or individual methods
+export class PostsController {
+  constructor(private readonly postsService: PostsService) {}
+
+  // Cache GET /posts/:id for 10 minutes
+  @Get(‘:id’)
+  @Cacheable({ key: ‘posts::id’, ttl: 600 })
+  async findOne(@Param(‘id’) id: string) {
+    return this.postsService.findOne(id)
+  }
+
+  // Update cache entry on PUT
+  @Put(‘:id’)
+  @CachePut({ key: ‘posts::id’ })
+  async update(@Param(‘id’) id: string, @Body() dto: UpdatePostDto) {
+    return this.postsService.update(id, dto)
+  }
+
+  // Evict cache entry on delete
+  @Delete(‘:id’)
+  @CacheEvict({ key: ‘posts::id’ })
+  async remove(@Param(‘id’) id: string) {
+    return this.postsService.remove(id)
+  }
+}
+```
+
+**Key placeholders:** `:arg0`, `:arg1`, `:id`, `:slug` — replaced with the matching method argument value at runtime.
+
+> **Note:** Decorators only intercept NestJS controller route handlers. For service-level caching, inject `CacheService` directly.
+
+## Cache settings
+
+Configure via admin panel under **Settings → Cache**:
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| Enable Caching | `true` | Master toggle — disabling makes all `get()` calls return `null` |
+| Default TTL | `300` | Seconds before entries expire when no TTL is specified |
+| Max Memory Entries | `1000` | Maximum entries for the in-memory adapter |
+
+Changes take effect immediately without restart.
+
 ## Next steps
 
 - [Redis cache adapter](/docs/adapters/cache-redis) — Configuration and health checks

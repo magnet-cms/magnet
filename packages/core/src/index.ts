@@ -20,3 +20,6 @@ export { JwtAuthGuard } from './modules/auth/guards/auth.guard'
 export { PermissionGuard } from './modules/rbac/guards/permission.guard'
 // Service class references for adapter injection (class only, not module — no DB side-effects)
 export { ContentService } from './modules/content/content.service'
+export { EmailService } from './modules/email/email.service'
+export { SettingsService } from './modules/settings/settings.service'
+export { WebhookService } from './modules/webhook/webhook.service'

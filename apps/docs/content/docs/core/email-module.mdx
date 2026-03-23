@@ -1,15 +1,21 @@
 ---
 title: Email Module
-description: Transactional email with optional Resend, Nodemailer, or console-only development
+description: Transactional email with template management, Handlebars rendering, and optional Resend or Nodemailer delivery
 ---
 
 ## Overview
 
-`EmailModule` is registered automatically when you call `MagnetModule.forRoot()`. It sends and templates mail used by features such as verification flows and [notifications](/docs/core/notifications-module) (when the email channel is enabled).
+`EmailModule` is registered automatically by `MagnetModule.forRoot()`. It provides:
+
+- **`EmailService`** — inject anywhere to send emails using DB-managed templates or raw HTML
+- **Template management** — create, edit, and preview email templates from the admin UI; 5 seed templates auto-created on first boot
+- **Handlebars rendering** — template bodies and subjects are compiled with context variables at send time
+- **React Email layout** — bodies are wrapped in a configurable layout component before delivery
+- **Console fallback** — emails are always logged to the console, even without a configured adapter (useful for development)
 
 ## With or without an adapter
 
-- **No email provider** in your `MagnetModule.forRoot([...])` array: Magnet uses a **console-only** path—messages are logged, not delivered. This is fine for local development.
+- **No email provider** in your `MagnetModule.forRoot([...])` array: Magnet uses a **console-only** path — messages are logged, not delivered. Fine for local development.
 - **With an email provider**: add `ResendEmailAdapter.forRoot()` or `NodemailerEmailAdapter.forRoot()` from [`@magnet-cms/email-resend`](https://www.npmjs.com/package/@magnet-cms/email-resend) or [`@magnet-cms/email-nodemailer`](https://www.npmjs.com/package/@magnet-cms/email-nodemailer). Outbound mail goes through that adapter.
 
 ## Registering an email provider
@@ -36,6 +42,184 @@ import { ResendEmailAdapter } from '@magnet-cms/email-resend'
   ],
 })
 export class AppModule {}
+```
+
+## Injecting EmailService
+
+`EmailModule` is registered as **global**, so you can inject `EmailService` in any service or controller without importing the module:
+
+```typescript
+import { Injectable } from '@nestjs/common'
+import { EmailService } from '@magnet-cms/core'
+
+@Injectable()
+export class NotificationService {
+  constructor(private readonly emailService: EmailService) {}
+
+  async sendWelcome(userEmail: string, userName: string) {
+    await this.emailService.sendTemplate('welcome', {
+      to: userEmail,
+      data: { userName, loginUrl: 'https://myapp.com/login' },
+    })
+  }
+}
+```
+
+## Sending emails
+
+### sendTemplate() — recommended
+
+Fetches a template from the database by slug, compiles subject and body with Handlebars, wraps the body in the configured layout, and delivers.
+
+```typescript
+const result = await this.emailService.sendTemplate('password-reset', {
+  to: 'user@example.com',
+  data: {
+    userName: 'Alice',
+    resetLink: 'https://myapp.com/reset?token=abc123',
+  },
+  locale: 'en',          // Optional — falls back to default locale
+  from: 'support@myapp.com',   // Optional — overrides default from address
+  replyTo: 'noreply@myapp.com', // Optional — overrides default reply-to
+})
+
+if (result?.accepted) {
+  console.log('Delivered, message id:', result.id)
+}
+```
+
+`sendTemplate()` returns `SendEmailResult | null`. It returns `null` if the template slug is not found in the database.
+
+### sendRaw() — custom HTML
+
+Send a raw email with your own HTML, bypassing template rendering entirely:
+
+```typescript
+import type { SendEmailOptions } from '@magnet-cms/common'
+
+const options: SendEmailOptions = {
+  to: 'user@example.com',
+  subject: 'Your invoice is ready',
+  html: '<h1>Invoice #1234</h1><p>Amount due: $49.00</p>',
+  from: 'billing@myapp.com',   // Optional
+  replyTo: 'billing@myapp.com', // Optional
+  cc: 'accounts@myapp.com',    // Optional
+  bcc: 'archive@myapp.com',    // Optional
+  attachments: [               // Optional
+    {
+      filename: 'invoice-1234.pdf',
+      content: pdfBuffer,
+      contentType: 'application/pdf',
+    },
+  ],
+}
+
+const result = await this.emailService.sendRaw(options)
+```
+
+### Checking adapter status
+
+```typescript
+// Check if a real adapter (not just console) is configured
+if (this.emailService.isConfigured()) {
+  console.log('Real email delivery is active')
+}
+
+// Verify the adapter connection at any time
+const ok = await this.emailService.verify()
+```
+
+## Built-in transactional emails
+
+The following emails are sent automatically by Magnet's built-in event handlers. You do not need to call these manually — they fire from `@OnEvent` listeners inside `EmailService`:
+
+| Event | Template slug | Variables |
+|-------|--------------|-----------|
+| User registered | `welcome` | `userName`, `loginUrl` |
+| Password reset requested | `password-reset` | `userName`, `resetLink` |
+| Email verification requested | `email-verification` | `userName`, `verifyLink` |
+
+## Seed templates
+
+On first boot, Magnet seeds five default templates into the database. You can edit them at any time from the admin panel under **Settings → Email Templates**:
+
+| Slug | Subject | Variables |
+|------|---------|-----------|
+| `welcome` | `Welcome{{#if name}}, {{name}}{{/if}}!` | `userName`, `loginUrl` |
+| `password-reset` | `Reset Your Password` | `userName`, `resetLink` |
+| `email-verification` | `Verify Your Email` | `userName`, `verifyLink` |
+| `invite-user` | `You have been invited to {{appName}}` | `name`, `inviterName`, `appName`, `inviteUrl` |
+| `content-published` | `{{contentTitle}} has been published` | `userName`, `contentTitle`, `contentUrl` |
+
+## Sending custom event-driven emails
+
+Use `@OnEvent` from `@magnet-cms/core` to send emails in response to any event:
+
+```typescript
+import { Injectable } from '@nestjs/common'
+import { OnEvent, EmailService } from '@magnet-cms/core'
+import type { EventPayload } from '@magnet-cms/common'
+
+@Injectable()
+export class OrderNotifier {
+  constructor(private readonly emailService: EmailService) {}
+
+  @OnEvent('order.confirmed', { async: true })
+  async onOrderConfirmed(
+    payload: EventPayload<'order.confirmed'>,
+  ): Promise<void> {
+    if (!payload.userEmail) return
+
+    await this.emailService.sendTemplate('order-confirmation', {
+      to: payload.userEmail,
+      data: {
+        orderId: payload.orderId,
+        total: payload.total,
+        items: payload.items,
+      },
+    })
+  }
+}
+```
+
+## Email template REST API
+
+All endpoints require authentication. Base path: `/email-templates`.
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/email-templates` | List all templates (filters: `?category=`, `?locale=`, `?search=`, `?active=`) |
+| `GET` | `/email-templates/by-slug/:slug` | Get all locale variants for a slug |
+| `GET` | `/email-templates/:id` | Get a single template by ID |
+| `POST` | `/email-templates` | Create a new template |
+| `PUT` | `/email-templates/:id` | Update a template (auto-saves version history) |
+| `DELETE` | `/email-templates/:id` | Delete a template |
+| `GET` | `/email-templates/:id/versions` | Get version history (last 5 edits) |
+| `POST` | `/email-templates/:id/preview` | Render preview HTML with sample data |
+| `POST` | `/email-templates/:id/test` | Send a test email to the authenticated user's address |
+
+### Creating a template via API
+
+```bash
+POST /email-templates
+{
+  "slug": "order-confirmation",
+  "subject": "Order {{orderId}} confirmed",
+  "body": "<h2>Thanks for your order!</h2><p>Order #{{orderId}} totaling {{total}} has been confirmed.</p>",
+  "category": "transactional",
+  "locale": "en",
+  "variables": ["orderId", "total"]
+}
+```
+
+### Previewing a template
+
+```bash
+POST /email-templates/:id/preview
+{
+  "data": { "orderId": "1234", "total": "$49.00" }
+}
+# Returns: { "html": "<full rendered HTML>", "subject": "Order 1234 confirmed" }
 ```
 
 ## Email layout (base template)
@@ -98,7 +282,7 @@ export default function Layout({ content }: LayoutProps): React.ReactElement {
 }
 ```
 
-The layout receives `content` (the rendered Handlebars HTML) plus any template context variables passed to `TemplateService.render()`.
+The layout receives `content` (the rendered Handlebars HTML) plus any template context variables passed to `sendTemplate()`.
 
 ### Programmatic approach
 
@@ -151,16 +335,29 @@ npm install @react-email/components react
 
 ## Defaults (`from` / `replyTo`)
 
-Adapters accept `defaults` in `forRoot()` and also read `EMAIL_FROM` from the environment when configured. See:
+Defaults can be configured in the admin panel under **Settings → Email → Sender**, or passed at adapter registration:
 
-- [Resend adapter](/docs/adapters/email-resend)
-- [Nodemailer adapter](/docs/adapters/email-nodemailer)
+```typescript
+ResendEmailAdapter.forRoot({
+  defaults: { from: 'My App <noreply@myapp.com>' },
+})
+```
 
-## Injecting `EmailService`
+The `SettingsService` loads defaults on startup — changes in the admin panel take effect without restart (cached with 1-minute TTL).
 
-Use `@magnet-cms/core` exports to send mail from your own services (check your version’s public API for `EmailService` and related helpers).
+## Email settings
+
+The following settings are available under **Settings → Email** in the admin panel:
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| Enable Email Sending | `true` | Master toggle for all outgoing emails |
+| From Address | `noreply@example.com` | Default sender email address |
+| From Name | `Magnet CMS` | Default sender display name |
+| Reply-To Address | _(empty)_ | Default reply-to address |
 
 ## Next steps
 
-- [Notifications module](/docs/core/notifications-module) — Email channel and adapters
-- [Resend](/docs/adapters/email-resend) / [Nodemailer](/docs/adapters/email-nodemailer) — Install and environment variables
+- [Notifications module](/docs/core/notifications-module) — Email channel for multi-channel notifications
+- [Resend adapter](/docs/adapters/email-resend) — Install and configure Resend
+- [Nodemailer adapter](/docs/adapters/email-nodemailer) — SMTP via Nodemailer

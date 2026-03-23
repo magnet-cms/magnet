@@ -1,17 +1,204 @@
 ---
-title: Settings module
-description: Typed settings groups, REST API, and @Settings schemas
+title: Settings Module
+description: Typed settings groups, runtime get/update API, admin panel integration, and @Settings/@SettingField decorators
 ---
 
 ## Overview
 
-The Settings module stores key–value configuration in the database, validates updates against class definitions, and exposes HTTP endpoints for the admin UI and APIs. It is always registered by `MagnetModule.forRoot()`.
+The Settings module stores key–value configuration in the database, validates updates against class definitions, and exposes a typed runtime API for reading and writing settings from any service. It is always registered by `MagnetModule.forRoot()`.
 
-## Defining settings
+Key features:
 
-Use the `@Settings` decorator from `@magnet-cms/common` on a class to declare a **group** of settings with defaults and validators. Register that class with `SettingsModule.forFeature()` from `@magnet-cms/core` in your feature module (see internal examples and the **magnet-new-settings** skill in the repo for the full pattern).
+- **Typed settings groups** — define a class with `@Settings` and `@SettingField` decorators; Magnet auto-registers defaults on startup
+- **Admin panel integration** — each settings group appears as a panel in the admin **Settings** section
+- **`SettingsService.get()`** — read the full typed settings object for a group (1-minute cache)
+- **`SettingsService.update()`** — update individual fields with validation
+- **REST API** — read and update settings over HTTP
 
-At runtime, `SettingsService` can return typed instances (e.g. `settings.get(EmailSettings)`).
+## Defining a settings group
+
+Decorate a class with `@Settings` (from `@magnet-cms/common`) to create a settings group:
+
+```typescript
+import { Settings, SettingField } from '@magnet-cms/common'
+
+@Settings({
+  group: 'shipping',
+  label: 'Shipping',
+  icon: 'truck',
+  order: 10,
+  description: 'Configure shipping defaults',
+  sections: [
+    { name: 'general', label: 'General', icon: 'settings', order: 1 },
+    { name: 'limits', label: 'Limits', icon: 'alert', order: 2 },
+  ],
+})
+export class ShippingSettings {
+  @SettingField.Text({
+    label: 'Default Carrier',
+    description: 'Carrier used when none is specified',
+    default: 'UPS',
+    section: 'general',
+    order: 1,
+  })
+  defaultCarrier = 'UPS'
+
+  @SettingField.Number({
+    label: 'Max Weight (kg)',
+    description: 'Maximum package weight allowed',
+    default: 30,
+    section: 'limits',
+    order: 1,
+  })
+  maxWeightKg = 30
+
+  @SettingField.Boolean({
+    label: 'Enable Free Shipping',
+    default: false,
+    section: 'general',
+    order: 2,
+  })
+  freeShippingEnabled = false
+
+  @SettingField.Select({
+    label: 'Weight Unit',
+    options: ['kg', 'lb'],
+    default: 'kg',
+    section: 'general',
+    order: 3,
+  })
+  weightUnit = 'kg'
+
+  @SettingField.Secret({
+    label: 'Carrier API Key',
+    description: 'Masked in the admin UI',
+    masked: true,
+    section: 'general',
+    order: 4,
+  })
+  carrierApiKey = ''
+}
+```
+
+### All SettingField types
+
+| Decorator | Storage type | UI control |
+|-----------|-------------|-----------|
+| `@SettingField.Text({...})` | string | Text input |
+| `@SettingField.Textarea({...})` | string | Multi-line text area |
+| `@SettingField.Number({...})` | number | Number input |
+| `@SettingField.Boolean({...})` | boolean | Toggle/switch |
+| `@SettingField.Select({...})` | string | Dropdown |
+| `@SettingField.Secret({...})` | string | Masked input |
+| `@SettingField.Image({...})` | string (URL) | Image picker |
+| `@SettingField.JSON({...})` | object | JSON editor |
+
+### @Settings decorator options
+
+| Option | Type | Required | Description |
+|--------|------|----------|-------------|
+| `group` | `string` | Yes | Unique group key (e.g. `'shipping'`) |
+| `label` | `string` | Yes | Human-readable group name in admin UI |
+| `icon` | `string` | No | Lucide icon name |
+| `order` | `number` | No | Sort order in admin UI |
+| `description` | `string` | No | Subtitle shown in admin UI |
+| `sections` | `Section[]` | No | Sub-groups for organizing fields |
+
+## Registering a settings group
+
+Call `SettingsModule.forFeature()` in your feature module. Magnet initializes the settings with defaults on application bootstrap:
+
+```typescript
+import { Module } from '@nestjs/common'
+import { SettingsModule } from '@magnet-cms/core'
+import { ShippingSettings } from './shipping.settings'
+import { ShippingService } from './shipping.service'
+
+@Module({
+  imports: [SettingsModule.forFeature(ShippingSettings)],
+  providers: [ShippingService],
+})
+export class ShippingModule {}
+```
+
+Pass an array to register multiple groups at once:
+
+```typescript
+SettingsModule.forFeature([ShippingSettings, PackagingSettings])
+```
+
+## Reading settings at runtime
+
+Inject `SettingsService` and call `get()` with your settings class:
+
+```typescript
+import { Injectable } from '@nestjs/common'
+import { SettingsService } from '@magnet-cms/core'
+import { ShippingSettings } from './shipping.settings'
+
+@Injectable()
+export class ShippingService {
+  constructor(private readonly settings: SettingsService) {}
+
+  async getCarrier(): Promise<string> {
+    const config = await this.settings.get(ShippingSettings)
+    return config.defaultCarrier  // fully typed — string
+  }
+
+  async isOverMaxWeight(weightKg: number): Promise<boolean> {
+    const config = await this.settings.get(ShippingSettings)
+    return weightKg > config.maxWeightKg  // number
+  }
+}
+```
+
+`get()` returns a fully typed instance of your settings class. Results are cached for 60 seconds — changes made via the admin panel or `update()` take effect within one minute.
+
+## Updating settings at runtime
+
+Use `update()` to change one or more settings fields. Updates are validated against the class definition before persisting:
+
+```typescript
+// Update one field
+await this.settings.update(ShippingSettings, {
+  defaultCarrier: 'FedEx',
+})
+
+// Update multiple fields at once
+await this.settings.update(ShippingSettings, {
+  maxWeightKg: 50,
+  freeShippingEnabled: true,
+})
+```
+
+`update()` invalidates the cache for the group and returns the updated typed object.
+
+## Invalidating the cache
+
+If settings are modified externally (e.g. by a migration script or direct DB update), invalidate the cache manually:
+
+```typescript
+// Invalidate one group
+this.settings.invalidate(ShippingSettings)
+
+// Invalidate all groups
+this.settings.invalidateAll()
+```
+
+## Reading a single field by key
+
+For low-level access to individual setting records:
+
+```typescript
+// Get a raw setting by group + key
+const setting = await this.settings.getSettingsByGroupAndKey('shipping', 'defaultCarrier')
+console.log(setting?.value)  // 'UPS'
+
+// Update a single key
+await this.settings.updateSetting('defaultCarrier', 'DHL', 'shipping')
+```
+
+Prefer `get()` and `update()` for typed access — use the key-based methods only when you need the raw `Setting` record.
 
 ## HTTP API
 
@@ -19,14 +206,89 @@ Base path: `/settings`.
 
 | Method | Path | Description |
 |--------|------|-------------|
-| `GET` | `/settings` | All settings records |
+| `GET` | `/settings` | All settings records grouped by group |
 | `GET` | `/settings/:group` | Flat object for a group (defaults merged) |
-| `GET` | `/settings/:group/:key` | Single setting |
+| `GET` | `/settings/:group/:key` | Single setting record |
 | `PUT` | `/settings/:group` | Bulk update for a group (validated) |
 
-Responses use your schema’s keys and stored values; unknown groups may return `404`.
+The `:group` path parameter accepts either the group key (e.g. `shipping`) or the schema class name (e.g. `ShippingSettings` — case-insensitive).
+
+### Example: fetch shipping settings
+
+```bash
+GET /settings/shipping
+# Returns: { "defaultCarrier": "UPS", "maxWeightKg": 30, "freeShippingEnabled": false, ... }
+```
+
+### Example: update settings via HTTP
+
+```bash
+PUT /settings/shipping
+{
+  "defaultCarrier": "FedEx",
+  "maxWeightKg": 50
+}
+```
+
+## Using built-in settings groups
+
+Magnet's core modules expose their own settings classes that you can read with `get()`:
+
+```typescript
+import { SettingsService } from '@magnet-cms/core'
+// Import built-in settings from their modules:
+// EmailSettings  — from @magnet-cms/core (email module)
+// GeneralSettings — from @magnet-cms/core (general module)
+// AuthSettings   — from @magnet-cms/core (auth module)
+
+const emailConfig = await this.settings.get(EmailSettings)
+console.log(emailConfig.fromAddress)  // 'noreply@example.com'
+console.log(emailConfig.enabled)      // true
+```
+
+## Complete example — app-level feature settings
+
+Here is a complete real-world example tying everything together:
+
+```typescript
+// feature.settings.ts
+import { Settings, SettingField } from '@magnet-cms/common'
+
+@Settings({ group: 'feature-flags', label: 'Feature Flags', icon: 'toggle-left', order: 20 })
+export class FeatureFlagSettings {
+  @SettingField.Boolean({ label: 'New Checkout', default: false, order: 1 })
+  newCheckout = false
+
+  @SettingField.Boolean({ label: 'AI Recommendations', default: true, order: 2 })
+  aiRecommendations = true
+
+  @SettingField.Text({ label: 'Beta User Emails', description: 'Comma-separated', default: '', order: 3 })
+  betaUserEmails = ''
+}
+
+// feature.module.ts
+@Module({
+  imports: [SettingsModule.forFeature(FeatureFlagSettings)],
+  providers: [FeatureService],
+})
+export class FeatureModule {}
+
+// feature.service.ts
+@Injectable()
+export class FeatureService {
+  constructor(private readonly settings: SettingsService) {}
+
+  async isNewCheckoutEnabled(userEmail: string): Promise<boolean> {
+    const flags = await this.settings.get(FeatureFlagSettings)
+    if (flags.newCheckout) return true
+    const betaEmails = flags.betaUserEmails.split(',').map(e => e.trim())
+    return betaEmails.includes(userEmail)
+  }
+}
+```
 
 ## Further reading
 
-- [Common package](/docs/common) — Decorators and types
+- [Common package](/docs/common) — `@Settings` and `@SettingField` decorator reference
 - [Admin UI](/docs/client/admin) — Settings screens in the dashboard
+- [magnet-new-settings skill](/docs/guides) — Step-by-step guide for adding settings to a module
