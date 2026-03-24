@@ -23,14 +23,19 @@
     "build:dev": "tsup --watch",
     "build": "tsup",
     "lint": "biome check src",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "devDependencies": {
     "@nestjs/common": "^11.1.12",
     "@repo/biome": "workspace:*",
     "@repo/tsup": "workspace:*",
     "@repo/typescript-config": "workspace:*",
-    "reflect-metadata": "0.2.2"
+    "@repo/vitest": "workspace:*",
+    "@vitest/coverage-v8": "3.2.4",
+    "reflect-metadata": "0.2.2",
+    "vitest": "^3.1.1"
   },
   "peerDependencies": {
     "@nestjs/common": "^11.1.12",

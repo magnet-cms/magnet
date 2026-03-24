@@ -1,6 +1,6 @@
-import { describe, expect, it, spyOn } from 'bun:test'
 import { MigrationRunner } from '@magnet-cms/adapter-db-drizzle'
 import type { MigrationDb } from '@magnet-cms/adapter-db-drizzle'
+import { describe, expect, it, vi } from 'vitest'
 import { runMigrateFresh } from '../commands/migrate-fresh'
 
 function makeMockDb(): MigrationDb {
@@ -23,8 +23,8 @@ describe('runMigrateFresh', () => {
 	it('drops all provided tables and re-applies migrations', async () => {
 		const db = makeMockDb()
 		const runner = makeMockRunner()
-		const executeSpy = spyOn(db, 'execute').mockResolvedValue({ rows: [] })
-		const upSpy = spyOn(runner, 'up').mockResolvedValue({
+		const executeSpy = vi.spyOn(db, 'execute').mockResolvedValue({ rows: [] })
+		const upSpy = vi.spyOn(runner, 'up').mockResolvedValue({
 			applied: 2,
 			names: ['0001_init', '0002_users'],
 			timings: {},
@@ -45,8 +45,8 @@ describe('runMigrateFresh', () => {
 	it('returns 0 dropped when no tables provided', async () => {
 		const db = makeMockDb()
 		const runner = makeMockRunner()
-		spyOn(db, 'execute').mockResolvedValue({ rows: [] })
-		spyOn(runner, 'up').mockResolvedValue({
+		vi.spyOn(db, 'execute').mockResolvedValue({ rows: [] })
+		vi.spyOn(runner, 'up').mockResolvedValue({
 			applied: 0,
 			names: [],
 			timings: {},

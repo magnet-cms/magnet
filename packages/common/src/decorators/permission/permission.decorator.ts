@@ -119,7 +119,9 @@ export function getPermissionMetadata(
 	target: object,
 	propertyKey: string | symbol,
 ): PermissionOptions | undefined {
-	return Reflect.getMetadata(PERMISSION_METADATA_KEY, target, propertyKey) as
+	const method = (target as Record<string | symbol, unknown>)[propertyKey]
+	if (typeof method !== 'function') return undefined
+	return Reflect.getMetadata(PERMISSION_METADATA_KEY, method) as
 		| PermissionOptions
 		| undefined
 }
@@ -131,5 +133,7 @@ export function hasPermissionDecorator(
 	target: object,
 	propertyKey: string | symbol,
 ): boolean {
-	return Reflect.hasMetadata(PERMISSION_METADATA_KEY, target, propertyKey)
+	const method = (target as Record<string | symbol, unknown>)[propertyKey]
+	if (typeof method !== 'function') return false
+	return Reflect.hasMetadata(PERMISSION_METADATA_KEY, method)
 }

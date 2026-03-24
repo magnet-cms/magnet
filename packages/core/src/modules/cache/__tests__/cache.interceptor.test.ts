@@ -1,19 +1,19 @@
-import { beforeEach, describe, expect, it, mock } from 'bun:test'
 import type { CacheAdapter, CacheHealthResult } from '@magnet-cms/common'
 import type { CallHandler, ExecutionContext } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
 import { firstValueFrom, of } from 'rxjs'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { CACHE_METADATA_KEY, CACHE_TTL_KEY } from '../cache.constants'
 import { CacheService } from '../cache.service'
 import { CacheInterceptor } from '../interceptors/cache.interceptor'
 
-const mockGet = mock(async (_key: string) => null as unknown)
-const mockSet = mock(async () => {})
-const mockDelete = mock(async () => {})
-const mockDeleteByPattern = mock(async () => {})
-const mockHas = mock(async () => false)
-const mockClear = mock(async () => {})
-const mockHealthCheck = mock(
+const mockGet = vi.fn(async (_key: string) => null as unknown)
+const mockSet = vi.fn(async () => {})
+const mockDelete = vi.fn(async () => {})
+const mockDeleteByPattern = vi.fn(async () => {})
+const mockHas = vi.fn(async () => false)
+const mockClear = vi.fn(async () => {})
+const mockHealthCheck = vi.fn(
 	async (): Promise<CacheHealthResult> => ({ healthy: true }),
 )
 

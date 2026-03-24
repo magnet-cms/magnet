@@ -35,7 +35,9 @@
     "build:dev": "tsup --watch",
     "build": "tsup",
     "lint": "biome check src",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@nestjs/terminus": "^11.0.0",
@@ -56,6 +58,10 @@
     "@repo/biome": "workspace:*",
     "@repo/tsup": "workspace:*",
     "@repo/typescript-config": "workspace:*",
+    "@repo/vitest": "workspace:*",
+    "@vitest/coverage-v8": "^3.1.1",
+    "reflect-metadata": "0.2.2",
+    "vitest": "^3.1.1",
     "@types/express": "^5.0.0",
     "@types/jsonwebtoken": "^9.0.0",
     "@types/ms": "2.1.0",

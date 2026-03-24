@@ -11,6 +11,7 @@ import type {
 	FieldTypeId,
 } from '~/types/field.types'
 import { detectDatabaseAdapter } from '~/utils'
+import { requireDatabaseAdapterModule } from '~/utils/database-adapter-module.util'
 import { mapFieldTypeToProp } from './field.prop-mapper'
 import { mapFieldTypeToUI } from './field.ui-mapper'
 
@@ -145,9 +146,11 @@ function applyAdapterProp(
 		const adapter = detectDatabaseAdapter()
 		const propOptions = mapFieldTypeToProp(type, options)
 
-		// Dynamically require the adapter-specific Prop decorator
-		// eslint-disable-next-line @typescript-eslint/no-require-imports
-		const { Prop } = require(`@magnet-cms/adapter-db-${adapter}`)
+		const { Prop } = requireDatabaseAdapterModule(adapter) as {
+			Prop: (
+				options: ReturnType<typeof mapFieldTypeToProp>,
+			) => PropertyDecorator
+		}
 		Prop(propOptions)(target, propertyKey)
 	} catch {
 		// Adapter not available, skip adapter-specific decoration

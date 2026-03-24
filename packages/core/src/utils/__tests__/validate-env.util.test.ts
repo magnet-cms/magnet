@@ -1,9 +1,9 @@
-import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
 import type {
 	DatabaseMagnetProvider,
 	MagnetProvider,
 	PluginMagnetProvider,
 } from '@magnet-cms/common'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { validateEnvironment } from '../validate-env.util'
 
 describe('validateEnvironment', () => {

@@ -1,7 +1,7 @@
-import { describe, expect, it } from 'bun:test'
-import { readdir, rm } from 'node:fs/promises'
+import { mkdir, readdir, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { describe, expect, it } from 'vitest'
 import { MigrationGenerator } from '../migration-generator'
 
 describe('MigrationGenerator', () => {
@@ -52,7 +52,8 @@ describe('MigrationGenerator', () => {
 
 	it('nextMigrationNumber() returns 1 for empty directory', async () => {
 		const dir = join(tmpdir(), `migrations-test-${Date.now()}`)
-		await Bun.write(join(dir, '.gitkeep'), '')
+		await mkdir(dir, { recursive: true })
+		await writeFile(join(dir, '.gitkeep'), '', 'utf-8')
 
 		const gen = new MigrationGenerator()
 		const num = await gen.nextMigrationNumber(dir)
@@ -63,8 +64,9 @@ describe('MigrationGenerator', () => {
 
 	it('nextMigrationNumber() increments from existing files', async () => {
 		const dir = join(tmpdir(), `migrations-test-${Date.now()}`)
-		await Bun.write(join(dir, '0001_initial.ts'), '')
-		await Bun.write(join(dir, '0002_add_users.ts'), '')
+		await mkdir(dir, { recursive: true })
+		await writeFile(join(dir, '0001_initial.ts'), '', 'utf-8')
+		await writeFile(join(dir, '0002_add_users.ts'), '', 'utf-8')
 
 		const gen = new MigrationGenerator()
 		const num = await gen.nextMigrationNumber(dir)
@@ -75,7 +77,8 @@ describe('MigrationGenerator', () => {
 
 	it('writeMigrationFile() creates sequentially numbered file', async () => {
 		const dir = join(tmpdir(), `migrations-test-${Date.now()}`)
-		await Bun.write(join(dir, '.gitkeep'), '')
+		await mkdir(dir, { recursive: true })
+		await writeFile(join(dir, '.gitkeep'), '', 'utf-8')
 
 		const gen = new MigrationGenerator()
 		const { filename } = await gen.writeMigrationFile(
@@ -92,7 +95,8 @@ describe('MigrationGenerator', () => {
 
 	it('writeMigrationFile() numbers sequentially after existing files', async () => {
 		const dir = join(tmpdir(), `migrations-test-${Date.now()}`)
-		await Bun.write(join(dir, '0001_initial.ts'), '')
+		await mkdir(dir, { recursive: true })
+		await writeFile(join(dir, '0001_initial.ts'), '', 'utf-8')
 
 		const gen = new MigrationGenerator()
 		const { filename } = await gen.writeMigrationFile(

@@ -8,5 +8,5 @@
       "~/*": ["./*"],
     }
   },
-  "exclude": ["**/*.test.ts", "**/*.spec.ts"]
+  "exclude": ["**/*.test.ts", "**/*.spec.ts", "vitest.config.ts"]
 }

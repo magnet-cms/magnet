@@ -13,6 +13,7 @@ import {
 import type { RouteObject } from 'react-router-dom'
 import { toast } from 'sonner'
 
+import { ErrorBoundaryPage } from '~/components/ErrorBoundary'
 import { Loader } from '~/components/Loader'
 import { AdminProvider } from '~/contexts/useAdmin'
 import {
@@ -465,13 +466,16 @@ function AuthLayoutWrapper() {
 export const routes: RouteObject[] = [
 	{
 		element: <RootLayout />,
+		errorElement: <ErrorBoundaryPage />,
 		children: [
 			{
 				path: '/',
 				element: <PrivateRoute />,
+				errorElement: <ErrorBoundaryPage />,
 				children: [
 					{
 						element: <DashboardContent />,
+						errorElement: <ErrorBoundaryPage />,
 						children: [
 							...coreDashboardRoutes,
 							// Catch-all for plugin routes

@@ -1,4 +1,4 @@
-import { describe, expect, it, spyOn } from 'bun:test'
+import { describe, expect, it, vi } from 'vitest'
 import { SchemaBridge } from '../schema-bridge'
 import type { SnapshotJSON } from '../schema-bridge'
 import { SchemaDiff } from '../schema-diff'
@@ -24,8 +24,8 @@ describe('SchemaDiff', () => {
 	it('diff() returns empty when no SQL generated', async () => {
 		const bridge = new SchemaBridge()
 
-		spyOn(bridge, 'generateSnapshot').mockResolvedValue(makeSnapshot())
-		spyOn(bridge, 'generateSQL').mockResolvedValue([])
+		vi.spyOn(bridge, 'generateSnapshot').mockResolvedValue(makeSnapshot())
+		vi.spyOn(bridge, 'generateSQL').mockResolvedValue([])
 
 		const diff = new SchemaDiff(bridge)
 		const result = await diff.diff('postgresql', makeSnapshot())
@@ -38,8 +38,8 @@ describe('SchemaDiff', () => {
 	it('diff() returns SQL statements from drizzle-kit', async () => {
 		const bridge = new SchemaBridge()
 
-		spyOn(bridge, 'generateSnapshot').mockResolvedValue(makeSnapshot())
-		spyOn(bridge, 'generateSQL').mockResolvedValue([
+		vi.spyOn(bridge, 'generateSnapshot').mockResolvedValue(makeSnapshot())
+		vi.spyOn(bridge, 'generateSQL').mockResolvedValue([
 			'CREATE TABLE "users" ("id" uuid PRIMARY KEY)',
 			'CREATE INDEX "users_id_idx" ON "users" ("id")',
 		])
@@ -54,8 +54,8 @@ describe('SchemaDiff', () => {
 	it('diff() detects dangerous DROP TABLE operations', async () => {
 		const bridge = new SchemaBridge()
 
-		spyOn(bridge, 'generateSnapshot').mockResolvedValue(makeSnapshot())
-		spyOn(bridge, 'generateSQL').mockResolvedValue(['DROP TABLE "users"'])
+		vi.spyOn(bridge, 'generateSnapshot').mockResolvedValue(makeSnapshot())
+		vi.spyOn(bridge, 'generateSQL').mockResolvedValue(['DROP TABLE "users"'])
 
 		const diff = new SchemaDiff(bridge)
 		const result = await diff.diff('postgresql', makeSnapshot())
@@ -67,8 +67,8 @@ describe('SchemaDiff', () => {
 	it('diff() detects dangerous DROP COLUMN operations', async () => {
 		const bridge = new SchemaBridge()
 
-		spyOn(bridge, 'generateSnapshot').mockResolvedValue(makeSnapshot())
-		spyOn(bridge, 'generateSQL').mockResolvedValue([
+		vi.spyOn(bridge, 'generateSnapshot').mockResolvedValue(makeSnapshot())
+		vi.spyOn(bridge, 'generateSQL').mockResolvedValue([
 			'ALTER TABLE "users" DROP COLUMN "email"',
 		])
 
@@ -83,9 +83,9 @@ describe('SchemaDiff', () => {
 		const bridge = new SchemaBridge()
 		const emptySnap = makeSnapshot('empty')
 
-		spyOn(bridge, 'emptySnapshot').mockReturnValue(emptySnap)
-		spyOn(bridge, 'generateSnapshot').mockResolvedValue(makeSnapshot())
-		const generateSQL = spyOn(bridge, 'generateSQL').mockResolvedValue([])
+		vi.spyOn(bridge, 'emptySnapshot').mockReturnValue(emptySnap)
+		vi.spyOn(bridge, 'generateSnapshot').mockResolvedValue(makeSnapshot())
+		const generateSQL = vi.spyOn(bridge, 'generateSQL').mockResolvedValue([])
 
 		const diff = new SchemaDiff(bridge)
 		await diff.diff('postgresql')
@@ -97,8 +97,8 @@ describe('SchemaDiff', () => {
 	it('diff() isEmpty is true when no SQL statements', async () => {
 		const bridge = new SchemaBridge()
 
-		spyOn(bridge, 'generateSnapshot').mockResolvedValue(makeSnapshot())
-		spyOn(bridge, 'generateSQL').mockResolvedValue([])
+		vi.spyOn(bridge, 'generateSnapshot').mockResolvedValue(makeSnapshot())
+		vi.spyOn(bridge, 'generateSQL').mockResolvedValue([])
 
 		const diff = new SchemaDiff(bridge)
 		const result = await diff.diff('postgresql', makeSnapshot())
@@ -109,8 +109,8 @@ describe('SchemaDiff', () => {
 	it('diff() isEmpty is false when SQL statements exist', async () => {
 		const bridge = new SchemaBridge()
 
-		spyOn(bridge, 'generateSnapshot').mockResolvedValue(makeSnapshot())
-		spyOn(bridge, 'generateSQL').mockResolvedValue([
+		vi.spyOn(bridge, 'generateSnapshot').mockResolvedValue(makeSnapshot())
+		vi.spyOn(bridge, 'generateSQL').mockResolvedValue([
 			'CREATE TABLE "users" ("id" uuid)',
 		])
 

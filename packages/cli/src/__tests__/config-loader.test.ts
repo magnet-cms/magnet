@@ -1,11 +1,15 @@
-import { afterEach, describe, expect, it } from 'bun:test'
+import { afterEach, describe, expect, it } from 'vitest'
 import { ConfigLoader } from '../utils/config-loader'
 
 describe('ConfigLoader', () => {
 	const originalEnv = { ...process.env }
 
 	afterEach(() => {
-		process.env.DATABASE_URL = originalEnv.DATABASE_URL
+		if ('DATABASE_URL' in originalEnv) {
+			process.env.DATABASE_URL = originalEnv.DATABASE_URL
+		} else {
+			process.env.DATABASE_URL = undefined
+		}
 	})
 
 	it('loads DATABASE_URL from environment when no config file exists', async () => {
@@ -18,14 +22,14 @@ describe('ConfigLoader', () => {
 	})
 
 	it('throws when no config file and no DATABASE_URL', async () => {
-		process.env.DATABASE_URL = undefined as unknown as string
+		process.env.DATABASE_URL = undefined
 
 		const loader = new ConfigLoader('/nonexistent-dir')
 		await expect(loader.load()).rejects.toThrow('DATABASE_URL')
 	})
 
 	it('normalizes raw config with databaseUrl field', () => {
-		process.env.DATABASE_URL = undefined as unknown as string
+		process.env.DATABASE_URL = undefined
 
 		const loader = new ConfigLoader('/nonexistent-dir')
 		// @ts-expect-error accessing private for testing
@@ -39,7 +43,7 @@ describe('ConfigLoader', () => {
 	})
 
 	it('normalizeConfig throws when no databaseUrl and no env var', () => {
-		process.env.DATABASE_URL = undefined as unknown as string
+		process.env.DATABASE_URL = undefined
 
 		const loader = new ConfigLoader('/nonexistent-dir')
 		// @ts-expect-error accessing private for testing

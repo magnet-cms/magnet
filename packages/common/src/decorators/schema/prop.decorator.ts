@@ -1,6 +1,7 @@
 import { PROP_METADATA_KEY } from '~/constants'
 import { PropOptions } from '~/types'
 import { detectDatabaseAdapter } from '~/utils'
+import { requireDatabaseAdapterModule } from '~/utils/database-adapter-module.util'
 
 export function Prop(options?: PropOptions): PropertyDecorator {
 	return (target: object, propertyKey: string | symbol) => {
@@ -13,7 +14,9 @@ export function Prop(options?: PropOptions): PropertyDecorator {
 			target,
 		)
 
-		const { Prop } = require(`@magnet-cms/adapter-db-${adapter}`)
+		const { Prop } = requireDatabaseAdapterModule(adapter) as {
+			Prop: (options?: PropOptions) => PropertyDecorator
+		}
 		return Prop(options)(target, propertyKey)
 	}
 }

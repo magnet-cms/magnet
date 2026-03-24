@@ -26,7 +26,8 @@
     "dev": "bun run src/index.ts",
     "lint": "biome check .",
     "check-types": "tsc --noEmit",
-    "test": "bun test"
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@inquirer/prompts": "^7.5.0",
@@ -43,10 +44,20 @@
   },
   "devDependencies": {
     "@magnet-cms/adapter-db-drizzle": "workspace:*",
+    "@neondatabase/serverless": "^0.10.0",
+    "@types/better-sqlite3": "^7.6.11",
+    "@types/pg": "^8.11.0",
+    "better-sqlite3": "^11.6.0",
+    "mysql2": "^3.11.0",
+    "pg": "^8.13.0",
     "@repo/biome": "workspace:*",
     "@repo/tsup": "workspace:*",
     "@repo/typescript-config": "workspace:*",
-    "@types/node": "^22.13.1"
+    "@repo/vitest": "workspace:*",
+    "@types/node": "^22.13.1",
+    "@vitest/coverage-v8": "^3.1.1",
+    "reflect-metadata": "0.2.2",
+    "vitest": "^3.1.1"
   },
   "engines": {
     "node": ">=18"

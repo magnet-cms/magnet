@@ -131,7 +131,9 @@ function mapParamTypeToGraphQLInput(typeName: string): GraphQLInputType {
  */
 function buildFieldName(basePath: string, method: MethodMetadata): string {
 	const fullPath = `${basePath}/${method.routePath}`.replace(/\/+/g, '/')
-	const segments = fullPath.split('/').filter((s) => s && !s.startsWith(':'))
+	const segments = fullPath
+		.split('/')
+		.filter((s) => s && !s.startsWith(':') && !s.startsWith('*'))
 
 	if (segments.length === 0) return method.name
 
@@ -150,7 +152,7 @@ function buildFieldName(basePath: string, method: MethodMetadata): string {
 	// Detail: the route path ends with a param (e.g., :id)
 	const pathParts = fullPath.split('/').filter(Boolean)
 	const lastPart = pathParts[pathParts.length - 1]
-	const isDetail = lastPart?.startsWith(':')
+	const isDetail = lastPart?.startsWith(':') || lastPart?.startsWith('*')
 
 	if (isQuery) {
 		const name = resourceName.charAt(0).toLowerCase() + resourceName.slice(1)

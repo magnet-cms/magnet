@@ -8,7 +8,7 @@
  * - storage.service.encryption.test.ts (StorageService orchestration)
  * - guards/__tests__/media-owner.guard.test.ts (MediaOwnerGuard access control)
  */
-import { describe, expect, it } from 'bun:test'
+import { describe, expect, it } from 'vitest'
 
 // ------- Pure helpers that mirror the controller's param extraction -------
 

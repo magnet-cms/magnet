@@ -1,7 +1,7 @@
-import { afterEach, describe, expect, it } from 'bun:test'
 import * as fs from 'node:fs'
 import * as os from 'node:os'
 import * as path from 'node:path'
+import { afterEach, describe, expect, it } from 'vitest'
 import { generateProject } from '../generators/index.js'
 import type { ProjectConfig } from '../types.js'
 

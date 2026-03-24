@@ -1,7 +1,7 @@
-import { describe, expect, it } from 'bun:test'
-import { readFile, rm } from 'node:fs/promises'
+import { mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { describe, expect, it } from 'vitest'
 import { runMigrateCreate } from '../commands/migrate-create'
 
 describe('runMigrateCreate', () => {
@@ -23,7 +23,8 @@ describe('runMigrateCreate', () => {
 
 	it('creates sequentially numbered file', async () => {
 		const dir = join(tmpdir(), `create-test-${Date.now()}`)
-		await Bun.write(join(dir, '0001_initial.ts'), '')
+		await mkdir(dir, { recursive: true })
+		await writeFile(join(dir, '0001_initial.ts'), '', 'utf-8')
 
 		const result = await runMigrateCreate('next_migration', dir)
 

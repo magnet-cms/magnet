@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'bun:test'
+import { describe, expect, it } from 'vitest'
 import 'reflect-metadata'
 import { MemoryCacheAdapter } from '../adapters/memory-cache.adapter'
 import { CACHE_ADAPTER_TOKEN } from '../cache.constants'

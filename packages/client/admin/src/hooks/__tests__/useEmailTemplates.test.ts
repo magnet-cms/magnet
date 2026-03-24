@@ -8,7 +8,7 @@
  * React Query / adapter integration is covered in
  * apps/e2e/tests/ui/email-templates.spec.ts.
  */
-import { describe, expect, it } from 'bun:test'
+import { describe, expect, it } from 'vitest'
 import { EMAIL_TEMPLATE_KEYS } from '../useEmailTemplates'
 import type { EmailTemplateListFilters } from '../useEmailTemplates'
 

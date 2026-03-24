@@ -1,5 +1,6 @@
 import { EXTEND_USER_METADATA_KEY, SCHEMA_METADATA_KEY } from '~/constants'
 import { detectDatabaseAdapter } from '~/utils'
+import { requireDatabaseAdapterModule } from '~/utils/database-adapter-module.util'
 
 /**
  * Options for the @ExtendUser decorator
@@ -57,11 +58,16 @@ export function ExtendUser(options: ExtendUserOptions = {}): ClassDecorator {
 		// Apply adapter-specific Schema decorator
 		try {
 			const adapter = detectDatabaseAdapter()
-			// eslint-disable-next-line @typescript-eslint/no-require-imports
-			const { Schema } = require(`@magnet-cms/adapter-db-${adapter}`)
-			Schema({ collection: 'users', timestamps: mergedOptions.timestamps })(
-				target,
-			)
+			const { Schema } = requireDatabaseAdapterModule(adapter) as {
+				Schema: (opts: {
+					collection: string
+					timestamps: boolean
+				}) => ClassDecorator
+			}
+			Schema({
+				collection: 'users',
+				timestamps: mergedOptions.timestamps ?? true,
+			})(target)
 		} catch {
 			// Adapter not available, skip adapter-specific decoration
 		}

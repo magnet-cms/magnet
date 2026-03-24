@@ -1,0 +1,140 @@
+---
+title: OpenAPI Module
+description: Automatic OpenAPI 3.0 spec generation and Swagger UI for Magnet CMS
+---
+
+The OpenAPI Module automatically generates an OpenAPI 3.0 specification from all Magnet CMS controllers and discovered content schemas, and serves a Swagger UI for interactive exploration.
+
+## Overview
+
+The OpenAPI Module provides:
+
+- **Automatic spec generation**: Builds a complete OpenAPI 3.0 JSON document from all Magnet API routes
+- **Dynamic content schemas**: Enriches the spec with component schemas derived from your content type definitions
+- **Swagger UI**: Interactive API explorer served at `/api-docs`
+- **JSON spec endpoint**: Machine-readable spec at `/oas.json`
+- **Security schemes**: Bearer token (JWT) and API key authentication documented automatically
+
+## Setup
+
+The OpenAPI Module is enabled by default. No extra configuration is required:
+
+```typescript
+import { Module } from '@nestjs/common'
+import { MagnetModule } from '@magnet-cms/core'
+import { MongooseDatabaseAdapter } from '@magnet-cms/adapter-db-mongoose'
+
+@Module({
+  imports: [
+    MagnetModule.forRoot(
+      [MongooseDatabaseAdapter.forRoot()],
+      {
+        // OpenAPI is enabled automatically
+      },
+    ),
+  ],
+})
+export class AppModule {}
+```
+
+Once your app starts, visit `http://localhost:3000/api-docs` to explore the API.
+
+## Configuration
+
+Customize the OpenAPI integration via the `openapi` option in `MagnetModule.forRoot()`:
+
+```typescript
+MagnetModule.forRoot(adapters, {
+  openapi: {
+    enabled: true,           // default: true
+    title: 'My CMS API',     // default: 'Magnet CMS API'
+    version: '2.0.0',        // default: '1.0.0'
+    path: '/swagger',        // Swagger UI path, default: '/api-docs'
+  },
+})
+```
+
+### Disable OpenAPI
+
+Set `openapi: false` or `openapi: { enabled: false }` to disable the module entirely:
+
+```typescript
+MagnetModule.forRoot(adapters, {
+  openapi: false, // No Swagger UI, no /oas.json route registered
+})
+```
+
+This is useful in production environments where you don't want to expose the API spec.
+
+### Configuration Reference
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `enabled` | `boolean` | `true` | Enable or disable the OpenAPI module |
+| `title` | `string` | `'Magnet CMS API'` | API title shown in Swagger UI |
+| `version` | `string` | `'1.0.0'` | API version shown in spec |
+| `path` | `string` | `'/api-docs'` | URL path for the Swagger UI |
+
+The JSON spec is always served at `/oas.json` regardless of the `path` setting.
+
+## Endpoints
+
+| Endpoint | Description |
+|----------|-------------|
+| `GET /oas.json` | OpenAPI 3.0 JSON specification |
+| `GET /api-docs` | Swagger UI (interactive explorer) |
+
+## Content Schemas
+
+When the Discovery module is active (the default), the OpenAPI spec is automatically enriched with component schemas for each of your content types. For example, a `Post` schema with `title` (text) and `publishedAt` (date) fields generates:
+
+```json
+{
+  "components": {
+    "schemas": {
+      "Post": {
+        "type": "object",
+        "properties": {
+          "title": { "type": "string" },
+          "publishedAt": { "type": "string", "format": "date-time" }
+        },
+        "required": ["title"]
+      }
+    }
+  }
+}
+```
+
+Content endpoints (`GET /content/post`, `POST /content/post`, etc.) reference these schemas for typed request/response documentation.
+
+### Field Type Mapping
+
+| Magnet field type | OpenAPI schema |
+|-------------------|---------------|
+| `text`, `richtext`, `slug` | `{ type: "string" }` |
+| `number` | `{ type: "number" }` |
+| `boolean` | `{ type: "boolean" }` |
+| `date` | `{ type: "string", format: "date-time" }` |
+| `media` | `{ type: "string", format: "uri" }` |
+| `relation` | `{ type: "string" }` (document ID) |
+| `json` | `{ type: "object" }` |
+| `select`/`enum` | `{ type: "string", enum: [...values] }` |
+
+## Security
+
+The spec includes two security schemes that match Magnet's authentication options:
+
+- **Bearer**: `Authorization: Bearer <jwt>` — used with JWT auth
+- **ApiKey**: `x-api-key: <key>` — used with API key auth
+
+Most endpoints require one of these schemes, as documented in the Swagger UI.
+
+## Using the Generated Spec
+
+The `/oas.json` endpoint is the input to `magnet-client generate` for generating TypeScript types for your client:
+
+```bash
+npx @magnet-cms/client generate --url http://localhost:3000/oas.json -o ./src/magnet.d.ts
+```
+
+See [Client SDK](/docs/client/sdk) and [Type Generation](/docs/client/codegen) for the complete workflow.

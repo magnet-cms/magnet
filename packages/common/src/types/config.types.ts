@@ -36,6 +36,20 @@ export interface GraphQLConfig {
 	debug?: boolean
 }
 
+/**
+ * Configuration options for the OpenAPI/Swagger module.
+ */
+export interface OpenAPIConfig {
+	/** Enable or disable OpenAPI support. Default: enabled in development, disabled in production */
+	enabled?: boolean
+	/** Path to serve the Swagger UI (default: '/api-docs') */
+	path?: string
+	/** API title shown in the Swagger UI (default: 'Magnet CMS API') */
+	title?: string
+	/** API version shown in the Swagger UI (default: '1.0.0') */
+	version?: string
+}
+
 export interface AdminConfig {
 	/** Enable static admin serving (default true when omitted) */
 	enabled?: boolean

@@ -9,7 +9,7 @@
  * (they require reflect-metadata initialization that conflicts with the test runner).
  * Full integration is covered in apps/e2e/tests/api/media-encryption.spec.ts.
  */
-import { beforeEach, describe, expect, it, mock } from 'bun:test'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import 'reflect-metadata'
 import { InternalServerErrorException } from '@nestjs/common'
 
@@ -76,7 +76,7 @@ async function prepareUploadBuffer(
 }
 
 // ------- Mock EncryptionService -------
-const mockEncrypt = mock(
+const mockEncrypt = vi.fn(
 	async (_buf: Buffer, _userId: string) =>
 		({
 			encrypted: Buffer.from('encrypted-bytes'),
@@ -84,7 +84,7 @@ const mockEncrypt = mock(
 			authTag: 'ccdd00112233445566778899ccdd0011',
 		}) as { encrypted: Buffer; iv: string; authTag: string },
 )
-const mockDecrypt = mock(
+const mockDecrypt = vi.fn(
 	async (
 		_buf: Buffer,
 		_userId: string,

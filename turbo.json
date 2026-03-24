@@ -23,6 +23,12 @@
       "dependsOn": ["^build"],
       "cache": false,
       "env": ["API_BASE_URL", "UI_BASE_URL", "DOCS_BASE_URL", "CI"]
+    },
+    "test:watch": {
+      "dependsOn": ["^build"],
+      "cache": false,
+      "interactive": true,
+      "persistent": true
     }
   }
 }

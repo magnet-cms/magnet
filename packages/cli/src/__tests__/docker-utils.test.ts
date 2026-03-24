@@ -1,7 +1,7 @@
-import { afterEach, describe, expect, it } from 'bun:test'
 import * as fs from 'node:fs'
 import * as os from 'node:os'
 import * as path from 'node:path'
+import { afterEach, describe, expect, it } from 'vitest'
 import { findComposeFile, isDockerAvailable } from '../utils/docker'
 
 // Note: isDockerAvailable uses execFile internally. In CI without Docker,

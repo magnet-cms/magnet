@@ -1,4 +1,3 @@
-import { describe, expect, it } from 'bun:test'
 /**
  * MediaOwnerGuard unit tests.
  *
@@ -11,6 +10,7 @@ import { describe, expect, it } from 'bun:test'
  * - Media not found → allow (controller handles 404)
  */
 import { ForbiddenException } from '@nestjs/common'
+import { describe, expect, it } from 'vitest'
 
 // ------- Pure access-control helpers extracted from MediaOwnerGuard logic -------
 

@@ -1,5 +1,5 @@
-import { describe, expect, it, spyOn } from 'bun:test'
 import { MigrationRunner } from '@magnet-cms/adapter-db-drizzle'
+import { describe, expect, it, vi } from 'vitest'
 import { runMigrateUp } from '../commands/migrate-up'
 
 function makeMockRunner(): MigrationRunner {
@@ -20,7 +20,7 @@ describe('runMigrateUp', () => {
 
 	it('calls runner.up() with provided migrations', async () => {
 		const runner = makeMockRunner()
-		const upSpy = spyOn(runner, 'up').mockResolvedValue({
+		const upSpy = vi.spyOn(runner, 'up').mockResolvedValue({
 			applied: 2,
 			names: ['0001_init', '0002_add_users'],
 			timings: { '0001_init': 10, '0002_add_users': 5 },
@@ -40,7 +40,7 @@ describe('runMigrateUp', () => {
 
 	it('propagates errors from runner.up()', async () => {
 		const runner = makeMockRunner()
-		spyOn(runner, 'up').mockRejectedValue(new Error('migration failed'))
+		vi.spyOn(runner, 'up').mockRejectedValue(new Error('migration failed'))
 
 		await expect(runMigrateUp(runner, [])).rejects.toThrow('migration failed')
 	})

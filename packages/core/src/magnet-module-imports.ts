@@ -17,7 +17,7 @@ import type {
 	VaultAdapter,
 } from '@magnet-cms/common'
 import type { DBConfig, DatabaseAdapter } from '@magnet-cms/common'
-import type { AuthConfig } from '@magnet-cms/common'
+import type { AuthConfig, OpenAPIConfig } from '@magnet-cms/common'
 import type { DynamicModule, Type } from '@nestjs/common'
 import { ActivityModule } from './modules/activity/activity.module'
 import {
@@ -36,6 +36,7 @@ import { EnvironmentModule } from './modules/environment/environment.module'
 import { GeneralModule } from './modules/general/general.module'
 import { HistoryModule } from './modules/history/history.module'
 import { NotificationModule } from './modules/notification/notification.module'
+import { OpenAPIModule } from './modules/openapi/openapi.module'
 import { PluginModule } from './modules/plugin/plugin.module'
 import { RBACModule } from './modules/rbac/rbac.module'
 import { SettingsModule } from './modules/settings/settings.module'
@@ -65,7 +66,11 @@ export interface BuildImportsParams {
 		graphql?: GraphQLMagnetProvider
 	}
 	globalOptions:
-		| { rbac?: RBACModuleOptions; email?: { layout?: unknown } }
+		| {
+				rbac?: RBACModuleOptions
+				email?: { layout?: unknown }
+				openapi?: OpenAPIConfig | false
+		  }
 		| undefined
 	adminConfig: AdminServeOptions
 }
@@ -138,6 +143,18 @@ export function buildMagnetImports(params: BuildImportsParams): {
 
 	if (categorized.graphql) {
 		imports.push(categorized.graphql.module as DynamicModule)
+	}
+
+	const _openapi = globalOptions?.openapi
+	if (
+		_openapi !== false &&
+		(_openapi as OpenAPIConfig | undefined)?.enabled !== false
+	) {
+		imports.push(
+			OpenAPIModule.forRoot(
+				typeof _openapi === 'object' && _openapi !== null ? _openapi : {},
+			),
+		)
 	}
 
 	if (adminConfig.enabled) {

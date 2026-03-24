@@ -1,14 +1,14 @@
-import { beforeEach, describe, expect, it, mock } from 'bun:test'
 import type { CacheAdapter, CacheHealthResult } from '@magnet-cms/common'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { CacheService } from '../cache.service'
 
-const mockGet = mock(async (_key: string) => null as unknown)
-const mockSet = mock(async () => {})
-const mockDelete = mock(async () => {})
-const mockDeleteByPattern = mock(async () => {})
-const mockHas = mock(async () => false)
-const mockClear = mock(async () => {})
-const mockHealthCheck = mock(
+const mockGet = vi.fn(async (_key: string) => null as unknown)
+const mockSet = vi.fn(async () => {})
+const mockDelete = vi.fn(async () => {})
+const mockDeleteByPattern = vi.fn(async () => {})
+const mockHas = vi.fn(async () => false)
+const mockClear = vi.fn(async () => {})
+const mockHealthCheck = vi.fn(
 	async (): Promise<CacheHealthResult> => ({ healthy: true }),
 )
 

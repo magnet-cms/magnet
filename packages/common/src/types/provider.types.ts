@@ -5,6 +5,7 @@ import type {
 	AdminConfig,
 	GraphQLConfig,
 	InternationalizationOptions,
+	OpenAPIConfig,
 	PlaygroundOptions,
 } from './config.types'
 import type { DBConfig, DatabaseAdapter } from './database.types'
@@ -67,6 +68,13 @@ export interface MagnetGlobalOptions {
 	internationalization?: InternationalizationOptions
 	/** Global Playground (schema builder) settings */
 	playground?: PlaygroundOptions
+	/**
+	 * OpenAPI / Swagger configuration.
+	 * Set to `false` to disable entirely (e.g., in production).
+	 * @example openapi: false          // disable
+	 * @example openapi: { title: 'My API', path: '/docs' }
+	 */
+	openapi?: OpenAPIConfig | false
 	/**
 	 * Email system configuration.
 	 * Provides layout component for wrapping email body content.

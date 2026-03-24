@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, spyOn } from 'bun:test'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { Adapter } from '../drizzle.adapter'
 
 // Helper to extract SQL string from drizzle sql.raw() object
@@ -42,14 +42,20 @@ describe('DrizzleAdapter.ensureTablesCreated', () => {
 			tableName: 'tests',
 		})
 
-		const createTablesSpy = spyOn(
-			Adapter as unknown as { createTables: () => Promise<void> },
-			'createTables',
-		).mockResolvedValue(undefined)
-		const runAutoSpy = spyOn(
-			Adapter as unknown as { runAutoMigration: (c: unknown) => Promise<void> },
-			'runAutoMigration',
-		).mockResolvedValue(undefined)
+		const createTablesSpy = vi
+			.spyOn(
+				Adapter as unknown as { createTables: () => Promise<void> },
+				'createTables',
+			)
+			.mockResolvedValue(undefined)
+		const runAutoSpy = vi
+			.spyOn(
+				Adapter as unknown as {
+					runAutoMigration: (c: unknown) => Promise<void>
+				},
+				'runAutoMigration',
+			)
+			.mockResolvedValue(undefined)
 
 		await Adapter.ensureTablesCreated()
 
@@ -72,14 +78,20 @@ describe('DrizzleAdapter.ensureTablesCreated', () => {
 			tableName: 'tests',
 		})
 
-		const createTablesSpy = spyOn(
-			Adapter as unknown as { createTables: () => Promise<void> },
-			'createTables',
-		).mockResolvedValue(undefined)
-		const runAutoSpy = spyOn(
-			Adapter as unknown as { runAutoMigration: (c: unknown) => Promise<void> },
-			'runAutoMigration',
-		).mockResolvedValue(undefined)
+		const createTablesSpy = vi
+			.spyOn(
+				Adapter as unknown as { createTables: () => Promise<void> },
+				'createTables',
+			)
+			.mockResolvedValue(undefined)
+		const runAutoSpy = vi
+			.spyOn(
+				Adapter as unknown as {
+					runAutoMigration: (c: unknown) => Promise<void>
+				},
+				'runAutoMigration',
+			)
+			.mockResolvedValue(undefined)
 
 		await Adapter.ensureTablesCreated()
 
@@ -99,7 +111,7 @@ describe('DrizzleAdapter.ensureTablesCreated', () => {
 			tableName: 'tests',
 		})
 
-		spyOn(
+		vi.spyOn(
 			Adapter as unknown as { createTables: () => Promise<void> },
 			'createTables',
 		).mockResolvedValue(undefined)
@@ -112,7 +124,7 @@ describe('DrizzleAdapter.ensureTablesCreated', () => {
 
 describe('DrizzleAdapter.createTableFromConfig — primary key detection', () => {
 	let capturedSQLs: string[]
-	let execSpy: ReturnType<typeof spyOn>
+	let execSpy: ReturnType<typeof vi.spyOn>
 
 	beforeEach(() => {
 		capturedSQLs = []
@@ -122,12 +134,14 @@ describe('DrizzleAdapter.createTableFromConfig — primary key detection', () =>
 		a.tablesInitialized = false
 
 		// Spy on execRawSQL to capture generated SQL strings
-		execSpy = spyOn(
-			Adapter as unknown as { execRawSQL: (s: unknown) => Promise<void> },
-			'execRawSQL',
-		).mockImplementation(async (rawSQL: unknown) => {
-			capturedSQLs.push(extractSQL(rawSQL))
-		})
+		execSpy = vi
+			.spyOn(
+				Adapter as unknown as { execRawSQL: (s: unknown) => Promise<void> },
+				'execRawSQL',
+			)
+			.mockImplementation(async (rawSQL: unknown) => {
+				capturedSQLs.push(extractSQL(rawSQL))
+			})
 	})
 
 	afterEach(() => {

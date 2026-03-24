@@ -1,4 +1,3 @@
-import { describe, expect, it, spyOn } from 'bun:test'
 import { rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -8,6 +7,7 @@ import {
 	SchemaDiff,
 } from '@magnet-cms/adapter-db-drizzle'
 import type { SnapshotJSON } from '@magnet-cms/adapter-db-drizzle'
+import { describe, expect, it, vi } from 'vitest'
 import { runMigrateGenerate } from '../commands/migrate-generate'
 
 function makeSnapshot(): SnapshotJSON {
@@ -26,7 +26,7 @@ describe('runMigrateGenerate', () => {
 		const diff = new SchemaDiff(bridge)
 		const gen = new MigrationGenerator()
 
-		spyOn(diff, 'diff').mockResolvedValue({
+		vi.spyOn(diff, 'diff').mockResolvedValue({
 			upSQL: [],
 			dangerous: false,
 			warnings: [],
@@ -54,7 +54,7 @@ describe('runMigrateGenerate', () => {
 		const diff = new SchemaDiff(bridge)
 		const gen = new MigrationGenerator()
 
-		spyOn(diff, 'diff').mockResolvedValue({
+		vi.spyOn(diff, 'diff').mockResolvedValue({
 			upSQL: ['CREATE TABLE "users" ("id" uuid PRIMARY KEY)'],
 			dangerous: false,
 			warnings: [],
@@ -62,7 +62,7 @@ describe('runMigrateGenerate', () => {
 			currentSnapshot: makeSnapshot(),
 		})
 
-		const writeSpy = spyOn(gen, 'writeMigrationFile')
+		const writeSpy = vi.spyOn(gen, 'writeMigrationFile')
 
 		const result = await runMigrateGenerate(
 			diff,
@@ -86,7 +86,7 @@ describe('runMigrateGenerate', () => {
 		const diff = new SchemaDiff(bridge)
 		const gen = new MigrationGenerator()
 
-		spyOn(diff, 'diff').mockResolvedValue({
+		vi.spyOn(diff, 'diff').mockResolvedValue({
 			upSQL: ['CREATE TABLE "users" ("id" uuid)'],
 			dangerous: false,
 			warnings: [],
@@ -109,7 +109,7 @@ describe('runMigrateGenerate', () => {
 		const diff = new SchemaDiff(bridge)
 		const gen = new MigrationGenerator()
 
-		spyOn(diff, 'diff').mockResolvedValue({
+		vi.spyOn(diff, 'diff').mockResolvedValue({
 			upSQL: ['DROP TABLE "users"'],
 			dangerous: true,
 			warnings: ['DROP TABLE will delete all data'],

@@ -1,4 +1,4 @@
-import { describe, expect, it, spyOn } from 'bun:test'
+import { describe, expect, it, vi } from 'vitest'
 import { AutoMigration } from '../auto-migration'
 import { MigrationGenerator } from '../migration-generator'
 import { MigrationRunner } from '../migration-runner'
@@ -35,14 +35,14 @@ describe('AutoMigration', () => {
 	it('does nothing when diff is empty', async () => {
 		const { auto, diff, runner } = makeAutoMigration()
 
-		spyOn(diff, 'diff').mockResolvedValue({
+		vi.spyOn(diff, 'diff').mockResolvedValue({
 			upSQL: [],
 			dangerous: false,
 			warnings: [],
 			isEmpty: true,
 			currentSnapshot: {} as never,
 		})
-		const upSpy = spyOn(runner, 'up').mockResolvedValue({
+		const upSpy = vi.spyOn(runner, 'up').mockResolvedValue({
 			applied: 0,
 			names: [],
 			timings: {},
@@ -56,18 +56,18 @@ describe('AutoMigration', () => {
 	it('generates and applies migration in auto mode', async () => {
 		const { auto, diff, gen, runner } = makeAutoMigration()
 
-		spyOn(diff, 'diff').mockResolvedValue({
+		vi.spyOn(diff, 'diff').mockResolvedValue({
 			upSQL: ['CREATE TABLE "users" ("id" uuid)'],
 			dangerous: false,
 			warnings: [],
 			isEmpty: false,
 			currentSnapshot: {} as never,
 		})
-		const writeSpy = spyOn(gen, 'writeMigrationFile').mockResolvedValue({
+		const writeSpy = vi.spyOn(gen, 'writeMigrationFile').mockResolvedValue({
 			filename: '0001_auto.ts',
 			path: '/tmp/migrations/0001_auto.ts',
 		})
-		spyOn(runner, 'up').mockResolvedValue({
+		vi.spyOn(runner, 'up').mockResolvedValue({
 			applied: 1,
 			names: ['0001_auto'],
 			timings: {},
@@ -85,15 +85,15 @@ describe('AutoMigration', () => {
 	it('logs warning in manual mode without applying', async () => {
 		const { auto, diff, gen, runner } = makeAutoMigration()
 
-		spyOn(diff, 'diff').mockResolvedValue({
+		vi.spyOn(diff, 'diff').mockResolvedValue({
 			upSQL: ['CREATE TABLE "users" ("id" uuid)'],
 			dangerous: false,
 			warnings: [],
 			isEmpty: false,
 			currentSnapshot: {} as never,
 		})
-		const writeSpy = spyOn(gen, 'writeMigrationFile')
-		const upSpy = spyOn(runner, 'up')
+		const writeSpy = vi.spyOn(gen, 'writeMigrationFile')
+		const upSpy = vi.spyOn(runner, 'up')
 
 		await auto.run(
 			'postgresql',
@@ -108,18 +108,18 @@ describe('AutoMigration', () => {
 	it('in auto mode: applies generated migration via runner.up()', async () => {
 		const { auto, diff, gen, runner } = makeAutoMigration()
 
-		spyOn(diff, 'diff').mockResolvedValue({
+		vi.spyOn(diff, 'diff').mockResolvedValue({
 			upSQL: ['CREATE TABLE "users" ("id" uuid)'],
 			dangerous: false,
 			warnings: [],
 			isEmpty: false,
 			currentSnapshot: {} as never,
 		})
-		spyOn(gen, 'writeMigrationFile').mockResolvedValue({
+		vi.spyOn(gen, 'writeMigrationFile').mockResolvedValue({
 			filename: '0001_auto.ts',
 			path: '/tmp/migrations/0001_auto.ts',
 		})
-		const upSpy = spyOn(runner, 'up').mockResolvedValue({
+		const upSpy = vi.spyOn(runner, 'up').mockResolvedValue({
 			applied: 1,
 			names: ['0001_auto'],
 			timings: {},

@@ -1,5 +1,5 @@
 import 'reflect-metadata'
-import { beforeEach, describe, expect, it } from 'bun:test'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { Prop } from '../decorators/prop.decorator'
 import { clearSchemaRegistry, generateSchema } from '../schema/schema.generator'
 
@@ -103,7 +103,7 @@ describe('generateColumn — notNull behavior', () => {
 		expect(col.config.notNull).toBe(false)
 	})
 
-	it('should apply defaults when specified', () => {
+	it('should omit DB default for empty array default (filled at runtime)', () => {
 		const TestSchema = createTestSchema('DefaultTest', {
 			tags: { type: Array, required: false, default: [] },
 		})
@@ -112,6 +112,7 @@ describe('generateColumn — notNull behavior', () => {
 		const col = getColumn(table, 'tags')
 
 		expect(col).toBeDefined()
-		expect(col.config.hasDefault).toBe(true)
+		// See DrizzleModel._applyDeclaredEmptyArrayDefaults — no SQL DEFAULT for []
+		expect(col.config.hasDefault).toBe(false)
 	})
 })

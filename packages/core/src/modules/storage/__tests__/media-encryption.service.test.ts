@@ -1,9 +1,9 @@
-import { beforeEach, describe, expect, it, mock } from 'bun:test'
 import { InternalServerErrorException } from '@nestjs/common'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { MediaEncryptionService } from '../media-encryption.service'
 
-const mockVaultGet = mock(async (_key: string) => null as string | null)
-const mockVaultSet = mock(async () => {})
+const mockVaultGet = vi.fn(async (_key: string) => null as string | null)
+const mockVaultSet = vi.fn(async () => {})
 
 const mockVaultService = {
 	get: mockVaultGet,

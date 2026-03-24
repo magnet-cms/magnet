@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'bun:test'
+import { describe, expect, it } from 'vitest'
 import { runDbReset } from '../commands/db-reset'
 import { runDev } from '../commands/dev'
 import { runDockerDown, runDockerLogs, runDockerUp } from '../commands/docker'

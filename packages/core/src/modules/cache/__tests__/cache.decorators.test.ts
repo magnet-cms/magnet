@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'bun:test'
+import { describe, expect, it } from 'vitest'
 import 'reflect-metadata'
 import { CACHE_METADATA_KEY, CACHE_TTL_KEY } from '../cache.constants'
 import { CacheEvict } from '../decorators/cache-evict.decorator'

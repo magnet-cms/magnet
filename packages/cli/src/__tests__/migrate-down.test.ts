@@ -1,5 +1,5 @@
-import { describe, expect, it, spyOn } from 'bun:test'
 import { MigrationRunner } from '@magnet-cms/adapter-db-drizzle'
+import { describe, expect, it, vi } from 'vitest'
 import { runMigrateDown } from '../commands/migrate-down'
 
 function makeMockRunner(): MigrationRunner {
@@ -13,7 +13,7 @@ function makeMockRunner(): MigrationRunner {
 describe('runMigrateDown', () => {
 	it('calls runner.down() with provided migrations', async () => {
 		const runner = makeMockRunner()
-		const downSpy = spyOn(runner, 'down').mockResolvedValue(undefined)
+		const downSpy = vi.spyOn(runner, 'down').mockResolvedValue(undefined)
 
 		const migrations = [
 			{ id: '0001_init', timestamp: 1000, async up() {}, async down() {} },
@@ -25,7 +25,7 @@ describe('runMigrateDown', () => {
 
 	it('passes --to option to runner.down()', async () => {
 		const runner = makeMockRunner()
-		const downSpy = spyOn(runner, 'down').mockResolvedValue(undefined)
+		const downSpy = vi.spyOn(runner, 'down').mockResolvedValue(undefined)
 
 		await runMigrateDown(runner, [], { to: '0001_init' })
 
@@ -34,7 +34,7 @@ describe('runMigrateDown', () => {
 
 	it('propagates errors from runner.down()', async () => {
 		const runner = makeMockRunner()
-		spyOn(runner, 'down').mockRejectedValue(new Error('rollback failed'))
+		vi.spyOn(runner, 'down').mockRejectedValue(new Error('rollback failed'))
 
 		await expect(runMigrateDown(runner, [])).rejects.toThrow('rollback failed')
 	})

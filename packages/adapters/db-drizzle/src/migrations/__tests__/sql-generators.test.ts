@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'bun:test'
+import { describe, expect, it } from 'vitest'
 import * as mysql from '../sql-generators/mysql'
 import * as pg from '../sql-generators/postgresql'
 import * as sqlite from '../sql-generators/sqlite'

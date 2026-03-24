@@ -1,0 +1,8 @@
+{
+  "extends": "@repo/typescript-config/base.json",
+  "compilerOptions": {
+    "module": "Preserve",
+    "moduleResolution": "bundler"
+  },
+  "exclude": ["**/*.test.ts", "**/*.spec.ts", "vitest.config.ts", "tsup.config.ts"]
+}

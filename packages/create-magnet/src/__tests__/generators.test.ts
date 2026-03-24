@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'bun:test'
+import { describe, expect, it } from 'vitest'
 import { generateAppModule } from '../generators/app-module.js'
 import { generatePackageJson } from '../generators/package-json.js'
 import type { ProjectConfig } from '../types.js'

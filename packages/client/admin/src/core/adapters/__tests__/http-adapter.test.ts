@@ -1,4 +1,4 @@
-import { describe, expect, it, mock } from 'bun:test'
+import { describe, expect, it, vi } from 'vitest'
 import { createHttpAdapter } from '../http-adapter'
 
 // Minimal in-memory token storage
@@ -33,7 +33,7 @@ function makeAdapter(fetchImpl: typeof fetch) {
 
 describe('createHttpAdapter error handling', () => {
 	it('should use backend error message from JSON body when request fails', async () => {
-		const mockFetch = mock(() =>
+		const mockFetch = vi.fn(() =>
 			Promise.resolve(
 				new Response(
 					JSON.stringify({
@@ -72,7 +72,7 @@ describe('createHttpAdapter error handling', () => {
 	})
 
 	it('should fall back to status text when error body is not JSON', async () => {
-		const mockFetch = mock(() =>
+		const mockFetch = vi.fn(() =>
 			Promise.resolve(
 				new Response('Internal Server Error', {
 					status: 500,
@@ -103,7 +103,7 @@ describe('createHttpAdapter error handling', () => {
 	})
 
 	it('should handle array message fields from NestJS validation errors', async () => {
-		const mockFetch = mock(() =>
+		const mockFetch = vi.fn(() =>
 			Promise.resolve(
 				new Response(
 					JSON.stringify({

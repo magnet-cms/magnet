@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'bun:test'
+import { describe, expect, it } from 'vitest'
 import { MigrationLock } from '../migration-lock'
 import { MigrationLockError } from '../types'
 import type { MigrationDb } from '../types'

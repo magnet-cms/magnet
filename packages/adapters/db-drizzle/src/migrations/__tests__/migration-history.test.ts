@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'bun:test'
+import { describe, expect, it } from 'vitest'
 import { MigrationHistory } from '../migration-history'
 import type { MigrationDb, MigrationHistoryRecord } from '../types'
 

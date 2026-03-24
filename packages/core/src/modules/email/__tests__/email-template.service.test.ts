@@ -8,10 +8,10 @@
  * - Compound slug+locale uniqueness check
  *
  * Intentional gap: We avoid importing the actual EmailTemplateService class
- * because @magnet-cms/common decorated schema classes require reflect-metadata
- * initialization that conflicts with bun:test's module evaluation order.
- * Instead, the logic is tested via extracted pure functions that mirror the
- * service implementation.
+ * because @magnet-cms/common decorated schema classes expect reflect-metadata
+ * to run before those modules load. Package tests use `@repo/vitest/base`, which
+ * loads `reflect-metadata` via Vitest `setupFiles`, but this file still tests
+ * logic via extracted pure functions that mirror the service implementation.
  *
  * Not covered here (by design):
  * - CRUD operations (create/update/delete) — covered by E2E in
@@ -19,10 +19,10 @@
  * - Default seed templates — verified on first app startup
  * - DI wiring — verified by check-types and E2E
  *
- * To enable full unit tests of the class: add a vitest setup file that calls
- * `import 'reflect-metadata'` before any imports, or use a custom bun preload.
+ * To enable full unit tests of the class: ensure tests run with the same
+ * Vitest setup (reflect-metadata preload) before importing decorated schemas.
  */
-import { beforeEach, describe, expect, it } from 'bun:test'
+import { beforeEach, describe, expect, it } from 'vitest'
 
 // -------- Types mirroring EmailTemplate and filter interfaces --------
 

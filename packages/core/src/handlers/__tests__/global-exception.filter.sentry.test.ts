@@ -1,6 +1,6 @@
-import { beforeEach, describe, expect, it, mock } from 'bun:test'
 import Module from 'node:module'
 import type { ArgumentsHost } from '@nestjs/common'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { MagnetLogger } from '~/modules/logging/logger.service'
 import { GlobalExceptionFilter } from '../global-exception.filter'
 
@@ -12,8 +12,8 @@ import { GlobalExceptionFilter } from '../global-exception.filter'
 
 function makeHost(url = '/api/test', method = 'GET'): ArgumentsHost {
 	const response = {
-		status: mock(() => response),
-		json: mock(() => {}),
+		status: vi.fn(() => response),
+		json: vi.fn(() => {}),
 	}
 	return {
 		switchToHttp: () => ({
@@ -38,8 +38,8 @@ describe('GlobalExceptionFilter — Sentry integration', () => {
 	})
 
 	it('should call captureException when Sentry client is initialized', () => {
-		const captureException = mock((_e: unknown) => 'event-id')
-		const getClient = mock(() => ({
+		const captureException = vi.fn((_e: unknown) => 'event-id')
+		const getClient = vi.fn(() => ({
 			/* initialized client */
 		}))
 
@@ -67,8 +67,8 @@ describe('GlobalExceptionFilter — Sentry integration', () => {
 	})
 
 	it('should NOT call captureException when Sentry client is not initialized', () => {
-		const captureException = mock((_e: unknown) => 'event-id')
-		const getClient = mock(() => undefined) // not initialized
+		const captureException = vi.fn((_e: unknown) => 'event-id')
+		const getClient = vi.fn(() => undefined) // not initialized
 
 		const origRequire = Module.prototype.require
 		;(Module.prototype as unknown as Record<string, unknown>).require =
@@ -117,8 +117,8 @@ describe('GlobalExceptionFilter — Sentry integration', () => {
 	})
 
 	it('should still return error response when Sentry is active', () => {
-		const captureException = mock((_e: unknown) => 'event-id')
-		const getClient = mock(() => ({}))
+		const captureException = vi.fn((_e: unknown) => 'event-id')
+		const getClient = vi.fn(() => ({}))
 
 		const origRequire = Module.prototype.require
 		;(Module.prototype as unknown as Record<string, unknown>).require =
@@ -130,10 +130,10 @@ describe('GlobalExceptionFilter — Sentry integration', () => {
 			}
 
 		const response = {
-			status: mock(function () {
+			status: vi.fn(function () {
 				return this
 			}),
-			json: mock(() => {}),
+			json: vi.fn(() => {}),
 		}
 		const host = {
 			switchToHttp: () => ({

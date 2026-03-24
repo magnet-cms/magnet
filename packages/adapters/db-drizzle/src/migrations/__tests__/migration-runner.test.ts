@@ -1,4 +1,4 @@
-import { describe, expect, it, spyOn } from 'bun:test'
+import { describe, expect, it, vi } from 'vitest'
 import { MigrationHistory } from '../migration-history'
 import { MigrationLock } from '../migration-lock'
 import { MigrationRunner } from '../migration-runner'
@@ -27,26 +27,21 @@ describe('MigrationRunner', () => {
 		const db = makeMockDb()
 		const runner = new MigrationRunner(db, DEFAULT_MIGRATION_CONFIG)
 
-		const historySpy = spyOn(
-			MigrationHistory.prototype,
-			'getApplied',
-		).mockResolvedValue([])
-		const lockAcquire = spyOn(
-			MigrationLock.prototype,
-			'acquire',
-		).mockResolvedValue(undefined)
-		const lockRelease = spyOn(
-			MigrationLock.prototype,
-			'release',
-		).mockResolvedValue(undefined)
-		const ensureHistory = spyOn(
-			MigrationHistory.prototype,
-			'ensureTable',
-		).mockResolvedValue(undefined)
-		const ensureLock = spyOn(
-			MigrationLock.prototype,
-			'ensureTable',
-		).mockResolvedValue(undefined)
+		const historySpy = vi
+			.spyOn(MigrationHistory.prototype, 'getApplied')
+			.mockResolvedValue([])
+		const lockAcquire = vi
+			.spyOn(MigrationLock.prototype, 'acquire')
+			.mockResolvedValue(undefined)
+		const lockRelease = vi
+			.spyOn(MigrationLock.prototype, 'release')
+			.mockResolvedValue(undefined)
+		const ensureHistory = vi
+			.spyOn(MigrationHistory.prototype, 'ensureTable')
+			.mockResolvedValue(undefined)
+		const ensureLock = vi
+			.spyOn(MigrationLock.prototype, 'ensureTable')
+			.mockResolvedValue(undefined)
 
 		const result = await runner.up([])
 
@@ -78,16 +73,18 @@ describe('MigrationRunner', () => {
 			},
 		}
 
-		spyOn(MigrationHistory.prototype, 'ensureTable').mockResolvedValue(
+		vi.spyOn(MigrationHistory.prototype, 'ensureTable').mockResolvedValue(
 			undefined,
 		)
-		spyOn(MigrationLock.prototype, 'ensureTable').mockResolvedValue(undefined)
-		spyOn(MigrationHistory.prototype, 'getApplied').mockResolvedValue([])
-		spyOn(MigrationHistory.prototype, 'recordMigration').mockResolvedValue(
+		vi.spyOn(MigrationLock.prototype, 'ensureTable').mockResolvedValue(
 			undefined,
 		)
-		spyOn(MigrationLock.prototype, 'acquire').mockResolvedValue(undefined)
-		spyOn(MigrationLock.prototype, 'release').mockResolvedValue(undefined)
+		vi.spyOn(MigrationHistory.prototype, 'getApplied').mockResolvedValue([])
+		vi.spyOn(MigrationHistory.prototype, 'recordMigration').mockResolvedValue(
+			undefined,
+		)
+		vi.spyOn(MigrationLock.prototype, 'acquire').mockResolvedValue(undefined)
+		vi.spyOn(MigrationLock.prototype, 'release').mockResolvedValue(undefined)
 
 		const result = await runner.up([m1, m2])
 
@@ -116,16 +113,20 @@ describe('MigrationRunner', () => {
 			},
 		]
 
-		spyOn(MigrationHistory.prototype, 'ensureTable').mockResolvedValue(
+		vi.spyOn(MigrationHistory.prototype, 'ensureTable').mockResolvedValue(
 			undefined,
 		)
-		spyOn(MigrationLock.prototype, 'ensureTable').mockResolvedValue(undefined)
-		spyOn(MigrationHistory.prototype, 'getApplied').mockResolvedValue(history)
-		spyOn(MigrationHistory.prototype, 'removeMigration').mockResolvedValue(
+		vi.spyOn(MigrationLock.prototype, 'ensureTable').mockResolvedValue(
 			undefined,
 		)
-		spyOn(MigrationLock.prototype, 'acquire').mockResolvedValue(undefined)
-		spyOn(MigrationLock.prototype, 'release').mockResolvedValue(undefined)
+		vi.spyOn(MigrationHistory.prototype, 'getApplied').mockResolvedValue(
+			history,
+		)
+		vi.spyOn(MigrationHistory.prototype, 'removeMigration').mockResolvedValue(
+			undefined,
+		)
+		vi.spyOn(MigrationLock.prototype, 'acquire').mockResolvedValue(undefined)
+		vi.spyOn(MigrationLock.prototype, 'release').mockResolvedValue(undefined)
 
 		await runner.down([m1])
 
@@ -148,11 +149,13 @@ describe('MigrationRunner', () => {
 			},
 		]
 
-		spyOn(MigrationHistory.prototype, 'ensureTable').mockResolvedValue(
+		vi.spyOn(MigrationHistory.prototype, 'ensureTable').mockResolvedValue(
 			undefined,
 		)
-		spyOn(MigrationLock.prototype, 'ensureTable').mockResolvedValue(undefined)
-		spyOn(MigrationHistory.prototype, 'getApplied').mockResolvedValue(
+		vi.spyOn(MigrationLock.prototype, 'ensureTable').mockResolvedValue(
+			undefined,
+		)
+		vi.spyOn(MigrationHistory.prototype, 'getApplied').mockResolvedValue(
 			appliedHistory,
 		)
 
@@ -175,16 +178,17 @@ describe('MigrationRunner', () => {
 			},
 		}
 
-		spyOn(MigrationHistory.prototype, 'ensureTable').mockResolvedValue(
+		vi.spyOn(MigrationHistory.prototype, 'ensureTable').mockResolvedValue(
 			undefined,
 		)
-		spyOn(MigrationLock.prototype, 'ensureTable').mockResolvedValue(undefined)
-		spyOn(MigrationHistory.prototype, 'getApplied').mockResolvedValue([])
-		spyOn(MigrationLock.prototype, 'acquire').mockResolvedValue(undefined)
-		const releaseSpy = spyOn(
-			MigrationLock.prototype,
-			'release',
-		).mockResolvedValue(undefined)
+		vi.spyOn(MigrationLock.prototype, 'ensureTable').mockResolvedValue(
+			undefined,
+		)
+		vi.spyOn(MigrationHistory.prototype, 'getApplied').mockResolvedValue([])
+		vi.spyOn(MigrationLock.prototype, 'acquire').mockResolvedValue(undefined)
+		const releaseSpy = vi
+			.spyOn(MigrationLock.prototype, 'release')
+			.mockResolvedValue(undefined)
 
 		await expect(runner.up([failingMigration])).rejects.toThrow(
 			'migration failed',
@@ -207,15 +211,17 @@ describe('MigrationRunner', () => {
 			},
 		]
 
-		spyOn(MigrationHistory.prototype, 'ensureTable').mockResolvedValue(
+		vi.spyOn(MigrationHistory.prototype, 'ensureTable').mockResolvedValue(
 			undefined,
 		)
-		spyOn(MigrationLock.prototype, 'ensureTable').mockResolvedValue(undefined)
-		spyOn(MigrationHistory.prototype, 'getApplied').mockResolvedValue(
+		vi.spyOn(MigrationLock.prototype, 'ensureTable').mockResolvedValue(
+			undefined,
+		)
+		vi.spyOn(MigrationHistory.prototype, 'getApplied').mockResolvedValue(
 			appliedHistory,
 		)
-		spyOn(MigrationLock.prototype, 'acquire').mockResolvedValue(undefined)
-		spyOn(MigrationLock.prototype, 'release').mockResolvedValue(undefined)
+		vi.spyOn(MigrationLock.prototype, 'acquire').mockResolvedValue(undefined)
+		vi.spyOn(MigrationLock.prototype, 'release').mockResolvedValue(undefined)
 
 		await expect(runner.up([m1])).rejects.toBeInstanceOf(MigrationChecksumError)
 	})
@@ -268,19 +274,21 @@ describe('MigrationRunner', () => {
 			},
 		]
 
-		spyOn(MigrationHistory.prototype, 'ensureTable').mockResolvedValue(
+		vi.spyOn(MigrationHistory.prototype, 'ensureTable').mockResolvedValue(
 			undefined,
 		)
-		spyOn(MigrationLock.prototype, 'ensureTable').mockResolvedValue(undefined)
-		const getAppliedSpy = spyOn(MigrationHistory.prototype, 'getApplied')
+		vi.spyOn(MigrationLock.prototype, 'ensureTable').mockResolvedValue(
+			undefined,
+		)
+		const getAppliedSpy = vi.spyOn(MigrationHistory.prototype, 'getApplied')
 		// First call returns all 3, subsequent calls simulate progressively fewer
 		getAppliedSpy.mockResolvedValueOnce(appliedHistory)
 		getAppliedSpy.mockResolvedValueOnce(appliedHistory.slice(0, 2))
-		spyOn(MigrationHistory.prototype, 'removeMigration').mockResolvedValue(
+		vi.spyOn(MigrationHistory.prototype, 'removeMigration').mockResolvedValue(
 			undefined,
 		)
-		spyOn(MigrationLock.prototype, 'acquire').mockResolvedValue(undefined)
-		spyOn(MigrationLock.prototype, 'release').mockResolvedValue(undefined)
+		vi.spyOn(MigrationLock.prototype, 'acquire').mockResolvedValue(undefined)
+		vi.spyOn(MigrationLock.prototype, 'release').mockResolvedValue(undefined)
 
 		// Roll back to 0001 (exclusive): should roll back 0003 and 0002 but not 0001
 		await runner.down([m1, m2, m3], { to: '0001' })
@@ -303,16 +311,18 @@ describe('MigrationRunner', () => {
 
 		const m1 = makeMigration('0001', 1000)
 
-		spyOn(MigrationHistory.prototype, 'ensureTable').mockResolvedValue(
+		vi.spyOn(MigrationHistory.prototype, 'ensureTable').mockResolvedValue(
 			undefined,
 		)
-		spyOn(MigrationLock.prototype, 'ensureTable').mockResolvedValue(undefined)
-		spyOn(MigrationHistory.prototype, 'getApplied').mockResolvedValue([])
-		spyOn(MigrationHistory.prototype, 'recordMigration').mockResolvedValue(
+		vi.spyOn(MigrationLock.prototype, 'ensureTable').mockResolvedValue(
 			undefined,
 		)
-		spyOn(MigrationLock.prototype, 'acquire').mockResolvedValue(undefined)
-		spyOn(MigrationLock.prototype, 'release').mockResolvedValue(undefined)
+		vi.spyOn(MigrationHistory.prototype, 'getApplied').mockResolvedValue([])
+		vi.spyOn(MigrationHistory.prototype, 'recordMigration').mockResolvedValue(
+			undefined,
+		)
+		vi.spyOn(MigrationLock.prototype, 'acquire').mockResolvedValue(undefined)
+		vi.spyOn(MigrationLock.prototype, 'release').mockResolvedValue(undefined)
 
 		await runner.up([m1])
 
@@ -340,13 +350,15 @@ describe('MigrationRunner', () => {
 			},
 		}
 
-		spyOn(MigrationHistory.prototype, 'ensureTable').mockResolvedValue(
+		vi.spyOn(MigrationHistory.prototype, 'ensureTable').mockResolvedValue(
 			undefined,
 		)
-		spyOn(MigrationLock.prototype, 'ensureTable').mockResolvedValue(undefined)
-		spyOn(MigrationHistory.prototype, 'getApplied').mockResolvedValue([])
-		spyOn(MigrationLock.prototype, 'acquire').mockResolvedValue(undefined)
-		spyOn(MigrationLock.prototype, 'release').mockResolvedValue(undefined)
+		vi.spyOn(MigrationLock.prototype, 'ensureTable').mockResolvedValue(
+			undefined,
+		)
+		vi.spyOn(MigrationHistory.prototype, 'getApplied').mockResolvedValue([])
+		vi.spyOn(MigrationLock.prototype, 'acquire').mockResolvedValue(undefined)
+		vi.spyOn(MigrationLock.prototype, 'release').mockResolvedValue(undefined)
 
 		await expect(runner.up([failingMigration])).rejects.toThrow('sql error')
 
@@ -380,23 +392,23 @@ describe('MigrationRunner', () => {
 			},
 		}
 
-		spyOn(MigrationHistory.prototype, 'ensureTable').mockResolvedValue(
+		vi.spyOn(MigrationHistory.prototype, 'ensureTable').mockResolvedValue(
 			undefined,
 		)
-		spyOn(MigrationLock.prototype, 'ensureTable').mockResolvedValue(undefined)
-		const recordSpy = spyOn(
-			MigrationHistory.prototype,
-			'recordMigration',
-		).mockResolvedValue(undefined)
-		const removeSpy = spyOn(
-			MigrationHistory.prototype,
-			'removeMigration',
-		).mockResolvedValue(undefined)
-		spyOn(MigrationLock.prototype, 'acquire').mockResolvedValue(undefined)
-		spyOn(MigrationLock.prototype, 'release').mockResolvedValue(undefined)
+		vi.spyOn(MigrationLock.prototype, 'ensureTable').mockResolvedValue(
+			undefined,
+		)
+		const recordSpy = vi
+			.spyOn(MigrationHistory.prototype, 'recordMigration')
+			.mockResolvedValue(undefined)
+		const removeSpy = vi
+			.spyOn(MigrationHistory.prototype, 'removeMigration')
+			.mockResolvedValue(undefined)
+		vi.spyOn(MigrationLock.prototype, 'acquire').mockResolvedValue(undefined)
+		vi.spyOn(MigrationLock.prototype, 'release').mockResolvedValue(undefined)
 
 		// First call for up() returns empty; second call for down() returns both applied
-		const getAppliedSpy = spyOn(MigrationHistory.prototype, 'getApplied')
+		const getAppliedSpy = vi.spyOn(MigrationHistory.prototype, 'getApplied')
 		getAppliedSpy.mockResolvedValueOnce([])
 		getAppliedSpy.mockResolvedValueOnce([
 			{

@@ -1,8 +1,8 @@
 import { ThemeProvider } from 'next-themes'
-import { BrowserRouter, useRoutes } from 'react-router-dom'
 import { ThemeRootSync } from './components/ThemeRootSync'
 import { DialogProvider } from './core/dialog'
 import { MagnetProvider } from './core/provider/MagnetProvider'
+import { MagnetRouter } from './core/router/MagnetRouter'
 import { AppIntlProvider } from './i18n'
 import { routes } from './routes/index.tsx'
 
@@ -16,17 +16,10 @@ const basePath = rawBasePath.endsWith('/')
 	: rawBasePath
 const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
-const AppRoutes = () => {
-	const element = useRoutes(routes)
-	return element
-}
-
 /**
- * App component for development mode
- * Uses BrowserRouter with useRoutes for hot-reloading support
- *
- * For production/library usage, use MagnetAdmin component instead
- * which uses createBrowserRouter and RouterProvider
+ * App component for development and standalone production mode.
+ * Uses createBrowserRouter (data router) via MagnetRouter so that
+ * hooks like useBlocker work correctly.
  */
 const App = () => {
 	return (
@@ -35,9 +28,11 @@ const App = () => {
 				<AppIntlProvider>
 					<MagnetProvider config={{ apiBaseUrl, basePath }}>
 						<DialogProvider>
-							<BrowserRouter basename={basePath}>
-								<AppRoutes />
-							</BrowserRouter>
+							<MagnetRouter
+								type="browser"
+								routes={routes}
+								basePath={basePath}
+							/>
 						</DialogProvider>
 					</MagnetProvider>
 				</AppIntlProvider>

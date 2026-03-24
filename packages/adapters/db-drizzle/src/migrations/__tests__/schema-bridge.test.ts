@@ -1,5 +1,5 @@
-import { describe, expect, it, spyOn } from 'bun:test'
 import type { DrizzleSnapshotJSON } from 'drizzle-kit/api'
+import { describe, expect, it, vi } from 'vitest'
 import * as schemaGenerator from '../../schema/schema.generator'
 import { SchemaBridge, sanitizeExecutableMigrationSql } from '../schema-bridge'
 
@@ -29,10 +29,9 @@ describe('SchemaBridge', () => {
 			['User', { table: mockTable, tableName: 'users' }],
 		])
 
-		const getRegistered = spyOn(
-			schemaGenerator,
-			'getRegisteredSchemas',
-		).mockReturnValue(registryMap)
+		const getRegistered = vi
+			.spyOn(schemaGenerator, 'getRegisteredSchemas')
+			.mockReturnValue(registryMap)
 
 		const bridge = new SchemaBridge()
 		const schemas = bridge.collectSchemas()
@@ -44,10 +43,9 @@ describe('SchemaBridge', () => {
 	})
 
 	it('collectSchemas() returns empty object when no schemas registered', () => {
-		const getRegistered = spyOn(
-			schemaGenerator,
-			'getRegisteredSchemas',
-		).mockReturnValue(new Map())
+		const getRegistered = vi
+			.spyOn(schemaGenerator, 'getRegisteredSchemas')
+			.mockReturnValue(new Map())
 
 		const bridge = new SchemaBridge()
 		const schemas = bridge.collectSchemas()
@@ -64,13 +62,17 @@ describe('SchemaBridge', () => {
 		const registryMap = new Map([
 			['User', { table: mockTable, tableName: 'users' }],
 		])
-		spyOn(schemaGenerator, 'getRegisteredSchemas').mockReturnValue(registryMap)
+		vi.spyOn(schemaGenerator, 'getRegisteredSchemas').mockReturnValue(
+			registryMap,
+		)
 
 		const mockSnapshot = makeEmptySnapshot()
-		const mockGenerateJson = spyOn(
-			{ fn: async (_imports: Record<string, unknown>) => mockSnapshot },
-			'fn',
-		).mockResolvedValue(mockSnapshot)
+		const mockGenerateJson = vi
+			.spyOn(
+				{ fn: async (_imports: Record<string, unknown>) => mockSnapshot },
+				'fn',
+			)
+			.mockResolvedValue(mockSnapshot)
 
 		const bridge = new SchemaBridge()
 		const result = await bridge.generateSnapshot(

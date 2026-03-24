@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'bun:test'
 import type { SchemaMetadata } from '@magnet-cms/common'
+import { describe, expect, it } from 'vitest'
 
 /**
  * Unit tests for DiscoveryService filtering logic.

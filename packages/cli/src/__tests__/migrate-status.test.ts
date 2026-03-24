@@ -1,6 +1,6 @@
-import { describe, expect, it, spyOn } from 'bun:test'
 import { MigrationRunner } from '@magnet-cms/adapter-db-drizzle'
 import type { MigrationHistoryRecord } from '@magnet-cms/adapter-db-drizzle'
+import { describe, expect, it, vi } from 'vitest'
 import { runMigrateStatus } from '../commands/migrate-status'
 
 function makeMockRunner(): MigrationRunner {
@@ -32,7 +32,7 @@ describe('runMigrateStatus', () => {
 
 	it('returns applied migrations from runner', async () => {
 		const runner = makeMockRunner()
-		spyOn(runner, 'status').mockResolvedValue({
+		vi.spyOn(runner, 'status').mockResolvedValue({
 			applied: [
 				makeHistoryRecord('0001_init'),
 				makeHistoryRecord('0002_add_users'),
@@ -52,7 +52,7 @@ describe('runMigrateStatus', () => {
 			{ id: '0003_add_posts', timestamp: 3000, async up() {}, async down() {} },
 		]
 
-		spyOn(runner, 'status').mockResolvedValue({
+		vi.spyOn(runner, 'status').mockResolvedValue({
 			applied: [makeHistoryRecord('0001_init')],
 			pending,
 		})
@@ -66,7 +66,7 @@ describe('runMigrateStatus', () => {
 
 	it('calls runner.status() with provided migrations', async () => {
 		const runner = makeMockRunner()
-		const statusSpy = spyOn(runner, 'status').mockResolvedValue({
+		const statusSpy = vi.spyOn(runner, 'status').mockResolvedValue({
 			applied: [],
 			pending: [],
 		})

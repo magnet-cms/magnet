@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'bun:test'
+import { describe, expect, it } from 'vitest'
 import { generateDotEnv } from '../generators/config-files.js'
 import type { ProjectConfig } from '../types.js'
 

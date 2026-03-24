@@ -17,6 +17,7 @@ import { HeadingNode, QuoteNode } from '@lexical/rich-text'
 import { useQuery } from '@tanstack/react-query'
 import {
 	$getRoot,
+	$insertNodes,
 	COMMAND_PRIORITY_EDITOR,
 	type LexicalCommand,
 	createCommand,

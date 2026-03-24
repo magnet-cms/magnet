@@ -1,6 +1,6 @@
-import { afterEach, beforeEach, describe, expect, it, spyOn } from 'bun:test'
 import type { CallHandler, ExecutionContext } from '@nestjs/common'
-import { of, throwError } from 'rxjs'
+import { firstValueFrom, lastValueFrom, of, throwError } from 'rxjs'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { MagnetLogger } from '../logger.service'
 import { LoggingInterceptor } from '../logging.interceptor'
 
@@ -25,17 +25,17 @@ function makeErrorHandler(err: Error): CallHandler {
 describe('LoggingInterceptor', () => {
 	let interceptor: LoggingInterceptor
 	let logger: MagnetLogger
-	let logSpy: ReturnType<typeof spyOn>
-	let warnSpy: ReturnType<typeof spyOn>
-	let stdoutSpy: ReturnType<typeof spyOn>
+	let logSpy: ReturnType<typeof vi.spyOn>
+	let warnSpy: ReturnType<typeof vi.spyOn>
+	let stdoutSpy: ReturnType<typeof vi.spyOn>
 
 	beforeEach(() => {
 		process.env.LOG_FORMAT = undefined
 		logger = new MagnetLogger()
 		interceptor = new LoggingInterceptor(logger)
-		logSpy = spyOn(logger, 'log').mockImplementation(() => {})
-		warnSpy = spyOn(logger, 'warn').mockImplementation(() => {})
-		stdoutSpy = spyOn(process.stdout, 'write').mockImplementation(() => true)
+		logSpy = vi.spyOn(logger, 'log').mockImplementation(() => {})
+		warnSpy = vi.spyOn(logger, 'warn').mockImplementation(() => {})
+		stdoutSpy = vi.spyOn(process.stdout, 'write').mockImplementation(() => true)
 	})
 
 	afterEach(() => {
@@ -44,87 +44,56 @@ describe('LoggingInterceptor', () => {
 		stdoutSpy.mockRestore()
 	})
 
-	it('should call logger.log on successful request', (done) => {
+	it('should call logger.log on successful request', async () => {
 		const ctx = makeContext('GET', '/api/test')
 		const handler = makeHandler()
 
-		interceptor.intercept(ctx, handler).subscribe({
-			complete: () => {
-				expect(logSpy).toHaveBeenCalled()
-				done()
-			},
-			error: done,
-		})
+		await lastValueFrom(interceptor.intercept(ctx, handler))
+		expect(logSpy).toHaveBeenCalled()
 	})
 
-	it('should log method and path', (done) => {
+	it('should log method and path', async () => {
 		const ctx = makeContext('POST', '/api/users')
 		const handler = makeHandler()
 
-		interceptor.intercept(ctx, handler).subscribe({
-			complete: () => {
-				const callArgs = logSpy.mock.calls[0]
-				expect(callArgs?.[0]).toContain('POST')
-				expect(callArgs?.[0]).toContain('/api/users')
-				done()
-			},
-			error: done,
-		})
+		await lastValueFrom(interceptor.intercept(ctx, handler))
+		const callArgs = logSpy.mock.calls[0]
+		expect(callArgs?.[0]).toContain('POST')
+		expect(callArgs?.[0]).toContain('/api/users')
 	})
 
-	it('should log duration in metadata', (done) => {
+	it('should log duration in metadata', async () => {
 		const ctx = makeContext('GET', '/api/test')
 		const handler = makeHandler()
 
-		interceptor.intercept(ctx, handler).subscribe({
-			complete: () => {
-				const metadata = logSpy.mock.calls[0]?.[1] as Record<string, unknown>
-				expect(typeof metadata?.duration).toBe('number')
-				done()
-			},
-			error: done,
-		})
+		await lastValueFrom(interceptor.intercept(ctx, handler))
+		const metadata = logSpy.mock.calls[0]?.[1] as Record<string, unknown>
+		expect(typeof metadata?.duration).toBe('number')
 	})
 
-	it('should log statusCode in metadata', (done) => {
+	it('should log statusCode in metadata', async () => {
 		const ctx = makeContext('GET', '/api/test')
 		const handler = makeHandler()
 
-		interceptor.intercept(ctx, handler).subscribe({
-			complete: () => {
-				const metadata = logSpy.mock.calls[0]?.[1] as Record<string, unknown>
-				expect(metadata?.statusCode).toBeDefined()
-				done()
-			},
-			error: done,
-		})
+		await lastValueFrom(interceptor.intercept(ctx, handler))
+		const metadata = logSpy.mock.calls[0]?.[1] as Record<string, unknown>
+		expect(metadata?.statusCode).toBeDefined()
 	})
 
-	it('should pass through response value unchanged', (done) => {
+	it('should pass through response value unchanged', async () => {
 		const ctx = makeContext()
 		const handler = makeHandler({ id: 42, name: 'test' })
-		const received: unknown[] = []
 
-		interceptor.intercept(ctx, handler).subscribe({
-			next: (v) => received.push(v),
-			complete: () => {
-				expect(received[0]).toEqual({ id: 42, name: 'test' })
-				done()
-			},
-			error: done,
-		})
+		const value = await firstValueFrom(interceptor.intercept(ctx, handler))
+		expect(value).toEqual({ id: 42, name: 'test' })
 	})
 
-	it('should re-throw errors so NestJS exception filters handle them', (done) => {
+	it('should re-throw errors so NestJS exception filters handle them', async () => {
 		const ctx = makeContext()
 		const handler = makeErrorHandler(new Error('db error'))
 
-		interceptor.intercept(ctx, handler).subscribe({
-			next: () => done(new Error('should not emit')),
-			error: (err: Error) => {
-				expect(err.message).toBe('db error')
-				done()
-			},
-		})
+		await expect(
+			firstValueFrom(interceptor.intercept(ctx, handler)),
+		).rejects.toMatchObject({ message: 'db error' })
 	})
 })

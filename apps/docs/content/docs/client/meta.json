@@ -1,4 +1,4 @@
 {
   "title": "Client",
-  "pages": ["index", "admin", "ui"]
+  "pages": ["index", "sdk", "codegen", "admin", "ui"]
 }

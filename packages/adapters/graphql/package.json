@@ -22,7 +22,9 @@
   "scripts": {
     "build:dev": "tsup --watch",
     "build": "tsup",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "devDependencies": {
     "@magnet-cms/common": "workspace:*",
@@ -36,7 +38,11 @@
     "graphql-scalars": "^1.24.0",
     "@repo/biome": "workspace:*",
     "@repo/tsup": "workspace:*",
-    "@repo/typescript-config": "workspace:*"
+    "@repo/typescript-config": "workspace:*",
+    "@repo/vitest": "workspace:*",
+    "@vitest/coverage-v8": "^3.1.1",
+    "reflect-metadata": "0.2.2",
+    "vitest": "^3.1.1"
   },
   "peerDependencies": {
     "@magnet-cms/common": "^0.4.0",

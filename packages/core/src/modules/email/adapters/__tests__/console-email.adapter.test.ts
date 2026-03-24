@@ -1,16 +1,16 @@
-import { describe, expect, it, mock } from 'bun:test'
 import type { EmailAdapter, SendEmailOptions } from '@magnet-cms/common'
+import { describe, expect, it, vi } from 'vitest'
 import { ConsoleEmailAdapter } from '../console-email.adapter'
 
 function createMockLogger() {
 	return {
-		log: mock(() => {}),
-		warn: mock(() => {}),
-		error: mock(() => {}),
-		debug: mock(() => {}),
-		verbose: mock(() => {}),
-		fatal: mock(() => {}),
-		setContext: mock(() => {}),
+		log: vi.fn(() => {}),
+		warn: vi.fn(() => {}),
+		error: vi.fn(() => {}),
+		debug: vi.fn(() => {}),
+		verbose: vi.fn(() => {}),
+		fatal: vi.fn(() => {}),
+		setContext: vi.fn(() => {}),
 	}
 }
 
@@ -19,15 +19,15 @@ function createMockInnerAdapter(
 ): EmailAdapter {
 	return {
 		name: 'mock',
-		send: mock(async () => ({
+		send: vi.fn(async () => ({
 			id: 'mock-123',
 			accepted: true,
 		})),
-		sendBatch: mock(async (emails: SendEmailOptions[]) =>
+		sendBatch: vi.fn(async (emails: SendEmailOptions[]) =>
 			emails.map(() => ({ id: 'mock-123', accepted: true as const })),
 		),
-		verify: mock(async () => true),
-		dispose: mock(async () => {}),
+		verify: vi.fn(async () => true),
+		dispose: vi.fn(async () => {}),
 		...overrides,
 	} as EmailAdapter
 }
@@ -72,7 +72,7 @@ describe('ConsoleEmailAdapter', () => {
 	it('should catch inner adapter failure — logs warning and returns failure', async () => {
 		const logger = createMockLogger()
 		const inner = createMockInnerAdapter({
-			send: mock(async () => {
+			send: vi.fn(async () => {
 				throw new Error('SMTP connection failed')
 			}),
 		})

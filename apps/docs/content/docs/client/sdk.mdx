@@ -1,0 +1,167 @@
+---
+title: Client SDK
+description: Type-safe client for the Magnet CMS API powered by openapi-fetch
+---
+
+`@magnet-cms/client` is a type-safe HTTP client for the Magnet CMS API. It wraps [`openapi-fetch`](https://openapi-ts.dev/openapi-fetch/) and provides convenience methods for content CRUD, authentication, and direct API access.
+
+## Installation
+
+```bash
+bun add @magnet-cms/client
+# or
+npm install @magnet-cms/client
+```
+
+## Quick Start
+
+### 1. Generate types from your server
+
+```bash
+npx @magnet-cms/client generate --url http://localhost:3000/oas.json -o ./src/magnet.d.ts
+```
+
+### 2. Create a typed client
+
+```typescript
+import { createMagnetClient } from '@magnet-cms/client'
+import type { paths } from './magnet.d.ts'
+
+const client = createMagnetClient<paths>({
+  baseUrl: 'http://localhost:3000',
+  token: 'your-jwt-token',
+})
+```
+
+### 3. Fetch content
+
+```typescript
+const { data, error } = await client.content.list('post')
+if (data) {
+  console.log(data.items)
+}
+```
+
+## Configuration
+
+`createMagnetClient<Paths>(config)` accepts:
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `baseUrl` | `string` | Base URL of your Magnet CMS server (required) |
+| `token` | `string` | JWT bearer token for authenticated requests |
+| `apiKey` | `string` | API key (`x-api-key` header) |
+| `headers` | `Record<string, string>` | Additional request headers |
+
+When both `token` and `apiKey` are provided, `token` takes precedence (both headers are set).
+
+## Content API
+
+The `client.content` namespace provides typed CRUD methods for content management:
+
+### List documents
+
+```typescript
+const { data } = await client.content.list('post', {
+  page: 1,
+  limit: 20,
+  status: 'published',
+})
+```
+
+### Get a document
+
+```typescript
+const { data } = await client.content.get('post', 'document-id-here')
+```
+
+### Create a document
+
+```typescript
+const { data, error } = await client.content.create('post', {
+  title: 'Hello World',
+  body: 'My first post',
+})
+```
+
+### Update a document
+
+```typescript
+const { data } = await client.content.update('post', 'document-id-here', {
+  title: 'Updated Title',
+})
+```
+
+### Delete a document
+
+```typescript
+const { error } = await client.content.delete('post', 'document-id-here')
+```
+
+### Publish / Unpublish
+
+```typescript
+await client.content.publish('post', 'document-id-here')
+await client.content.unpublish('post', 'document-id-here')
+```
+
+## Auth API
+
+The `client.auth` namespace provides authentication methods:
+
+### Login
+
+```typescript
+const { data } = await client.auth.login('user@example.com', 'password')
+if (data) {
+  const token = data.token
+}
+```
+
+### Register
+
+```typescript
+const { data } = await client.auth.register({
+  email: 'user@example.com',
+  password: 'password',
+  name: 'Jane Doe',
+})
+```
+
+### Get current user
+
+```typescript
+const { data } = await client.auth.me()
+console.log(data?.user)
+```
+
+## Raw Client
+
+For endpoints not covered by the convenience methods, use `client.raw` — the underlying `openapi-fetch` client with full type coverage:
+
+```typescript
+const { data } = await client.raw.GET('/content/{schema}', {
+  params: {
+    path: { schema: 'post' },
+    query: { limit: 10 },
+  },
+})
+```
+
+`client.raw` gives you autocomplete for all paths defined in your generated `paths` type.
+
+## Environment Support
+
+`@magnet-cms/client` uses the native `fetch` API and works in:
+
+- Node.js 18+ (native fetch)
+- Bun
+- Modern browsers
+- Edge runtimes (Cloudflare Workers, Vercel Edge)
+
+No server-side dependencies — the package has no dependency on `@magnet-cms/core` or NestJS.
+
+## Next Steps
+
+- [Type Generation](/docs/client/codegen) — generate types from your running server
+- [OpenAPI Module](/docs/core/openapi-module) — configure the spec endpoint on the server

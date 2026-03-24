@@ -1,31 +1,33 @@
-import { beforeEach, describe, expect, it, mock } from 'bun:test'
-import { ResendEmailAdapter } from '../resend.adapter'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-// Mock Resend SDK
-const mockSend = mock(() =>
-	Promise.resolve({ data: { id: 'resend-001' }, error: null }),
-)
-const mockBatchSend = mock(() =>
-	Promise.resolve({
-		data: { data: [{ id: 'resend-batch-1' }, { id: 'resend-batch-2' }] },
-		error: null,
-	}),
-)
-const mockDomainsList = mock(() => Promise.resolve({ error: null }))
+const mocks = vi.hoisted(() => ({
+	mockSend: vi.fn(() =>
+		Promise.resolve({ data: { id: 'resend-001' }, error: null }),
+	),
+	mockBatchSend: vi.fn(() =>
+		Promise.resolve({
+			data: { data: [{ id: 'resend-batch-1' }, { id: 'resend-batch-2' }] },
+			error: null,
+		}),
+	),
+	mockDomainsList: vi.fn(() => Promise.resolve({ error: null })),
+}))
 
-mock.module('resend', () => ({
+vi.mock('resend', () => ({
 	Resend: class {
-		emails = { send: mockSend }
-		batch = { send: mockBatchSend }
-		domains = { list: mockDomainsList }
+		emails = { send: mocks.mockSend }
+		batch = { send: mocks.mockBatchSend }
+		domains = { list: mocks.mockDomainsList }
 	},
 }))
 
+import { ResendEmailAdapter } from '../resend.adapter'
+
 describe('ResendEmailAdapter', () => {
 	beforeEach(() => {
-		mockSend.mockClear()
-		mockBatchSend.mockClear()
-		mockDomainsList.mockClear()
+		mocks.mockSend.mockClear()
+		mocks.mockBatchSend.mockClear()
+		mocks.mockDomainsList.mockClear()
 	})
 
 	it('should have name "resend"', () => {
@@ -44,11 +46,11 @@ describe('ResendEmailAdapter', () => {
 
 		expect(result.accepted).toBe(true)
 		expect(result.id).toBe('resend-001')
-		expect(mockSend).toHaveBeenCalledTimes(1)
+		expect(mocks.mockSend).toHaveBeenCalledTimes(1)
 	})
 
 	it('should handle API error response', async () => {
-		mockSend.mockImplementationOnce(() =>
+		mocks.mockSend.mockImplementationOnce(() =>
 			Promise.resolve({
 				data: null,
 				error: { message: 'Invalid API key', name: 'validation_error' },
@@ -67,7 +69,7 @@ describe('ResendEmailAdapter', () => {
 	})
 
 	it('should handle thrown exception', async () => {
-		mockSend.mockImplementationOnce(() =>
+		mocks.mockSend.mockImplementationOnce(() =>
 			Promise.reject(new Error('Network error')),
 		)
 		const adapter = new ResendEmailAdapter({ apiKey: 're_test_key' })
@@ -93,11 +95,11 @@ describe('ResendEmailAdapter', () => {
 		expect(results[0]?.accepted).toBe(true)
 		expect(results[0]?.id).toBe('resend-batch-1')
 		expect(results[1]?.id).toBe('resend-batch-2')
-		expect(mockBatchSend).toHaveBeenCalledTimes(1)
+		expect(mocks.mockBatchSend).toHaveBeenCalledTimes(1)
 	})
 
 	it('should handle sendBatch API error', async () => {
-		mockBatchSend.mockImplementationOnce(() =>
+		mocks.mockBatchSend.mockImplementationOnce(() =>
 			Promise.resolve({
 				data: null,
 				error: { message: 'Rate limit exceeded', name: 'rate_limit_error' },
@@ -117,11 +119,11 @@ describe('ResendEmailAdapter', () => {
 		const adapter = new ResendEmailAdapter({ apiKey: 're_test_key' })
 		const result = await adapter.verify()
 		expect(result).toBe(true)
-		expect(mockDomainsList).toHaveBeenCalledTimes(1)
+		expect(mocks.mockDomainsList).toHaveBeenCalledTimes(1)
 	})
 
 	it('should return false for verify when domains.list returns a non-restricted error', async () => {
-		mockDomainsList.mockImplementationOnce(() =>
+		mocks.mockDomainsList.mockImplementationOnce(() =>
 			Promise.resolve({
 				error: { message: 'Unauthorized', name: 'auth_error' },
 			}),
@@ -132,7 +134,7 @@ describe('ResendEmailAdapter', () => {
 	})
 
 	it('should return true for verify when API key is sending-only (restricted_api_key)', async () => {
-		mockDomainsList.mockImplementationOnce(() =>
+		mocks.mockDomainsList.mockImplementationOnce(() =>
 			Promise.resolve({
 				data: null,
 				error: {
@@ -148,7 +150,7 @@ describe('ResendEmailAdapter', () => {
 	})
 
 	it('should return false for verify when API key is invalid (validation_error)', async () => {
-		mockDomainsList.mockImplementationOnce(() =>
+		mocks.mockDomainsList.mockImplementationOnce(() =>
 			Promise.resolve({
 				data: null,
 				error: {

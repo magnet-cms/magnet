@@ -1,3 +1,4 @@
+import Handlebars from 'handlebars'
 /**
  * TemplateService unit tests.
  *
@@ -11,8 +12,7 @@
  * Full DB and React Email SSR integration is covered in:
  * apps/e2e/tests/api/email-templates.spec.ts
  */
-import { describe, expect, it } from 'bun:test'
-import Handlebars from 'handlebars'
+import { describe, expect, it } from 'vitest'
 
 // -------- Pure helpers mirroring TemplateService logic --------
 

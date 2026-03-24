@@ -1,17 +1,25 @@
 import { existsSync } from 'node:fs'
+import { createRequire } from 'node:module'
 import { join } from 'node:path'
 import type { DBConfig } from '~/types/database.types'
+import { getDatabaseAdapterResolutionRoots } from './database-adapter-module.util'
 
 export type SupportedAdapter = 'mongoose' | 'drizzle'
 
 let cachedAdapter: SupportedAdapter | null = null
 
 function isPackageInstalled(packageName: string): boolean {
-	try {
-		return existsSync(join(require.resolve(packageName), '../../'))
-	} catch {
-		return false
+	for (const root of getDatabaseAdapterResolutionRoots()) {
+		const manifestPath = join(root, 'package.json')
+		if (!existsSync(manifestPath)) continue
+		try {
+			createRequire(manifestPath).resolve(packageName)
+			return true
+		} catch {
+			// package not found in this root, try next
+		}
 	}
+	return false
 }
 
 /**

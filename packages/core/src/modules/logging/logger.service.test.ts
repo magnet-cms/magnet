@@ -1,18 +1,18 @@
-import { afterEach, beforeEach, describe, expect, it, spyOn } from 'bun:test'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { eventContextStorage } from '~/modules/events/event-context.interceptor'
 import { MagnetLogger } from './logger.service'
 
 describe('MagnetLogger', () => {
-	let stdoutSpy: ReturnType<typeof spyOn>
-	let stderrSpy: ReturnType<typeof spyOn>
+	let stdoutSpy: ReturnType<typeof vi.spyOn>
+	let stderrSpy: ReturnType<typeof vi.spyOn>
 
 	beforeEach(() => {
 		process.env.LOG_LEVEL = undefined
 		process.env.LOG_FORMAT = undefined
 		process.env.LOG_TIMESTAMPS = undefined
 		process.env.LOG_STACK_TRACES = undefined
-		stdoutSpy = spyOn(process.stdout, 'write').mockImplementation(() => true)
-		stderrSpy = spyOn(process.stderr, 'write').mockImplementation(() => true)
+		stdoutSpy = vi.spyOn(process.stdout, 'write').mockImplementation(() => true)
+		stderrSpy = vi.spyOn(process.stderr, 'write').mockImplementation(() => true)
 	})
 
 	afterEach(() => {
