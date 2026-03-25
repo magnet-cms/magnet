@@ -20,6 +20,11 @@ describe('OpenAPIModule.forRoot', () => {
 		expect((configProvider as { useValue: unknown }).useValue).toEqual(config)
 	})
 
+	it('should register an HTTP controller for spec and Swagger UI', () => {
+		const mod = OpenAPIModule.forRoot({})
+		expect(mod.controllers?.length).toBe(1)
+	})
+
 	it('should provide OpenAPIService', () => {
 		const mod = OpenAPIModule.forRoot({})
 		expect(mod.providers).toContain(OpenAPIService)

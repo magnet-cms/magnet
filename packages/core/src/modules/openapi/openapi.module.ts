@@ -1,4 +1,5 @@
 import { DynamicModule, Module } from '@nestjs/common'
+import { createOpenAPIController } from './openapi.controller'
 import { OpenAPIService } from './openapi.service'
 import { OPENAPI_CONFIG } from './openapi.types'
 import type { OpenAPIConfig } from './openapi.types'
@@ -14,8 +15,10 @@ export class OpenAPIModule {
 	 * ```
 	 */
 	static forRoot(config: OpenAPIConfig = {}): DynamicModule {
+		const HttpController = createOpenAPIController(config)
 		return {
 			module: OpenAPIModule,
+			controllers: [HttpController],
 			global: false,
 			providers: [
 				{

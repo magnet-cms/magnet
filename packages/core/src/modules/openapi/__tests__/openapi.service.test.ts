@@ -1,56 +1,16 @@
 import { describe, expect, it, vi } from 'vitest'
 import { OpenAPIService } from '../openapi.service'
-import { OPENAPI_CONFIG } from '../openapi.types'
 import type { OpenAPIConfig } from '../openapi.types'
 
 function makeService(config: OpenAPIConfig = {}) {
-	const routes: Record<string, (req: unknown, res: unknown) => void> = {}
-	const httpAdapterHost = {
-		httpAdapter: {
-			get: vi.fn(
-				(path: string, handler: (req: unknown, res: unknown) => void) => {
-					routes[path] = handler
-				},
-			),
-		},
-	} as never
-
-	const service = new OpenAPIService(httpAdapterHost, config)
-	service[OPENAPI_CONFIG as never] = config
-	return { service, httpAdapterHost, routes }
+	const service = new OpenAPIService(config)
+	return { service }
 }
 
 describe('OpenAPIService', () => {
 	describe('onApplicationBootstrap', () => {
-		it('should register GET /oas.json route', () => {
-			const { service, httpAdapterHost } = makeService()
-			service.onApplicationBootstrap()
-			expect(httpAdapterHost.httpAdapter.get).toHaveBeenCalledWith(
-				'/oas.json',
-				expect.any(Function),
-			)
-		})
-
-		it('should register GET /api-docs route by default', () => {
-			const { service, httpAdapterHost } = makeService()
-			service.onApplicationBootstrap()
-			expect(httpAdapterHost.httpAdapter.get).toHaveBeenCalledWith(
-				'/api-docs',
-				expect.any(Function),
-			)
-		})
-
-		it('should register configured UI path instead of /api-docs', () => {
-			const { service, httpAdapterHost } = makeService({ path: '/docs' })
-			service.onApplicationBootstrap()
-			expect(httpAdapterHost.httpAdapter.get).toHaveBeenCalledWith(
-				'/docs',
-				expect.any(Function),
-			)
-		})
-
-		it('should not throw when httpAdapter is not available', () => {
-			const service = new OpenAPIService({ httpAdapter: null } as never, {})
+		it('should build document without http adapter', () => {
+			const { service } = makeService()
 			expect(() => service.onApplicationBootstrap()).not.toThrow()
 		})
 	})
@@ -70,32 +30,11 @@ describe('OpenAPIService', () => {
 		})
 	})
 
-	describe('/oas.json handler', () => {
-		it('should respond with JSON content type and document', () => {
-			const { service, routes } = makeService({ title: 'Test API' })
+	describe('document content', () => {
+		it('should include configured title in built document', () => {
+			const { service } = makeService({ title: 'Test API' })
 			service.onApplicationBootstrap()
-
-			const res = { type: vi.fn().mockReturnThis(), send: vi.fn() }
-			routes['/oas.json']({}, res)
-
-			expect(res.type).toHaveBeenCalledWith('application/json')
-			expect(res.send).toHaveBeenCalledWith(
-				expect.stringContaining('"openapi": "3.0.0"'),
-			)
-		})
-	})
-
-	describe('/api-docs handler', () => {
-		it('should respond with HTML content type', () => {
-			const { service, routes } = makeService({ title: 'My API' })
-			service.onApplicationBootstrap()
-
-			const res = { type: vi.fn().mockReturnThis(), send: vi.fn() }
-			routes['/api-docs']({}, res)
-
-			expect(res.type).toHaveBeenCalledWith('text/html')
-			const html: string = res.send.mock.calls[0][0]
-			expect(html).toContain('My API')
+			expect(service.getDocument()?.info.title).toBe('Test API')
 		})
 	})
 
