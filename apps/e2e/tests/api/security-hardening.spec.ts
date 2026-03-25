@@ -5,7 +5,85 @@ import { testData } from '../../src/helpers/test-data'
 // Cat schema name (as registered in the example app)
 const CAT_SCHEMA = 'Cat'
 
+function notesFromContentPayload(
+	fetched: Record<string, unknown>,
+): string | undefined {
+	if (typeof fetched.notes === 'string') return fetched.notes
+	const data = fetched.data as { notes?: string } | undefined
+	return typeof data?.notes === 'string' ? data.notes : undefined
+}
+
 test.describe('Security Hardening', () => {
+	// ============================================================================
+	// Rate Limiting (@nestjs/throttler on auth endpoints)
+	// Run before RichText — long-running tests can reset the per-IP throttle window.
+	// ============================================================================
+
+	test.describe('Auth rate limiting', () => {
+		test('POST /auth/login returns 429 after exceeding limit', async ({
+			request,
+			apiBaseURL,
+		}) => {
+			test.skip(
+				['1', 'true', 'yes'].includes(
+					(process.env.MAGNET_E2E_DISABLE_AUTH_THROTTLE ?? '').toLowerCase(),
+				),
+				'MAGNET_E2E_DISABLE_AUTH_THROTTLE set — use `bun run test:ci` to assert real 429s against an API without throttle bypass',
+			)
+			// Send 15 rapid login attempts with invalid credentials.
+			// The limit is 10/min per IP — at least one in this batch must return 429.
+			// Note: @nestjs/throttler tracks by client IP, not by email/user identity,
+			// so randomizing emails does not affect whether 429 is triggered.
+			const attempts = 15
+			const responses: number[] = []
+
+			for (let i = 0; i < attempts; i++) {
+				const res = await request.post(`${apiBaseURL}/auth/login`, {
+					data: {
+						email: `ratelimit-${randomUUID()}@example.com`,
+						password: 'InvalidPass123!',
+					},
+					headers: { 'Content-Type': 'application/json' },
+				})
+				responses.push(res.status())
+			}
+
+			// At least one response must be 429 (Too Many Requests)
+			expect(responses).toContain(429)
+		})
+
+		test('429 response includes Retry-After header', async ({
+			request,
+			apiBaseURL,
+		}) => {
+			test.skip(
+				['1', 'true', 'yes'].includes(
+					(process.env.MAGNET_E2E_DISABLE_AUTH_THROTTLE ?? '').toLowerCase(),
+				),
+				'MAGNET_E2E_DISABLE_AUTH_THROTTLE set — use `bun run test:ci` to assert real 429s against an API without throttle bypass',
+			)
+			// Exhaust the rate limit (IP-based tracking) and capture the first 429
+			let retryAfterHeader: string | null = null
+
+			for (let i = 0; i < 20; i++) {
+				const res = await request.post(`${apiBaseURL}/auth/login`, {
+					data: {
+						email: `retry-${randomUUID()}@example.com`,
+						password: 'InvalidPass!',
+					},
+					headers: { 'Content-Type': 'application/json' },
+				})
+				if (res.status() === 429) {
+					retryAfterHeader = res.headers()['retry-after'] ?? null
+					break
+				}
+			}
+
+			// We should have hit the rate limit
+			expect(retryAfterHeader).not.toBeNull()
+		})
+	})
+
 	// ============================================================================
 	// Security Headers (helmet middleware)
 	// ============================================================================
@@ -34,63 +112,6 @@ test.describe('Security Hardening', () => {
 		}) => {
 			const response = await request.get(`${apiBaseURL}/health`)
 			expect(response.headers()['x-dns-prefetch-control']).toBeDefined()
-		})
-	})
-
-	// ============================================================================
-	// Rate Limiting (@nestjs/throttler on auth endpoints)
-	// ============================================================================
-
-	test.describe('Auth rate limiting', () => {
-		test('POST /auth/login returns 429 after exceeding limit', async ({
-			request,
-			apiBaseURL,
-		}) => {
-			// Send 15 rapid login attempts with invalid credentials.
-			// The limit is 10/min per IP — at least one in this batch must return 429.
-			// Note: @nestjs/throttler tracks by client IP, not by email/user identity,
-			// so randomizing emails does not affect whether 429 is triggered.
-			const attempts = 15
-			const responses: number[] = []
-
-			for (let i = 0; i < attempts; i++) {
-				const res = await request.post(`${apiBaseURL}/auth/login`, {
-					data: {
-						email: `ratelimit-${randomUUID()}@example.com`,
-						password: 'InvalidPass123!',
-					},
-					headers: { 'Content-Type': 'application/json' },
-				})
-				responses.push(res.status())
-			}
-
-			// At least one response must be 429 (Too Many Requests)
-			expect(responses).toContain(429)
-		})
-
-		test('429 response includes Retry-After header', async ({
-			request,
-			apiBaseURL,
-		}) => {
-			// Exhaust the rate limit (IP-based tracking) and capture the first 429
-			let retryAfterHeader: string | null = null
-
-			for (let i = 0; i < 20; i++) {
-				const res = await request.post(`${apiBaseURL}/auth/login`, {
-					data: {
-						email: `retry-${randomUUID()}@example.com`,
-						password: 'InvalidPass!',
-					},
-					headers: { 'Content-Type': 'application/json' },
-				})
-				if (res.status() === 429) {
-					retryAfterHeader = res.headers()['retry-after'] ?? null
-					break
-				}
-			}
-
-			// We should have hit the rate limit
-			expect(retryAfterHeader).not.toBeNull()
 		})
 	})
 
@@ -130,8 +151,9 @@ test.describe('Security Hardening', () => {
 				documentId,
 			)
 			expect(getRes.ok()).toBeTruthy()
-			const fetched = await getRes.json()
-			const notes = fetched.data?.notes as string
+			const fetched = (await getRes.json()) as Record<string, unknown>
+			const notes = notesFromContentPayload(fetched)
+			expect(notes).toBeDefined()
 
 			expect(notes).not.toContain('<script>')
 			expect(notes).not.toContain('alert')
@@ -165,8 +187,9 @@ test.describe('Security Hardening', () => {
 				documentId,
 			)
 			expect(getRes.ok()).toBeTruthy()
-			const fetched = await getRes.json()
-			const notes = fetched.data?.notes as string
+			const fetched = (await getRes.json()) as Record<string, unknown>
+			const notes = notesFromContentPayload(fetched)
+			expect(notes).toBeDefined()
 
 			expect(notes).toContain('<p>Hello <strong>world</strong></p>')
 			expect(notes).toContain('<em>italic</em>')
@@ -198,8 +221,9 @@ test.describe('Security Hardening', () => {
 				documentId,
 			)
 			expect(getRes.ok()).toBeTruthy()
-			const fetched = await getRes.json()
-			const notes = fetched.data?.notes as string
+			const fetched = (await getRes.json()) as Record<string, unknown>
+			const notes = notesFromContentPayload(fetched)
+			expect(notes).toBeDefined()
 
 			expect(notes).not.toContain('javascript:')
 		})

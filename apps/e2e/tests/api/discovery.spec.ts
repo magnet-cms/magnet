@@ -30,9 +30,11 @@ test.describe('Discovery API', () => {
 			const response = await authenticatedApiClient.getSchemas()
 			const schemas = await response.json()
 
-			// Schemas endpoint returns string[] of schema names (lowercase)
-			// The mongoose example app registers Cat, Owner, Veterinarian schemas
-			expect(schemas).toContain('cat')
+			// Endpoint returns schema summaries (objects with `name`) or legacy string names
+			const hasCat = schemas.some((entry: string | { name?: string }) =>
+				typeof entry === 'string' ? entry === 'cat' : entry.name === 'cat',
+			)
+			expect(hasCat).toBe(true)
 		})
 
 		test('GET /discovery/schemas/:name returns schema metadata', async ({

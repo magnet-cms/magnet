@@ -28,8 +28,10 @@ authTest.describe('Email Templates UI', () => {
 		)
 		await page.waitForLoadState('networkidle')
 
-		// At least the seeded 'welcome' template slug should appear
-		await expect(page.getByText('welcome', { exact: false })).toBeVisible({
+		// Slug badge uses exact lowercase "welcome"; avoid strict-mode clash with subject preview
+		await expect(
+			page.getByText('welcome', { exact: true }).first(),
+		).toBeVisible({
 			timeout: 10000,
 		})
 	})
@@ -59,8 +61,9 @@ authTest.describe('Email Templates UI', () => {
 		await searchInput.fill('welcome')
 		await page.waitForTimeout(300)
 
-		// After searching, 'welcome' template should remain visible
-		await expect(page.getByText('welcome', { exact: false })).toBeVisible()
+		await expect(
+			page.getByText('welcome', { exact: true }).first(),
+		).toBeVisible()
 	})
 
 	authTest('create template button navigates to editor', async ({ page }) => {
@@ -69,7 +72,9 @@ authTest.describe('Email Templates UI', () => {
 		)
 		await page.waitForLoadState('networkidle')
 
-		const createBtn = page.getByRole('button', { name: /create template/i })
+		const createBtn = page.getByRole('button', {
+			name: /new template|create template|novo modelo|nueva plantilla/i,
+		})
 		await expect(createBtn).toBeVisible({ timeout: 10000 })
 		await createBtn.click()
 
@@ -82,20 +87,14 @@ authTest.describe('Email Templates UI', () => {
 		)
 		await page.waitForLoadState('networkidle')
 
-		// Slug and subject fields should be present
+		// Slug uses placeholder "welcome"; subject uses a Handlebars example string
 		await expect(
-			page
-				.getByPlaceholder(/slug/i)
-				.or(page.locator('input[name="slug"], input[placeholder*="slug"]')),
+			page.locator('input[placeholder="welcome"]').first(),
 		).toBeVisible({
 			timeout: 10000,
 		})
 		await expect(
-			page
-				.getByPlaceholder(/subject/i)
-				.or(
-					page.locator('input[name="subject"], input[placeholder*="subject"]'),
-				),
+			page.locator('input[placeholder^="Welcome{{"]').first(),
 		).toBeVisible()
 	})
 

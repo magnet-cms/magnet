@@ -1,5 +1,33 @@
+import { randomBytes } from 'node:crypto'
 import type { APIRequestContext } from '@playwright/test'
 import { expect, test } from '../../src/fixtures/auth.fixture'
+import { testData } from '../../src/helpers/test-data'
+
+/** Cat.tagID must be Length(10, 20) in the mongoose example. */
+function graphqlTagId(prefix: string): string {
+	const hex = randomBytes(6).toString('hex')
+	return `${prefix}-${hex}`
+}
+
+async function createOwnerId(
+	request: APIRequestContext,
+	apiBaseURL: string,
+	token: string,
+): Promise<string> {
+	const ownerData = testData.owner.create()
+	const res = await request.post(`${apiBaseURL}/owners`, {
+		headers: {
+			Authorization: `Bearer ${token}`,
+			'Content-Type': 'application/json',
+		},
+		data: ownerData,
+	})
+	expect(res.ok()).toBeTruthy()
+	const owner = (await res.json()) as { id?: string; _id?: string }
+	const id = owner.id ?? owner._id
+	expect(id).toBeTruthy()
+	return id as string
+}
 
 const INTROSPECTION_QUERY = `
   query IntrospectionQuery {
@@ -101,6 +129,7 @@ test.describe('GraphQL API', () => {
 		apiBaseURL,
 		testUser,
 	}) => {
+		const tagID = graphqlTagId('gql')
 		const response = await gql(
 			request,
 			apiBaseURL,
@@ -116,7 +145,8 @@ test.describe('GraphQL API', () => {
 					breed: 'Siamese',
 					weight: 4.5,
 					castrated: false,
-					tagID: 'gql-test-001',
+					birthdate: '2019-06-15',
+					tagID,
 				},
 				locale: 'en',
 			},
@@ -135,16 +165,18 @@ test.describe('GraphQL API', () => {
 		apiBaseURL,
 		testUser,
 	}) => {
-		// First create a cat
+		const ownerId = await createOwnerId(request, apiBaseURL, testUser.token)
+		const tagID = graphqlTagId('pub')
+		// First create a cat (owner + birthdate required for validation on publish)
 		const createResponse = await gql(
 			request,
 			apiBaseURL,
-			`mutation {
-        createCat(input: { name: "Publish Test", tagID: "pub-001", breed: "Tabby", weight: 3.0, castrated: false }) {
+			`mutation CreateForPublish($tagID: String!, $ownerId: String!) {
+        createCat(input: { name: "Publish Test", tagID: $tagID, breed: "Tabby", weight: 3.0, castrated: false, birthdate: "2020-01-10", owner: $ownerId }) {
           documentId
         }
       }`,
-			undefined,
+			{ tagID, ownerId },
 			testUser.token,
 		)
 		const createBody = await createResponse.json()

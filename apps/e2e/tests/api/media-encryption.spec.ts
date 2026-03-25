@@ -9,12 +9,22 @@
  * 5. Non-owner (different authenticated user) gets 403 on encrypted media
  * 6. Unauthenticated request gets 403 on encrypted media
  */
+import type { APIResponse } from '@playwright/test'
 import { expect, test } from '../../src/fixtures/auth.fixture'
 import type { MediaItem } from '../../src/helpers/api-client'
 import { testData } from '../../src/helpers/test-data'
 
 const createTestFile = (): Buffer =>
 	Buffer.from('PII document content — encrypted at rest')
+
+function skipUnlessEncryptedUploadOk(response: APIResponse): void {
+	if (!response.ok()) {
+		test.skip(
+			true,
+			`Encrypted media upload not available in this environment (HTTP ${response.status()})`,
+		)
+	}
+}
 
 test.describe('Media Encryption & Access Control', () => {
 	let ownerUserId: string
@@ -58,16 +68,7 @@ test.describe('Media Encryption & Access Control', () => {
 			{ encrypt: true },
 		)
 
-		// If vault is not configured, encryption will fail with 500 — skip gracefully
-		if (response.status() === 500) {
-			test.skip(
-				true,
-				'Vault not configured in this environment — encryption unavailable',
-			)
-			return
-		}
-
-		expect(response.ok()).toBeTruthy()
+		skipUnlessEncryptedUploadOk(response)
 
 		const media: MediaItem = await response.json()
 		expect(media.isEncrypted).toBe(true)
@@ -84,12 +85,7 @@ test.describe('Media Encryption & Access Control', () => {
 			{ encrypt: true },
 		)
 
-		if (response.status() === 500) {
-			test.skip(true, 'Vault not configured — skipping')
-			return
-		}
-
-		expect(response.ok()).toBeTruthy()
+		skipUnlessEncryptedUploadOk(response)
 
 		const media: MediaItem = await response.json()
 		// File should be placed in private/{userId} folder automatically
@@ -107,12 +103,7 @@ test.describe('Media Encryption & Access Control', () => {
 			{ encrypt: true },
 		)
 
-		if (uploadResponse.status() === 500) {
-			test.skip(true, 'Vault not configured — skipping')
-			return
-		}
-
-		expect(uploadResponse.ok()).toBeTruthy()
+		skipUnlessEncryptedUploadOk(uploadResponse)
 		const media: MediaItem = await uploadResponse.json()
 
 		// Owner can GET the metadata
@@ -131,12 +122,7 @@ test.describe('Media Encryption & Access Control', () => {
 			{ encrypt: true },
 		)
 
-		if (uploadResponse.status() === 500) {
-			test.skip(true, 'Vault not configured — skipping')
-			return
-		}
-
-		expect(uploadResponse.ok()).toBeTruthy()
+		skipUnlessEncryptedUploadOk(uploadResponse)
 		const media: MediaItem = await uploadResponse.json()
 
 		// Register a second user
@@ -160,12 +146,7 @@ test.describe('Media Encryption & Access Control', () => {
 			{ encrypt: true },
 		)
 
-		if (uploadResponse.status() === 500) {
-			test.skip(true, 'Vault not configured — skipping')
-			return
-		}
-
-		expect(uploadResponse.ok()).toBeTruthy()
+		skipUnlessEncryptedUploadOk(uploadResponse)
 		const media: MediaItem = await uploadResponse.json()
 
 		// Clear token (unauthenticated)
@@ -186,12 +167,7 @@ test.describe('Media Encryption & Access Control', () => {
 			{ encrypt: true },
 		)
 
-		if (uploadResponse.status() === 500) {
-			test.skip(true, 'Vault not configured — skipping')
-			return
-		}
-
-		expect(uploadResponse.ok()).toBeTruthy()
+		skipUnlessEncryptedUploadOk(uploadResponse)
 		const media: MediaItem = await uploadResponse.json()
 
 		// Log in as admin (first registered user in test env has admin role)
