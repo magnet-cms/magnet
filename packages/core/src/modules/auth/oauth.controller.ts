@@ -1,4 +1,5 @@
 import { Controller, Get, Param, Req, Res, UseGuards } from '@nestjs/common'
+import { Throttle, ThrottlerGuard } from '@nestjs/throttler'
 import type { Request, Response } from 'express'
 import { SettingsService } from '~/modules/settings'
 import { AuthService } from './auth.service'
@@ -30,6 +31,7 @@ interface OAuthRequest extends Request {
  *  No controller changes are needed.
  */
 @Controller('auth/oauth')
+@UseGuards(ThrottlerGuard)
 export class OAuthController {
 	constructor(
 		private readonly authService: AuthService,
@@ -41,6 +43,7 @@ export class OAuthController {
 	 * DynamicOAuthGuard selects the matching Passport strategy and triggers the
 	 * provider redirect — the controller body never executes.
 	 */
+	@Throttle({ default: { limit: 10, ttl: 60000 } })
 	@Get(':provider')
 	@UseGuards(DynamicOAuthGuard)
 	initiate(@Param('provider') _provider: string): void {
@@ -52,6 +55,7 @@ export class OAuthController {
 	 * The provider redirects here with an authorization code. Passport exchanges
 	 * the code for tokens and populates `req.user` via the strategy's validate().
 	 */
+	@Throttle({ default: { limit: 10, ttl: 60000 } })
 	@Get(':provider/callback')
 	@UseGuards(DynamicOAuthGuard)
 	async callback(

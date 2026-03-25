@@ -15,6 +15,7 @@ import { HistoryService } from '~/modules/history/history.service'
 import { MagnetLogger } from '~/modules/logging/logger.service'
 import { AUTH_STRATEGY } from '../auth/auth.constants'
 import { DiscoveryService } from '../discovery/discovery.service'
+import { sanitizeRichTextFields } from './utils/sanitize-richtext'
 
 @Injectable()
 export class ContentService {
@@ -236,7 +237,16 @@ export class ContentService {
 		options: CreateDocumentOptions = {},
 	) {
 		const model = this.getModel<T>(schemaName)
-		const result = await this.documentService.create(model, data, options)
+		const sanitizedData = sanitizeRichTextFields(
+			schemaName,
+			data as Partial<T> & Record<string, unknown>,
+			this.discoveryService,
+		)
+		const result = await this.documentService.create(
+			model,
+			sanitizedData,
+			options,
+		)
 		await this.emitEvent('content.created', {
 			schema: schemaName,
 			documentId: result.documentId,
@@ -255,10 +265,15 @@ export class ContentService {
 		options: UpdateDocumentOptions = {},
 	) {
 		const model = this.getModel<T>(schemaName)
+		const sanitizedData = sanitizeRichTextFields(
+			schemaName,
+			data as Partial<T> & Record<string, unknown>,
+			this.discoveryService,
+		)
 		const result = await this.documentService.update(
 			model,
 			documentId,
-			data,
+			sanitizedData,
 			options,
 		)
 		await this.emitEvent('content.updated', {
@@ -347,11 +362,16 @@ export class ContentService {
 		options: { createdBy?: string } = {},
 	) {
 		const model = this.getModel<T>(schemaName)
+		const sanitizedData = sanitizeRichTextFields(
+			schemaName,
+			data as Partial<T> & Record<string, unknown>,
+			this.discoveryService,
+		)
 		return this.documentService.addLocale(
 			model,
 			documentId,
 			locale,
-			data,
+			sanitizedData,
 			options,
 		)
 	}

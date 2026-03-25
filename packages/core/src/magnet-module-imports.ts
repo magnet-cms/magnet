@@ -39,6 +39,7 @@ import { NotificationModule } from './modules/notification/notification.module'
 import { OpenAPIModule } from './modules/openapi/openapi.module'
 import { PluginModule } from './modules/plugin/plugin.module'
 import { RBACModule } from './modules/rbac/rbac.module'
+import { SecurityModule } from './modules/security/security.module'
 import { SettingsModule } from './modules/settings/settings.module'
 import { StorageModule } from './modules/storage/storage.module'
 import { VaultModule } from './modules/vault/vault.module'
@@ -134,6 +135,7 @@ export function buildMagnetImports(params: BuildImportsParams): {
 		NotificationModule.forRoot(),
 		PluginModule.forRoot({ plugins: pluginConfigs }),
 		RBACModule.forRoot(globalOptions?.rbac),
+		SecurityModule,
 		SettingsModule.forRoot(),
 		StorageModuleConfig,
 		VaultModuleConfig,

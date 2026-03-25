@@ -11,6 +11,7 @@ import {
 	UnauthorizedException,
 	UseGuards,
 } from '@nestjs/common'
+import { SkipThrottle, Throttle, ThrottlerGuard } from '@nestjs/throttler'
 import type { Request } from 'express'
 import { SettingsService } from '../settings/settings.service'
 import type { RequestContext, SessionInfo } from './auth.service'
@@ -53,6 +54,7 @@ interface AuthenticatedRequest extends Request {
  * - Profile management
  */
 @Controller('auth')
+@UseGuards(ThrottlerGuard)
 export class AuthController {
 	constructor(
 		private authService: AuthService,
@@ -66,6 +68,7 @@ export class AuthController {
 	/**
 	 * Register a new user
 	 */
+	@Throttle({ default: { limit: 5, ttl: 60000 } })
 	@Post('register')
 	async register(
 		@Body() registerDto: RegisterDTO,
@@ -87,6 +90,7 @@ export class AuthController {
 	/**
 	 * Login with credentials
 	 */
+	@Throttle({ default: { limit: 10, ttl: 60000 } })
 	@Post('login')
 	async login(
 		@Body() loginDto: LoginDto,
@@ -98,6 +102,7 @@ export class AuthController {
 	/**
 	 * Refresh access token
 	 */
+	@Throttle({ default: { limit: 20, ttl: 60000 } })
 	@Post('refresh')
 	async refresh(
 		@Body() refreshTokenDto: RefreshTokenDto,
@@ -112,6 +117,7 @@ export class AuthController {
 	/**
 	 * Logout (revoke refresh token)
 	 */
+	@SkipThrottle({ default: true })
 	@Post('logout')
 	@UseGuards(DynamicAuthGuard)
 	async logout(
@@ -136,6 +142,7 @@ export class AuthController {
 	/**
 	 * Get current user info
 	 */
+	@SkipThrottle({ default: true })
 	@UseGuards(DynamicAuthGuard)
 	@Get('me')
 	async me(@Req() req: AuthenticatedRequest): Promise<AuthUser> {
@@ -166,6 +173,7 @@ export class AuthController {
 	 * enabled OAuth providers, and the active auth strategy info.
 	 * When a valid token is present, also returns onboardingCompleted.
 	 */
+	@SkipThrottle({ default: true })
 	@UseGuards(OptionalDynamicAuthGuard)
 	@Get('status')
 	async status(@Req() req: Request & { user?: AuthenticatedUser }): Promise<{
@@ -236,6 +244,7 @@ export class AuthController {
 	/**
 	 * Get active sessions
 	 */
+	@SkipThrottle({ default: true })
 	@Get('sessions')
 	@UseGuards(DynamicAuthGuard)
 	async getSessions(@Req() req: AuthenticatedRequest): Promise<SessionInfo[]> {
@@ -262,6 +271,7 @@ export class AuthController {
 	/**
 	 * Request password reset (sends email with token)
 	 */
+	@Throttle({ default: { limit: 3, ttl: 60000 } })
 	@Post('forgot-password')
 	async forgotPassword(
 		@Body() forgotPasswordDto: ForgotPasswordDto,
@@ -281,6 +291,7 @@ export class AuthController {
 	/**
 	 * Reset password with token
 	 */
+	@Throttle({ default: { limit: 5, ttl: 60000 } })
 	@Post('reset-password')
 	async resetPassword(
 		@Body() resetPasswordDto: ResetPasswordDto,
@@ -314,6 +325,7 @@ export class AuthController {
 	/**
 	 * Update user profile
 	 */
+	@SkipThrottle({ default: true })
 	@UseGuards(DynamicAuthGuard)
 	@Put('account/profile')
 	async updateProfile(

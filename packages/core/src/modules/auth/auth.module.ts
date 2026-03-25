@@ -3,6 +3,7 @@ import { MagnetModuleOptions } from '@magnet-cms/common'
 import { DynamicModule, Module } from '@nestjs/common'
 import { JwtModule, type JwtModuleOptions } from '@nestjs/jwt'
 import { PassportModule } from '@nestjs/passport'
+import { ThrottlerModule } from '@nestjs/throttler'
 import type { StringValue } from 'ms'
 import { DatabaseModule } from '~/modules/database'
 import { EventsModule } from '~/modules/events'
@@ -59,6 +60,7 @@ export class AuthModule {
 			module: AuthModule,
 			global: true,
 			imports: [
+				ThrottlerModule.forRoot([{ ttl: 60000, limit: 10 }]),
 				DatabaseModule,
 				// Register auth schemas
 				DatabaseModule.forFeature(RefreshToken),
