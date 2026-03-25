@@ -8,6 +8,10 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 const projectRoot = resolve(__dirname, '..')
 
 process.env.NODE_ENV = 'development'
+// Parallel Playwright runs against localhost share one client IP; disable auth
+// throttling so register/login fixtures are not starved (rate-limit coverage
+// runs in CI / servers without this env).
+process.env.MAGNET_E2E_DISABLE_AUTH_THROTTLE = '1'
 
 // Set example-specific environment variables
 process.env.MONGODB_URI = 'mongodb://localhost:27017/cats-example'
@@ -23,17 +27,24 @@ process.env.MAGNET_PLAYGROUND_MODULES_PATH =
 
 console.log('Starting admin development environment for mongoose...')
 
+const sharedDevEnv = {
+	...process.env,
+	NODE_ENV: 'development',
+	MAGNET_E2E_DISABLE_AUTH_THROTTLE: '1',
+}
+
 const nestjs = spawn('bun', ['run', 'dev'], {
 	cwd: resolve(projectRoot, 'apps', 'examples', 'mongoose'),
 	stdio: 'inherit',
 	shell: true,
-	env: { ...process.env, NODE_ENV: 'development' },
+	env: sharedDevEnv,
 })
 
 const vite = spawn('bun', ['run', 'dev'], {
 	cwd: resolve(projectRoot, 'packages', 'client', 'admin'),
 	stdio: 'inherit',
 	shell: true,
+	env: sharedDevEnv,
 })
 
 console.log('NestJS server and Vite dev server started')
