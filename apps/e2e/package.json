@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "playwright test",
+    "test": "cross-env MAGNET_E2E_DISABLE_AUTH_THROTTLE=1 playwright test",
+    "test:ci": "playwright test",
     "test:api": "playwright test --project=api",
     "test:ui": "playwright test --project=ui",
     "test:headed": "playwright test --headed",
@@ -23,6 +24,7 @@
     "check-types": "tsc --noEmit"
   },
   "devDependencies": {
+    "cross-env": "^7.0.3",
     "@playwright/test": "^1.50.0",
     "@repo/biome": "workspace:*",
     "@repo/typescript-config": "workspace:*",

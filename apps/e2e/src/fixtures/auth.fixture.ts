@@ -9,7 +9,7 @@ interface AuthenticatedFixtures {
 }
 
 export const test = base.extend<AuthenticatedFixtures>({
-	testUser: async ({ apiClient, request, apiBaseURL }, use) => {
+	testUser: async ({ apiClient, request, apiBaseURL, e2eThrottleId }, use) => {
 		const userData = testData.user.create()
 		const status = await apiClient.getAuthStatus()
 
@@ -18,7 +18,7 @@ export const test = base.extend<AuthenticatedFixtures>({
 			authResponse = await apiClient.register(userData)
 			// First user is admin — complete onboarding so PrivateRoute
 			// doesn't redirect to /setup and block dashboard access.
-			const setupClient = new ApiClient(request, apiBaseURL)
+			const setupClient = new ApiClient(request, apiBaseURL, e2eThrottleId)
 			setupClient.setToken(authResponse.access_token)
 			await setupClient.updateSettings('general', {
 				siteName: 'Magnet E2E',
@@ -39,8 +39,11 @@ export const test = base.extend<AuthenticatedFixtures>({
 		})
 	},
 
-	authenticatedApiClient: async ({ request, apiBaseURL, testUser }, use) => {
-		const client = new ApiClient(request, apiBaseURL)
+	authenticatedApiClient: async (
+		{ request, apiBaseURL, testUser, e2eThrottleId },
+		use,
+	) => {
+		const client = new ApiClient(request, apiBaseURL, e2eThrottleId)
 		client.setToken(testUser.token)
 		await use(client)
 	},

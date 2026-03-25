@@ -3,13 +3,19 @@ import { defineConfig, devices } from '@playwright/test'
 const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:3000'
 const UI_BASE_URL = process.env.UI_BASE_URL || 'http://localhost:3001'
 const CI = !!process.env.CI
+
+/** Matches `bun run dev:admin` (Nest gets MAGNET_E2E_DISABLE_AUTH_THROTTLE). CI leaves this unset so rate-limit tests assert real 429s. */
+if (!CI && process.env.MAGNET_E2E_DISABLE_AUTH_THROTTLE === undefined) {
+	process.env.MAGNET_E2E_DISABLE_AUTH_THROTTLE = '1'
+}
+
 export default defineConfig({
 	testDir: './tests',
 
 	fullyParallel: true,
 	forbidOnly: CI,
-	retries: CI ? 2 : 0,
-	workers: CI ? 1 : undefined,
+	retries: CI ? 2 : 1,
+	workers: CI ? 1 : 4,
 
 	reporter: CI
 		? [

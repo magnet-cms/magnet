@@ -1,6 +1,11 @@
 import type { FullConfig } from '@playwright/test'
 import { waitForServers } from './helpers/wait-for-server'
 
+const CI = !!process.env.CI
+if (!CI && process.env.MAGNET_E2E_DISABLE_AUTH_THROTTLE === undefined) {
+	process.env.MAGNET_E2E_DISABLE_AUTH_THROTTLE = '1'
+}
+
 async function globalSetup(_config: FullConfig) {
 	console.log('Checking if servers are ready...')
 

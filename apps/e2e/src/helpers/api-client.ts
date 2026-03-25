@@ -148,12 +148,16 @@ export interface ApiKeyStats {
 	avgResponseTime: number
 }
 
+/** Sent on auth requests so @nestjs/throttler can bucket per Playwright test (see AuthModule getTracker). */
+export const E2E_AUTH_THROTTLE_HEADER = 'x-magnet-e2e-worker'
+
 export class ApiClient {
 	private token?: string
 
 	constructor(
 		private request: APIRequestContext,
 		private baseURL: string,
+		private e2eAuthThrottleId?: string,
 	) {}
 
 	setToken(token: string | null) {
@@ -163,6 +167,9 @@ export class ApiClient {
 	private getHeaders() {
 		const headers: Record<string, string> = {
 			'Content-Type': 'application/json',
+		}
+		if (this.e2eAuthThrottleId) {
+			headers[E2E_AUTH_THROTTLE_HEADER] = this.e2eAuthThrottleId
 		}
 		if (this.token) {
 			headers.Authorization = `Bearer ${this.token}`
