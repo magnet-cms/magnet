@@ -5,6 +5,7 @@ import { MagnetModule } from '@magnet-cms/core'
 import { PlaygroundPlugin } from '@magnet-cms/plugin-playground'
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
+
 import { CatsModule } from './modules/cats/cats.module'
 import { MedicalRecordsModule } from './modules/medical-records/medical-records.module'
 import { OwnersModule } from './modules/owners/owners.module'
@@ -28,21 +29,21 @@ import { VeterinariansModule } from './modules/veterinarians/veterinarians.modul
  * 3. Run: bun run dev
  */
 @Module({
-	imports: [
-		ConfigModule.forRoot({ isGlobal: true }),
-		MagnetModule.forRoot(
-			[
-				MongooseDatabaseAdapter.forRoot(),
-				HashiCorpVaultAdapter.forRoot(),
-				PlaygroundPlugin.forRoot(),
-				GraphQLAdapter.forRoot(),
-			],
-			{ admin: true },
-		),
-		CatsModule,
-		OwnersModule,
-		VeterinariansModule,
-		MedicalRecordsModule,
-	],
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+    MagnetModule.forRoot(
+      [
+        MongooseDatabaseAdapter.forRoot(),
+        HashiCorpVaultAdapter.forRoot(),
+        PlaygroundPlugin.forRoot(),
+        GraphQLAdapter.forRoot(),
+      ],
+      { admin: true },
+    ),
+    CatsModule,
+    OwnersModule,
+    VeterinariansModule,
+    MedicalRecordsModule,
+  ],
 })
 export class AppModule {}

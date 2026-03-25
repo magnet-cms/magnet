@@ -1,5 +1,6 @@
 import { DatabaseModule } from '@magnet-cms/core'
 import { Module } from '@nestjs/common'
+
 import { StripeCustomer } from './schemas/customer.schema'
 import { StripePayment } from './schemas/payment.schema'
 import { StripePrice } from './schemas/price.schema'
@@ -25,34 +26,34 @@ import { StripeService } from './stripe.service'
  * Auto-imported by the @Plugin decorator's `module` field.
  */
 @Module({
-	imports: [
-		DatabaseModule.forFeature(StripeCustomer),
-		DatabaseModule.forFeature(StripeProduct),
-		DatabaseModule.forFeature(StripePrice),
-		DatabaseModule.forFeature(StripeSubscription),
-		DatabaseModule.forFeature(StripePayment),
-		DatabaseModule.forFeature(StripeProcessedEvent),
-	],
-	controllers: [StripeApiController, StripeWebhookController],
-	providers: [
-		StripeService,
-		StripeWebhookService,
-		StripeCustomerService,
-		StripeProductService,
-		StripeSubscriptionService,
-		StripeCheckoutService,
-		StripePortalService,
-		StripeAccessService,
-		StripeMetricsService,
-	],
-	exports: [
-		StripeService,
-		StripeCustomerService,
-		StripeProductService,
-		StripeSubscriptionService,
-		StripeCheckoutService,
-		StripePortalService,
-		StripeAccessService,
-	],
+  imports: [
+    DatabaseModule.forFeature(StripeCustomer),
+    DatabaseModule.forFeature(StripeProduct),
+    DatabaseModule.forFeature(StripePrice),
+    DatabaseModule.forFeature(StripeSubscription),
+    DatabaseModule.forFeature(StripePayment),
+    DatabaseModule.forFeature(StripeProcessedEvent),
+  ],
+  controllers: [StripeApiController, StripeWebhookController],
+  providers: [
+    StripeService,
+    StripeWebhookService,
+    StripeCustomerService,
+    StripeProductService,
+    StripeSubscriptionService,
+    StripeCheckoutService,
+    StripePortalService,
+    StripeAccessService,
+    StripeMetricsService,
+  ],
+  exports: [
+    StripeService,
+    StripeCustomerService,
+    StripeProductService,
+    StripeSubscriptionService,
+    StripeCheckoutService,
+    StripePortalService,
+    StripeAccessService,
+  ],
 })
 export class StripeModule {}

@@ -1,13 +1,15 @@
 import { Module } from '@nestjs/common'
-import { DatabaseModule } from '~/modules/database'
-import { EventsModule } from '~/modules/events'
-import { SettingsModule } from '~/modules/settings'
+
 import { ApiKeyController } from './api-keys.controller'
 import { ApiKeyService } from './api-keys.service'
 import { ApiKeySettings } from './api-keys.settings'
 import { ApiKeyGuard } from './guards/api-key.guard'
 import { ApiKeyUsage } from './schemas/api-key-usage.schema'
 import { ApiKey } from './schemas/api-key.schema'
+
+import { DatabaseModule } from '~/modules/database'
+import { EventsModule } from '~/modules/events'
+import { SettingsModule } from '~/modules/settings'
 
 /**
  * API Keys module for programmatic access to the CMS.
@@ -46,14 +48,14 @@ import { ApiKey } from './schemas/api-key.schema'
  * ```
  */
 @Module({
-	imports: [
-		DatabaseModule.forFeature(ApiKey),
-		DatabaseModule.forFeature(ApiKeyUsage),
-		EventsModule,
-		SettingsModule.forFeature(ApiKeySettings),
-	],
-	controllers: [ApiKeyController],
-	providers: [ApiKeyService, ApiKeyGuard],
-	exports: [ApiKeyService, ApiKeyGuard],
+  imports: [
+    DatabaseModule.forFeature(ApiKey),
+    DatabaseModule.forFeature(ApiKeyUsage),
+    EventsModule,
+    SettingsModule.forFeature(ApiKeySettings),
+  ],
+  controllers: [ApiKeyController],
+  providers: [ApiKeyService, ApiKeyGuard],
+  exports: [ApiKeyService, ApiKeyGuard],
 })
 export class ApiKeysModule {}

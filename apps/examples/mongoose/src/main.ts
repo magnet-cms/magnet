@@ -1,29 +1,30 @@
 import { ValidationPipe } from '@nestjs/common'
 import { NestFactory } from '@nestjs/core'
+
 import { AppModule } from './app.module'
 
 async function bootstrap() {
-	const app = await NestFactory.create(AppModule, { rawBody: true })
+  const app = await NestFactory.create(AppModule, { rawBody: true })
 
-	app.useGlobalPipes(
-		new ValidationPipe({
-			whitelist: true,
-			forbidNonWhitelisted: true,
-			transform: true,
-		}),
-	)
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  )
 
-	app.enableCors({
-		origin: ['http://localhost:3000', 'http://localhost:3001'],
-		methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-		allowedHeaders: 'Content-Type,Authorization,X-Magnet-E2E-Worker',
-		credentials: true,
-	})
+  app.enableCors({
+    origin: ['http://localhost:3000', 'http://localhost:3001'],
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    allowedHeaders: 'Content-Type,Authorization,X-Magnet-E2E-Worker',
+    credentials: true,
+  })
 
-	await app.listen(process.env.PORT ?? 3000)
+  await app.listen(process.env.PORT ?? 3000)
 }
 
 bootstrap().catch((error) => {
-	console.error('Failed to start application:', error)
-	process.exit(1)
+  console.error('Failed to start application:', error)
+  process.exit(1)
 })

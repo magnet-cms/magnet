@@ -86,12 +86,12 @@ The adapter automatically generates Drizzle table schemas from these decorators.
 
 ## Configuration Options
 
-| Option | Type | Description |
-|--------|------|-------------|
-| `connectionString` | `string` | Database connection URL |
-| `dialect` | `'postgresql' \| 'mysql' \| 'sqlite'` | SQL dialect to use |
-| `driver` | `'pg' \| 'neon' \| 'mysql2' \| 'better-sqlite3'` | Database driver (auto-detected) |
-| `debug` | `boolean` | Enable query logging |
+| Option             | Type                                             | Description                     |
+| ------------------ | ------------------------------------------------ | ------------------------------- |
+| `connectionString` | `string`                                         | Database connection URL         |
+| `dialect`          | `'postgresql' \| 'mysql' \| 'sqlite'`            | SQL dialect to use              |
+| `driver`           | `'pg' \| 'neon' \| 'mysql2' \| 'better-sqlite3'` | Database driver (auto-detected) |
+| `debug`            | `boolean`                                        | Enable query logging            |
 
 ## i18n and Versioning
 
@@ -120,7 +120,8 @@ CREATE TABLE articles (
 The adapter provides a fluent query builder with MongoDB-style operators:
 
 ```typescript
-const articles = await articleModel.query()
+const articles = await articleModel
+  .query()
   .where({ status: 'active', views: { $gte: 100 } })
   .sort({ createdAt: -1 })
   .limit(10)
@@ -129,19 +130,19 @@ const articles = await articleModel.query()
 
 ### Supported Operators
 
-| Operator | SQL Equivalent |
-|----------|---------------|
-| `$eq` | `=` |
-| `$ne` | `<>` |
-| `$gt` | `>` |
-| `$gte` | `>=` |
-| `$lt` | `<` |
-| `$lte` | `<=` |
-| `$in` | `IN (...)` |
-| `$nin` | `NOT IN (...)` |
+| Operator | SQL Equivalent  |
+| -------- | --------------- |
+| `$eq`    | `=`             |
+| `$ne`    | `<>`            |
+| `$gt`    | `>`             |
+| `$gte`   | `>=`            |
+| `$lt`    | `<`             |
+| `$lte`   | `<=`            |
+| `$in`    | `IN (...)`      |
+| `$nin`   | `NOT IN (...)`  |
 | `$regex` | `ILIKE '%...%'` |
-| `$like` | `LIKE` |
-| `$ilike` | `ILIKE` |
+| `$like`  | `LIKE`          |
+| `$ilike` | `ILIKE`         |
 
 ## Native Access
 

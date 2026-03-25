@@ -6,11 +6,11 @@ import { requireDatabaseAdapterModule } from '~/utils/database-adapter-module.ut
  * Options for the @ExtendUser decorator
  */
 export interface ExtendUserOptions {
-	/**
-	 * Whether to include timestamps (createdAt, updatedAt)
-	 * @default true
-	 */
-	timestamps?: boolean
+  /**
+   * Whether to include timestamps (createdAt, updatedAt)
+   * @default true
+   */
+  timestamps?: boolean
 }
 
 /**
@@ -43,49 +43,46 @@ export interface ExtendUserOptions {
  * ```
  */
 export function ExtendUser(options: ExtendUserOptions = {}): ClassDecorator {
-	const mergedOptions: ExtendUserOptions = {
-		timestamps: true,
-		...options,
-	}
+  const mergedOptions: ExtendUserOptions = {
+    timestamps: true,
+    ...options,
+  }
 
-	return (target) => {
-		// Mark this class as a User extension
-		Reflect.defineMetadata(EXTEND_USER_METADATA_KEY, mergedOptions, target)
+  return (target) => {
+    // Mark this class as a User extension
+    Reflect.defineMetadata(EXTEND_USER_METADATA_KEY, mergedOptions, target)
 
-		// Also mark it as a schema for discovery
-		Reflect.defineMetadata(SCHEMA_METADATA_KEY, true, target)
+    // Also mark it as a schema for discovery
+    Reflect.defineMetadata(SCHEMA_METADATA_KEY, true, target)
 
-		// Apply adapter-specific Schema decorator
-		try {
-			const adapter = detectDatabaseAdapter()
-			const { Schema } = requireDatabaseAdapterModule(adapter) as {
-				Schema: (opts: {
-					collection: string
-					timestamps: boolean
-				}) => ClassDecorator
-			}
-			Schema({
-				collection: 'users',
-				timestamps: mergedOptions.timestamps ?? true,
-			})(target)
-		} catch {
-			// Adapter not available, skip adapter-specific decoration
-		}
-	}
+    // Apply adapter-specific Schema decorator
+    try {
+      const adapter = detectDatabaseAdapter()
+      const { Schema } = requireDatabaseAdapterModule(adapter) as {
+        Schema: (opts: { collection: string; timestamps: boolean }) => ClassDecorator
+      }
+      Schema({
+        collection: 'users',
+        timestamps: mergedOptions.timestamps ?? true,
+      })(target)
+    } catch {
+      // Adapter not available, skip adapter-specific decoration
+    }
+  }
 }
 
 /**
  * Check if a class is marked as a User extension
  */
+
 export function isUserExtension(target: Function): boolean {
-	return Reflect.hasMetadata(EXTEND_USER_METADATA_KEY, target)
+  return Reflect.hasMetadata(EXTEND_USER_METADATA_KEY, target)
 }
 
 /**
  * Get ExtendUser options from a class
  */
-export function getExtendUserOptions(
-	target: Function,
-): ExtendUserOptions | undefined {
-	return Reflect.getMetadata(EXTEND_USER_METADATA_KEY, target)
+
+export function getExtendUserOptions(target: Function): ExtendUserOptions | undefined {
+  return Reflect.getMetadata(EXTEND_USER_METADATA_KEY, target)
 }

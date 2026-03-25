@@ -5,6 +5,7 @@ import { NodemailerEmailAdapter } from '@magnet-cms/email-nodemailer'
 import { PlaygroundPlugin } from '@magnet-cms/plugin-playground'
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
+
 import { CatsModule } from './modules/cats/cats.module'
 import { MedicalRecordsModule } from './modules/medical-records/medical-records.module'
 import { OwnersModule } from './modules/owners/owners.module'
@@ -29,31 +30,31 @@ import { VeterinariansModule } from './modules/veterinarians/veterinarians.modul
  * 3. Run: bun run dev
  */
 @Module({
-	imports: [
-		ConfigModule.forRoot({ isGlobal: true }),
-		MagnetModule.forRoot([
-			DrizzleDatabaseAdapter.forRoot({
-				dialect: 'mysql',
-				driver: 'mysql2',
-				debug: process.env.NODE_ENV === 'development',
-			}),
-			S3StorageAdapter.forRoot({
-				forcePathStyle: true,
-			}),
-			NodemailerEmailAdapter.forRoot({
-				secure: false,
-				auth: { user: '', pass: '' },
-				defaults: {
-					from: process.env.EMAIL_FROM || 'noreply@magnet.local',
-				},
-			}),
-			PlaygroundPlugin.forRoot(),
-		]),
-		CatsModule,
-		OwnersModule,
-		VeterinariansModule,
-		MedicalRecordsModule,
-		PostsModule,
-	],
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+    MagnetModule.forRoot([
+      DrizzleDatabaseAdapter.forRoot({
+        dialect: 'mysql',
+        driver: 'mysql2',
+        debug: process.env.NODE_ENV === 'development',
+      }),
+      S3StorageAdapter.forRoot({
+        forcePathStyle: true,
+      }),
+      NodemailerEmailAdapter.forRoot({
+        secure: false,
+        auth: { user: '', pass: '' },
+        defaults: {
+          from: process.env.EMAIL_FROM || 'noreply@magnet.local',
+        },
+      }),
+      PlaygroundPlugin.forRoot(),
+    ]),
+    CatsModule,
+    OwnersModule,
+    VeterinariansModule,
+    MedicalRecordsModule,
+    PostsModule,
+  ],
 })
 export class AppModule {}

@@ -1,5 +1,6 @@
 import { resolve } from 'node:path'
 import { URL, fileURLToPath } from 'node:url'
+
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { visualizer } from 'rollup-plugin-visualizer'
@@ -11,81 +12,81 @@ const basePath = process.env.VITE_BASE_PATH || '/admin/'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-	base: basePath,
-	plugins: [
-		react(),
-		tailwindcss(),
-		...(process.env.ANALYZE === 'true'
-			? [
-					visualizer({
-						filename: 'dist/stats.html',
-						open: false,
-						gzipSize: true,
-						brotliSize: true,
-					}),
-				]
-			: []),
-	],
-	resolve: {
-		alias: [
-			{
-				find: '~',
-				replacement: fileURLToPath(new URL('./src', import.meta.url)),
-			},
-			// Admin (for plugin imports)
-			{
-				find: '@magnet-cms/admin',
-				replacement: fileURLToPath(new URL('./src', import.meta.url)),
-			},
-			// UI
-			{
-				find: '@magnet-cms/ui',
-				replacement: fileURLToPath(new URL('../ui/src', import.meta.url)),
-			},
-			{
-				find: '@',
-				replacement: fileURLToPath(new URL('../ui/src', import.meta.url)),
-			},
-			// Utils
-			{
-				find: '@magnet-cms/utils',
-				replacement: fileURLToPath(new URL('../../utils/src', import.meta.url)),
-			},
-		],
-		// Ensure single instance of react-router-dom across all imports
-		dedupe: ['react', 'react-dom', 'react-router-dom'],
-	},
-	build: {
-		outDir: 'dist/client',
-		emptyOutDir: true,
-		rollupOptions: {
-			input: {
-				index: resolve(__dirname, 'index.html'),
-			},
-			output: {
-				entryFileNames: 'static/[name].global.js',
-				chunkFileNames: 'static/[name].[hash].js',
-				assetFileNames: 'static/[name].[ext]',
-			},
-		},
-	},
-	server: {
-		hmr: true,
-		port: 3001,
-		proxy: {
-			// Proxy API and plugin requests to the backend
-			'/api': {
-				target: 'http://localhost:3000',
-				changeOrigin: true,
-			},
-			'/plugins': {
-				target: 'http://localhost:3000',
-				changeOrigin: true,
-			},
-			'/admin-api': {
-				target: 'http://localhost:3000',
-				changeOrigin: true,
-			},
-		},
-	},
+  base: basePath,
+  plugins: [
+    react(),
+    tailwindcss(),
+    ...(process.env.ANALYZE === 'true'
+      ? [
+          visualizer({
+            filename: 'dist/stats.html',
+            open: false,
+            gzipSize: true,
+            brotliSize: true,
+          }),
+        ]
+      : []),
+  ],
+  resolve: {
+    alias: [
+      {
+        find: '~',
+        replacement: fileURLToPath(new URL('./src', import.meta.url)),
+      },
+      // Admin (for plugin imports)
+      {
+        find: '@magnet-cms/admin',
+        replacement: fileURLToPath(new URL('./src', import.meta.url)),
+      },
+      // UI
+      {
+        find: '@magnet-cms/ui',
+        replacement: fileURLToPath(new URL('../ui/src', import.meta.url)),
+      },
+      {
+        find: '@',
+        replacement: fileURLToPath(new URL('../ui/src', import.meta.url)),
+      },
+      // Utils
+      {
+        find: '@magnet-cms/utils',
+        replacement: fileURLToPath(new URL('../../utils/src', import.meta.url)),
+      },
+    ],
+    // Ensure single instance of react-router-dom across all imports
+    dedupe: ['react', 'react-dom', 'react-router-dom'],
+  },
+  build: {
+    outDir: 'dist/client',
+    emptyOutDir: true,
+    rollupOptions: {
+      input: {
+        index: resolve(__dirname, 'index.html'),
+      },
+      output: {
+        entryFileNames: 'static/[name].global.js',
+        chunkFileNames: 'static/[name].[hash].js',
+        assetFileNames: 'static/[name].[ext]',
+      },
+    },
+  },
+  server: {
+    hmr: true,
+    port: 3001,
+    proxy: {
+      // Proxy API and plugin requests to the backend
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
+      '/plugins': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
+      '/admin-api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
+    },
+  },
 })

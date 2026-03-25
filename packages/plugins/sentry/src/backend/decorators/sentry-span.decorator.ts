@@ -31,36 +31,30 @@ type AsyncMethod = (...args: unknown[]) => Promise<unknown>
  * as a standard method decorator. Bun's test runner also handles this correctly.
  */
 export function SentrySpan(name?: string, op = 'function') {
-	// Return a function that works as both a legacy (3-arg) and stage-3 (2-arg) decorator
-	return function sentrySpanDecorator(
-		targetOrMethod: object | AsyncMethod,
-		propertyKeyOrContext?: string | symbol | ClassMethodDecoratorContext,
-		descriptor?: PropertyDescriptor,
-	): PropertyDescriptor | AsyncMethod | undefined {
-		// Legacy decorator form (3 args): target, key, descriptor
-		if (descriptor !== undefined && typeof descriptor.value === 'function') {
-			const originalMethod = descriptor.value as AsyncMethod
-			const spanName = name ?? String(propertyKeyOrContext ?? 'unknown')
-			descriptor.value = async function (this: unknown, ...args: unknown[]) {
-				return withSentrySpan(spanName, op, () =>
-					originalMethod.apply(this, args),
-				)
-			}
-			return descriptor
-		}
+  // Return a function that works as both a legacy (3-arg) and stage-3 (2-arg) decorator
+  return function sentrySpanDecorator(
+    targetOrMethod: object | AsyncMethod,
+    propertyKeyOrContext?: string | symbol | ClassMethodDecoratorContext,
+    descriptor?: PropertyDescriptor,
+  ): PropertyDescriptor | AsyncMethod | undefined {
+    // Legacy decorator form (3 args): target, key, descriptor
+    if (descriptor !== undefined && typeof descriptor.value === 'function') {
+      const originalMethod = descriptor.value as AsyncMethod
+      const spanName = name ?? String(propertyKeyOrContext ?? 'unknown')
+      descriptor.value = async function (this: unknown, ...args: unknown[]) {
+        return withSentrySpan(spanName, op, () => originalMethod.apply(this, args))
+      }
+      return descriptor
+    }
 
-		// Stage 3 decorator form (2 args): method fn, context
-		if (typeof targetOrMethod === 'function') {
-			const originalMethod = targetOrMethod as AsyncMethod
-			const ctx = propertyKeyOrContext as
-				| ClassMethodDecoratorContext
-				| undefined
-			const spanName = name ?? String(ctx?.name ?? 'unknown')
-			return async function (this: unknown, ...args: unknown[]) {
-				return withSentrySpan(spanName, op, () =>
-					originalMethod.apply(this, args),
-				)
-			}
-		}
-	}
+    // Stage 3 decorator form (2 args): method fn, context
+    if (typeof targetOrMethod === 'function') {
+      const originalMethod = targetOrMethod as AsyncMethod
+      const ctx = propertyKeyOrContext as ClassMethodDecoratorContext | undefined
+      const spanName = name ?? String(ctx?.name ?? 'unknown')
+      return async function (this: unknown, ...args: unknown[]) {
+        return withSentrySpan(spanName, op, () => originalMethod.apply(this, args))
+      }
+    }
+  }
 }

@@ -10,25 +10,25 @@ import defaultMdxComponents from 'fumadocs-ui/mdx'
 import type { MDXComponents } from 'mdx/types'
 
 export function useMDXComponents(components: MDXComponents): MDXComponents {
-	return {
-		...defaultMdxComponents,
-		// Interactive components
-		Accordion,
-		Accordions,
-		Callout,
-		Card,
-		Cards,
-		File,
-		Folder,
-		Files,
-		Step,
-		Steps,
-		Tab,
-		Tabs,
-		ImageZoom,
-		TypeTable,
-		// Custom image component with zoom
-		img: (props) => <ImageZoom {...props} />,
-		...components,
-	}
+  return {
+    ...defaultMdxComponents,
+    // Interactive components
+    Accordion,
+    Accordions,
+    Callout,
+    Card,
+    Cards,
+    File,
+    Folder,
+    Files,
+    Step,
+    Steps,
+    Tab,
+    Tabs,
+    ImageZoom,
+    TypeTable,
+    // Custom image component with zoom
+    img: (props) => <ImageZoom {...props} />,
+    ...components,
+  }
 }

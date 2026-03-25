@@ -17,14 +17,14 @@ import helmet from 'helmet'
  */
 @Module({})
 export class SecurityModule implements NestModule {
-	configure(consumer: MiddlewareConsumer): void {
-		consumer
-			.apply(
-				helmet({
-					contentSecurityPolicy: false,
-					crossOriginResourcePolicy: { policy: 'cross-origin' },
-				}),
-			)
-			.forRoutes('*')
-	}
+  configure(consumer: MiddlewareConsumer): void {
+    consumer
+      .apply(
+        helmet({
+          contentSecurityPolicy: false,
+          crossOriginResourcePolicy: { policy: 'cross-origin' },
+        }),
+      )
+      .forRoutes('*')
+  }
 }

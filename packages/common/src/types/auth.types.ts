@@ -6,44 +6,44 @@
  * Authenticated user returned from auth strategies
  */
 export interface AuthUser {
-	/** Unique user identifier */
-	id: string
-	/** User email address */
-	email: string
-	/** User role for authorization */
-	role: string
-	/** Optional additional user data */
-	[key: string]: unknown
+  /** Unique user identifier */
+  id: string
+  /** User email address */
+  email: string
+  /** User role for authorization */
+  role: string
+  /** Optional additional user data */
+  [key: string]: unknown
 }
 
 /**
  * Login credentials (strategy-specific)
  */
 export interface LoginCredentials {
-	email: string
-	password: string
-	[key: string]: unknown
+  email: string
+  password: string
+  [key: string]: unknown
 }
 
 /**
  * Registration data (strategy-specific)
  */
 export interface RegisterData {
-	email: string
-	password: string
-	name: string
-	role?: string
-	[key: string]: unknown
+  email: string
+  password: string
+  name: string
+  role?: string
+  [key: string]: unknown
 }
 
 /**
  * Authentication result containing access token
  */
 export interface AuthResult {
-	access_token: string
-	refresh_token?: string
-	expires_in?: number
-	token_type?: string
+  access_token: string
+  refresh_token?: string
+  expires_in?: number
+  token_type?: string
 }
 
 // ============================================================================
@@ -54,42 +54,42 @@ export interface AuthResult {
  * JWT-specific configuration
  */
 export interface JwtAuthConfig {
-	/** JWT secret key */
-	secret: string
-	/** Token expiration time (e.g., '7d', '1h') */
-	expiresIn?: string
+  /** JWT secret key */
+  secret: string
+  /** Token expiration time (e.g., '7d', '1h') */
+  expiresIn?: string
 }
 
 /**
  * Supabase-specific auth configuration
  */
 export interface SupabaseAuthConfig {
-	/** Supabase project URL */
-	supabaseUrl: string
-	/** Supabase anon/public key */
-	supabaseKey: string
-	/** Default role for new users */
-	defaultRole?: string
+  /** Supabase project URL */
+  supabaseUrl: string
+  /** Supabase anon/public key */
+  supabaseKey: string
+  /** Default role for new users */
+  defaultRole?: string
 }
 
 /**
  * Auth configuration for MagnetModuleOptions
  */
 export interface AuthConfig {
-	/** Strategy name to use (default: 'jwt') */
-	strategy?: string
-	/** JWT-specific configuration */
-	jwt?: JwtAuthConfig
-	/** Supabase-specific configuration (when strategy: 'supabase') */
-	supabaseUrl?: string
-	/** Supabase anon/public key */
-	supabaseKey?: string
-	/** Supabase service role key (required for admin operations like listUsers) */
-	supabaseServiceKey?: string
-	/** Default role for new Supabase users */
-	defaultRole?: string
-	/** Allow extensible config for custom strategies */
-	[key: string]: unknown
+  /** Strategy name to use (default: 'jwt') */
+  strategy?: string
+  /** JWT-specific configuration */
+  jwt?: JwtAuthConfig
+  /** Supabase-specific configuration (when strategy: 'supabase') */
+  supabaseUrl?: string
+  /** Supabase anon/public key */
+  supabaseKey?: string
+  /** Supabase service role key (required for admin operations like listUsers) */
+  supabaseServiceKey?: string
+  /** Default role for new Supabase users */
+  defaultRole?: string
+  /** Allow extensible config for custom strategies */
+  [key: string]: unknown
 }
 
 // ============================================================================
@@ -103,14 +103,14 @@ export interface AuthConfig {
  * Returned by `AuthStrategy.getAuthInfo()` for external adapters (Supabase, Clerk, etc.).
  */
 export interface ExternalAuthInfo {
-	/** Strategy identifier (e.g., 'supabase', 'clerk', 'jwt') */
-	strategy: string
-	/** Whether authentication is handled by an external provider */
-	isExternal: boolean
-	/** List of OAuth provider names configured in the external service (e.g., ['google', 'github']) */
-	providers: string[]
-	/** Additional provider-specific settings (e.g., disable_signup, autoconfirm) */
-	providerSettings?: Record<string, unknown>
+  /** Strategy identifier (e.g., 'supabase', 'clerk', 'jwt') */
+  strategy: string
+  /** Whether authentication is handled by an external provider */
+  isExternal: boolean
+  /** List of OAuth provider names configured in the external service (e.g., ['google', 'github']) */
+  providers: string[]
+  /** Additional provider-specific settings (e.g., disable_signup, autoconfirm) */
+  providerSettings?: Record<string, unknown>
 }
 
 // ============================================================================
@@ -145,83 +145,80 @@ export interface ExternalAuthInfo {
  * ```
  */
 export abstract class AuthStrategy {
-	/**
-	 * Unique identifier for this strategy
-	 */
-	abstract readonly name: string
+  /**
+   * Unique identifier for this strategy
+   */
+  abstract readonly name: string
 
-	/**
-	 * Initialize the auth strategy (optional setup)
-	 */
-	async initialize?(): Promise<void>
+  /**
+   * Initialize the auth strategy (optional setup)
+   */
+  async initialize?(): Promise<void>
 
-	/**
-	 * Validate a token/payload and return the authenticated user
-	 * @param payload - Strategy-specific payload (e.g., JWT payload, session data)
-	 * @returns Authenticated user or null if invalid
-	 */
-	abstract validate(payload: unknown): Promise<AuthUser | null>
+  /**
+   * Validate a token/payload and return the authenticated user
+   * @param payload - Strategy-specific payload (e.g., JWT payload, session data)
+   * @returns Authenticated user or null if invalid
+   */
+  abstract validate(payload: unknown): Promise<AuthUser | null>
 
-	/**
-	 * Authenticate user with credentials and return tokens
-	 * @param credentials - Login credentials (strategy-specific)
-	 * @returns Authentication result with access token
-	 */
-	abstract login(credentials: LoginCredentials): Promise<AuthResult>
+  /**
+   * Authenticate user with credentials and return tokens
+   * @param credentials - Login credentials (strategy-specific)
+   * @returns Authentication result with access token
+   */
+  abstract login(credentials: LoginCredentials): Promise<AuthResult>
 
-	/**
-	 * Register a new user
-	 * @param data - Registration data
-	 * @returns The created user
-	 */
-	abstract register(data: RegisterData): Promise<AuthUser>
+  /**
+   * Register a new user
+   * @param data - Registration data
+   * @returns The created user
+   */
+  abstract register(data: RegisterData): Promise<AuthUser>
 
-	/**
-	 * Validate user credentials (used internally by login)
-	 * @param email - User email
-	 * @param password - User password
-	 * @returns User if valid, null otherwise
-	 */
-	abstract validateCredentials(
-		email: string,
-		password: string,
-	): Promise<AuthUser | null>
+  /**
+   * Validate user credentials (used internally by login)
+   * @param email - User email
+   * @param password - User password
+   * @returns User if valid, null otherwise
+   */
+  abstract validateCredentials(email: string, password: string): Promise<AuthUser | null>
 
-	/**
-	 * Refresh an access token (optional)
-	 * @param refreshToken - The refresh token
-	 * @returns New authentication result
-	 */
-	async refresh?(refreshToken: string): Promise<AuthResult>
+  /**
+   * Refresh an access token (optional)
+   * @param refreshToken - The refresh token
+   * @returns New authentication result
+   */
+  async refresh?(refreshToken: string): Promise<AuthResult>
 
-	/**
-	 * Logout/invalidate tokens (optional)
-	 * @param token - The token to invalidate
-	 */
-	async logout?(token: string): Promise<void>
+  /**
+   * Logout/invalidate tokens (optional)
+   * @param token - The token to invalidate
+   */
+  async logout?(token: string): Promise<void>
 
-	/**
-	 * Check if any users exist in the system (optional)
-	 * Strategies that manage their own user storage should implement this.
-	 * If not implemented, AuthService will fall back to checking the local database.
-	 * @returns true if users exist, false otherwise
-	 */
-	async hasUsers?(): Promise<boolean>
+  /**
+   * Check if any users exist in the system (optional)
+   * Strategies that manage their own user storage should implement this.
+   * If not implemented, AuthService will fall back to checking the local database.
+   * @returns true if users exist, false otherwise
+   */
+  async hasUsers?(): Promise<boolean>
 
-	/**
-	 * Get information about the auth strategy and its configured providers (optional).
-	 * External adapters (Supabase, Clerk) implement this to report which OAuth
-	 * providers are configured on their side. If not implemented, the strategy
-	 * is assumed to be built-in (JWT).
-	 * @returns Auth info including strategy name, external flag, and provider list
-	 */
-	async getAuthInfo?(): Promise<ExternalAuthInfo>
+  /**
+   * Get information about the auth strategy and its configured providers (optional).
+   * External adapters (Supabase, Clerk) implement this to report which OAuth
+   * providers are configured on their side. If not implemented, the strategy
+   * is assumed to be built-in (JWT).
+   * @returns Auth info including strategy name, external flag, and provider list
+   */
+  async getAuthInfo?(): Promise<ExternalAuthInfo>
 
-	/**
-	 * Get the Passport strategy name (for guards)
-	 * Returns the name to use with AuthGuard()
-	 */
-	getPassportStrategyName(): string {
-		return this.name
-	}
+  /**
+   * Get the Passport strategy name (for guards)
+   * Returns the name to use with AuthGuard()
+   */
+  getPassportStrategyName(): string {
+    return this.name
+  }
 }

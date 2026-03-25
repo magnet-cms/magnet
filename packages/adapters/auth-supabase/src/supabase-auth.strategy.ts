@@ -1,13 +1,13 @@
 import {
-	AuthConfig,
-	type AuthMagnetProvider,
-	AuthResult,
-	AuthStrategy,
-	AuthUser,
-	type EnvVarRequirement,
-	ExternalAuthInfo,
-	LoginCredentials,
-	RegisterData,
+  AuthConfig,
+  type AuthMagnetProvider,
+  AuthResult,
+  AuthStrategy,
+  AuthUser,
+  type EnvVarRequirement,
+  ExternalAuthInfo,
+  LoginCredentials,
+  RegisterData,
 } from '@magnet-cms/common'
 import { SupabaseClient, createClient } from '@supabase/supabase-js'
 
@@ -15,14 +15,14 @@ import { SupabaseClient, createClient } from '@supabase/supabase-js'
  * Supabase-specific auth configuration
  */
 export interface SupabaseAuthConfig extends AuthConfig {
-	/** Supabase project URL */
-	supabaseUrl: string
-	/** Supabase publishable key */
-	supabaseKey: string
-	/** Supabase secret key (required for admin operations like listUsers) */
-	supabaseServiceKey?: string
-	/** Default role for new users */
-	defaultRole?: string
+  /** Supabase project URL */
+  supabaseUrl: string
+  /** Supabase publishable key */
+  supabaseKey: string
+  /** Supabase secret key (required for admin operations like listUsers) */
+  supabaseServiceKey?: string
+  /** Default role for new users */
+  defaultRole?: string
 }
 
 /**
@@ -47,349 +47,332 @@ export interface SupabaseAuthConfig extends AuthConfig {
  * ```
  */
 export class SupabaseAuthStrategy extends AuthStrategy {
-	readonly name = 'supabase'
-	private supabase: SupabaseClient
-	private supabaseAdmin: SupabaseClient | null = null
-	private config: SupabaseAuthConfig
+  readonly name = 'supabase'
+  private supabase: SupabaseClient
+  private supabaseAdmin: SupabaseClient | null = null
+  private config: SupabaseAuthConfig
 
-	constructor(config: AuthConfig, _userService: unknown) {
-		super()
-		this.config = config as SupabaseAuthConfig
+  constructor(config: AuthConfig, _userService: unknown) {
+    super()
+    this.config = config as SupabaseAuthConfig
 
-		if (!this.config.supabaseUrl || !this.config.supabaseKey) {
-			throw new Error(
-				'Supabase auth requires supabaseUrl and supabaseKey in config',
-			)
-		}
+    if (!this.config.supabaseUrl || !this.config.supabaseKey) {
+      throw new Error('Supabase auth requires supabaseUrl and supabaseKey in config')
+    }
 
-		this.supabase = createClient(
-			this.config.supabaseUrl,
-			this.config.supabaseKey,
-		)
+    this.supabase = createClient(this.config.supabaseUrl, this.config.supabaseKey)
 
-		// Create admin client for service role operations if service key is provided
-		if (this.config.supabaseServiceKey) {
-			this.supabaseAdmin = createClient(
-				this.config.supabaseUrl,
-				this.config.supabaseServiceKey,
-			)
-		}
-	}
+    // Create admin client for service role operations if service key is provided
+    if (this.config.supabaseServiceKey) {
+      this.supabaseAdmin = createClient(this.config.supabaseUrl, this.config.supabaseServiceKey)
+    }
+  }
 
-	/**
-	 * Validate a Supabase JWT payload and return the authenticated user.
-	 * Called by Passport JWT strategy after token verification.
-	 */
-	async validate(payload: unknown): Promise<AuthUser | null> {
-		const jwtPayload = payload as {
-			sub?: string
-			email?: string
-			role?: string
-		}
+  /**
+   * Validate a Supabase JWT payload and return the authenticated user.
+   * Called by Passport JWT strategy after token verification.
+   */
+  async validate(payload: unknown): Promise<AuthUser | null> {
+    const jwtPayload = payload as {
+      sub?: string
+      email?: string
+      role?: string
+    }
 
-		if (!jwtPayload?.sub) {
-			return null
-		}
+    if (!jwtPayload?.sub) {
+      return null
+    }
 
-		// Get user from Supabase to ensure they still exist and get latest data
-		const { data: userData, error } =
-			await this.supabase.auth.admin.getUserById(jwtPayload.sub)
+    // Get user from Supabase to ensure they still exist and get latest data
+    const { data: userData, error } = await this.supabase.auth.admin.getUserById(jwtPayload.sub)
 
-		if (error || !userData.user) {
-			return null
-		}
+    if (error || !userData.user) {
+      return null
+    }
 
-		return {
-			id: userData.user.id,
-			email: userData.user.email || '',
-			role:
-				userData.user.user_metadata?.role || this.config.defaultRole || 'user',
-			name: userData.user.user_metadata?.name,
-		}
-	}
+    return {
+      id: userData.user.id,
+      email: userData.user.email || '',
+      role: userData.user.user_metadata?.role || this.config.defaultRole || 'user',
+      name: userData.user.user_metadata?.name,
+    }
+  }
 
-	/**
-	 * Authenticate user with email and password via Supabase Auth.
-	 */
-	async login(credentials: LoginCredentials): Promise<AuthResult> {
-		const { data, error } = await this.supabase.auth.signInWithPassword({
-			email: credentials.email,
-			password: credentials.password,
-		})
+  /**
+   * Authenticate user with email and password via Supabase Auth.
+   */
+  async login(credentials: LoginCredentials): Promise<AuthResult> {
+    const { data, error } = await this.supabase.auth.signInWithPassword({
+      email: credentials.email,
+      password: credentials.password,
+    })
 
-		if (error) {
-			throw new Error(error.message)
-		}
+    if (error) {
+      throw new Error(error.message)
+    }
 
-		if (!data.session) {
-			throw new Error('Login failed: no session returned')
-		}
+    if (!data.session) {
+      throw new Error('Login failed: no session returned')
+    }
 
-		return {
-			access_token: data.session.access_token,
-			refresh_token: data.session.refresh_token,
-			expires_in: data.session.expires_in,
-			token_type: 'Bearer',
-		}
-	}
+    return {
+      access_token: data.session.access_token,
+      refresh_token: data.session.refresh_token,
+      expires_in: data.session.expires_in,
+      token_type: 'Bearer',
+    }
+  }
 
-	/**
-	 * Register a new user in Supabase Auth.
-	 */
-	async register(data: RegisterData): Promise<AuthUser> {
-		const { data: authData, error } = await this.supabase.auth.signUp({
-			email: data.email,
-			password: data.password,
-			options: {
-				data: {
-					name: data.name,
-					role: data.role || this.config.defaultRole || 'user',
-				},
-			},
-		})
+  /**
+   * Register a new user in Supabase Auth.
+   */
+  async register(data: RegisterData): Promise<AuthUser> {
+    const { data: authData, error } = await this.supabase.auth.signUp({
+      email: data.email,
+      password: data.password,
+      options: {
+        data: {
+          name: data.name,
+          role: data.role || this.config.defaultRole || 'user',
+        },
+      },
+    })
 
-		if (error) {
-			throw new Error(error.message)
-		}
+    if (error) {
+      throw new Error(error.message)
+    }
 
-		if (!authData.user) {
-			throw new Error('Registration failed: no user returned')
-		}
+    if (!authData.user) {
+      throw new Error('Registration failed: no user returned')
+    }
 
-		return {
-			id: authData.user.id,
-			email: authData.user.email || '',
-			role:
-				authData.user.user_metadata?.role || this.config.defaultRole || 'user',
-			name: authData.user.user_metadata?.name,
-		}
-	}
+    return {
+      id: authData.user.id,
+      email: authData.user.email || '',
+      role: authData.user.user_metadata?.role || this.config.defaultRole || 'user',
+      name: authData.user.user_metadata?.name,
+    }
+  }
 
-	/**
-	 * Validate user credentials (used internally).
-	 */
-	async validateCredentials(
-		email: string,
-		password: string,
-	): Promise<AuthUser | null> {
-		const { data, error } = await this.supabase.auth.signInWithPassword({
-			email,
-			password,
-		})
+  /**
+   * Validate user credentials (used internally).
+   */
+  async validateCredentials(email: string, password: string): Promise<AuthUser | null> {
+    const { data, error } = await this.supabase.auth.signInWithPassword({
+      email,
+      password,
+    })
 
-		if (error) {
-			// Propagate email confirmation errors so callers can guide the user
-			if (error.message?.toLowerCase().includes('email not confirmed')) {
-				throw new Error(error.message)
-			}
-			return null
-		}
-		if (!data.user) {
-			return null
-		}
+    if (error) {
+      // Propagate email confirmation errors so callers can guide the user
+      if (error.message?.toLowerCase().includes('email not confirmed')) {
+        throw new Error(error.message)
+      }
+      return null
+    }
+    if (!data.user) {
+      return null
+    }
 
-		return {
-			id: data.user.id,
-			email: data.user.email || '',
-			role: data.user.user_metadata?.role || this.config.defaultRole || 'user',
-			name: data.user.user_metadata?.name,
-		}
-	}
+    return {
+      id: data.user.id,
+      email: data.user.email || '',
+      role: data.user.user_metadata?.role || this.config.defaultRole || 'user',
+      name: data.user.user_metadata?.name,
+    }
+  }
 
-	/**
-	 * Refresh an access token using a refresh token.
-	 */
-	async refresh(refreshToken: string): Promise<AuthResult> {
-		const { data, error } = await this.supabase.auth.refreshSession({
-			refresh_token: refreshToken,
-		})
+  /**
+   * Refresh an access token using a refresh token.
+   */
+  async refresh(refreshToken: string): Promise<AuthResult> {
+    const { data, error } = await this.supabase.auth.refreshSession({
+      refresh_token: refreshToken,
+    })
 
-		if (error) {
-			throw new Error(error.message)
-		}
+    if (error) {
+      throw new Error(error.message)
+    }
 
-		if (!data.session) {
-			throw new Error('Token refresh failed: no session returned')
-		}
+    if (!data.session) {
+      throw new Error('Token refresh failed: no session returned')
+    }
 
-		return {
-			access_token: data.session.access_token,
-			refresh_token: data.session.refresh_token,
-			expires_in: data.session.expires_in,
-			token_type: 'Bearer',
-		}
-	}
+    return {
+      access_token: data.session.access_token,
+      refresh_token: data.session.refresh_token,
+      expires_in: data.session.expires_in,
+      token_type: 'Bearer',
+    }
+  }
 
-	/**
-	 * Logout/invalidate the current session.
-	 */
-	async logout(_token: string): Promise<void> {
-		await this.supabase.auth.signOut()
-	}
+  /**
+   * Logout/invalidate the current session.
+   */
+  async logout(_token: string): Promise<void> {
+    await this.supabase.auth.signOut()
+  }
 
-	/**
-	 * Get the Supabase client for advanced usage.
-	 */
-	getSupabaseClient(): SupabaseClient {
-		return this.supabase
-	}
+  /**
+   * Get the Supabase client for advanced usage.
+   */
+  getSupabaseClient(): SupabaseClient {
+    return this.supabase
+  }
 
-	/**
-	 * Check if any users exist in Supabase Auth.
-	 * Required by AuthService.exists() to determine if setup is needed.
-	 */
-	async hasUsers(): Promise<boolean> {
-		if (!this.supabaseAdmin) {
-			// If service key not configured, can't check users
-			// Return false to allow fallback to database check
-			return false
-		}
+  /**
+   * Check if any users exist in Supabase Auth.
+   * Required by AuthService.exists() to determine if setup is needed.
+   */
+  async hasUsers(): Promise<boolean> {
+    if (!this.supabaseAdmin) {
+      // If service key not configured, can't check users
+      // Return false to allow fallback to database check
+      return false
+    }
 
-		try {
-			const users = await this.listUsers({ page: 1, perPage: 1 })
-			return users.length > 0
-		} catch {
-			// If listUsers fails, return false to allow fallback
-			return false
-		}
-	}
+    try {
+      const users = await this.listUsers({ page: 1, perPage: 1 })
+      return users.length > 0
+    } catch {
+      // If listUsers fails, return false to allow fallback
+      return false
+    }
+  }
 
-	/**
-	 * Get auth info by querying Supabase GoTrue's public settings endpoint.
-	 * Returns which OAuth providers are enabled and general auth settings.
-	 */
-	async getAuthInfo(): Promise<ExternalAuthInfo> {
-		const fallback: ExternalAuthInfo = {
-			strategy: 'supabase',
-			isExternal: true,
-			providers: [],
-		}
+  /**
+   * Get auth info by querying Supabase GoTrue's public settings endpoint.
+   * Returns which OAuth providers are enabled and general auth settings.
+   */
+  async getAuthInfo(): Promise<ExternalAuthInfo> {
+    const fallback: ExternalAuthInfo = {
+      strategy: 'supabase',
+      isExternal: true,
+      providers: [],
+    }
 
-		try {
-			const url = `${this.config.supabaseUrl}/auth/v1/settings`
-			const response = await fetch(url, {
-				headers: { apikey: this.config.supabaseKey },
-			})
+    try {
+      const url = `${this.config.supabaseUrl}/auth/v1/settings`
+      const response = await fetch(url, {
+        headers: { apikey: this.config.supabaseKey },
+      })
 
-			if (!response.ok) {
-				return fallback
-			}
+      if (!response.ok) {
+        return fallback
+      }
 
-			const settings = (await response.json()) as {
-				external?: Record<string, boolean>
-				disable_signup?: boolean
-				mailer_autoconfirm?: boolean
-				phone_autoconfirm?: boolean
-				mfa_enabled?: boolean
-			}
+      const settings = (await response.json()) as {
+        external?: Record<string, boolean>
+        disable_signup?: boolean
+        mailer_autoconfirm?: boolean
+        phone_autoconfirm?: boolean
+        mfa_enabled?: boolean
+      }
 
-			// Filter external providers that are enabled, excluding non-OAuth entries
-			const nonOAuthKeys = new Set(['email', 'phone', 'anonymous'])
-			const providers = Object.entries(settings.external ?? {})
-				.filter(([key, enabled]) => enabled && !nonOAuthKeys.has(key))
-				.map(([key]) => key)
+      // Filter external providers that are enabled, excluding non-OAuth entries
+      const nonOAuthKeys = new Set(['email', 'phone', 'anonymous'])
+      const providers = Object.entries(settings.external ?? {})
+        .filter(([key, enabled]) => enabled && !nonOAuthKeys.has(key))
+        .map(([key]) => key)
 
-			return {
-				strategy: 'supabase',
-				isExternal: true,
-				providers,
-				providerSettings: {
-					disableSignup: settings.disable_signup,
-					autoconfirm: settings.mailer_autoconfirm,
-					mfaEnabled: settings.mfa_enabled,
-				},
-			}
-		} catch {
-			return fallback
-		}
-	}
+      return {
+        strategy: 'supabase',
+        isExternal: true,
+        providers,
+        providerSettings: {
+          disableSignup: settings.disable_signup,
+          autoconfirm: settings.mailer_autoconfirm,
+          mfaEnabled: settings.mfa_enabled,
+        },
+      }
+    } catch {
+      return fallback
+    }
+  }
 
-	/**
-	 * List all users from Supabase Auth.
-	 * Requires service role key to be configured.
-	 */
-	async listUsers(options?: { page?: number; perPage?: number }): Promise<
-		AuthUser[]
-	> {
-		if (!this.supabaseAdmin) {
-			throw new Error(
-				'listUsers requires supabaseServiceKey to be configured. Add supabaseServiceKey to your auth config.',
-			)
-		}
+  /**
+   * List all users from Supabase Auth.
+   * Requires service role key to be configured.
+   */
+  async listUsers(options?: { page?: number; perPage?: number }): Promise<AuthUser[]> {
+    if (!this.supabaseAdmin) {
+      throw new Error(
+        'listUsers requires supabaseServiceKey to be configured. Add supabaseServiceKey to your auth config.',
+      )
+    }
 
-		const { data, error } = await this.supabaseAdmin.auth.admin.listUsers({
-			page: options?.page || 1,
-			perPage: options?.perPage || 1000,
-		})
+    const { data, error } = await this.supabaseAdmin.auth.admin.listUsers({
+      page: options?.page || 1,
+      perPage: options?.perPage || 1000,
+    })
 
-		if (error) {
-			throw new Error(`Failed to list users: ${error.message}`)
-		}
+    if (error) {
+      throw new Error(`Failed to list users: ${error.message}`)
+    }
 
-		return (data?.users || []).map((user) => ({
-			id: user.id,
-			email: user.email || '',
-			role: user.user_metadata?.role || this.config.defaultRole || 'user',
-			name: user.user_metadata?.name,
-		}))
-	}
+    return (data?.users || []).map((user) => ({
+      id: user.id,
+      email: user.email || '',
+      role: user.user_metadata?.role || this.config.defaultRole || 'user',
+      name: user.user_metadata?.name,
+    }))
+  }
 
-	/** Environment variables used by this adapter */
-	static readonly envVars: EnvVarRequirement[] = [
-		{
-			name: 'SUPABASE_URL',
-			required: true,
-			description: 'Supabase project URL',
-		},
-		{
-			name: 'SUPABASE_PUBLISHABLE_KEY',
-			required: true,
-			description: 'Supabase publishable key',
-		},
-		{
-			name: 'SUPABASE_SECRET_KEY',
-			required: false,
-			description: 'Supabase secret key',
-		},
-	]
+  /** Environment variables used by this adapter */
+  static readonly envVars: EnvVarRequirement[] = [
+    {
+      name: 'SUPABASE_URL',
+      required: true,
+      description: 'Supabase project URL',
+    },
+    {
+      name: 'SUPABASE_PUBLISHABLE_KEY',
+      required: true,
+      description: 'Supabase publishable key',
+    },
+    {
+      name: 'SUPABASE_SECRET_KEY',
+      required: false,
+      description: 'Supabase secret key',
+    },
+  ]
 
-	/**
-	 * Create a configured auth provider for MagnetModule.forRoot().
-	 * Auto-resolves config values from environment variables if not provided.
-	 * Registers the Supabase strategy internally — no need to call AuthStrategyFactory.registerStrategy().
-	 */
-	static forRoot(config?: Partial<SupabaseAuthConfig>): AuthMagnetProvider {
-		const resolvedConfig: AuthConfig = {
-			strategy: 'supabase',
-			supabaseUrl: config?.supabaseUrl ?? process.env.SUPABASE_URL ?? '',
-			supabaseKey:
-				config?.supabaseKey ?? process.env.SUPABASE_PUBLISHABLE_KEY ?? '',
-			supabaseServiceKey:
-				config?.supabaseServiceKey ?? process.env.SUPABASE_SECRET_KEY,
-			defaultRole: config?.defaultRole,
-			jwt: {
-				// Prefer PEM public key (ES256 asymmetric) over shared secret (HS256)
-				secret:
-					config?.jwt?.secret ??
-					process.env.SUPABASE_JWT_PUBLIC_KEY ??
-					process.env.SUPABASE_JWT_SECRET ??
-					process.env.JWT_SECRET ??
-					'',
-			},
-		}
+  /**
+   * Create a configured auth provider for MagnetModule.forRoot().
+   * Auto-resolves config values from environment variables if not provided.
+   * Registers the Supabase strategy internally — no need to call AuthStrategyFactory.registerStrategy().
+   */
+  static forRoot(config?: Partial<SupabaseAuthConfig>): AuthMagnetProvider {
+    const resolvedConfig: AuthConfig = {
+      strategy: 'supabase',
+      supabaseUrl: config?.supabaseUrl ?? process.env.SUPABASE_URL ?? '',
+      supabaseKey: config?.supabaseKey ?? process.env.SUPABASE_PUBLISHABLE_KEY ?? '',
+      supabaseServiceKey: config?.supabaseServiceKey ?? process.env.SUPABASE_SECRET_KEY,
+      defaultRole: config?.defaultRole,
+      jwt: {
+        // Prefer PEM public key (ES256 asymmetric) over shared secret (HS256)
+        secret:
+          config?.jwt?.secret ??
+          process.env.SUPABASE_JWT_PUBLIC_KEY ??
+          process.env.SUPABASE_JWT_SECRET ??
+          process.env.JWT_SECRET ??
+          '',
+      },
+    }
 
-		// Register strategy so AuthModule finds it — lazy import to avoid circular deps
-		try {
-			const { AuthStrategyFactory } = require('@magnet-cms/core')
-			AuthStrategyFactory.registerStrategy('supabase', SupabaseAuthStrategy)
-		} catch {
-			// Core not available — strategy will be registered when AuthModule loads
-		}
+    // Register strategy so AuthModule finds it — lazy import to avoid circular deps
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const { AuthStrategyFactory } = require('@magnet-cms/core')
+      AuthStrategyFactory.registerStrategy('supabase', SupabaseAuthStrategy)
+    } catch {
+      // Core not available — strategy will be registered when AuthModule loads
+    }
 
-		return {
-			type: 'auth',
-			config: resolvedConfig,
-			envVars: SupabaseAuthStrategy.envVars,
-		}
-	}
+    return {
+      type: 'auth',
+      config: resolvedConfig,
+      envVars: SupabaseAuthStrategy.envVars,
+    }
+  }
 }

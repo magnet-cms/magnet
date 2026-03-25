@@ -1,13 +1,5 @@
 import { Field, Schema } from '@magnet-cms/common'
-import {
-	IsDate,
-	IsIn,
-	IsNotEmpty,
-	IsNumber,
-	IsOptional,
-	IsString,
-	Min,
-} from 'class-validator'
+import { IsDate, IsIn, IsNotEmpty, IsNumber, IsOptional, IsString, Min } from 'class-validator'
 
 /**
  * HTTP method types for logging
@@ -30,91 +22,87 @@ export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
  */
 @Schema({ versioning: false, i18n: false, visible: false })
 export class ApiKeyUsage {
-	/**
-	 * Document ID (assigned by database)
-	 */
-	id!: string
+  /**
+   * Document ID (assigned by database)
+   */
+  id!: string
 
-	/**
-	 * ID of the API key that was used
-	 */
-	@Field.Text({ required: true })
-	@Field.Validators(IsString(), IsNotEmpty())
-	keyId!: string
+  /**
+   * ID of the API key that was used
+   */
+  @Field.Text({ required: true })
+  @Field.Validators(IsString(), IsNotEmpty())
+  keyId!: string
 
-	/**
-	 * API endpoint that was accessed
-	 */
-	@Field.Text({ required: true })
-	@Field.Validators(IsString(), IsNotEmpty())
-	endpoint!: string
+  /**
+   * API endpoint that was accessed
+   */
+  @Field.Text({ required: true })
+  @Field.Validators(IsString(), IsNotEmpty())
+  endpoint!: string
 
-	/**
-	 * HTTP method used
-	 */
-	@Field.Select({
-		options: [
-			{ label: 'GET', value: 'GET' },
-			{ label: 'POST', value: 'POST' },
-			{ label: 'PUT', value: 'PUT' },
-			{ label: 'PATCH', value: 'PATCH' },
-			{ label: 'DELETE', value: 'DELETE' },
-		],
-		required: true,
-	})
-	@Field.Validators(
-		IsString(),
-		IsIn(['GET', 'POST', 'PUT', 'PATCH', 'DELETE']),
-		IsNotEmpty(),
-	)
-	method!: HttpMethod
+  /**
+   * HTTP method used
+   */
+  @Field.Select({
+    options: [
+      { label: 'GET', value: 'GET' },
+      { label: 'POST', value: 'POST' },
+      { label: 'PUT', value: 'PUT' },
+      { label: 'PATCH', value: 'PATCH' },
+      { label: 'DELETE', value: 'DELETE' },
+    ],
+    required: true,
+  })
+  @Field.Validators(IsString(), IsIn(['GET', 'POST', 'PUT', 'PATCH', 'DELETE']), IsNotEmpty())
+  method!: HttpMethod
 
-	/**
-	 * HTTP status code of the response
-	 */
-	@Field.Number({})
-	@Field.Validators(IsNumber(), Min(100), IsOptional())
-	statusCode?: number
+  /**
+   * HTTP status code of the response
+   */
+  @Field.Number({})
+  @Field.Validators(IsNumber(), Min(100), IsOptional())
+  statusCode?: number
 
-	/**
-	 * Response time in milliseconds
-	 */
-	@Field.Number({})
-	@Field.Validators(IsNumber(), Min(0), IsOptional())
-	responseTime?: number
+  /**
+   * Response time in milliseconds
+   */
+  @Field.Number({})
+  @Field.Validators(IsNumber(), Min(0), IsOptional())
+  responseTime?: number
 
-	/**
-	 * IP address of the client
-	 */
-	@Field.Text({})
-	@Field.Validators(IsString(), IsOptional())
-	ipAddress?: string
+  /**
+   * IP address of the client
+   */
+  @Field.Text({})
+  @Field.Validators(IsString(), IsOptional())
+  ipAddress?: string
 
-	/**
-	 * User agent string from the request
-	 */
-	@Field.Text({})
-	@Field.Validators(IsString(), IsOptional())
-	userAgent?: string
+  /**
+   * User agent string from the request
+   */
+  @Field.Text({})
+  @Field.Validators(IsString(), IsOptional())
+  userAgent?: string
 
-	/**
-	 * When the request was made
-	 */
-	@Field.DateTime({ default: () => new Date() })
-	@Field.Validators(IsDate())
-	timestamp: Date = new Date()
+  /**
+   * When the request was made
+   */
+  @Field.DateTime({ default: () => new Date() })
+  @Field.Validators(IsDate())
+  timestamp: Date = new Date()
 
-	/**
-	 * Error message if the request failed
-	 */
-	@Field.Text({})
-	@Field.Validators(IsString(), IsOptional())
-	error?: string
+  /**
+   * Error message if the request failed
+   */
+  @Field.Text({})
+  @Field.Validators(IsString(), IsOptional())
+  error?: string
 
-	/**
-	 * Schema that was accessed (for content endpoints)
-	 */
-	@Field.Text({})
-	@Field.Validators(IsString(), IsOptional())
-	schema?: string
+  /**
+   * Schema that was accessed (for content endpoints)
+   */
+  @Field.Text({})
+  @Field.Validators(IsString(), IsOptional())
+  schema?: string
 }

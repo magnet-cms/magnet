@@ -3,26 +3,22 @@ import type { ReactElement, ReactNode } from 'react'
 
 import { source } from '@/lib/source'
 
-export default function Layout({
-	children,
-}: {
-	children: ReactNode
-}): ReactElement {
-	return (
-		<DocsLayout
-			tree={source.pageTree}
-			nav={{
-				title: 'Magnet',
-				url: '/docs',
-			}}
-			links={[
-				{
-					text: 'GitHub',
-					url: 'https://github.com/magnet-cms/magnet',
-				},
-			]}
-		>
-			{children}
-		</DocsLayout>
-	)
+export default function Layout({ children }: { children: ReactNode }): ReactElement {
+  return (
+    <DocsLayout
+      tree={source.pageTree}
+      nav={{
+        title: 'Magnet',
+        url: '/docs',
+      }}
+      links={[
+        {
+          text: 'GitHub',
+          url: 'https://github.com/magnet-cms/magnet',
+        },
+      ]}
+    >
+      {children}
+    </DocsLayout>
+  )
 }

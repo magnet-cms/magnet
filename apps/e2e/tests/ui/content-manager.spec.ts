@@ -4,325 +4,279 @@ import { testData } from '../../src/helpers/test-data'
 import { LoginPage } from '../../src/page-objects/login.page'
 
 authTest.describe('Content Manager', () => {
-	authTest.beforeEach(async ({ page, testUser }) => {
-		const loginPage = new LoginPage(page)
-		await loginPage.goto()
-		await loginPage.login(testUser.email, testUser.password)
-		await page.waitForURL(POST_LOGIN_URL, { timeout: 10000 })
-	})
+  authTest.beforeEach(async ({ page, testUser }) => {
+    const loginPage = new LoginPage(page)
+    await loginPage.goto()
+    await loginPage.login(testUser.email, testUser.password)
+    await page.waitForURL(POST_LOGIN_URL, { timeout: 10000 })
+  })
 
-	// ==========================================
-	// SECTION 1: Basic Navigation Tests
-	// ==========================================
-	authTest.describe('Navigation', () => {
-		authTest('should list available schemas in sidebar', async ({ page }) => {
-			await page.goto(adminPath('/content-manager/veterinarian'))
-			await page.waitForLoadState('domcontentloaded')
+  // ==========================================
+  // SECTION 1: Basic Navigation Tests
+  // ==========================================
+  authTest.describe('Navigation', () => {
+    authTest('should list available schemas in sidebar', async ({ page }) => {
+      await page.goto(adminPath('/content-manager/veterinarian'))
+      await page.waitForLoadState('domcontentloaded')
 
-			// Expand Content Manager if collapsed
-			const contentManagerButton = page.getByRole('button', {
-				name: /content manager/i,
-			})
-			if (await contentManagerButton.isVisible()) {
-				const isExpanded = await contentManagerButton.getAttribute('data-state')
-				if (isExpanded !== 'open') {
-					await contentManagerButton.click()
-				}
-			}
+      // Expand Content Manager if collapsed
+      const contentManagerButton = page.getByRole('button', {
+        name: /content manager/i,
+      })
+      if (await contentManagerButton.isVisible()) {
+        const isExpanded = await contentManagerButton.getAttribute('data-state')
+        if (isExpanded !== 'open') {
+          await contentManagerButton.click()
+        }
+      }
 
-			const schemaLinks = page.locator('a[href*="/content-manager/"]')
-			await expect(schemaLinks.first()).toBeVisible({ timeout: 5000 })
+      const schemaLinks = page.locator('a[href*="/content-manager/"]')
+      await expect(schemaLinks.first()).toBeVisible({ timeout: 5000 })
 
-			const schemaCount = await schemaLinks.count()
-			expect(schemaCount).toBeGreaterThan(0)
-		})
+      const schemaCount = await schemaLinks.count()
+      expect(schemaCount).toBeGreaterThan(0)
+    })
 
-		authTest('should navigate between different schemas', async ({ page }) => {
-			await page.goto(adminPath('/content-manager/veterinarian'))
-			await page.waitForLoadState('domcontentloaded')
-			await expect(
-				page.getByRole('heading', { name: /veterinarian/i }),
-			).toBeVisible({ timeout: 5000 })
+    authTest('should navigate between different schemas', async ({ page }) => {
+      await page.goto(adminPath('/content-manager/veterinarian'))
+      await page.waitForLoadState('domcontentloaded')
+      await expect(page.getByRole('heading', { name: /veterinarian/i })).toBeVisible({
+        timeout: 5000,
+      })
 
-			await page.goto(adminPath('/content-manager/owner'))
-			await page.waitForLoadState('domcontentloaded')
-			await expect(page.getByRole('heading', { name: /owner/i })).toBeVisible({
-				timeout: 5000,
-			})
+      await page.goto(adminPath('/content-manager/owner'))
+      await page.waitForLoadState('domcontentloaded')
+      await expect(page.getByRole('heading', { name: /owner/i })).toBeVisible({
+        timeout: 5000,
+      })
 
-			await page.goto(adminPath('/content-manager/cat'))
-			await page.waitForLoadState('domcontentloaded')
-			await expect(page.getByRole('heading', { name: /cat/i })).toBeVisible({
-				timeout: 5000,
-			})
-		})
+      await page.goto(adminPath('/content-manager/cat'))
+      await page.waitForLoadState('domcontentloaded')
+      await expect(page.getByRole('heading', { name: /cat/i })).toBeVisible({
+        timeout: 5000,
+      })
+    })
 
-		authTest(
-			'should display table with correct structure',
-			async ({ page, authenticatedApiClient }) => {
-				// Create an entry first so the table renders
-				const vetData = testData.veterinarian.create()
-				await authenticatedApiClient.createContent('veterinarian', vetData)
+    authTest(
+      'should display table with correct structure',
+      async ({ page, authenticatedApiClient }) => {
+        // Create an entry first so the table renders
+        const vetData = testData.veterinarian.create()
+        await authenticatedApiClient.createContent('veterinarian', vetData)
 
-				await page.goto(adminPath('/content-manager/veterinarian'))
-				await page.waitForLoadState('domcontentloaded')
+        await page.goto(adminPath('/content-manager/veterinarian'))
+        await page.waitForLoadState('domcontentloaded')
 
-				const table = page.getByRole('table')
-				await expect(table).toBeVisible({ timeout: 10000 })
+        const table = page.getByRole('table')
+        await expect(table).toBeVisible({ timeout: 10000 })
 
-				const headers = table.getByRole('columnheader')
-				const headerCount = await headers.count()
-				expect(headerCount).toBeGreaterThan(0)
+        const headers = table.getByRole('columnheader')
+        const headerCount = await headers.count()
+        expect(headerCount).toBeGreaterThan(0)
 
-				await expect(headers.filter({ hasText: /id/i }).first()).toBeVisible()
-			},
-		)
-	})
+        await expect(headers.filter({ hasText: /id/i }).first()).toBeVisible()
+      },
+    )
+  })
 
-	// ==========================================
-	// SECTION 2: Create Content via API
-	// ==========================================
-	authTest.describe('Create Veterinarian', () => {
-		authTest(
-			'should create a new veterinarian via API and navigate to edit',
-			async ({ page, authenticatedApiClient, cleanup }) => {
-				const vetData = testData.veterinarian.create()
+  // ==========================================
+  // SECTION 2: Create Content via API
+  // ==========================================
+  authTest.describe('Create Veterinarian', () => {
+    authTest(
+      'should create a new veterinarian via API and navigate to edit',
+      async ({ page, authenticatedApiClient, cleanup }) => {
+        const vetData = testData.veterinarian.create()
 
-				const response = await authenticatedApiClient.createContent(
-					'veterinarian',
-					vetData,
-				)
-				expect(response.ok()).toBeTruthy()
-				const created = await response.json()
-				const documentId = created.documentId as string
+        const response = await authenticatedApiClient.createContent('veterinarian', vetData)
+        expect(response.ok()).toBeTruthy()
+        const created = await response.json()
+        const documentId = created.documentId as string
 
-				cleanup.trackContent(authenticatedApiClient, 'veterinarian', documentId)
+        cleanup.trackContent(authenticatedApiClient, 'veterinarian', documentId)
 
-				await page.goto(
-					adminPath(`/content-manager/veterinarian/${documentId}`),
-				)
-				await page.waitForLoadState('domcontentloaded')
+        await page.goto(adminPath(`/content-manager/veterinarian/${documentId}`))
+        await page.waitForLoadState('domcontentloaded')
 
-				await expect(
-					page.getByRole('heading', { name: /veterinarian/i }),
-				).toBeVisible({ timeout: 5000 })
+        await expect(page.getByRole('heading', { name: /veterinarian/i })).toBeVisible({
+          timeout: 5000,
+        })
 
-				const nameInput = page.getByRole('textbox', { name: /name/i }).first()
-				await expect(nameInput).toHaveValue(vetData.name, { timeout: 5000 })
-			},
-		)
+        const nameInput = page.getByRole('textbox', { name: /name/i }).first()
+        await expect(nameInput).toHaveValue(vetData.name, { timeout: 5000 })
+      },
+    )
 
-		authTest(
-			'should edit veterinarian from list using first row',
-			async ({ page, authenticatedApiClient, cleanup }) => {
-				// Ensure at least one record exists
-				const vetData = testData.veterinarian.create()
-				const response = await authenticatedApiClient.createContent(
-					'veterinarian',
-					vetData,
-				)
-				const created = await response.json()
-				cleanup.trackContent(
-					authenticatedApiClient,
-					'veterinarian',
-					created.documentId as string,
-				)
+    authTest(
+      'should edit veterinarian from list using first row',
+      async ({ page, authenticatedApiClient, cleanup }) => {
+        // Ensure at least one record exists
+        const vetData = testData.veterinarian.create()
+        const response = await authenticatedApiClient.createContent('veterinarian', vetData)
+        const created = await response.json()
+        cleanup.trackContent(authenticatedApiClient, 'veterinarian', created.documentId as string)
 
-				await page.goto(adminPath('/content-manager/veterinarian'))
-				await page.waitForLoadState('domcontentloaded')
+        await page.goto(adminPath('/content-manager/veterinarian'))
+        await page.waitForLoadState('domcontentloaded')
 
-				const dataRows = page.locator('tbody tr')
-				await expect(dataRows.first()).toBeVisible({ timeout: 5000 })
+        const dataRows = page.locator('tbody tr')
+        await expect(dataRows.first()).toBeVisible({ timeout: 5000 })
 
-				// Each row has direct Edit and Delete buttons (not a dropdown menu)
-				const firstRow = dataRows.first()
-				const editButton = firstRow.getByRole('button', { name: /edit/i })
-				await editButton.click()
+        // Each row has direct Edit and Delete buttons (not a dropdown menu)
+        const firstRow = dataRows.first()
+        const editButton = firstRow.getByRole('button', { name: /edit/i })
+        await editButton.click()
 
-				await page.waitForURL(/\/content-manager\/veterinarian\/[^/]+$/, {
-					timeout: 10000,
-				})
+        await page.waitForURL(/\/content-manager\/veterinarian\/[^/]+$/, {
+          timeout: 10000,
+        })
 
-				await expect(
-					page.getByRole('heading', { name: /veterinarian/i }),
-				).toBeVisible({ timeout: 5000 })
-			},
-		)
-	})
+        await expect(page.getByRole('heading', { name: /veterinarian/i })).toBeVisible({
+          timeout: 5000,
+        })
+      },
+    )
+  })
 
-	authTest.describe('Create Owner', () => {
-		authTest(
-			'should create a new owner via API and navigate to edit',
-			async ({ page, authenticatedApiClient, cleanup }) => {
-				const ownerData = testData.owner.create()
+  authTest.describe('Create Owner', () => {
+    authTest(
+      'should create a new owner via API and navigate to edit',
+      async ({ page, authenticatedApiClient, cleanup }) => {
+        const ownerData = testData.owner.create()
 
-				const response = await authenticatedApiClient.createContent(
-					'owner',
-					ownerData,
-				)
-				expect(response.ok()).toBeTruthy()
-				const created = await response.json()
-				const documentId = created.documentId as string
+        const response = await authenticatedApiClient.createContent('owner', ownerData)
+        expect(response.ok()).toBeTruthy()
+        const created = await response.json()
+        const documentId = created.documentId as string
 
-				cleanup.trackContent(authenticatedApiClient, 'owner', documentId)
+        cleanup.trackContent(authenticatedApiClient, 'owner', documentId)
 
-				await page.goto(adminPath(`/content-manager/owner/${documentId}`))
-				await page.waitForLoadState('domcontentloaded')
+        await page.goto(adminPath(`/content-manager/owner/${documentId}`))
+        await page.waitForLoadState('domcontentloaded')
 
-				await expect(page.getByRole('heading', { name: /owner/i })).toBeVisible(
-					{ timeout: 5000 },
-				)
+        await expect(page.getByRole('heading', { name: /owner/i })).toBeVisible({ timeout: 5000 })
 
-				const nameInput = page.getByRole('textbox', { name: /name/i }).first()
-				await expect(nameInput).toHaveValue(ownerData.name, { timeout: 5000 })
-			},
-		)
-	})
+        const nameInput = page.getByRole('textbox', { name: /name/i }).first()
+        await expect(nameInput).toHaveValue(ownerData.name, { timeout: 5000 })
+      },
+    )
+  })
 
-	// ==========================================
-	// SECTION 3: Edit Content
-	// ==========================================
-	authTest.describe('Edit Content', () => {
-		authTest(
-			'should show tabs for Edit, Versions, and API on edit page',
-			async ({ page, authenticatedApiClient, cleanup }) => {
-				const vetData = testData.veterinarian.create()
-				const response = await authenticatedApiClient.createContent(
-					'veterinarian',
-					vetData,
-				)
-				const created = await response.json()
-				cleanup.trackContent(
-					authenticatedApiClient,
-					'veterinarian',
-					created.documentId as string,
-				)
+  // ==========================================
+  // SECTION 3: Edit Content
+  // ==========================================
+  authTest.describe('Edit Content', () => {
+    authTest(
+      'should show tabs for Edit, Versions, and API on edit page',
+      async ({ page, authenticatedApiClient, cleanup }) => {
+        const vetData = testData.veterinarian.create()
+        const response = await authenticatedApiClient.createContent('veterinarian', vetData)
+        const created = await response.json()
+        cleanup.trackContent(authenticatedApiClient, 'veterinarian', created.documentId as string)
 
-				await page.goto(
-					adminPath(`/content-manager/veterinarian/${created.documentId}`),
-				)
-				await page.waitForLoadState('domcontentloaded')
+        await page.goto(adminPath(`/content-manager/veterinarian/${created.documentId}`))
+        await page.waitForLoadState('domcontentloaded')
 
-				const editTab = page.getByRole('tab', { name: /^edit$/i })
-				const versionsTab = page.getByRole('tab', { name: /versions/i })
-				const apiTab = page.getByRole('tab', { name: /api/i })
+        const editTab = page.getByRole('tab', { name: /^edit$/i })
+        const versionsTab = page.getByRole('tab', { name: /versions/i })
+        const apiTab = page.getByRole('tab', { name: /api/i })
 
-				await expect(editTab).toBeVisible({ timeout: 5000 })
-				await expect(versionsTab).toBeVisible({ timeout: 5000 })
-				await expect(apiTab).toBeVisible({ timeout: 5000 })
-			},
-		)
-	})
+        await expect(editTab).toBeVisible({ timeout: 5000 })
+        await expect(versionsTab).toBeVisible({ timeout: 5000 })
+        await expect(apiTab).toBeVisible({ timeout: 5000 })
+      },
+    )
+  })
 
-	// ==========================================
-	// SECTION 4: Versioning & Publishing
-	// ==========================================
-	authTest.describe('Versioning & Publishing', () => {
-		authTest(
-			'should show publish button for draft content',
-			async ({ page, authenticatedApiClient, cleanup }) => {
-				const vetData = testData.veterinarian.create()
-				const response = await authenticatedApiClient.createContent(
-					'veterinarian',
-					vetData,
-				)
-				const created = await response.json()
-				const docId = created.documentId as string
-				cleanup.trackContent(authenticatedApiClient, 'veterinarian', docId)
+  // ==========================================
+  // SECTION 4: Versioning & Publishing
+  // ==========================================
+  authTest.describe('Versioning & Publishing', () => {
+    authTest(
+      'should show publish button for draft content',
+      async ({ page, authenticatedApiClient, cleanup }) => {
+        const vetData = testData.veterinarian.create()
+        const response = await authenticatedApiClient.createContent('veterinarian', vetData)
+        const created = await response.json()
+        const docId = created.documentId as string
+        cleanup.trackContent(authenticatedApiClient, 'veterinarian', docId)
 
-				await page.goto(adminPath(`/content-manager/veterinarian/${docId}`))
-				await page.waitForLoadState('domcontentloaded')
+        await page.goto(adminPath(`/content-manager/veterinarian/${docId}`))
+        await page.waitForLoadState('domcontentloaded')
 
-				const publishButton = page.getByRole('button', { name: /publish/i })
-				await expect(publishButton).toBeVisible({ timeout: 5000 })
-			},
-		)
+        const publishButton = page.getByRole('button', { name: /publish/i })
+        await expect(publishButton).toBeVisible({ timeout: 5000 })
+      },
+    )
 
-		authTest(
-			'should publish veterinarian content',
-			async ({ page, authenticatedApiClient, cleanup }) => {
-				const vetData = testData.veterinarian.create()
-				const response = await authenticatedApiClient.createContent(
-					'veterinarian',
-					vetData,
-				)
-				const created = await response.json()
-				const docId = created.documentId as string
-				cleanup.trackContent(authenticatedApiClient, 'veterinarian', docId)
+    authTest(
+      'should publish veterinarian content',
+      async ({ page, authenticatedApiClient, cleanup }) => {
+        const vetData = testData.veterinarian.create()
+        const response = await authenticatedApiClient.createContent('veterinarian', vetData)
+        const created = await response.json()
+        const docId = created.documentId as string
+        cleanup.trackContent(authenticatedApiClient, 'veterinarian', docId)
 
-				await page.goto(adminPath(`/content-manager/veterinarian/${docId}`))
-				await page.waitForLoadState('domcontentloaded')
+        await page.goto(adminPath(`/content-manager/veterinarian/${docId}`))
+        await page.waitForLoadState('domcontentloaded')
 
-				const publishButton = page.getByRole('button', { name: /publish/i })
-				await expect(publishButton).toBeVisible({ timeout: 5000 })
-				await publishButton.click()
+        const publishButton = page.getByRole('button', { name: /publish/i })
+        await expect(publishButton).toBeVisible({ timeout: 5000 })
+        await publishButton.click()
 
-				const successToast = page.getByText(/published successfully/i)
-				await expect(successToast).toBeVisible({ timeout: 5000 })
-			},
-		)
+        const successToast = page.getByText(/published successfully/i)
+        await expect(successToast).toBeVisible({ timeout: 5000 })
+      },
+    )
 
-		authTest(
-			'should navigate to versions tab and show version history',
-			async ({ page, authenticatedApiClient, cleanup }) => {
-				const vetData = testData.veterinarian.create()
-				const response = await authenticatedApiClient.createContent(
-					'veterinarian',
-					vetData,
-				)
-				const created = await response.json()
-				const docId = created.documentId as string
-				cleanup.trackContent(authenticatedApiClient, 'veterinarian', docId)
+    authTest(
+      'should navigate to versions tab and show version history',
+      async ({ page, authenticatedApiClient, cleanup }) => {
+        const vetData = testData.veterinarian.create()
+        const response = await authenticatedApiClient.createContent('veterinarian', vetData)
+        const created = await response.json()
+        const docId = created.documentId as string
+        cleanup.trackContent(authenticatedApiClient, 'veterinarian', docId)
 
-				await page.goto(
-					adminPath(`/content-manager/veterinarian/${docId}/versions`),
-				)
-				await page.waitForLoadState('domcontentloaded')
+        await page.goto(adminPath(`/content-manager/veterinarian/${docId}/versions`))
+        await page.waitForLoadState('domcontentloaded')
 
-				await expect(
-					page.getByRole('heading', { name: /version history/i }),
-				).toBeVisible({
-					timeout: 5000,
-				})
-			},
-		)
-	})
+        await expect(page.getByRole('heading', { name: /version history/i })).toBeVisible({
+          timeout: 5000,
+        })
+      },
+    )
+  })
 
-	// ==========================================
-	// SECTION 5: Row Actions
-	// ==========================================
-	authTest.describe('Row Actions', () => {
-		authTest(
-			'should show row action buttons Edit and Delete',
-			async ({ page, authenticatedApiClient, cleanup }) => {
-				const vetData = testData.veterinarian.create()
-				const response = await authenticatedApiClient.createContent(
-					'veterinarian',
-					vetData,
-				)
-				const created = await response.json()
-				cleanup.trackContent(
-					authenticatedApiClient,
-					'veterinarian',
-					created.documentId as string,
-				)
+  // ==========================================
+  // SECTION 5: Row Actions
+  // ==========================================
+  authTest.describe('Row Actions', () => {
+    authTest(
+      'should show row action buttons Edit and Delete',
+      async ({ page, authenticatedApiClient, cleanup }) => {
+        const vetData = testData.veterinarian.create()
+        const response = await authenticatedApiClient.createContent('veterinarian', vetData)
+        const created = await response.json()
+        cleanup.trackContent(authenticatedApiClient, 'veterinarian', created.documentId as string)
 
-				await page.goto(adminPath('/content-manager/veterinarian'))
-				await page.waitForLoadState('domcontentloaded')
+        await page.goto(adminPath('/content-manager/veterinarian'))
+        await page.waitForLoadState('domcontentloaded')
 
-				const dataRows = page.locator('tbody tr')
-				await expect(dataRows.first()).toBeVisible({ timeout: 5000 })
+        const dataRows = page.locator('tbody tr')
+        await expect(dataRows.first()).toBeVisible({ timeout: 5000 })
 
-				// Each row has direct Edit and Delete buttons
-				const firstRow = dataRows.first()
-				const editButton = firstRow.getByRole('button', { name: /edit/i })
-				const deleteButton = firstRow.getByRole('button', {
-					name: /delete/i,
-				})
+        // Each row has direct Edit and Delete buttons
+        const firstRow = dataRows.first()
+        const editButton = firstRow.getByRole('button', { name: /edit/i })
+        const deleteButton = firstRow.getByRole('button', {
+          name: /delete/i,
+        })
 
-				await expect(editButton).toBeVisible({ timeout: 3000 })
-				await expect(deleteButton).toBeVisible({ timeout: 3000 })
-			},
-		)
-	})
+        await expect(editButton).toBeVisible({ timeout: 3000 })
+        await expect(deleteButton).toBeVisible({ timeout: 3000 })
+      },
+    )
+  })
 })

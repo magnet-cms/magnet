@@ -1,8 +1,10 @@
 import { Module } from '@nestjs/common'
-import { SettingsModule } from '~/modules/settings'
+
 import { GeneralSettings } from './general.settings'
 
+import { SettingsModule } from '~/modules/settings'
+
 @Module({
-	imports: [SettingsModule.forFeature(GeneralSettings)],
+  imports: [SettingsModule.forFeature(GeneralSettings)],
 })
 export class GeneralModule {}

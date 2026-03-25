@@ -6,13 +6,13 @@ services:
     container_name: mongoose-mongodb
     restart: unless-stopped
     ports:
-      - "27017:27017"
+      - '27017:27017'
     environment:
       MONGO_INITDB_DATABASE: cats-example
     volumes:
       - mongoose-data:/data/db
     healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      test: ['CMD', 'mongosh', '--eval', "db.adminCommand('ping')"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -22,15 +22,15 @@ services:
     container_name: mongoose-vault
     restart: unless-stopped
     ports:
-      - "8200:8200"
+      - '8200:8200'
     environment:
       VAULT_DEV_ROOT_TOKEN_ID: dev-token
-      VAULT_DEV_LISTEN_ADDRESS: "0.0.0.0:8200"
-      VAULT_ADDR: "http://127.0.0.1:8200"
+      VAULT_DEV_LISTEN_ADDRESS: '0.0.0.0:8200'
+      VAULT_ADDR: 'http://127.0.0.1:8200'
     cap_add:
       - IPC_LOCK
     healthcheck:
-      test: ["CMD", "vault", "status"]
+      test: ['CMD', 'vault', 'status']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -41,7 +41,7 @@ services:
     depends_on:
       vault:
         condition: service_healthy
-    restart: "no"
+    restart: 'no'
     environment:
       VAULT_ADDR: http://vault:8200
       VAULT_TOKEN: dev-token
@@ -59,10 +59,10 @@ services:
     container_name: mongoose-mailpit
     restart: unless-stopped
     ports:
-      - "1025:1025"
-      - "8025:8025"
+      - '1025:1025'
+      - '8025:8025'
     healthcheck:
-      test: ["CMD", "wget", "--spider", "--quiet", "http://localhost:8025/api/v1/messages"]
+      test: ['CMD', 'wget', '--spider', '--quiet', 'http://localhost:8025/api/v1/messages']
       interval: 10s
       timeout: 5s
       retries: 5

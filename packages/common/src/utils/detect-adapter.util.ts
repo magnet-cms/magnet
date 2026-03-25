@@ -1,25 +1,27 @@
 import { existsSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { join } from 'node:path'
-import type { DBConfig } from '~/types/database.types'
+
 import { getDatabaseAdapterResolutionRoots } from './database-adapter-module.util'
+
+import type { DBConfig } from '~/types/database.types'
 
 export type SupportedAdapter = 'mongoose' | 'drizzle'
 
 let cachedAdapter: SupportedAdapter | null = null
 
 function isPackageInstalled(packageName: string): boolean {
-	for (const root of getDatabaseAdapterResolutionRoots()) {
-		const manifestPath = join(root, 'package.json')
-		if (!existsSync(manifestPath)) continue
-		try {
-			createRequire(manifestPath).resolve(packageName)
-			return true
-		} catch {
-			// package not found in this root, try next
-		}
-	}
-	return false
+  for (const root of getDatabaseAdapterResolutionRoots()) {
+    const manifestPath = join(root, 'package.json')
+    if (!existsSync(manifestPath)) continue
+    try {
+      createRequire(manifestPath).resolve(packageName)
+      return true
+    } catch {
+      // package not found in this root, try next
+    }
+  }
+  return false
 }
 
 /**
@@ -39,33 +41,33 @@ function isPackageInstalled(packageName: string): boolean {
  * @param dbConfig - Optional database configuration to determine adapter from
  */
 export function detectDatabaseAdapter(dbConfig?: DBConfig): SupportedAdapter {
-	// If config provided, detect from config
-	if (dbConfig) {
-		if ('connectionString' in dbConfig || 'dialect' in dbConfig) {
-			cachedAdapter = 'drizzle'
-			return cachedAdapter
-		}
-		if ('uri' in dbConfig) {
-			cachedAdapter = 'mongoose'
-			return cachedAdapter
-		}
-	}
+  // If config provided, detect from config
+  if (dbConfig) {
+    if ('connectionString' in dbConfig || 'dialect' in dbConfig) {
+      cachedAdapter = 'drizzle'
+      return cachedAdapter
+    }
+    if ('uri' in dbConfig) {
+      cachedAdapter = 'mongoose'
+      return cachedAdapter
+    }
+  }
 
-	// Return cached adapter if already detected
-	if (cachedAdapter) return cachedAdapter
+  // Return cached adapter if already detected
+  if (cachedAdapter) return cachedAdapter
 
-	// Fallback to package detection
-	if (isPackageInstalled('@magnet-cms/adapter-db-mongoose')) {
-		cachedAdapter = 'mongoose'
-	} else if (isPackageInstalled('@magnet-cms/adapter-db-drizzle')) {
-		cachedAdapter = 'drizzle'
-	} else {
-		throw new Error(
-			'❌ No supported database adapter found. Install @magnet-cms/adapter-db-mongoose or @magnet-cms/adapter-db-drizzle.',
-		)
-	}
+  // Fallback to package detection
+  if (isPackageInstalled('@magnet-cms/adapter-db-mongoose')) {
+    cachedAdapter = 'mongoose'
+  } else if (isPackageInstalled('@magnet-cms/adapter-db-drizzle')) {
+    cachedAdapter = 'drizzle'
+  } else {
+    throw new Error(
+      '❌ No supported database adapter found. Install @magnet-cms/adapter-db-mongoose or @magnet-cms/adapter-db-drizzle.',
+    )
+  }
 
-	return cachedAdapter
+  return cachedAdapter
 }
 
 /**
@@ -78,12 +80,12 @@ export function detectDatabaseAdapter(dbConfig?: DBConfig): SupportedAdapter {
  * @internal Called by adapter package index.ts as module-level side effect
  */
 export function setDatabaseAdapter(adapter: SupportedAdapter): void {
-	cachedAdapter = adapter
+  cachedAdapter = adapter
 }
 
 /**
  * Clear the cached adapter (useful for testing)
  */
 export function clearAdapterCache(): void {
-	cachedAdapter = null
+  cachedAdapter = null
 }

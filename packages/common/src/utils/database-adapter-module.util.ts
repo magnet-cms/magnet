@@ -9,26 +9,26 @@ import { dirname, join } from 'node:path'
  * never on the lookup path unless we anchor `require` at the application root.
  */
 export function getDatabaseAdapterResolutionRoots(): string[] {
-	const roots: string[] = []
-	const seen = new Set<string>()
+  const roots: string[] = []
+  const seen = new Set<string>()
 
-	const add = (dir: string) => {
-		if (dir && !seen.has(dir)) {
-			seen.add(dir)
-			roots.push(dir)
-		}
-	}
+  const add = (dir: string) => {
+    if (dir && !seen.has(dir)) {
+      seen.add(dir)
+      roots.push(dir)
+    }
+  }
 
-	add(process.cwd())
+  add(process.cwd())
 
-	const main = typeof require !== 'undefined' ? require.main : undefined
-	if (main?.filename) {
-		const mainDir = dirname(main.filename)
-		add(mainDir)
-		add(join(mainDir, '..'))
-	}
+  const main = typeof require !== 'undefined' ? require.main : undefined
+  if (main?.filename) {
+    const mainDir = dirname(main.filename)
+    add(mainDir)
+    add(join(mainDir, '..'))
+  }
 
-	return roots
+  return roots
 }
 
 /**
@@ -36,23 +36,23 @@ export function getDatabaseAdapterResolutionRoots(): string[] {
  * dependency tree (not from `@magnet-cms/common`'s install location).
  */
 export function requireDatabaseAdapterModule(
-	adapter: 'mongoose' | 'drizzle',
+  adapter: 'mongoose' | 'drizzle',
 ): NodeModule['exports'] {
-	const pkg = `@magnet-cms/adapter-db-${adapter}`
+  const pkg = `@magnet-cms/adapter-db-${adapter}`
 
-	for (const root of getDatabaseAdapterResolutionRoots()) {
-		const manifestPath = join(root, 'package.json')
-		if (!existsSync(manifestPath)) continue
+  for (const root of getDatabaseAdapterResolutionRoots()) {
+    const manifestPath = join(root, 'package.json')
+    if (!existsSync(manifestPath)) continue
 
-		try {
-			const req = createRequire(manifestPath)
-			return req(pkg) as NodeModule['exports']
-		} catch {
-			// module not found in this root, try next
-		}
-	}
+    try {
+      const req = createRequire(manifestPath)
+      return req(pkg) as NodeModule['exports']
+    } catch {
+      // module not found in this root, try next
+    }
+  }
 
-	throw new Error(
-		`Cannot find module '${pkg}'. Install it in your application (e.g. bun add ${pkg}).`,
-	)
+  throw new Error(
+    `Cannot find module '${pkg}'. Install it in your application (e.g. bun add ${pkg}).`,
+  )
 }

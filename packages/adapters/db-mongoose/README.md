@@ -55,23 +55,23 @@ When working with models, you can specify the locale for queries:
 
 ```typescript
 // Get products with default locale
-const products = await this.productModel.find();
+const products = await this.productModel.find()
 
 // Get products with Spanish locale
-const spanishProducts = await this.productModel.locale('es').find();
+const spanishProducts = await this.productModel.locale('es').find()
 
 // Get a specific product with Spanish locale
-const spanishProduct = await this.productModel.locale('es').findById('123');
+const spanishProduct = await this.productModel.locale('es').findById('123')
 ```
 
 The locale method can be chained with any query method:
 
 ```typescript
 // Find products with a specific query in Spanish
-const spanishProducts = await this.productModel.locale('es').findMany({ price: { $gt: 100 } });
+const spanishProducts = await this.productModel.locale('es').findMany({ price: { $gt: 100 } })
 
 // Update a product and get the result in Spanish
-const updatedProduct = await this.productModel.locale('es').update({ id: '123' }, { price: 150 });
+const updatedProduct = await this.productModel.locale('es').update({ id: '123' }, { price: 150 })
 ```
 
 #### Document API
@@ -126,13 +126,13 @@ console.log(allTranslations)
 product.setAllTranslations('name', {
   en: 'New Product Name in English',
   es: 'Nuevo Nombre del Producto en Español',
-  pt: 'Novo Nome do Produto em Português'
+  pt: 'Novo Nome do Produto em Português',
 })
 await product.save()
 
 // Using the model API to query with a specific locale
-const spanishProducts = await this.productModel.locale('es').find();
-console.log(spanishProducts[0].name); // 'Nombre del Producto en Español'
+const spanishProducts = await this.productModel.locale('es').find()
+console.log(spanishProducts[0].name) // 'Nombre del Producto en Español'
 ```
 
 ### Configuration
@@ -154,18 +154,22 @@ import { MagnetModule } from '@magnet-cms/core'
 @Module({
   imports: [
     MagnetModule.forRoot({
-      db: { /* database config */ },
-      jwt: { /* jwt config */ },
+      db: {
+        /* database config */
+      },
+      jwt: {
+        /* jwt config */
+      },
       internationalization: {
         locales: ['en', 'pt', 'es'],
-        defaultLocale: 'en'
-      }
-    })
-  ]
+        defaultLocale: 'en',
+      },
+    }),
+  ],
 })
 export class AppModule {}
 ```
 
 ## License
 
-MIT 
+MIT

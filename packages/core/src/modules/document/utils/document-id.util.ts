@@ -16,17 +16,17 @@ const DEFAULT_LENGTH = 24
  * @returns A random alphanumeric string
  */
 export function generateDocumentId(length: number = DEFAULT_LENGTH): string {
-	const bytes = randomBytes(length)
-	let result = ''
+  const bytes = randomBytes(length)
+  let result = ''
 
-	for (let i = 0; i < length; i++) {
-		const byte = bytes[i]
-		if (byte !== undefined) {
-			result += ALPHABET[byte % ALPHABET.length]
-		}
-	}
+  for (let i = 0; i < length; i++) {
+    const byte = bytes[i]
+    if (byte !== undefined) {
+      result += ALPHABET[byte % ALPHABET.length]
+    }
+  }
 
-	return result
+  return result
 }
 
 /**
@@ -35,13 +35,13 @@ export function generateDocumentId(length: number = DEFAULT_LENGTH): string {
  * @returns True if the ID is valid
  */
 export function isValidDocumentId(id: string): boolean {
-	if (!id || typeof id !== 'string') return false
-	if (id.length !== DEFAULT_LENGTH) return false
+  if (!id || typeof id !== 'string') return false
+  if (id.length !== DEFAULT_LENGTH) return false
 
-	// Check that all characters are in the alphabet
-	for (const char of id) {
-		if (!ALPHABET.includes(char)) return false
-	}
+  // Check that all characters are in the alphabet
+  for (const char of id) {
+    if (!ALPHABET.includes(char)) return false
+  }
 
-	return true
+  return true
 }

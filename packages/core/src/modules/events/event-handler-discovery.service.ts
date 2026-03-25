@@ -1,12 +1,11 @@
-import {
-	EVENT_HANDLER_METADATA,
-	type EventHandlerMetadata,
-} from '@magnet-cms/common'
+import { EVENT_HANDLER_METADATA, type EventHandlerMetadata } from '@magnet-cms/common'
 import { Injectable, OnModuleInit } from '@nestjs/common'
 import { DiscoveryService, MetadataScanner, Reflector } from '@nestjs/core'
 import { InstanceWrapper } from '@nestjs/core/injector/instance-wrapper'
-import { MagnetLogger } from '~/modules/logging/logger.service'
+
 import { EventService } from './event.service'
+
+import { MagnetLogger } from '~/modules/logging/logger.service'
 
 /**
  * Service that discovers @OnEvent decorated methods and registers them with EventService.
@@ -28,75 +27,69 @@ import { EventService } from './event.service'
  */
 @Injectable()
 export class EventHandlerDiscoveryService implements OnModuleInit {
-	constructor(
-		private readonly discoveryService: DiscoveryService,
-		private readonly metadataScanner: MetadataScanner,
-		private readonly reflector: Reflector,
-		private readonly eventService: EventService,
-		private readonly logger: MagnetLogger,
-	) {
-		this.logger.setContext(EventHandlerDiscoveryService.name)
-	}
+  constructor(
+    private readonly discoveryService: DiscoveryService,
+    private readonly metadataScanner: MetadataScanner,
+    private readonly reflector: Reflector,
+    private readonly eventService: EventService,
+    private readonly logger: MagnetLogger,
+  ) {
+    this.logger.setContext(EventHandlerDiscoveryService.name)
+  }
 
-	onModuleInit(): void {
-		this.discoverEventHandlers()
-	}
+  onModuleInit(): void {
+    this.discoverEventHandlers()
+  }
 
-	private discoverEventHandlers(): void {
-		const providers = this.discoveryService.getProviders()
-		let handlerCount = 0
+  private discoverEventHandlers(): void {
+    const providers = this.discoveryService.getProviders()
+    let handlerCount = 0
 
-		for (const wrapper of providers) {
-			const { instance } = wrapper as InstanceWrapper
+    for (const wrapper of providers) {
+      const { instance } = wrapper as InstanceWrapper
 
-			if (!instance || typeof instance !== 'object') {
-				continue
-			}
+      if (!instance || typeof instance !== 'object') {
+        continue
+      }
 
-			const prototype = Object.getPrototypeOf(instance) as object
+      const prototype = Object.getPrototypeOf(instance) as object
 
-			this.metadataScanner.scanFromPrototype(
-				instance,
-				prototype,
-				(methodName: string) => {
-					const method = prototype[methodName as keyof typeof prototype]
-					if (typeof method !== 'function') {
-						return
-					}
+      this.metadataScanner.scanFromPrototype(instance, prototype, (methodName: string) => {
+        const method = prototype[methodName as keyof typeof prototype]
+        if (typeof method !== 'function') {
+          return
+        }
 
-					const metadata = this.reflector.get<EventHandlerMetadata | undefined>(
-						EVENT_HANDLER_METADATA,
-						method,
-					)
+        const metadata = this.reflector.get<EventHandlerMetadata | undefined>(
+          EVENT_HANDLER_METADATA,
+          method,
+        )
 
-					if (metadata) {
-						const instanceObj = instance as Record<string, unknown>
-						const methodFn = instanceObj[methodName]
+        if (metadata) {
+          const instanceObj = instance as Record<string, unknown>
+          const methodFn = instanceObj[methodName]
 
-						if (typeof methodFn === 'function') {
-							const boundHandler = methodFn.bind(instance) as (
-								payload: unknown,
-							) => Promise<void> | void
-							const handlerName = `${instance.constructor.name}.${methodName}`
+          if (typeof methodFn === 'function') {
+            const boundHandler = methodFn.bind(instance) as (
+              payload: unknown,
+            ) => Promise<void> | void
+            const handlerName = `${instance.constructor.name}.${methodName}`
 
-							// Use registerHandler (string-based) rather than on() (EventName-generic)
-							// because metadata.event is a runtime string from the decorator.
-							// Type safety was enforced at the @OnEvent call site.
-							this.eventService.registerHandler(metadata.event, boundHandler, {
-								...metadata.options,
-								name: handlerName,
-							})
+            // Use registerHandler (string-based) rather than on() (EventName-generic)
+            // because metadata.event is a runtime string from the decorator.
+            // Type safety was enforced at the @OnEvent call site.
+            this.eventService.registerHandler(metadata.event, boundHandler, {
+              ...metadata.options,
+              name: handlerName,
+            })
 
-							handlerCount++
-							this.logger.debug(
-								`Discovered handler: ${handlerName} for event '${metadata.event}'`,
-							)
-						}
-					}
-				},
-			)
-		}
+            handlerCount++
+            this.logger.debug(`Discovered handler: ${handlerName} for event '${metadata.event}'`)
+          }
+        }
+      })
+    }
 
-		this.logger.log(`Discovered ${handlerCount} event handler(s)`)
-	}
+    this.logger.log(`Discovered ${handlerCount} event handler(s)`)
+  }
 }

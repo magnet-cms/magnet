@@ -6,14 +6,14 @@ import { useNavigate } from 'react-router-dom'
  * The schema list is now integrated into the editor sidebar
  */
 const Playground = () => {
-	const navigate = useNavigate()
+  const navigate = useNavigate()
 
-	useEffect(() => {
-		// Redirect to new schema editor - the schema list is shown in the sidebar
-		navigate('/playground/new', { replace: true })
-	}, [navigate])
+  useEffect(() => {
+    // Redirect to new schema editor - the schema list is shown in the sidebar
+    navigate('/playground/new', { replace: true })
+  }, [navigate])
 
-	return null
+  return null
 }
 
 export default Playground

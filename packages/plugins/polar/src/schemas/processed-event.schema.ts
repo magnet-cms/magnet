@@ -6,15 +6,15 @@ import { Field, Schema } from '@magnet-cms/common'
  */
 @Schema({ versioning: false, i18n: false, visible: false })
 export class PolarProcessedEvent {
-	/** Polar Event ID — unique to prevent reprocessing */
-	@Field.Text({ required: true, unique: true })
-	polarEventId!: string
+  /** Polar Event ID — unique to prevent reprocessing */
+  @Field.Text({ required: true, unique: true })
+  polarEventId!: string
 
-	/** Event type (e.g., 'order.paid', 'subscription.updated') */
-	@Field.Text({ required: true })
-	eventType!: string
+  /** Event type (e.g., 'order.paid', 'subscription.updated') */
+  @Field.Text({ required: true })
+  eventType!: string
 
-	/** When this event was processed */
-	@Field.Date({ required: true, default: () => new Date() })
-	processedAt!: Date
+  /** When this event was processed */
+  @Field.Date({ required: true, default: () => new Date() })
+  processedAt!: Date
 }

@@ -10,6 +10,6 @@ const LOGO = `
 `
 
 export function showBanner(): void {
-	console.log(ansis.cyan(LOGO))
-	console.log(ansis.dim("Welcome to Magnet CMS! Let's create your project.\n"))
+  console.log(ansis.cyan(LOGO))
+  console.log(ansis.dim("Welcome to Magnet CMS! Let's create your project.\n"))
 }

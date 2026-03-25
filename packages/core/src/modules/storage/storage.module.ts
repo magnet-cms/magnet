@@ -1,7 +1,6 @@
 import type { StorageAdapter } from '@magnet-cms/common'
 import { DynamicModule, Module } from '@nestjs/common'
-import { DatabaseModule } from '~/modules/database'
-import { SettingsModule } from '~/modules/settings'
+
 import { LocalStorageAdapter } from './adapters/local-storage.adapter'
 import { MediaOwnerGuard } from './guards/media-owner.guard'
 import { MediaEncryptionService } from './media-encryption.service'
@@ -13,50 +12,53 @@ import { StorageService } from './storage.service'
 import { MediaSettings } from './storage.settings'
 import { TransformController } from './transform.controller'
 
+import { DatabaseModule } from '~/modules/database'
+import { SettingsModule } from '~/modules/settings'
+
 @Module({})
 export class StorageModule {
-	/**
-	 * Register the storage module with an adapter instance.
-	 *
-	 * @param adapter - Storage adapter instance (from provider), or null for default local storage
-	 * @param config - Optional adapter-specific config for DI consumers
-	 */
-	static forRoot(
-		adapter?: StorageAdapter | null,
-		config?: Record<string, unknown> | null,
-	): DynamicModule {
-		const storageAdapter =
-			adapter ??
-			new LocalStorageAdapter({
-				uploadDir: './uploads',
-				publicPath: '/media',
-			})
+  /**
+   * Register the storage module with an adapter instance.
+   *
+   * @param adapter - Storage adapter instance (from provider), or null for default local storage
+   * @param config - Optional adapter-specific config for DI consumers
+   */
+  static forRoot(
+    adapter?: StorageAdapter | null,
+    config?: Record<string, unknown> | null,
+  ): DynamicModule {
+    const storageAdapter =
+      adapter ??
+      new LocalStorageAdapter({
+        uploadDir: './uploads',
+        publicPath: '/media',
+      })
 
-		return {
-			module: StorageModule,
-			global: true,
-			imports: [
-				DatabaseModule.forFeature(Media),
-				DatabaseModule.forFeature(MediaFolder),
-				SettingsModule.forFeature(MediaSettings),
-			],
-			controllers: [StorageController, TransformController],
-			providers: [
-				{
-					provide: STORAGE_CONFIG,
-					useValue: config || null,
-				},
-				{
-					provide: STORAGE_ADAPTER,
-					useValue: storageAdapter,
-				},
-				StorageService,
-				MediaEncryptionService,
-				MediaOwnerGuard,
-			],
-			exports: [StorageService, MediaEncryptionService, STORAGE_ADAPTER],
-		}
-	}
+    return {
+      module: StorageModule,
+      global: true,
+      imports: [
+        DatabaseModule.forFeature(Media),
+        DatabaseModule.forFeature(MediaFolder),
+        SettingsModule.forFeature(MediaSettings),
+      ],
+      controllers: [StorageController, TransformController],
+      providers: [
+        {
+          provide: STORAGE_CONFIG,
+          useValue: config || null,
+        },
+        {
+          provide: STORAGE_ADAPTER,
+          useValue: storageAdapter,
+        },
+        StorageService,
+        MediaEncryptionService,
+        MediaOwnerGuard,
+      ],
+      exports: [StorageService, MediaEncryptionService, STORAGE_ADAPTER],
+    }
+  }
 }
 
 // Re-export components for external use

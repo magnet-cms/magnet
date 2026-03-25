@@ -1,145 +1,141 @@
 import type {
-	EnrichedPluginManifest,
-	PluginConfig,
-	PluginFrontendManifest,
-	PluginMetadata,
-	RegisteredPluginInfo,
+  EnrichedPluginManifest,
+  PluginConfig,
+  PluginFrontendManifest,
+  PluginMetadata,
+  RegisteredPluginInfo,
 } from '@magnet-cms/common'
 import { Inject, Injectable, OnModuleInit, Optional } from '@nestjs/common'
 import { ModulesContainer } from '@nestjs/core'
-import { MagnetLogger } from '~/modules/logging/logger.service'
+
 import { PLUGIN_FRONTEND_MANIFEST, PLUGIN_METADATA } from './constants'
 
+import { MagnetLogger } from '~/modules/logging/logger.service'
+
 interface RegisteredPlugin {
-	metadata: PluginMetadata
-	instance: unknown
-	frontendManifest?: PluginFrontendManifest
-	config: PluginConfig
+  metadata: PluginMetadata
+  instance: unknown
+  frontendManifest?: PluginFrontendManifest
+  config: PluginConfig
 }
 
 @Injectable()
 export class PluginRegistryService implements OnModuleInit {
-	private plugins: Map<string, RegisteredPlugin> = new Map()
+  private plugins: Map<string, RegisteredPlugin> = new Map()
 
-	constructor(
-		private readonly modulesContainer: ModulesContainer,
-		private readonly logger: MagnetLogger,
-		@Optional()
-		@Inject('MAGNET_PLUGINS_CONFIG')
-		private readonly pluginsConfig: PluginConfig[] = [],
-	) {
-		this.logger.setContext(PluginRegistryService.name)
-	}
+  constructor(
+    private readonly modulesContainer: ModulesContainer,
+    private readonly logger: MagnetLogger,
+    @Optional()
+    @Inject('MAGNET_PLUGINS_CONFIG')
+    private readonly pluginsConfig: PluginConfig[] = [],
+  ) {
+    this.logger.setContext(PluginRegistryService.name)
+  }
 
-	onModuleInit() {
-		this.discoverPlugins()
-	}
+  onModuleInit() {
+    this.discoverPlugins()
+  }
 
-	private discoverPlugins() {
-		// Use the plugin configs directly since they already have the plugin classes
-		for (const config of this.pluginsConfig) {
-			const PluginClass = config.plugin
+  private discoverPlugins() {
+    // Use the plugin configs directly since they already have the plugin classes
+    for (const config of this.pluginsConfig) {
+      const PluginClass = config.plugin
 
-			const metadata = Reflect.getMetadata(
-				PLUGIN_METADATA,
-				PluginClass,
-			) as PluginMetadata
+      const metadata = Reflect.getMetadata(PLUGIN_METADATA, PluginClass) as PluginMetadata
 
-			if (!metadata) {
-				this.logger.warn(
-					`Plugin ${PluginClass.name} is missing @Plugin() decorator, skipping`,
-				)
-				continue
-			}
+      if (!metadata) {
+        this.logger.warn(`Plugin ${PluginClass.name} is missing @Plugin() decorator, skipping`)
+        continue
+      }
 
-			const frontendManifest = Reflect.getMetadata(
-				PLUGIN_FRONTEND_MANIFEST,
-				PluginClass,
-			) as PluginFrontendManifest | undefined
+      const frontendManifest = Reflect.getMetadata(PLUGIN_FRONTEND_MANIFEST, PluginClass) as
+        | PluginFrontendManifest
+        | undefined
 
-			// Find the provider instance by looking up the provider token
-			const providerToken = `PLUGIN_${metadata.name}`
-			let instance: unknown = null
+      // Find the provider instance by looking up the provider token
+      const providerToken = `PLUGIN_${metadata.name}`
+      let instance: unknown = null
 
-			for (const module of this.modulesContainer.values()) {
-				const provider = module.providers.get(providerToken)
-				if (provider?.instance) {
-					instance = provider.instance
-					break
-				}
-			}
+      for (const module of this.modulesContainer.values()) {
+        const provider = module.providers.get(providerToken)
+        if (provider?.instance) {
+          instance = provider.instance
+          break
+        }
+      }
 
-			this.plugins.set(metadata.name, {
-				metadata,
-				instance,
-				frontendManifest,
-				config,
-			})
-		}
-	}
+      this.plugins.set(metadata.name, {
+        metadata,
+        instance,
+        frontendManifest,
+        config,
+      })
+    }
+  }
 
-	/**
-	 * Get a registered plugin by name
-	 */
-	getPlugin(name: string): RegisteredPlugin | undefined {
-		return this.plugins.get(name)
-	}
+  /**
+   * Get a registered plugin by name
+   */
+  getPlugin(name: string): RegisteredPlugin | undefined {
+    return this.plugins.get(name)
+  }
 
-	/**
-	 * Get all registered plugins
-	 */
-	getAllPlugins(): RegisteredPlugin[] {
-		return Array.from(this.plugins.values())
-	}
+  /**
+   * Get all registered plugins
+   */
+  getAllPlugins(): RegisteredPlugin[] {
+    return Array.from(this.plugins.values())
+  }
 
-	/**
-	 * Get metadata for all plugins
-	 */
-	getPluginMetadata(): PluginMetadata[] {
-		return this.getAllPlugins().map((p) => p.metadata)
-	}
+  /**
+   * Get metadata for all plugins
+   */
+  getPluginMetadata(): PluginMetadata[] {
+    return this.getAllPlugins().map((p) => p.metadata)
+  }
 
-	/**
-	 * Get frontend manifests for all plugins with bundle URLs
-	 * Used by admin UI to dynamically load plugin frontends at runtime
-	 */
-	getFrontendManifests(): EnrichedPluginManifest[] {
-		return this.getAllPlugins()
-			.filter((p) => p.frontendManifest)
-			.map((p) => ({
-				...p.frontendManifest,
-				bundleUrl: `/plugins/assets/${p.metadata.name}/bundle.iife.js?v=${p.metadata.version ?? '0'}`,
-			})) as EnrichedPluginManifest[]
-	}
+  /**
+   * Get frontend manifests for all plugins with bundle URLs
+   * Used by admin UI to dynamically load plugin frontends at runtime
+   */
+  getFrontendManifests(): EnrichedPluginManifest[] {
+    return this.getAllPlugins()
+      .filter((p) => p.frontendManifest)
+      .map((p) => ({
+        ...p.frontendManifest,
+        bundleUrl: `/plugins/assets/${p.metadata.name}/bundle.iife.js?v=${p.metadata.version ?? '0'}`,
+      })) as EnrichedPluginManifest[]
+  }
 
-	/**
-	 * Get full plugin info for API response
-	 */
-	getPluginInfo(name: string): RegisteredPluginInfo | null {
-		const plugin = this.plugins.get(name)
-		if (!plugin) return null
+  /**
+   * Get full plugin info for API response
+   */
+  getPluginInfo(name: string): RegisteredPluginInfo | null {
+    const plugin = this.plugins.get(name)
+    if (!plugin) return null
 
-		return {
-			name: plugin.metadata.name,
-			description: plugin.metadata.description,
-			version: plugin.metadata.version,
-			dependencies: plugin.metadata.dependencies,
-			frontend: plugin.frontendManifest,
-			options: plugin.config.options,
-		}
-	}
+    return {
+      name: plugin.metadata.name,
+      description: plugin.metadata.description,
+      version: plugin.metadata.version,
+      dependencies: plugin.metadata.dependencies,
+      frontend: plugin.frontendManifest,
+      options: plugin.config.options,
+    }
+  }
 
-	/**
-	 * Get all plugins info for API response
-	 */
-	getAllPluginsInfo(): RegisteredPluginInfo[] {
-		return this.getAllPlugins().map((plugin) => ({
-			name: plugin.metadata.name,
-			description: plugin.metadata.description,
-			version: plugin.metadata.version,
-			dependencies: plugin.metadata.dependencies,
-			frontend: plugin.frontendManifest,
-			options: plugin.config.options,
-		}))
-	}
+  /**
+   * Get all plugins info for API response
+   */
+  getAllPluginsInfo(): RegisteredPluginInfo[] {
+    return this.getAllPlugins().map((plugin) => ({
+      name: plugin.metadata.name,
+      description: plugin.metadata.description,
+      version: plugin.metadata.version,
+      dependencies: plugin.metadata.dependencies,
+      frontend: plugin.frontendManifest,
+      options: plugin.config.options,
+    }))
+  }
 }

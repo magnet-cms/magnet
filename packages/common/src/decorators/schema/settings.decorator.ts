@@ -1,20 +1,20 @@
 import {
-	SETTINGS_OPTIONS_METADATA_KEY,
-	SETTING_FIELD_METADATA_KEY,
-	SETTING_METADATA_KEY,
+  SETTINGS_OPTIONS_METADATA_KEY,
+  SETTING_FIELD_METADATA_KEY,
+  SETTING_METADATA_KEY,
 } from '~/constants'
 import type {
-	SettingBooleanOptions,
-	SettingFieldBaseOptions,
-	SettingFieldMetadata,
-	SettingFieldTypeId,
-	SettingImageOptions,
-	SettingJSONOptions,
-	SettingNumberOptions,
-	SettingSecretOptions,
-	SettingSelectOptions,
-	SettingTextOptions,
-	SettingsDecoratorOptions,
+  SettingBooleanOptions,
+  SettingFieldBaseOptions,
+  SettingFieldMetadata,
+  SettingFieldTypeId,
+  SettingImageOptions,
+  SettingJSONOptions,
+  SettingNumberOptions,
+  SettingSecretOptions,
+  SettingSelectOptions,
+  SettingTextOptions,
+  SettingsDecoratorOptions,
 } from '~/types/settings.types'
 
 /**
@@ -35,65 +35,62 @@ import type {
  * ```
  */
 export function Settings(options: SettingsDecoratorOptions): ClassDecorator {
-	return (target) => {
-		// Mark as a settings class
-		Reflect.defineMetadata(SETTING_METADATA_KEY, true, target)
+  return (target) => {
+    // Mark as a settings class
+    Reflect.defineMetadata(SETTING_METADATA_KEY, true, target)
 
-		// Store the settings options
-		Reflect.defineMetadata(SETTINGS_OPTIONS_METADATA_KEY, options, target)
-	}
+    // Store the settings options
+    Reflect.defineMetadata(SETTINGS_OPTIONS_METADATA_KEY, options, target)
+  }
 }
 
 /**
  * Get settings options from a class
  */
-export function getSettingsOptions(
-	target: Function,
-): SettingsDecoratorOptions | undefined {
-	return Reflect.getMetadata(SETTINGS_OPTIONS_METADATA_KEY, target)
+
+export function getSettingsOptions(target: Function): SettingsDecoratorOptions | undefined {
+  return Reflect.getMetadata(SETTINGS_OPTIONS_METADATA_KEY, target)
 }
 
 /**
  * Get all setting field metadata from a class
  */
+
 export function getSettingFields(target: Function): SettingFieldMetadata[] {
-	return Reflect.getMetadata(SETTING_FIELD_METADATA_KEY, target) ?? []
+  return Reflect.getMetadata(SETTING_FIELD_METADATA_KEY, target) ?? []
 }
 
 /**
  * Create a setting field decorator
  */
 function createSettingFieldDecorator<T extends SettingFieldBaseOptions>(
-	type: SettingFieldTypeId,
-	defaultOptions: Partial<T> = {},
+  type: SettingFieldTypeId,
+  defaultOptions: Partial<T> = {},
 ): (options: T) => PropertyDecorator {
-	return (options: T): PropertyDecorator => {
-		const mergedOptions = { ...defaultOptions, ...options }
+  return (options: T): PropertyDecorator => {
+    const mergedOptions = { ...defaultOptions, ...options }
 
-		return (target: object, propertyKey: string | symbol): void => {
-			const metadata: SettingFieldMetadata<T> = {
-				type,
-				options: mergedOptions,
-				propertyKey,
-			}
+    return (target: object, propertyKey: string | symbol): void => {
+      const metadata: SettingFieldMetadata<T> = {
+        type,
+        options: mergedOptions,
+        propertyKey,
+      }
 
-			// Get existing field metadata or create new array
-			const existingFields: SettingFieldMetadata[] =
-				Reflect.getMetadata(SETTING_FIELD_METADATA_KEY, target.constructor) ??
-				[]
+      // Get existing field metadata or create new array
+      const existingFields: SettingFieldMetadata[] =
+        Reflect.getMetadata(SETTING_FIELD_METADATA_KEY, target.constructor) ?? []
 
-			// Filter out existing entry for this property and add new one
-			const filteredFields = existingFields.filter(
-				(f) => f.propertyKey !== propertyKey,
-			)
+      // Filter out existing entry for this property and add new one
+      const filteredFields = existingFields.filter((f) => f.propertyKey !== propertyKey)
 
-			Reflect.defineMetadata(
-				SETTING_FIELD_METADATA_KEY,
-				[...filteredFields, metadata],
-				target.constructor,
-			)
-		}
-	}
+      Reflect.defineMetadata(
+        SETTING_FIELD_METADATA_KEY,
+        [...filteredFields, metadata],
+        target.constructor,
+      )
+    }
+  }
 }
 
 /**
@@ -118,47 +115,47 @@ function createSettingFieldDecorator<T extends SettingFieldBaseOptions>(
  * ```
  */
 export const SettingField = {
-	/**
-	 * Text setting field
-	 */
-	Text: createSettingFieldDecorator<SettingTextOptions>('text'),
+  /**
+   * Text setting field
+   */
+  Text: createSettingFieldDecorator<SettingTextOptions>('text'),
 
-	/**
-	 * Number setting field
-	 */
-	Number: createSettingFieldDecorator<SettingNumberOptions>('number'),
+  /**
+   * Number setting field
+   */
+  Number: createSettingFieldDecorator<SettingNumberOptions>('number'),
 
-	/**
-	 * Boolean setting field (toggle/switch)
-	 */
-	Boolean: createSettingFieldDecorator<SettingBooleanOptions>('boolean'),
+  /**
+   * Boolean setting field (toggle/switch)
+   */
+  Boolean: createSettingFieldDecorator<SettingBooleanOptions>('boolean'),
 
-	/**
-	 * Select setting field (dropdown)
-	 */
-	Select: createSettingFieldDecorator<SettingSelectOptions>('select'),
+  /**
+   * Select setting field (dropdown)
+   */
+  Select: createSettingFieldDecorator<SettingSelectOptions>('select'),
 
-	/**
-	 * Secret setting field (encrypted, masked in UI)
-	 */
-	Secret: createSettingFieldDecorator<SettingSecretOptions>('secret', {
-		masked: true,
-	}),
+  /**
+   * Secret setting field (encrypted, masked in UI)
+   */
+  Secret: createSettingFieldDecorator<SettingSecretOptions>('secret', {
+    masked: true,
+  }),
 
-	/**
-	 * Image setting field
-	 */
-	Image: createSettingFieldDecorator<SettingImageOptions>('image'),
+  /**
+   * Image setting field
+   */
+  Image: createSettingFieldDecorator<SettingImageOptions>('image'),
 
-	/**
-	 * JSON setting field
-	 */
-	JSON: createSettingFieldDecorator<SettingJSONOptions>('json'),
+  /**
+   * JSON setting field
+   */
+  JSON: createSettingFieldDecorator<SettingJSONOptions>('json'),
 
-	/**
-	 * Textarea setting field (multi-line text)
-	 */
-	Textarea: createSettingFieldDecorator<SettingTextOptions>('textarea'),
+  /**
+   * Textarea setting field (multi-line text)
+   */
+  Textarea: createSettingFieldDecorator<SettingTextOptions>('textarea'),
 } as const
 
 /**

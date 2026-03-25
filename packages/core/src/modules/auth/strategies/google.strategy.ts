@@ -6,12 +6,12 @@
  * work with regardless of which provider was used.
  */
 export interface OAuthProfile {
-	/** Provider-specific unique user ID */
-	id: string
-	/** User email address (may be empty if the provider did not return one) */
-	email: string
-	/** Display name (best-effort from provider profile) */
-	name: string
-	/** Provider name, e.g. 'google', 'github', 'facebook', 'discord' */
-	provider: string
+  /** Provider-specific unique user ID */
+  id: string
+  /** User email address (may be empty if the provider did not return one) */
+  email: string
+  /** Display name (best-effort from provider profile) */
+  name: string
+  /** Provider name, e.g. 'google', 'github', 'facebook', 'discord' */
+  provider: string
 }

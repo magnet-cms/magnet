@@ -1,20 +1,17 @@
 import type { PluginFrontendManifest, PluginMetadata } from '@magnet-cms/common'
 import type { Type } from '@nestjs/common'
 import { Injectable } from '@nestjs/common'
-import {
-	PLUGIN_FRONTEND_MANIFEST,
-	PLUGIN_METADATA,
-	PLUGIN_MODULE,
-} from '../constants'
+
+import { PLUGIN_FRONTEND_MANIFEST, PLUGIN_METADATA, PLUGIN_MODULE } from '../constants'
 
 export interface PluginDecoratorOptions extends Omit<PluginMetadata, 'module'> {
-	/** Frontend manifest for this plugin */
-	frontend?: Omit<PluginFrontendManifest, 'pluginName'>
-	/**
-	 * NestJS module containing controllers/services (auto-imported).
-	 * Use a getter () => MyModule to defer loading until after DatabaseModule.register().
-	 */
-	module?: Type<unknown> | (() => Type<unknown>)
+  /** Frontend manifest for this plugin */
+  frontend?: Omit<PluginFrontendManifest, 'pluginName'>
+  /**
+   * NestJS module containing controllers/services (auto-imported).
+   * Use a getter () => MyModule to defer loading until after DatabaseModule.register().
+   */
+  module?: Type<unknown> | (() => Type<unknown>)
 }
 
 /**
@@ -35,30 +32,30 @@ export interface PluginDecoratorOptions extends Omit<PluginMetadata, 'module'> {
  * ```
  */
 export function Plugin(options: PluginDecoratorOptions): ClassDecorator {
-	return (target: Function) => {
-		// Apply Injectable decorator so the plugin can be used as a NestJS provider
-		Injectable()(target)
+  return (target: Function) => {
+    // Apply Injectable decorator so the plugin can be used as a NestJS provider
+    Injectable()(target)
 
-		const metadata: PluginMetadata = {
-			name: options.name,
-			description: options.description,
-			version: options.version,
-			dependencies: options.dependencies,
-		}
+    const metadata: PluginMetadata = {
+      name: options.name,
+      description: options.description,
+      version: options.version,
+      dependencies: options.dependencies,
+    }
 
-		Reflect.defineMetadata(PLUGIN_METADATA, metadata, target)
+    Reflect.defineMetadata(PLUGIN_METADATA, metadata, target)
 
-		if (options.frontend) {
-			const frontendManifest: PluginFrontendManifest = {
-				...options.frontend,
-				pluginName: options.name,
-			}
-			Reflect.defineMetadata(PLUGIN_FRONTEND_MANIFEST, frontendManifest, target)
-		}
+    if (options.frontend) {
+      const frontendManifest: PluginFrontendManifest = {
+        ...options.frontend,
+        pluginName: options.name,
+      }
+      Reflect.defineMetadata(PLUGIN_FRONTEND_MANIFEST, frontendManifest, target)
+    }
 
-		// Store the module reference if provided
-		if (options.module) {
-			Reflect.defineMetadata(PLUGIN_MODULE, options.module, target)
-		}
-	}
+    // Store the module reference if provided
+    if (options.module) {
+      Reflect.defineMetadata(PLUGIN_MODULE, options.module, target)
+    }
+  }
 }

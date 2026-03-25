@@ -25,10 +25,10 @@ export { PolarSubscription } from '../schemas/subscription.schema'
 
 // Types
 export type {
-	CreateCheckoutDto,
-	CreatePortalDto,
-	PolarMetricsResponse,
-	PolarPluginConfig,
-	SessionResponse,
-	SubscriptionAccessResponse,
+  CreateCheckoutDto,
+  CreatePortalDto,
+  PolarMetricsResponse,
+  PolarPluginConfig,
+  SessionResponse,
+  SubscriptionAccessResponse,
 } from '../types'

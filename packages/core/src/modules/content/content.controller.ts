@@ -1,485 +1,458 @@
 import { RequirePermission, ValidationException } from '@magnet-cms/common'
 import {
-	Body,
-	Controller,
-	Delete,
-	Get,
-	HttpException,
-	HttpStatus,
-	Param,
-	Post,
-	Put,
-	Query,
-	UseGuards,
-	UseInterceptors,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpException,
+  HttpStatus,
+  Param,
+  Post,
+  Put,
+  Query,
+  UseGuards,
+  UseInterceptors,
 } from '@nestjs/common'
+
+import { ContentService } from './content.service'
+
 import { RestrictedRoute } from '~/decorators/restricted.route'
 import { DynamicAuthGuard } from '~/modules/auth/guards/dynamic-auth.guard'
 import { PermissionGuard } from '~/modules/rbac/guards/permission.guard'
 import { DynamicPermissionInterceptor } from '~/modules/rbac/interceptors/dynamic-permission.interceptor'
-import { ContentService } from './content.service'
 
 @Controller('content')
 @RestrictedRoute()
 @UseGuards(DynamicAuthGuard, PermissionGuard)
 @UseInterceptors(DynamicPermissionInterceptor)
 export class ContentController {
-	constructor(private readonly contentService: ContentService) {}
+  constructor(private readonly contentService: ContentService) {}
 
-	/**
-	 * List all documents for a schema
-	 * GET /content/:schema
-	 * Query params: locale, status
-	 */
-	@Get(':schema')
-	@RequirePermission({
-		id: 'content.{schema}.find',
-		name: 'List',
-		description: 'List documents',
-	})
-	async list(
-		@Param('schema') schema: string,
-		@Query('locale') locale?: string,
-		@Query('status') status?: 'draft' | 'published',
-	) {
-		try {
-			return await this.contentService.list(schema, { locale, status })
-		} catch (error) {
-			throw new HttpException(
-				error instanceof Error ? error.message : 'Failed to list documents',
-				HttpStatus.BAD_REQUEST,
-			)
-		}
-	}
+  /**
+   * List all documents for a schema
+   * GET /content/:schema
+   * Query params: locale, status
+   */
+  @Get(':schema')
+  @RequirePermission({
+    id: 'content.{schema}.find',
+    name: 'List',
+    description: 'List documents',
+  })
+  async list(
+    @Param('schema') schema: string,
+    @Query('locale') locale?: string,
+    @Query('status') status?: 'draft' | 'published',
+  ) {
+    try {
+      return await this.contentService.list(schema, { locale, status })
+    } catch (error) {
+      throw new HttpException(
+        error instanceof Error ? error.message : 'Failed to list documents',
+        HttpStatus.BAD_REQUEST,
+      )
+    }
+  }
 
-	/**
-	 * Get a document by documentId
-	 * GET /content/:schema/:documentId
-	 * Query params: locale, status
-	 */
-	@Get(':schema/:documentId')
-	@RequirePermission({
-		id: 'content.{schema}.findOne',
-		name: 'View',
-		description: 'View a document',
-	})
-	async get(
-		@Param('schema') schema: string,
-		@Param('documentId') documentId: string,
-		@Query('locale') locale?: string,
-		@Query('status') status?: 'draft' | 'published',
-	) {
-		try {
-			const result = await this.contentService.findByDocumentId(
-				schema,
-				documentId,
-				{ locale, status },
-			)
-			if (!result || (Array.isArray(result) && result.length === 0)) {
-				throw new HttpException('Document not found', HttpStatus.NOT_FOUND)
-			}
-			// When no locale/status filter, findByDocumentId returns an array of all
-			// locale versions. Return the first (default) document for the single-get endpoint.
-			if (Array.isArray(result)) {
-				return result[0]
-			}
-			return result
-		} catch (error) {
-			if (error instanceof HttpException) throw error
-			throw new HttpException(
-				error instanceof Error ? error.message : 'Failed to get document',
-				HttpStatus.BAD_REQUEST,
-			)
-		}
-	}
+  /**
+   * Get a document by documentId
+   * GET /content/:schema/:documentId
+   * Query params: locale, status
+   */
+  @Get(':schema/:documentId')
+  @RequirePermission({
+    id: 'content.{schema}.findOne',
+    name: 'View',
+    description: 'View a document',
+  })
+  async get(
+    @Param('schema') schema: string,
+    @Param('documentId') documentId: string,
+    @Query('locale') locale?: string,
+    @Query('status') status?: 'draft' | 'published',
+  ) {
+    try {
+      const result = await this.contentService.findByDocumentId(schema, documentId, {
+        locale,
+        status,
+      })
+      if (!result || (Array.isArray(result) && result.length === 0)) {
+        throw new HttpException('Document not found', HttpStatus.NOT_FOUND)
+      }
+      // When no locale/status filter, findByDocumentId returns an array of all
+      // locale versions. Return the first (default) document for the single-get endpoint.
+      if (Array.isArray(result)) {
+        return result[0]
+      }
+      return result
+    } catch (error) {
+      if (error instanceof HttpException) throw error
+      throw new HttpException(
+        error instanceof Error ? error.message : 'Failed to get document',
+        HttpStatus.BAD_REQUEST,
+      )
+    }
+  }
 
-	/**
-	 * Create a new empty document (for immediate redirect flow)
-	 * POST /content/:schema/new
-	 * Body: { locale?, createdBy? }
-	 * Returns: { documentId: string }
-	 */
-	@Post(':schema/new')
-	@RequirePermission({
-		id: 'content.{schema}.create',
-		name: 'Create',
-		description: 'Create a document',
-	})
-	async createEmpty(
-		@Param('schema') schema: string,
-		@Body() body?: {
-			locale?: string
-			createdBy?: string
-		},
-	) {
-		try {
-			const result = await this.contentService.create(
-				schema,
-				{},
-				{
-					locale: body?.locale,
-					createdBy: body?.createdBy,
-				},
-			)
-			return { documentId: result.documentId }
-		} catch (error) {
-			// Let ValidationException propagate to global filter for proper error formatting
-			if (error instanceof ValidationException) throw error
-			throw new HttpException(
-				error instanceof Error ? error.message : 'Failed to create document',
-				HttpStatus.BAD_REQUEST,
-			)
-		}
-	}
+  /**
+   * Create a new empty document (for immediate redirect flow)
+   * POST /content/:schema/new
+   * Body: { locale?, createdBy? }
+   * Returns: { documentId: string }
+   */
+  @Post(':schema/new')
+  @RequirePermission({
+    id: 'content.{schema}.create',
+    name: 'Create',
+    description: 'Create a document',
+  })
+  async createEmpty(
+    @Param('schema') schema: string,
+    @Body()
+    body?: {
+      locale?: string
+      createdBy?: string
+    },
+  ) {
+    try {
+      const result = await this.contentService.create(
+        schema,
+        {},
+        {
+          locale: body?.locale,
+          createdBy: body?.createdBy,
+        },
+      )
+      return { documentId: result.documentId }
+    } catch (error) {
+      // Let ValidationException propagate to global filter for proper error formatting
+      if (error instanceof ValidationException) throw error
+      throw new HttpException(
+        error instanceof Error ? error.message : 'Failed to create document',
+        HttpStatus.BAD_REQUEST,
+      )
+    }
+  }
 
-	/**
-	 * Create a new document
-	 * POST /content/:schema
-	 * Body: { data, locale?, createdBy? }
-	 */
-	@Post(':schema')
-	@RequirePermission({
-		id: 'content.{schema}.create',
-		name: 'Create',
-		description: 'Create a document',
-	})
-	async create(
-		@Param('schema') schema: string,
-		@Body() body: {
-			data: Record<string, unknown>
-			locale?: string
-			createdBy?: string
-		},
-	) {
-		try {
-			return await this.contentService.create(schema, body.data, {
-				locale: body.locale,
-				createdBy: body.createdBy,
-			})
-		} catch (error) {
-			// Let ValidationException propagate to global filter for proper error formatting
-			if (error instanceof ValidationException) throw error
-			throw new HttpException(
-				error instanceof Error ? error.message : 'Failed to create document',
-				HttpStatus.BAD_REQUEST,
-			)
-		}
-	}
+  /**
+   * Create a new document
+   * POST /content/:schema
+   * Body: { data, locale?, createdBy? }
+   */
+  @Post(':schema')
+  @RequirePermission({
+    id: 'content.{schema}.create',
+    name: 'Create',
+    description: 'Create a document',
+  })
+  async create(
+    @Param('schema') schema: string,
+    @Body()
+    body: {
+      data: Record<string, unknown>
+      locale?: string
+      createdBy?: string
+    },
+  ) {
+    try {
+      return await this.contentService.create(schema, body.data, {
+        locale: body.locale,
+        createdBy: body.createdBy,
+      })
+    } catch (error) {
+      // Let ValidationException propagate to global filter for proper error formatting
+      if (error instanceof ValidationException) throw error
+      throw new HttpException(
+        error instanceof Error ? error.message : 'Failed to create document',
+        HttpStatus.BAD_REQUEST,
+      )
+    }
+  }
 
-	/**
-	 * Update a document
-	 * PUT /content/:schema/:documentId
-	 * Query params: locale, status
-	 * Body: { data, updatedBy? }
-	 */
-	@Put(':schema/:documentId')
-	@RequirePermission({
-		id: 'content.{schema}.update',
-		name: 'Update',
-		description: 'Update a document',
-	})
-	async update(
-		@Param('schema') schema: string,
-		@Param('documentId') documentId: string,
-		@Query('locale') locale?: string,
-		@Query('status') status?: 'draft' | 'published',
-		@Body() body?: { data: Record<string, unknown>; updatedBy?: string },
-	) {
-		try {
-			const result = await this.contentService.update(
-				schema,
-				documentId,
-				body?.data ?? {},
-				{
-					locale,
-					status,
-					updatedBy: body?.updatedBy,
-				},
-			)
-			if (!result) {
-				throw new HttpException('Document not found', HttpStatus.NOT_FOUND)
-			}
-			return result
-		} catch (error) {
-			if (error instanceof HttpException) throw error
-			// Let ValidationException propagate to global filter for proper error formatting
-			if (error instanceof ValidationException) throw error
-			throw new HttpException(
-				error instanceof Error ? error.message : 'Failed to update document',
-				HttpStatus.BAD_REQUEST,
-			)
-		}
-	}
+  /**
+   * Update a document
+   * PUT /content/:schema/:documentId
+   * Query params: locale, status
+   * Body: { data, updatedBy? }
+   */
+  @Put(':schema/:documentId')
+  @RequirePermission({
+    id: 'content.{schema}.update',
+    name: 'Update',
+    description: 'Update a document',
+  })
+  async update(
+    @Param('schema') schema: string,
+    @Param('documentId') documentId: string,
+    @Query('locale') locale?: string,
+    @Query('status') status?: 'draft' | 'published',
+    @Body() body?: { data: Record<string, unknown>; updatedBy?: string },
+  ) {
+    try {
+      const result = await this.contentService.update(schema, documentId, body?.data ?? {}, {
+        locale,
+        status,
+        updatedBy: body?.updatedBy,
+      })
+      if (!result) {
+        throw new HttpException('Document not found', HttpStatus.NOT_FOUND)
+      }
+      return result
+    } catch (error) {
+      if (error instanceof HttpException) throw error
+      // Let ValidationException propagate to global filter for proper error formatting
+      if (error instanceof ValidationException) throw error
+      throw new HttpException(
+        error instanceof Error ? error.message : 'Failed to update document',
+        HttpStatus.BAD_REQUEST,
+      )
+    }
+  }
 
-	/**
-	 * Delete a document (all locales and statuses)
-	 * DELETE /content/:schema/:documentId
-	 */
-	@Delete(':schema/:documentId')
-	@RequirePermission({
-		id: 'content.{schema}.delete',
-		name: 'Delete',
-		description: 'Delete a document',
-	})
-	async delete(
-		@Param('schema') schema: string,
-		@Param('documentId') documentId: string,
-	) {
-		try {
-			const result = await this.contentService.delete(schema, documentId)
-			if (!result) {
-				throw new HttpException('Document not found', HttpStatus.NOT_FOUND)
-			}
-			return { success: true }
-		} catch (error) {
-			if (error instanceof HttpException) throw error
-			throw new HttpException(
-				error instanceof Error ? error.message : 'Failed to delete document',
-				HttpStatus.BAD_REQUEST,
-			)
-		}
-	}
+  /**
+   * Delete a document (all locales and statuses)
+   * DELETE /content/:schema/:documentId
+   */
+  @Delete(':schema/:documentId')
+  @RequirePermission({
+    id: 'content.{schema}.delete',
+    name: 'Delete',
+    description: 'Delete a document',
+  })
+  async delete(@Param('schema') schema: string, @Param('documentId') documentId: string) {
+    try {
+      const result = await this.contentService.delete(schema, documentId)
+      if (!result) {
+        throw new HttpException('Document not found', HttpStatus.NOT_FOUND)
+      }
+      return { success: true }
+    } catch (error) {
+      if (error instanceof HttpException) throw error
+      throw new HttpException(
+        error instanceof Error ? error.message : 'Failed to delete document',
+        HttpStatus.BAD_REQUEST,
+      )
+    }
+  }
 
-	/**
-	 * Publish a document locale
-	 * POST /content/:schema/:documentId/publish
-	 * Query params: locale
-	 */
-	@Post(':schema/:documentId/publish')
-	@RequirePermission({
-		id: 'content.{schema}.publish',
-		name: 'Publish',
-		description: 'Publish a document',
-	})
-	async publish(
-		@Param('schema') schema: string,
-		@Param('documentId') documentId: string,
-		@Query('locale') locale?: string,
-		@Body() body?: { publishedBy?: string },
-	) {
-		try {
-			const result = await this.contentService.publish(schema, documentId, {
-				locale,
-				publishedBy: body?.publishedBy,
-			})
-			if (!result) {
-				throw new HttpException(
-					'Document not found or no draft to publish',
-					HttpStatus.NOT_FOUND,
-				)
-			}
-			return result
-		} catch (error) {
-			if (error instanceof HttpException) throw error
-			if (error instanceof ValidationException) throw error
-			throw new HttpException(
-				error instanceof Error ? error.message : 'Failed to publish document',
-				HttpStatus.BAD_REQUEST,
-			)
-		}
-	}
+  /**
+   * Publish a document locale
+   * POST /content/:schema/:documentId/publish
+   * Query params: locale
+   */
+  @Post(':schema/:documentId/publish')
+  @RequirePermission({
+    id: 'content.{schema}.publish',
+    name: 'Publish',
+    description: 'Publish a document',
+  })
+  async publish(
+    @Param('schema') schema: string,
+    @Param('documentId') documentId: string,
+    @Query('locale') locale?: string,
+    @Body() body?: { publishedBy?: string },
+  ) {
+    try {
+      const result = await this.contentService.publish(schema, documentId, {
+        locale,
+        publishedBy: body?.publishedBy,
+      })
+      if (!result) {
+        throw new HttpException('Document not found or no draft to publish', HttpStatus.NOT_FOUND)
+      }
+      return result
+    } catch (error) {
+      if (error instanceof HttpException) throw error
+      if (error instanceof ValidationException) throw error
+      throw new HttpException(
+        error instanceof Error ? error.message : 'Failed to publish document',
+        HttpStatus.BAD_REQUEST,
+      )
+    }
+  }
 
-	/**
-	 * Unpublish a document locale
-	 * POST /content/:schema/:documentId/unpublish
-	 * Query params: locale
-	 */
-	@Post(':schema/:documentId/unpublish')
-	@RequirePermission({
-		id: 'content.{schema}.publish',
-		name: 'Unpublish',
-		description: 'Unpublish a document',
-	})
-	async unpublish(
-		@Param('schema') schema: string,
-		@Param('documentId') documentId: string,
-		@Query('locale') locale?: string,
-	) {
-		try {
-			const result = await this.contentService.unpublish(
-				schema,
-				documentId,
-				locale,
-			)
-			return { success: result }
-		} catch (error) {
-			throw new HttpException(
-				error instanceof Error ? error.message : 'Failed to unpublish document',
-				HttpStatus.BAD_REQUEST,
-			)
-		}
-	}
+  /**
+   * Unpublish a document locale
+   * POST /content/:schema/:documentId/unpublish
+   * Query params: locale
+   */
+  @Post(':schema/:documentId/unpublish')
+  @RequirePermission({
+    id: 'content.{schema}.publish',
+    name: 'Unpublish',
+    description: 'Unpublish a document',
+  })
+  async unpublish(
+    @Param('schema') schema: string,
+    @Param('documentId') documentId: string,
+    @Query('locale') locale?: string,
+  ) {
+    try {
+      const result = await this.contentService.unpublish(schema, documentId, locale)
+      return { success: result }
+    } catch (error) {
+      throw new HttpException(
+        error instanceof Error ? error.message : 'Failed to unpublish document',
+        HttpStatus.BAD_REQUEST,
+      )
+    }
+  }
 
-	/**
-	 * Add a new locale to an existing document
-	 * POST /content/:schema/:documentId/locale
-	 * Body: { locale, data, createdBy? }
-	 */
-	@Post(':schema/:documentId/locale')
-	@RequirePermission({
-		id: 'content.{schema}.update',
-		name: 'Add Locale',
-		description: 'Add a locale to a document',
-	})
-	async addLocale(
-		@Param('schema') schema: string,
-		@Param('documentId') documentId: string,
-		@Body() body: {
-			locale: string
-			data: Record<string, unknown>
-			createdBy?: string
-		},
-	) {
-		try {
-			return await this.contentService.addLocale(
-				schema,
-				documentId,
-				body.locale,
-				body.data,
-				{ createdBy: body.createdBy },
-			)
-		} catch (error) {
-			// Let ValidationException propagate to global filter for proper error formatting
-			if (error instanceof ValidationException) {
-				throw error
-			}
-			throw new HttpException(
-				error instanceof Error ? error.message : 'Failed to add locale',
-				HttpStatus.BAD_REQUEST,
-			)
-		}
-	}
+  /**
+   * Add a new locale to an existing document
+   * POST /content/:schema/:documentId/locale
+   * Body: { locale, data, createdBy? }
+   */
+  @Post(':schema/:documentId/locale')
+  @RequirePermission({
+    id: 'content.{schema}.update',
+    name: 'Add Locale',
+    description: 'Add a locale to a document',
+  })
+  async addLocale(
+    @Param('schema') schema: string,
+    @Param('documentId') documentId: string,
+    @Body()
+    body: {
+      locale: string
+      data: Record<string, unknown>
+      createdBy?: string
+    },
+  ) {
+    try {
+      return await this.contentService.addLocale(schema, documentId, body.locale, body.data, {
+        createdBy: body.createdBy,
+      })
+    } catch (error) {
+      // Let ValidationException propagate to global filter for proper error formatting
+      if (error instanceof ValidationException) {
+        throw error
+      }
+      throw new HttpException(
+        error instanceof Error ? error.message : 'Failed to add locale',
+        HttpStatus.BAD_REQUEST,
+      )
+    }
+  }
 
-	/**
-	 * Delete a specific locale
-	 * DELETE /content/:schema/:documentId/locale/:locale
-	 */
-	@Delete(':schema/:documentId/locale/:locale')
-	@RequirePermission({
-		id: 'content.{schema}.delete',
-		name: 'Delete Locale',
-		description: 'Delete a document locale',
-	})
-	async deleteLocale(
-		@Param('schema') schema: string,
-		@Param('documentId') documentId: string,
-		@Param('locale') locale: string,
-	) {
-		try {
-			const result = await this.contentService.deleteLocale(
-				schema,
-				documentId,
-				locale,
-			)
-			return { success: result }
-		} catch (error) {
-			throw new HttpException(
-				error instanceof Error ? error.message : 'Failed to delete locale',
-				HttpStatus.BAD_REQUEST,
-			)
-		}
-	}
+  /**
+   * Delete a specific locale
+   * DELETE /content/:schema/:documentId/locale/:locale
+   */
+  @Delete(':schema/:documentId/locale/:locale')
+  @RequirePermission({
+    id: 'content.{schema}.delete',
+    name: 'Delete Locale',
+    description: 'Delete a document locale',
+  })
+  async deleteLocale(
+    @Param('schema') schema: string,
+    @Param('documentId') documentId: string,
+    @Param('locale') locale: string,
+  ) {
+    try {
+      const result = await this.contentService.deleteLocale(schema, documentId, locale)
+      return { success: result }
+    } catch (error) {
+      throw new HttpException(
+        error instanceof Error ? error.message : 'Failed to delete locale',
+        HttpStatus.BAD_REQUEST,
+      )
+    }
+  }
 
-	/**
-	 * Get locale statuses for a document
-	 * GET /content/:schema/:documentId/locales
-	 */
-	@Get(':schema/:documentId/locales')
-	@RequirePermission({
-		id: 'content.{schema}.findOne',
-		name: 'View Locales',
-		description: 'View document locale statuses',
-	})
-	async getLocaleStatuses(
-		@Param('schema') schema: string,
-		@Param('documentId') documentId: string,
-	) {
-		try {
-			const statuses = await this.contentService.getLocaleStatuses(
-				schema,
-				documentId,
-			)
-			return Object.entries(statuses).map(([locale, status]) => ({
-				locale,
-				...status,
-			}))
-		} catch (error) {
-			throw new HttpException(
-				error instanceof Error
-					? error.message
-					: 'Failed to get locale statuses',
-				HttpStatus.BAD_REQUEST,
-			)
-		}
-	}
+  /**
+   * Get locale statuses for a document
+   * GET /content/:schema/:documentId/locales
+   */
+  @Get(':schema/:documentId/locales')
+  @RequirePermission({
+    id: 'content.{schema}.findOne',
+    name: 'View Locales',
+    description: 'View document locale statuses',
+  })
+  async getLocaleStatuses(
+    @Param('schema') schema: string,
+    @Param('documentId') documentId: string,
+  ) {
+    try {
+      const statuses = await this.contentService.getLocaleStatuses(schema, documentId)
+      return Object.entries(statuses).map(([locale, status]) => ({
+        locale,
+        ...status,
+      }))
+    } catch (error) {
+      throw new HttpException(
+        error instanceof Error ? error.message : 'Failed to get locale statuses',
+        HttpStatus.BAD_REQUEST,
+      )
+    }
+  }
 
-	/**
-	 * Get version history for a document
-	 * GET /content/:schema/:documentId/versions
-	 * Query params: locale
-	 */
-	@Get(':schema/:documentId/versions')
-	@RequirePermission({
-		id: 'content.{schema}.findOne',
-		name: 'View Versions',
-		description: 'View document version history',
-	})
-	async getVersions(
-		@Param('schema') schema: string,
-		@Param('documentId') documentId: string,
-		@Query('locale') locale?: string,
-	) {
-		try {
-			return await this.contentService.getVersions(schema, documentId, locale)
-		} catch (error) {
-			throw new HttpException(
-				error instanceof Error ? error.message : 'Failed to get versions',
-				HttpStatus.BAD_REQUEST,
-			)
-		}
-	}
+  /**
+   * Get version history for a document
+   * GET /content/:schema/:documentId/versions
+   * Query params: locale
+   */
+  @Get(':schema/:documentId/versions')
+  @RequirePermission({
+    id: 'content.{schema}.findOne',
+    name: 'View Versions',
+    description: 'View document version history',
+  })
+  async getVersions(
+    @Param('schema') schema: string,
+    @Param('documentId') documentId: string,
+    @Query('locale') locale?: string,
+  ) {
+    try {
+      return await this.contentService.getVersions(schema, documentId, locale)
+    } catch (error) {
+      throw new HttpException(
+        error instanceof Error ? error.message : 'Failed to get versions',
+        HttpStatus.BAD_REQUEST,
+      )
+    }
+  }
 
-	/**
-	 * Restore a specific version
-	 * POST /content/:schema/:documentId/restore
-	 * Query params: locale, version
-	 */
-	@Post(':schema/:documentId/restore')
-	@RequirePermission({
-		id: 'content.{schema}.update',
-		name: 'Restore Version',
-		description: 'Restore a document to a previous version',
-	})
-	async restoreVersion(
-		@Param('schema') schema: string,
-		@Param('documentId') documentId: string,
-		@Query('locale') locale: string,
-		@Query('version') version: string,
-	) {
-		try {
-			const versionNumber = Number.parseInt(version, 10)
-			if (Number.isNaN(versionNumber)) {
-				throw new HttpException(
-					'Invalid version number',
-					HttpStatus.BAD_REQUEST,
-				)
-			}
-			const result = await this.contentService.restoreVersion(
-				schema,
-				documentId,
-				locale,
-				versionNumber,
-			)
-			if (!result) {
-				throw new HttpException('Version not found', HttpStatus.NOT_FOUND)
-			}
-			return result
-		} catch (error) {
-			if (error instanceof HttpException) throw error
-			throw new HttpException(
-				error instanceof Error ? error.message : 'Failed to restore version',
-				HttpStatus.BAD_REQUEST,
-			)
-		}
-	}
+  /**
+   * Restore a specific version
+   * POST /content/:schema/:documentId/restore
+   * Query params: locale, version
+   */
+  @Post(':schema/:documentId/restore')
+  @RequirePermission({
+    id: 'content.{schema}.update',
+    name: 'Restore Version',
+    description: 'Restore a document to a previous version',
+  })
+  async restoreVersion(
+    @Param('schema') schema: string,
+    @Param('documentId') documentId: string,
+    @Query('locale') locale: string,
+    @Query('version') version: string,
+  ) {
+    try {
+      const versionNumber = Number.parseInt(version, 10)
+      if (Number.isNaN(versionNumber)) {
+        throw new HttpException('Invalid version number', HttpStatus.BAD_REQUEST)
+      }
+      const result = await this.contentService.restoreVersion(
+        schema,
+        documentId,
+        locale,
+        versionNumber,
+      )
+      if (!result) {
+        throw new HttpException('Version not found', HttpStatus.NOT_FOUND)
+      }
+      return result
+    } catch (error) {
+      if (error instanceof HttpException) throw error
+      throw new HttpException(
+        error instanceof Error ? error.message : 'Failed to restore version',
+        HttpStatus.BAD_REQUEST,
+      )
+    }
+  }
 }

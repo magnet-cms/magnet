@@ -10,26 +10,22 @@ const DRIZZLE_PROPS_KEY = 'drizzle:props'
  * that Drizzle is the active database adapter.
  */
 export function Prop(options?: PropOptions): PropertyDecorator {
-	return (target: object, propertyKey: string | symbol) => {
-		const existingProps: Map<string | symbol, PropOptions> =
-			Reflect.getMetadata(DRIZZLE_PROPS_KEY, target.constructor) || new Map()
+  return (target: object, propertyKey: string | symbol) => {
+    const existingProps: Map<string | symbol, PropOptions> =
+      Reflect.getMetadata(DRIZZLE_PROPS_KEY, target.constructor) || new Map()
 
-		existingProps.set(propertyKey, {
-			...options,
-			type:
-				options?.type ||
-				Reflect.getMetadata('design:type', target, propertyKey),
-		})
+    existingProps.set(propertyKey, {
+      ...options,
+      type: options?.type || Reflect.getMetadata('design:type', target, propertyKey),
+    })
 
-		Reflect.defineMetadata(DRIZZLE_PROPS_KEY, existingProps, target.constructor)
-	}
+    Reflect.defineMetadata(DRIZZLE_PROPS_KEY, existingProps, target.constructor)
+  }
 }
 
 /**
  * Get Drizzle property metadata from a class
  */
-export function getDrizzlePropsMetadata(
-	target: Function,
-): Map<string | symbol, PropOptions> {
-	return Reflect.getMetadata(DRIZZLE_PROPS_KEY, target) || new Map()
+export function getDrizzlePropsMetadata(target: Function): Map<string | symbol, PropOptions> {
+  return Reflect.getMetadata(DRIZZLE_PROPS_KEY, target) || new Map()
 }

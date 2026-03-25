@@ -1,4 +1,5 @@
 import { Inject } from '@nestjs/common'
+
 import { getPluginOptionsToken } from '../constants'
 
 /**
@@ -18,5 +19,5 @@ import { getPluginOptionsToken } from '../constants'
  * ```
  */
 export function InjectPluginOptions(pluginName: string): ParameterDecorator {
-	return Inject(getPluginOptionsToken(pluginName))
+  return Inject(getPluginOptionsToken(pluginName))
 }

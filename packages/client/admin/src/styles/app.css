@@ -1,2 +1,2 @@
 /* Not used by the Vite entry (see global.css). Re-export avoids a second @theme with baked colors. */
-@import "./global.css";
+@import './global.css';

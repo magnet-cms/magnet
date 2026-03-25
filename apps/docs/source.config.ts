@@ -5,7 +5,7 @@ import type { ZodTypeAny } from 'zod'
 export type MagnetDocsZodAnchor = ZodTypeAny
 
 export const docs = defineDocs({
-	dir: 'content/docs',
+  dir: 'content/docs',
 })
 
 export default defineConfig()

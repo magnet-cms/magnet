@@ -50,41 +50,38 @@ export { SentryCron } from '@sentry/nestjs'
  * ```
  */
 export function MagnetSentryCron(
-	slug?: string,
-	options?: {
-		schedule?: { type: 'crontab' | 'interval'; value: string }
-		checkinMargin?: number
-		maxRuntime?: number
-		timezone?: string
-	},
+  slug?: string,
+  options?: {
+    schedule?: { type: 'crontab' | 'interval'; value: string }
+    checkinMargin?: number
+    maxRuntime?: number
+    timezone?: string
+  },
 ): MethodDecorator {
-	return (
-		target: object,
-		propertyKey: string | symbol,
-		descriptor: PropertyDescriptor,
-	): PropertyDescriptor => {
-		// Auto-generate slug from "ClassName-methodName" when not provided
-		const monitorSlug =
-			slug ??
-			`${target.constructor.name}-${String(propertyKey)}`
-				.toLowerCase()
-				.replace(/[^a-z0-9-]/g, '-')
+  return (
+    target: object,
+    propertyKey: string | symbol,
+    descriptor: PropertyDescriptor,
+  ): PropertyDescriptor => {
+    // Auto-generate slug from "ClassName-methodName" when not provided
+    const monitorSlug =
+      slug ??
+      `${target.constructor.name}-${String(propertyKey)}`.toLowerCase().replace(/[^a-z0-9-]/g, '-')
 
-		try {
-			// eslint-disable-next-line @typescript-eslint/no-require-imports
-			const { SentryCron } = require('@sentry/nestjs') as {
-				SentryCron: (slug: string, opts?: typeof options) => MethodDecorator
-			}
-			return (
-				((SentryCron(monitorSlug, options) as MethodDecorator)(
-					target,
-					propertyKey,
-					descriptor,
-				) as PropertyDescriptor) ?? descriptor
-			)
-		} catch {
-			// @sentry/nestjs not installed — return descriptor unchanged
-			return descriptor
-		}
-	}
+    try {
+      const { SentryCron } = require('@sentry/nestjs') as {
+        SentryCron: (slug: string, opts?: typeof options) => MethodDecorator
+      }
+      return (
+        ((SentryCron(monitorSlug, options) as MethodDecorator)(
+          target,
+          propertyKey,
+          descriptor,
+        ) as PropertyDescriptor) ?? descriptor
+      )
+    } catch {
+      // @sentry/nestjs not installed — return descriptor unchanged
+      return descriptor
+    }
+  }
 }

@@ -5,7 +5,7 @@
     "moduleResolution": "bundler",
     "baseUrl": "./src",
     "paths": {
-      "~/*": ["./*"],
+      "~/*": ["./*"]
     }
   },
   "exclude": ["**/*.test.ts", "**/*.spec.ts", "vitest.config.ts"]

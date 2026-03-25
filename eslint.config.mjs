@@ -1,4 +1,5 @@
 import { config as baseConfig } from '@repo/eslint-config/base'
+import { config as reactConfig } from '@repo/eslint-config/react-internal'
 
 /**
  * Root ESLint config — used by lint-staged when ESLint is invoked from the repo root.
@@ -9,6 +10,33 @@ import { config as baseConfig } from '@repo/eslint-config/base'
  */
 export default [
   ...baseConfig,
+
+  // Load React + react-hooks plugins for React packages (needed to resolve eslint-disable comments)
+  ...reactConfig
+    .filter((c) => c.plugins)
+    .map((c) => ({
+      ...c,
+      files: [
+        'packages/client/**/*.{ts,tsx}',
+        'packages/plugins/**/*.{ts,tsx}',
+        'apps/docs/**/*.{ts,tsx}',
+      ],
+    })),
+
+  // Node.js globals for scripts and sdk bin
+  {
+    files: ['scripts/**/*.{js,ts}', 'packages/client/sdk/**/*.{js,ts}'],
+    languageOptions: {
+      globals: {
+        process: 'readonly',
+        console: 'readonly',
+        __dirname: 'readonly',
+        __filename: 'readonly',
+        module: 'readonly',
+        require: 'readonly',
+      },
+    },
+  },
 
   // Package-specific rule overrides (mirrors per-package eslint.config.mjs)
   {
@@ -33,9 +61,19 @@ export default [
     },
   },
   {
-    files: ['packages/common/**/*.ts'],
+    files: ['packages/common/**/*.ts', 'packages/core/**/*.ts'],
     rules: {
       '@typescript-eslint/no-unsafe-function-type': 'off',
+    },
+  },
+  {
+    files: [
+      'packages/client/admin/**/*.{ts,tsx}',
+      'packages/plugins/playground/**/*.{ts,tsx}',
+      'apps/e2e/**/*.ts',
+    ],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
     },
   },
   {
@@ -75,12 +113,6 @@ export default [
     files: ['packages/cli/**/*.ts'],
     rules: {
       '@typescript-eslint/no-empty-object-type': 'off',
-    },
-  },
-  {
-    files: ['apps/e2e/**/*.ts'],
-    rules: {
-      '@typescript-eslint/no-explicit-any': 'off',
     },
   },
 ]

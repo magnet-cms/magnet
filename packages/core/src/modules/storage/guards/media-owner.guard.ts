@@ -1,17 +1,14 @@
-import {
-	CanActivate,
-	ExecutionContext,
-	ForbiddenException,
-	Injectable,
-} from '@nestjs/common'
+import { CanActivate, ExecutionContext, ForbiddenException, Injectable } from '@nestjs/common'
 import type { Request } from 'express'
-import { WILDCARD_PERMISSION } from '~/modules/rbac/rbac.constants'
-import { RoleService } from '~/modules/rbac/services/role.service'
+
 import { StorageService } from '../storage.service'
 
+import { WILDCARD_PERMISSION } from '~/modules/rbac/rbac.constants'
+import { RoleService } from '~/modules/rbac/services/role.service'
+
 interface AuthenticatedRequest extends Request {
-	user?: { id: string; role?: string }
-	params: Record<string, string>
+  user?: { id: string; role?: string }
+  params: Record<string, string>
 }
 
 /**
@@ -36,43 +33,38 @@ interface AuthenticatedRequest extends Request {
  */
 @Injectable()
 export class MediaOwnerGuard implements CanActivate {
-	constructor(
-		private readonly storageService: StorageService,
-		private readonly roleService: RoleService,
-	) {}
+  constructor(
+    private readonly storageService: StorageService,
+    private readonly roleService: RoleService,
+  ) {}
 
-	async canActivate(context: ExecutionContext): Promise<boolean> {
-		const request = context.switchToHttp().getRequest<AuthenticatedRequest>()
-		const mediaId = request.params.id
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const request = context.switchToHttp().getRequest<AuthenticatedRequest>()
+    const mediaId = request.params.id
 
-		if (!mediaId) return true
+    if (!mediaId) return true
 
-		const media = await this.storageService.findById(mediaId)
+    const media = await this.storageService.findById(mediaId)
 
-		// Media not found — let the controller return 404
-		if (!media) return true
+    // Media not found — let the controller return 404
+    if (!media) return true
 
-		// No owner restriction — public or backward-compat media
-		if (!media.ownerId) return true
+    // No owner restriction — public or backward-compat media
+    if (!media.ownerId) return true
 
-		const user = request.user
+    const user = request.user
 
-		if (!user) {
-			throw new ForbiddenException(
-				'Authentication required to access this media',
-			)
-		}
+    if (!user) {
+      throw new ForbiddenException('Authentication required to access this media')
+    }
 
-		// Owner can always access their own media
-		if (user.id === media.ownerId) return true
+    // Owner can always access their own media
+    if (user.id === media.ownerId) return true
 
-		// Admins have full access
-		const isAdmin = await this.roleService.hasPermission(
-			user.id,
-			WILDCARD_PERMISSION,
-		)
-		if (isAdmin) return true
+    // Admins have full access
+    const isAdmin = await this.roleService.hasPermission(user.id, WILDCARD_PERMISSION)
+    if (isAdmin) return true
 
-		throw new ForbiddenException('You do not have access to this media')
-	}
+    throw new ForbiddenException('You do not have access to this media')
+  }
 }

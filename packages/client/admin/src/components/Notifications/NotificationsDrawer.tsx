@@ -6,15 +6,15 @@ import { NotificationsDrawer as FeatureNotificationsDrawer } from '~/features/no
  * Renders the full feature drawer including real notification data.
  */
 export const NotificationsDrawer = () => {
-	const { isOpen, close } = useNotifications()
+  const { isOpen, close } = useNotifications()
 
-	return (
-		<FeatureNotificationsDrawer
-			open={isOpen}
-			onOpenChange={(open) => {
-				if (!open) close()
-			}}
-			showTrigger={false}
-		/>
-	)
+  return (
+    <FeatureNotificationsDrawer
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) close()
+      }}
+      showTrigger={false}
+    />
+  )
 }

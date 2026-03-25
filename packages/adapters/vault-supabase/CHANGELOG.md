@@ -12,7 +12,6 @@
 ### Major Changes
 
 - [`f248064`](https://github.com/magnet-cms/magnet/commit/f248064db8a0d1a5669546dbdf40b6f7dc57a5b7) Thanks [@gjsoaresc](https://github.com/gjsoaresc)! - BREAKING: Renamed Supabase environment variables to match Supabase's current API key naming.
-
   - `SUPABASE_ANON_KEY` → `SUPABASE_PUBLISHABLE_KEY`
   - `SUPABASE_SERVICE_KEY` → `SUPABASE_SECRET_KEY`
 

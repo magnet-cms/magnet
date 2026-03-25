@@ -74,7 +74,6 @@
   "auth.setup.skip": "Omitir por ahora",
   "auth.setup.successMessage": "¡Proyecto configurado correctamente!",
 
-
   "auth.layout.dontHaveAccount": "¿No tienes cuenta?",
   "auth.layout.signUp": "Regístrate",
   "auth.layout.coverAlt": "Fondo de viaje",

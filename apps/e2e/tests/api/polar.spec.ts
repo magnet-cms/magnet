@@ -12,75 +12,73 @@ import { expect, test } from '../../src/fixtures/base.fixture'
  * - Enable rawBody: true in NestFactory.create()
  */
 test.describe('Polar Plugin API', () => {
-	test('GET /polar/products — returns product list or 404 if plugin not registered', async ({
-		request,
-		apiBaseURL,
-	}) => {
-		const response = await request.get(`${apiBaseURL}/polar/products`)
+  test('GET /polar/products — returns product list or 404 if plugin not registered', async ({
+    request,
+    apiBaseURL,
+  }) => {
+    const response = await request.get(`${apiBaseURL}/polar/products`)
 
-		if (response.status() === 404) {
-			test.skip(true, 'Polar plugin not registered in test app')
-			return
-		}
+    if (response.status() === 404) {
+      test.skip(true, 'Polar plugin not registered in test app')
+      return
+    }
 
-		expect(response.ok()).toBeTruthy()
-		const products = await response.json()
-		expect(Array.isArray(products)).toBeTruthy()
-	})
+    expect(response.ok()).toBeTruthy()
+    const products = await response.json()
+    expect(Array.isArray(products)).toBeTruthy()
+  })
 
-	test('GET /polar/access/:userId — returns no subscription for unknown user', async ({
-		request,
-		apiBaseURL,
-	}) => {
-		const response = await request.get(
-			`${apiBaseURL}/polar/access/nonexistent-user-id`,
-		)
+  test('GET /polar/access/:userId — returns no subscription for unknown user', async ({
+    request,
+    apiBaseURL,
+  }) => {
+    const response = await request.get(`${apiBaseURL}/polar/access/nonexistent-user-id`)
 
-		if (response.status() === 404) {
-			test.skip(true, 'Polar plugin not registered in test app')
-			return
-		}
+    if (response.status() === 404) {
+      test.skip(true, 'Polar plugin not registered in test app')
+      return
+    }
 
-		expect(response.ok()).toBeTruthy()
-		const access = await response.json()
-		expect(access.hasActiveSubscription).toBe(false)
-		expect(access.plan).toBeNull()
-		expect(access.features).toEqual([])
-	})
+    expect(response.ok()).toBeTruthy()
+    const access = await response.json()
+    expect(access.hasActiveSubscription).toBe(false)
+    expect(access.plan).toBeNull()
+    expect(access.features).toEqual([])
+  })
 
-	test('POST /polar/webhooks — rejects requests without valid signature', async ({
-		request,
-		apiBaseURL,
-	}) => {
-		const response = await request.post(`${apiBaseURL}/polar/webhooks`, {
-			data: JSON.stringify({ type: 'test.event' }),
-			headers: { 'Content-Type': 'application/json' },
-		})
+  test('POST /polar/webhooks — rejects requests without valid signature', async ({
+    request,
+    apiBaseURL,
+  }) => {
+    const response = await request.post(`${apiBaseURL}/polar/webhooks`, {
+      data: JSON.stringify({ type: 'test.event' }),
+      headers: { 'Content-Type': 'application/json' },
+    })
 
-		if (response.status() === 404) {
-			test.skip(true, 'Polar plugin not registered in test app')
-			return
-		}
+    if (response.status() === 404) {
+      test.skip(true, 'Polar plugin not registered in test app')
+      return
+    }
 
-		// Should fail due to missing/invalid webhook signature
-		expect(response.ok()).toBeFalsy()
-	})
+    // Should fail due to missing/invalid webhook signature
+    expect(response.ok()).toBeFalsy()
+  })
 
-	test('POST /polar/checkout — rejects without required fields', async ({
-		request,
-		apiBaseURL,
-	}) => {
-		const response = await request.post(`${apiBaseURL}/polar/checkout`, {
-			data: JSON.stringify({}),
-			headers: { 'Content-Type': 'application/json' },
-		})
+  test('POST /polar/checkout — rejects without required fields', async ({
+    request,
+    apiBaseURL,
+  }) => {
+    const response = await request.post(`${apiBaseURL}/polar/checkout`, {
+      data: JSON.stringify({}),
+      headers: { 'Content-Type': 'application/json' },
+    })
 
-		if (response.status() === 404) {
-			test.skip(true, 'Polar plugin not registered in test app')
-			return
-		}
+    if (response.status() === 404) {
+      test.skip(true, 'Polar plugin not registered in test app')
+      return
+    }
 
-		// Should fail due to missing products array
-		expect(response.ok()).toBeFalsy()
-	})
+    // Should fail due to missing products array
+    expect(response.ok()).toBeFalsy()
+  })
 })

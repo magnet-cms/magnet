@@ -14,13 +14,11 @@ export const ADMIN_PREFIX = UI_BASE_URL.includes(':3001') ? '' : '/admin'
 
 /** Build an admin route path */
 export function adminPath(path: string): string {
-	if (path.startsWith('/')) {
-		return `${ADMIN_PREFIX}${path}`
-	}
-	return `${ADMIN_PREFIX}/${path}`
+  if (path.startsWith('/')) {
+    return `${ADMIN_PREFIX}${path}`
+  }
+  return `${ADMIN_PREFIX}/${path}`
 }
 
 /** Regex that matches any admin URL that is NOT the auth page */
-export const POST_LOGIN_URL = UI_BASE_URL.includes(':3001')
-	? /^(?!.*\/auth)/
-	: /\/admin\/(?!auth)/
+export const POST_LOGIN_URL = UI_BASE_URL.includes(':3001') ? /^(?!.*\/auth)/ : /\/admin\/(?!auth)/

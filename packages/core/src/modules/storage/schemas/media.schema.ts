@@ -6,64 +6,64 @@ import { Field, Mixed, Prop, Schema } from '@magnet-cms/common'
  */
 @Schema({ versioning: false, i18n: false, visible: false })
 export class Media {
-	@Field.Text({ required: true, unique: true })
-	filename!: string
+  @Field.Text({ required: true, unique: true })
+  filename!: string
 
-	@Field.Text({ required: true })
-	originalFilename!: string
+  @Field.Text({ required: true })
+  originalFilename!: string
 
-	@Field.Text({ required: true })
-	mimeType!: string
+  @Field.Text({ required: true })
+  mimeType!: string
 
-	@Field.Number({ required: true })
-	size!: number
+  @Field.Number({ required: true })
+  size!: number
 
-	@Field.Text({ required: true })
-	path!: string
+  @Field.Text({ required: true })
+  path!: string
 
-	@Field.Text({ required: true })
-	url!: string
+  @Field.Text({ required: true })
+  url!: string
 
-	@Field.Text()
-	folder?: string
+  @Field.Text()
+  folder?: string
 
-	@Field.Tags({ default: [] })
-	tags?: string[]
+  @Field.Tags({ default: [] })
+  tags?: string[]
 
-	@Field.Text()
-	alt?: string
+  @Field.Text()
+  alt?: string
 
-	@Field.Number()
-	width?: number
+  @Field.Number()
+  width?: number
 
-	@Field.Number()
-	height?: number
+  @Field.Number()
+  height?: number
 
-	// Mixed type for arbitrary values - keep as @Prop
-	@Prop({ type: Mixed })
-	customFields?: Record<string, unknown>
+  // Mixed type for arbitrary values - keep as @Prop
+  @Prop({ type: Mixed })
+  customFields?: Record<string, unknown>
 
-	@Field.Date({ default: () => new Date() })
-	createdAt!: Date
+  @Field.Date({ default: () => new Date() })
+  createdAt!: Date
 
-	@Field.Date({ default: () => new Date() })
-	updatedAt!: Date
+  @Field.Date({ default: () => new Date() })
+  updatedAt!: Date
 
-	@Field.Text()
-	createdBy?: string
+  @Field.Text()
+  createdBy?: string
 
-	@Field.Text()
-	createdByName?: string
+  @Field.Text()
+  createdByName?: string
 
-	@Field.Boolean({ default: false })
-	isEncrypted?: boolean
+  @Field.Boolean({ default: false })
+  isEncrypted?: boolean
 
-	@Field.Text()
-	encryptionIv?: string
+  @Field.Text()
+  encryptionIv?: string
 
-	@Field.Text()
-	encryptionAuthTag?: string
+  @Field.Text()
+  encryptionAuthTag?: string
 
-	@Field.Text()
-	ownerId?: string
+  @Field.Text()
+  ownerId?: string
 }

@@ -1,18 +1,14 @@
 import type { SchemaProperty } from '@magnet-cms/common'
+import { DataTable, type DataTableColumn, type DataTableRenderContext } from '@magnet-cms/ui'
 import {
-	DataTable,
-	type DataTableColumn,
-	type DataTableRenderContext,
-} from '@magnet-cms/ui'
-import {
-	Button,
-	Input,
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-	Skeleton,
+  Button,
+  Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Skeleton,
 } from '@magnet-cms/ui'
 import { cn } from '@magnet-cms/ui/lib/utils'
 import type { Row } from '@tanstack/react-table'
@@ -20,746 +16,713 @@ import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 
-import { PageHeader } from '~/features/shared'
-import { useSchema } from '~/hooks/useDiscovery'
-import {
-	useContentCreateEmpty,
-	useContentDelete,
-	useContentList,
-} from '~/hooks/useSchema'
-import { useAppIntl } from '~/i18n'
 import type { ViewConfigColumn } from '../hooks/useViewConfig'
 import { useViewConfig } from '../hooks/useViewConfig'
+
 import { ConfigureViewDrawer } from './ConfigureViewDrawer'
 
+import { PageHeader } from '~/features/shared'
+import { useSchema } from '~/hooks/useDiscovery'
+import { useContentCreateEmpty, useContentDelete, useContentList } from '~/hooks/useSchema'
+import { useAppIntl } from '~/i18n'
+
 interface ContentManagerListingPageProps {
-	schema: string
-	schemaDisplayName: string
+  schema: string
+  schemaDisplayName: string
 }
 
 // Generic content entry type
 type ContentEntry = Record<string, unknown> & {
-	_id?: string
-	id?: string
-	documentId?: string
-	createdAt?: string
-	updatedAt?: string
-	status?: string
+  _id?: string
+  id?: string
+  documentId?: string
+  createdAt?: string
+  updatedAt?: string
+  status?: string
 }
 
-const statusColors: Record<string, { bg: string; text: string; ring: string }> =
-	{
-		published: {
-			bg: 'bg-green-50 dark:bg-green-950/40',
-			text: 'text-green-700 dark:text-green-400',
-			ring: 'ring-green-600/20 dark:ring-green-500/30',
-		},
-		draft: {
-			bg: 'bg-muted',
-			text: 'text-muted-foreground',
-			ring: 'ring-border',
-		},
-		review: {
-			bg: 'bg-yellow-50 dark:bg-yellow-950/40',
-			text: 'text-yellow-800 dark:text-yellow-300',
-			ring: 'ring-yellow-600/20 dark:ring-yellow-500/30',
-		},
-		archived: {
-			bg: 'bg-muted',
-			text: 'text-muted-foreground',
-			ring: 'ring-border',
-		},
-	}
+const statusColors: Record<string, { bg: string; text: string; ring: string }> = {
+  published: {
+    bg: 'bg-green-50 dark:bg-green-950/40',
+    text: 'text-green-700 dark:text-green-400',
+    ring: 'ring-green-600/20 dark:ring-green-500/30',
+  },
+  draft: {
+    bg: 'bg-muted',
+    text: 'text-muted-foreground',
+    ring: 'ring-border',
+  },
+  review: {
+    bg: 'bg-yellow-50 dark:bg-yellow-950/40',
+    text: 'text-yellow-800 dark:text-yellow-300',
+    ring: 'ring-yellow-600/20 dark:ring-yellow-500/30',
+  },
+  archived: {
+    bg: 'bg-muted',
+    text: 'text-muted-foreground',
+    ring: 'ring-border',
+  },
+}
 
 /**
  * Get a display value for a cell based on the property type
  */
 function formatCellValue(value: unknown, property: SchemaProperty): string {
-	if (value === null || value === undefined) {
-		return '-'
-	}
+  if (value === null || value === undefined) {
+    return '-'
+  }
 
-	// Handle dates
-	if (
-		property.type === 'Date' ||
-		property.name.toLowerCase().includes('date') ||
-		property.name === 'createdAt' ||
-		property.name === 'updatedAt'
-	) {
-		const date = new Date(value as string)
-		if (!Number.isNaN(date.getTime())) {
-			return date.toLocaleDateString(undefined, {
-				month: 'short',
-				day: 'numeric',
-				year: 'numeric',
-			})
-		}
-	}
+  // Handle dates
+  if (
+    property.type === 'Date' ||
+    property.name.toLowerCase().includes('date') ||
+    property.name === 'createdAt' ||
+    property.name === 'updatedAt'
+  ) {
+    const date = new Date(value as string)
+    if (!Number.isNaN(date.getTime())) {
+      return date.toLocaleDateString(undefined, {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      })
+    }
+  }
 
-	// Handle booleans
-	if (typeof value === 'boolean') {
-		return value ? 'Yes' : 'No'
-	}
+  // Handle booleans
+  if (typeof value === 'boolean') {
+    return value ? 'Yes' : 'No'
+  }
 
-	// Handle arrays
-	if (Array.isArray(value)) {
-		return value.length > 0 ? `${value.length} items` : '-'
-	}
+  // Handle arrays
+  if (Array.isArray(value)) {
+    return value.length > 0 ? `${value.length} items` : '-'
+  }
 
-	// Handle objects (relations)
-	if (typeof value === 'object') {
-		const obj = value as Record<string, unknown>
-		// Try to get a display name from the object
-		return (
-			(obj.name as string) ||
-			(obj.title as string) ||
-			(obj._id as string) ||
-			JSON.stringify(value)
-		)
-	}
+  // Handle objects (relations)
+  if (typeof value === 'object') {
+    const obj = value as Record<string, unknown>
+    // Try to get a display name from the object
+    return (
+      (obj.name as string) || (obj.title as string) || (obj._id as string) || JSON.stringify(value)
+    )
+  }
 
-	return String(value)
+  return String(value)
 }
 
 /**
  * Generate columns from schema properties, optionally filtered/ordered by view config
  */
 function generateColumns(
-	properties: SchemaProperty[],
-	viewColumns?: ViewConfigColumn[],
+  properties: SchemaProperty[],
+  viewColumns?: ViewConfigColumn[],
 ): DataTableColumn<ContentEntry>[] {
-	// Filter out internal fields
-	let visibleProps = properties.filter((p) => !p.name.startsWith('_'))
+  // Filter out internal fields
+  let visibleProps = properties.filter((p) => !p.name.startsWith('_'))
 
-	if (viewColumns && viewColumns.length > 0) {
-		// Apply view config: filter to visible columns, sorted by config order
-		const configMap = new Map(viewColumns.map((c) => [c.name, c]))
-		visibleProps = visibleProps
-			.filter((p) => configMap.get(p.name)?.visible !== false)
-			.sort((a, b) => {
-				const aOrder = configMap.get(a.name)?.order ?? 999
-				const bOrder = configMap.get(b.name)?.order ?? 999
-				return aOrder - bOrder
-			})
-	} else {
-		// No config saved yet: show first 5 as default
-		visibleProps = visibleProps.slice(0, 5)
-	}
+  if (viewColumns && viewColumns.length > 0) {
+    // Apply view config: filter to visible columns, sorted by config order
+    const configMap = new Map(viewColumns.map((c) => [c.name, c]))
+    visibleProps = visibleProps
+      .filter((p) => configMap.get(p.name)?.visible !== false)
+      .sort((a, b) => {
+        const aOrder = configMap.get(a.name)?.order ?? 999
+        const bOrder = configMap.get(b.name)?.order ?? 999
+        return aOrder - bOrder
+      })
+  } else {
+    // No config saved yet: show first 5 as default
+    visibleProps = visibleProps.slice(0, 5)
+  }
 
-	// ID column is always first
-	const idColumn: DataTableColumn<ContentEntry> = {
-		type: 'custom' as const,
-		header: 'ID',
-		cell: (row) => {
-			const id =
-				(row.original.documentId as string) ||
-				(row.original._id as string) ||
-				(row.original.id as string) ||
-				''
-			const truncated = id.length > 8 ? `${id.slice(0, 8)}…` : id
-			return (
-				<span className="text-xs font-mono text-muted-foreground" title={id}>
-					{truncated || '-'}
-				</span>
-			)
-		},
-	}
+  // ID column is always first
+  const idColumn: DataTableColumn<ContentEntry> = {
+    type: 'custom' as const,
+    header: 'ID',
+    cell: (row) => {
+      const id =
+        (row.original.documentId as string) ||
+        (row.original._id as string) ||
+        (row.original.id as string) ||
+        ''
+      const truncated = id.length > 8 ? `${id.slice(0, 8)}…` : id
+      return (
+        <span className="text-xs font-mono text-muted-foreground" title={id}>
+          {truncated || '-'}
+        </span>
+      )
+    },
+  }
 
-	const columns: DataTableColumn<ContentEntry>[] = [
-		idColumn,
-		...visibleProps.map((prop) => ({
-			type: 'custom' as const,
-			accessorKey: prop.name,
-			header:
-				prop.ui?.label ||
-				prop.name.charAt(0).toUpperCase() + prop.name.slice(1),
-			cell: (row: Row<ContentEntry>) => {
-				const value = row.original[prop.name]
-				const formatted = formatCellValue(value, prop)
-				return (
-					<span className="text-sm text-muted-foreground">{formatted}</span>
-				)
-			},
-		})),
-	]
+  const columns: DataTableColumn<ContentEntry>[] = [
+    idColumn,
+    ...visibleProps.map((prop) => ({
+      type: 'custom' as const,
+      accessorKey: prop.name,
+      header: prop.ui?.label || prop.name.charAt(0).toUpperCase() + prop.name.slice(1),
+      cell: (row: Row<ContentEntry>) => {
+        const value = row.original[prop.name]
+        const formatted = formatCellValue(value, prop)
+        return <span className="text-sm text-muted-foreground">{formatted}</span>
+      },
+    })),
+  ]
 
-	// Add status column if schema has versioning
-	columns.push({
-		type: 'custom',
-		header: 'Status',
-		cell: (row) => {
-			const status = (row.original.status as string) || 'draft'
-			const colors = statusColors[status.toLowerCase()] || statusColors.draft
-			return (
-				<span
-					className={cn(
-						'inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset capitalize',
-						colors?.bg,
-						colors?.text,
-						colors?.ring,
-					)}
-				>
-					{status}
-				</span>
-			)
-		},
-	})
+  // Add status column if schema has versioning
+  columns.push({
+    type: 'custom',
+    header: 'Status',
+    cell: (row) => {
+      const status = (row.original.status as string) || 'draft'
+      const colors = statusColors[status.toLowerCase()] || statusColors.draft
+      return (
+        <span
+          className={cn(
+            'inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset capitalize',
+            colors?.bg,
+            colors?.text,
+            colors?.ring,
+          )}
+        >
+          {status}
+        </span>
+      )
+    },
+  })
 
-	// Add updated date column
-	columns.push({
-		type: 'custom',
-		header: 'Updated',
-		cell: (row) => {
-			const date = row.original.updatedAt as string
-			if (!date) return <span className="text-sm text-muted-foreground">-</span>
-			const formatted = new Date(date).toLocaleDateString(undefined, {
-				month: 'short',
-				day: 'numeric',
-				year: 'numeric',
-			})
-			return <span className="text-sm text-muted-foreground">{formatted}</span>
-		},
-	})
+  // Add updated date column
+  columns.push({
+    type: 'custom',
+    header: 'Updated',
+    cell: (row) => {
+      const date = row.original.updatedAt as string
+      if (!date) return <span className="text-sm text-muted-foreground">-</span>
+      const formatted = new Date(date).toLocaleDateString(undefined, {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      })
+      return <span className="text-sm text-muted-foreground">{formatted}</span>
+    },
+  })
 
-	return columns
+  return columns
 }
 
 /**
  * Get row ID from content entry
  */
 function getEntryId(entry: ContentEntry): string {
-	return (
-		(entry.documentId as string) ||
-		(entry._id as string) ||
-		(entry.id as string) ||
-		''
-	)
+  return (entry.documentId as string) || (entry._id as string) || (entry.id as string) || ''
 }
 
 export function ContentManagerListingPage({
-	schema,
-	schemaDisplayName,
+  schema,
+  schemaDisplayName,
 }: ContentManagerListingPageProps) {
-	const intl = useAppIntl()
-	const navigate = useNavigate()
-	const [searchQuery, setSearchQuery] = useState('')
-	const [statusFilter, setStatusFilter] = useState<string>('all')
-	const [configOpen, setConfigOpen] = useState(false)
+  const intl = useAppIntl()
+  const navigate = useNavigate()
+  const [searchQuery, setSearchQuery] = useState('')
+  const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [configOpen, setConfigOpen] = useState(false)
 
-	// View config (localStorage + API)
-	const { config, updateConfig, configVersion } = useViewConfig(schema)
+  // View config (localStorage + API)
+  const { config, updateConfig, configVersion } = useViewConfig(schema)
 
-	// Fetch schema metadata for column generation
-	const { data: schemaMetadata, isLoading: isSchemaLoading } = useSchema(schema)
+  // Fetch schema metadata for column generation
+  const { data: schemaMetadata, isLoading: isSchemaLoading } = useSchema(schema)
 
-	// Derive schema option flags
-	const schemaOptions =
-		schemaMetadata && !('error' in schemaMetadata)
-			? schemaMetadata.options
-			: undefined
-	const isReadOnly = schemaOptions?.readOnly ?? false
+  // Derive schema option flags
+  const schemaOptions =
+    schemaMetadata && !('error' in schemaMetadata) ? schemaMetadata.options : undefined
+  const isReadOnly = schemaOptions?.readOnly ?? false
 
-	// Fetch content data
-	const {
-		data: contentData,
-		isLoading: isContentLoading,
-		error: contentError,
-	} = useContentList<ContentEntry>(
-		schema,
-		statusFilter !== 'all'
-			? { status: statusFilter as 'draft' | 'published' }
-			: undefined,
-	)
+  // Fetch content data
+  const {
+    data: contentData,
+    isLoading: isContentLoading,
+    error: contentError,
+  } = useContentList<ContentEntry>(
+    schema,
+    statusFilter !== 'all' ? { status: statusFilter as 'draft' | 'published' } : undefined,
+  )
 
-	// Mutations
-	const { mutate: deleteContent } = useContentDelete()
-	const { mutate: createEmpty, isPending: isCreating } = useContentCreateEmpty()
+  // Mutations
+  const { mutate: deleteContent } = useContentDelete()
+  const { mutate: createEmpty, isPending: isCreating } = useContentCreateEmpty()
 
-	// Handle edit action
-	const handleEdit = (entry: ContentEntry) => {
-		const id = getEntryId(entry)
-		navigate(`/content-manager/${schema}/${id}`)
-	}
+  // Handle edit action
+  const handleEdit = (entry: ContentEntry) => {
+    const id = getEntryId(entry)
+    navigate(`/content-manager/${schema}/${id}`)
+  }
 
-	// Handle delete action
-	const handleDelete = (entry: ContentEntry) => {
-		const id = getEntryId(entry)
-		if (!id) {
-			toast.error(
-				intl.formatMessage({
-					id: 'contentManager.listing.deleteNoId',
-					defaultMessage: 'Cannot delete entry: missing ID',
-				}),
-			)
-			return
-		}
+  // Handle delete action
+  const handleDelete = (entry: ContentEntry) => {
+    const id = getEntryId(entry)
+    if (!id) {
+      toast.error(
+        intl.formatMessage({
+          id: 'contentManager.listing.deleteNoId',
+          defaultMessage: 'Cannot delete entry: missing ID',
+        }),
+      )
+      return
+    }
 
-		deleteContent(
-			{ schema, documentId: id },
-			{
-				onSuccess: () => {
-					toast.success(
-						intl.formatMessage({
-							id: 'contentManager.listing.deleteSuccess',
-							defaultMessage: 'Entry deleted successfully',
-						}),
-					)
-				},
-				onError: (error) => {
-					toast.error(
-						error.message ||
-							intl.formatMessage({
-								id: 'contentManager.listing.deleteError',
-								defaultMessage: 'Failed to delete entry',
-							}),
-					)
-				},
-			},
-		)
-	}
+    deleteContent(
+      { schema, documentId: id },
+      {
+        onSuccess: () => {
+          toast.success(
+            intl.formatMessage({
+              id: 'contentManager.listing.deleteSuccess',
+              defaultMessage: 'Entry deleted successfully',
+            }),
+          )
+        },
+        onError: (error) => {
+          toast.error(
+            error.message ||
+              intl.formatMessage({
+                id: 'contentManager.listing.deleteError',
+                defaultMessage: 'Failed to delete entry',
+              }),
+          )
+        },
+      },
+    )
+  }
 
-	// Handle create new entry
-	const handleCreate = () => {
-		// When autoSave is disabled, navigate to a blank form without pre-creating a DB record
-		if (schemaOptions?.autoSave === false) {
-			navigate(`/content-manager/${schema}/new`)
-			return
-		}
-		createEmpty(
-			{ schema },
-			{
-				onSuccess: (data) => {
-					toast.success(
-						intl.formatMessage({
-							id: 'contentManager.listing.createSuccess',
-							defaultMessage: 'New entry created',
-						}),
-					)
-					navigate(`/content-manager/${schema}/${data.documentId}`)
-				},
-				onError: (error) => {
-					toast.error(
-						error.message ||
-							intl.formatMessage({
-								id: 'contentManager.listing.createError',
-								defaultMessage: 'Failed to create entry',
-							}),
-					)
-				},
-			},
-		)
-	}
+  // Handle create new entry
+  const handleCreate = () => {
+    // When autoSave is disabled, navigate to a blank form without pre-creating a DB record
+    if (schemaOptions?.autoSave === false) {
+      navigate(`/content-manager/${schema}/new`)
+      return
+    }
+    createEmpty(
+      { schema },
+      {
+        onSuccess: (data) => {
+          toast.success(
+            intl.formatMessage({
+              id: 'contentManager.listing.createSuccess',
+              defaultMessage: 'New entry created',
+            }),
+          )
+          navigate(`/content-manager/${schema}/${data.documentId}`)
+        },
+        onError: (error) => {
+          toast.error(
+            error.message ||
+              intl.formatMessage({
+                id: 'contentManager.listing.createError',
+                defaultMessage: 'Failed to create entry',
+              }),
+          )
+        },
+      },
+    )
+  }
 
-	// Generate columns from schema metadata, applying view config
-	const columns = useMemo(() => {
-		if (!schemaMetadata || 'error' in schemaMetadata) {
-			return []
-		}
-		return generateColumns(schemaMetadata.properties, config.columns)
-	}, [schemaMetadata, config.columns])
+  // Generate columns from schema metadata, applying view config
+  const columns = useMemo(() => {
+    if (!schemaMetadata || 'error' in schemaMetadata) {
+      return []
+    }
+    return generateColumns(schemaMetadata.properties, config.columns)
+  }, [schemaMetadata, config.columns])
 
-	// Derive initial sorting from view config
-	const initialSorting = useMemo(
-		() =>
-			config.sortField
-				? [{ id: config.sortField, desc: config.sortDirection === 'desc' }]
-				: [],
-		[config.sortField, config.sortDirection],
-	)
+  // Derive initial sorting from view config
+  const initialSorting = useMemo(
+    () =>
+      config.sortField ? [{ id: config.sortField, desc: config.sortDirection === 'desc' }] : [],
+    [config.sortField, config.sortDirection],
+  )
 
-	// Filter data based on search query
-	const filteredData = useMemo(() => {
-		if (!contentData) return []
-		if (!searchQuery) return contentData
+  // Filter data based on search query
+  const filteredData = useMemo(() => {
+    if (!contentData) return []
+    if (!searchQuery) return contentData
 
-		return contentData.filter((entry) => {
-			// Search across all string fields
-			return Object.values(entry).some(
-				(value) =>
-					typeof value === 'string' &&
-					value.toLowerCase().includes(searchQuery.toLowerCase()),
-			)
-		})
-	}, [contentData, searchQuery])
+    return contentData.filter((entry) => {
+      // Search across all string fields
+      return Object.values(entry).some(
+        (value) =>
+          typeof value === 'string' && value.toLowerCase().includes(searchQuery.toLowerCase()),
+      )
+    })
+  }, [contentData, searchQuery])
 
-	const isLoading = isSchemaLoading || isContentLoading
+  const isLoading = isSchemaLoading || isContentLoading
 
-	const renderToolbar = () => {
-		return (
-			<div className="px-6 py-4 flex flex-col sm:flex-row gap-3 items-center justify-between flex-none bg-background border-b border-border">
-				<div className="relative w-full sm:w-80">
-					<div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-						<svg
-							className="text-muted-foreground"
-							width="16"
-							height="16"
-							viewBox="0 0 16 16"
-							fill="none"
-							xmlns="http://www.w3.org/2000/svg"
-							aria-hidden="true"
-						>
-							<path
-								d="M7.33333 12.6667C10.2789 12.6667 12.6667 10.2789 12.6667 7.33333C12.6667 4.38781 10.2789 2 7.33333 2C4.38781 2 2 4.38781 2 7.33333C2 10.2789 4.38781 12.6667 7.33333 12.6667Z"
-								stroke="currentColor"
-								strokeWidth="1.5"
-								strokeLinecap="round"
-								strokeLinejoin="round"
-							/>
-							<path
-								d="M14 14L11.1 11.1"
-								stroke="currentColor"
-								strokeWidth="1.5"
-								strokeLinecap="round"
-								strokeLinejoin="round"
-							/>
-						</svg>
-					</div>
-					<Input
-						type="text"
-						className="pl-9 pr-3 py-1.5 border border-border rounded-lg text-sm bg-muted placeholder:text-muted-foreground focus:outline-none focus:bg-background focus:ring-1 focus:ring-ring focus:border-ring transition-all shadow-sm"
-						placeholder={intl.formatMessage({
-							id: 'contentManager.listing.searchPlaceholder',
-							defaultMessage: 'Search entries...',
-						})}
-						value={searchQuery}
-						onChange={(e) => setSearchQuery(e.target.value)}
-					/>
-				</div>
+  const renderToolbar = () => {
+    return (
+      <div className="px-6 py-4 flex flex-col sm:flex-row gap-3 items-center justify-between flex-none bg-background border-b border-border">
+        <div className="relative w-full sm:w-80">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg
+              className="text-muted-foreground"
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
+            >
+              <path
+                d="M7.33333 12.6667C10.2789 12.6667 12.6667 10.2789 12.6667 7.33333C12.6667 4.38781 10.2789 2 7.33333 2C4.38781 2 2 4.38781 2 7.33333C2 10.2789 4.38781 12.6667 7.33333 12.6667Z"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M14 14L11.1 11.1"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </div>
+          <Input
+            type="text"
+            className="pl-9 pr-3 py-1.5 border border-border rounded-lg text-sm bg-muted placeholder:text-muted-foreground focus:outline-none focus:bg-background focus:ring-1 focus:ring-ring focus:border-ring transition-all shadow-sm"
+            placeholder={intl.formatMessage({
+              id: 'contentManager.listing.searchPlaceholder',
+              defaultMessage: 'Search entries...',
+            })}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
 
-				<div className="flex items-center gap-3 w-full sm:w-auto">
-					<Select value={statusFilter} onValueChange={setStatusFilter}>
-						<SelectTrigger className="appearance-none pl-3 pr-8 py-1.5 border border-border rounded-lg text-sm bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-ring focus:border-ring shadow-sm cursor-pointer min-w-[120px]">
-							<SelectValue />
-						</SelectTrigger>
-						<SelectContent>
-							<SelectItem value="all">
-								{intl.formatMessage({
-									id: 'common.status.allStatus',
-									defaultMessage: 'All Status',
-								})}
-							</SelectItem>
-							<SelectItem value="published">
-								{intl.formatMessage({
-									id: 'common.status.published',
-									defaultMessage: 'Published',
-								})}
-							</SelectItem>
-							<SelectItem value="draft">
-								{intl.formatMessage({
-									id: 'common.status.draft',
-									defaultMessage: 'Draft',
-								})}
-							</SelectItem>
-						</SelectContent>
-					</Select>
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="appearance-none pl-3 pr-8 py-1.5 border border-border rounded-lg text-sm bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-ring focus:border-ring shadow-sm cursor-pointer min-w-[120px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">
+                {intl.formatMessage({
+                  id: 'common.status.allStatus',
+                  defaultMessage: 'All Status',
+                })}
+              </SelectItem>
+              <SelectItem value="published">
+                {intl.formatMessage({
+                  id: 'common.status.published',
+                  defaultMessage: 'Published',
+                })}
+              </SelectItem>
+              <SelectItem value="draft">
+                {intl.formatMessage({
+                  id: 'common.status.draft',
+                  defaultMessage: 'Draft',
+                })}
+              </SelectItem>
+            </SelectContent>
+          </Select>
 
-					<div className="flex items-center border border-border rounded-lg p-0.5 bg-muted">
-						<Button
-							variant="ghost"
-							size="sm"
-							className="px-2 py-1 text-xs font-medium text-muted-foreground hover:text-foreground"
-							onClick={() => {
-								setSearchQuery('')
-								setStatusFilter('all')
-							}}
-						>
-							{intl.formatMessage({
-								id: 'common.actions.clearFilters',
-								defaultMessage: 'Clear Filters',
-							})}
-						</Button>
-					</div>
-				</div>
-			</div>
-		)
-	}
+          <div className="flex items-center border border-border rounded-lg p-0.5 bg-muted">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="px-2 py-1 text-xs font-medium text-muted-foreground hover:text-foreground"
+              onClick={() => {
+                setSearchQuery('')
+                setStatusFilter('all')
+              }}
+            >
+              {intl.formatMessage({
+                id: 'common.actions.clearFilters',
+                defaultMessage: 'Clear Filters',
+              })}
+            </Button>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
-	const renderPagination = (table: DataTableRenderContext<ContentEntry>) => {
-		const { pageIndex, pageSize } = table.getState().pagination
-		const totalRows = table.getFilteredRowModel().rows.length
-		const startRow = totalRows > 0 ? pageIndex * pageSize + 1 : 0
-		const endRow = Math.min((pageIndex + 1) * pageSize, totalRows)
+  const renderPagination = (table: DataTableRenderContext<ContentEntry>) => {
+    const { pageIndex, pageSize } = table.getState().pagination
+    const totalRows = table.getFilteredRowModel().rows.length
+    const startRow = totalRows > 0 ? pageIndex * pageSize + 1 : 0
+    const endRow = Math.min((pageIndex + 1) * pageSize, totalRows)
 
-		return (
-			<div className="flex-none px-6 py-4 border-t border-border bg-background flex items-center justify-between">
-				<div className="text-xs text-muted-foreground">
-					{intl.formatMessage(
-						{
-							id: 'common.pagination.showing',
-							defaultMessage: 'Showing {start} to {end} of {total} results',
-						},
-						{ start: startRow, end: endRow, total: totalRows },
-					)}
-				</div>
-				<div className="flex items-center gap-2">
-					<Button
-						variant="outline"
-						size="sm"
-						className="px-3 py-1.5 border border-border rounded-md text-xs font-medium text-muted-foreground cursor-not-allowed bg-muted"
-						disabled={!table.getCanPreviousPage()}
-						onClick={() => table.previousPage()}
-					>
-						{intl.formatMessage({
-							id: 'common.actions.previous',
-							defaultMessage: 'Previous',
-						})}
-					</Button>
-					<Button
-						variant="outline"
-						size="sm"
-						className="px-3 py-1.5 border border-border rounded-md text-xs font-medium text-muted-foreground hover:bg-muted transition-colors"
-						disabled={!table.getCanNextPage()}
-						onClick={() => table.nextPage()}
-					>
-						{intl.formatMessage({
-							id: 'common.actions.next',
-							defaultMessage: 'Next',
-						})}
-					</Button>
-				</div>
-			</div>
-		)
-	}
+    return (
+      <div className="flex-none px-6 py-4 border-t border-border bg-background flex items-center justify-between">
+        <div className="text-xs text-muted-foreground">
+          {intl.formatMessage(
+            {
+              id: 'common.pagination.showing',
+              defaultMessage: 'Showing {start} to {end} of {total} results',
+            },
+            { start: startRow, end: endRow, total: totalRows },
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="px-3 py-1.5 border border-border rounded-md text-xs font-medium text-muted-foreground cursor-not-allowed bg-muted"
+            disabled={!table.getCanPreviousPage()}
+            onClick={() => table.previousPage()}
+          >
+            {intl.formatMessage({
+              id: 'common.actions.previous',
+              defaultMessage: 'Previous',
+            })}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="px-3 py-1.5 border border-border rounded-md text-xs font-medium text-muted-foreground hover:bg-muted transition-colors"
+            disabled={!table.getCanNextPage()}
+            onClick={() => table.nextPage()}
+          >
+            {intl.formatMessage({
+              id: 'common.actions.next',
+              defaultMessage: 'Next',
+            })}
+          </Button>
+        </div>
+      </div>
+    )
+  }
 
-	// Loading state
-	if (isLoading) {
-		return (
-			<div className="flex-1 flex flex-col min-w-0 bg-background h-full relative overflow-hidden">
-				<PageHeader>
-					<div className="h-16 flex items-center justify-between px-6">
-						<div>
-							<h1 className="text-lg font-semibold text-foreground tracking-tight">
-								{schemaDisplayName}
-							</h1>
-							<p className="text-xs text-muted-foreground">
-								{intl.formatMessage({
-									id: 'common.actions.loading',
-									defaultMessage: 'Loading...',
-								})}
-							</p>
-						</div>
-					</div>
-				</PageHeader>
-				<div className="flex-1 p-6 space-y-4">
-					<Skeleton className="h-10 w-full" />
-					<Skeleton className="h-64 w-full" />
-				</div>
-			</div>
-		)
-	}
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="flex-1 flex flex-col min-w-0 bg-background h-full relative overflow-hidden">
+        <PageHeader>
+          <div className="h-16 flex items-center justify-between px-6">
+            <div>
+              <h1 className="text-lg font-semibold text-foreground tracking-tight">
+                {schemaDisplayName}
+              </h1>
+              <p className="text-xs text-muted-foreground">
+                {intl.formatMessage({
+                  id: 'common.actions.loading',
+                  defaultMessage: 'Loading...',
+                })}
+              </p>
+            </div>
+          </div>
+        </PageHeader>
+        <div className="flex-1 p-6 space-y-4">
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-64 w-full" />
+        </div>
+      </div>
+    )
+  }
 
-	// Error state
-	if (contentError) {
-		return (
-			<div className="flex-1 flex flex-col min-w-0 bg-background h-full relative overflow-hidden">
-				<PageHeader>
-					<div className="h-16 flex items-center justify-between px-6">
-						<div>
-							<h1 className="text-lg font-semibold text-foreground tracking-tight">
-								{schemaDisplayName}
-							</h1>
-							<p className="text-xs text-red-500">
-								{intl.formatMessage({
-									id: 'common.errors.errorLoadingContent',
-									defaultMessage: 'Error loading content',
-								})}
-							</p>
-						</div>
-					</div>
-				</PageHeader>
-				<div className="flex-1 p-6">
-					<div className="text-center py-12">
-						<p className="text-muted-foreground mb-4">{contentError.message}</p>
-						<Button onClick={() => window.location.reload()}>
-							{intl.formatMessage({
-								id: 'common.actions.retry',
-								defaultMessage: 'Retry',
-							})}
-						</Button>
-					</div>
-				</div>
-			</div>
-		)
-	}
+  // Error state
+  if (contentError) {
+    return (
+      <div className="flex-1 flex flex-col min-w-0 bg-background h-full relative overflow-hidden">
+        <PageHeader>
+          <div className="h-16 flex items-center justify-between px-6">
+            <div>
+              <h1 className="text-lg font-semibold text-foreground tracking-tight">
+                {schemaDisplayName}
+              </h1>
+              <p className="text-xs text-red-500">
+                {intl.formatMessage({
+                  id: 'common.errors.errorLoadingContent',
+                  defaultMessage: 'Error loading content',
+                })}
+              </p>
+            </div>
+          </div>
+        </PageHeader>
+        <div className="flex-1 p-6">
+          <div className="text-center py-12">
+            <p className="text-muted-foreground mb-4">{contentError.message}</p>
+            <Button onClick={() => window.location.reload()}>
+              {intl.formatMessage({
+                id: 'common.actions.retry',
+                defaultMessage: 'Retry',
+              })}
+            </Button>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
-	return (
-		<div className="flex-1 flex flex-col min-w-0 bg-background h-full relative overflow-hidden">
-			{/* Header */}
-			<PageHeader>
-				{/* Toolbar: Title & Actions */}
-				<div className="h-16 flex items-center justify-between px-6">
-					{/* Left: Title */}
-					<div>
-						<h1 className="text-lg font-semibold text-foreground tracking-tight">
-							{schemaDisplayName}
-						</h1>
-						<p className="text-xs text-muted-foreground">
-							{intl.formatMessage(
-								{
-									id: 'contentManager.listing.manageEntries',
-									defaultMessage:
-										'Manage your {schema} entries and publications.',
-								},
-								{ schema: schemaDisplayName.toLowerCase() },
-							)}
-						</p>
-					</div>
+  return (
+    <div className="flex-1 flex flex-col min-w-0 bg-background h-full relative overflow-hidden">
+      {/* Header */}
+      <PageHeader>
+        {/* Toolbar: Title & Actions */}
+        <div className="h-16 flex items-center justify-between px-6">
+          {/* Left: Title */}
+          <div>
+            <h1 className="text-lg font-semibold text-foreground tracking-tight">
+              {schemaDisplayName}
+            </h1>
+            <p className="text-xs text-muted-foreground">
+              {intl.formatMessage(
+                {
+                  id: 'contentManager.listing.manageEntries',
+                  defaultMessage: 'Manage your {schema} entries and publications.',
+                },
+                { schema: schemaDisplayName.toLowerCase() },
+              )}
+            </p>
+          </div>
 
-					{/* Right: Actions */}
-					<div className="flex items-center gap-3">
-						<Button
-							variant="outline"
-							size="sm"
-							onClick={() => setConfigOpen(true)}
-						>
-							{intl.formatMessage({
-								id: 'contentManager.listing.configureView',
-								defaultMessage: 'Configure View',
-							})}
-						</Button>
-						{!isReadOnly && (
-							<Button size="sm" onClick={handleCreate} disabled={isCreating}>
-								{isCreating
-									? intl.formatMessage({
-											id: 'contentManager.listing.creating',
-											defaultMessage: 'Creating...',
-										})
-									: intl.formatMessage({
-											id: 'contentManager.listing.createNewEntry',
-											defaultMessage: 'Create New Entry',
-										})}
-							</Button>
-						)}
-					</div>
-				</div>
-			</PageHeader>
+          {/* Right: Actions */}
+          <div className="flex items-center gap-3">
+            <Button variant="outline" size="sm" onClick={() => setConfigOpen(true)}>
+              {intl.formatMessage({
+                id: 'contentManager.listing.configureView',
+                defaultMessage: 'Configure View',
+              })}
+            </Button>
+            {!isReadOnly && (
+              <Button size="sm" onClick={handleCreate} disabled={isCreating}>
+                {isCreating
+                  ? intl.formatMessage({
+                      id: 'contentManager.listing.creating',
+                      defaultMessage: 'Creating...',
+                    })
+                  : intl.formatMessage({
+                      id: 'contentManager.listing.createNewEntry',
+                      defaultMessage: 'Create New Entry',
+                    })}
+              </Button>
+            )}
+          </div>
+        </div>
+      </PageHeader>
 
-			{/* Main Workspace */}
-			<div className="flex-1 flex flex-col overflow-hidden bg-muted/50">
-				{/* Content Table */}
-				<div className="flex-1 overflow-hidden relative">
-					<div className="absolute inset-0 overflow-auto">
-						{filteredData.length === 0 && !searchQuery ? (
-							<div className="flex flex-col items-center justify-center h-full text-center p-6">
-								<div className="text-muted-foreground mb-4">
-									<svg
-										className="w-16 h-16 mx-auto"
-										fill="none"
-										viewBox="0 0 24 24"
-										stroke="currentColor"
-										aria-hidden="true"
-									>
-										<path
-											strokeLinecap="round"
-											strokeLinejoin="round"
-											strokeWidth={1.5}
-											d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-										/>
-									</svg>
-								</div>
-								<h3 className="text-lg font-medium text-foreground mb-2">
-									{intl.formatMessage({
-										id: 'contentManager.listing.noEntries',
-										defaultMessage: 'No entries yet',
-									})}
-								</h3>
-								<p className="text-sm text-muted-foreground mb-4">
-									{isReadOnly
-										? intl.formatMessage(
-												{
-													id: 'contentManager.listing.noEntriesReadOnly',
-													defaultMessage:
-														'No {schema} entries have been created via API yet.',
-												},
-												{ schema: schemaDisplayName.toLowerCase() },
-											)
-										: intl.formatMessage(
-												{
-													id: 'contentManager.listing.getStarted',
-													defaultMessage:
-														'Get started by creating your first {schema} entry.',
-												},
-												{ schema: schemaDisplayName.toLowerCase() },
-											)}
-								</p>
-								{!isReadOnly && (
-									<Button onClick={handleCreate} disabled={isCreating}>
-										{isCreating
-											? intl.formatMessage({
-													id: 'contentManager.listing.creating',
-													defaultMessage: 'Creating...',
-												})
-											: intl.formatMessage({
-													id: 'contentManager.listing.createNewEntry',
-													defaultMessage: 'Create New Entry',
-												})}
-									</Button>
-								)}
-							</div>
-						) : (
-							<DataTable
-								key={configVersion}
-								data={filteredData}
-								columns={columns}
-								options={{
-									selectable: true,
-									rowActions: {
-										items: isReadOnly
-											? [
-													{
-														label: intl.formatMessage({
-															id: 'common.actions.view',
-															defaultMessage: 'View',
-														}),
-														onSelect: (row) => handleEdit(row),
-													},
-												]
-											: [
-													{
-														label: intl.formatMessage({
-															id: 'common.actions.edit',
-															defaultMessage: 'Edit',
-														}),
-														onSelect: (row) => handleEdit(row),
-													},
-													{
-														label: intl.formatMessage({
-															id: 'common.actions.delete',
-															defaultMessage: 'Delete',
-														}),
-														onSelect: (row) => handleDelete(row),
-														destructive: true,
-													},
-												],
-									},
-								}}
-								getRowId={(row) => getEntryId(row)}
-								renderToolbar={renderToolbar}
-								renderPagination={renderPagination}
-								enablePagination={true}
-								pageSizeOptions={[5, 10, 20, 30, 50]}
-								initialPagination={{ pageIndex: 0, pageSize: config.pageSize }}
-								initialSorting={initialSorting}
-								showCount={false}
-								className="h-full flex flex-col"
-								variant="content-manager"
-							/>
-						)}
-					</div>
-				</div>
-			</div>
+      {/* Main Workspace */}
+      <div className="flex-1 flex flex-col overflow-hidden bg-muted/50">
+        {/* Content Table */}
+        <div className="flex-1 overflow-hidden relative">
+          <div className="absolute inset-0 overflow-auto">
+            {filteredData.length === 0 && !searchQuery ? (
+              <div className="flex flex-col items-center justify-center h-full text-center p-6">
+                <div className="text-muted-foreground mb-4">
+                  <svg
+                    className="w-16 h-16 mx-auto"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1.5}
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-medium text-foreground mb-2">
+                  {intl.formatMessage({
+                    id: 'contentManager.listing.noEntries',
+                    defaultMessage: 'No entries yet',
+                  })}
+                </h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  {isReadOnly
+                    ? intl.formatMessage(
+                        {
+                          id: 'contentManager.listing.noEntriesReadOnly',
+                          defaultMessage: 'No {schema} entries have been created via API yet.',
+                        },
+                        { schema: schemaDisplayName.toLowerCase() },
+                      )
+                    : intl.formatMessage(
+                        {
+                          id: 'contentManager.listing.getStarted',
+                          defaultMessage: 'Get started by creating your first {schema} entry.',
+                        },
+                        { schema: schemaDisplayName.toLowerCase() },
+                      )}
+                </p>
+                {!isReadOnly && (
+                  <Button onClick={handleCreate} disabled={isCreating}>
+                    {isCreating
+                      ? intl.formatMessage({
+                          id: 'contentManager.listing.creating',
+                          defaultMessage: 'Creating...',
+                        })
+                      : intl.formatMessage({
+                          id: 'contentManager.listing.createNewEntry',
+                          defaultMessage: 'Create New Entry',
+                        })}
+                  </Button>
+                )}
+              </div>
+            ) : (
+              <DataTable
+                key={configVersion}
+                data={filteredData}
+                columns={columns}
+                options={{
+                  selectable: true,
+                  rowActions: {
+                    items: isReadOnly
+                      ? [
+                          {
+                            label: intl.formatMessage({
+                              id: 'common.actions.view',
+                              defaultMessage: 'View',
+                            }),
+                            onSelect: (row) => handleEdit(row),
+                          },
+                        ]
+                      : [
+                          {
+                            label: intl.formatMessage({
+                              id: 'common.actions.edit',
+                              defaultMessage: 'Edit',
+                            }),
+                            onSelect: (row) => handleEdit(row),
+                          },
+                          {
+                            label: intl.formatMessage({
+                              id: 'common.actions.delete',
+                              defaultMessage: 'Delete',
+                            }),
+                            onSelect: (row) => handleDelete(row),
+                            destructive: true,
+                          },
+                        ],
+                  },
+                }}
+                getRowId={(row) => getEntryId(row)}
+                renderToolbar={renderToolbar}
+                renderPagination={renderPagination}
+                enablePagination={true}
+                pageSizeOptions={[5, 10, 20, 30, 50]}
+                initialPagination={{ pageIndex: 0, pageSize: config.pageSize }}
+                initialSorting={initialSorting}
+                showCount={false}
+                className="h-full flex flex-col"
+                variant="content-manager"
+              />
+            )}
+          </div>
+        </div>
+      </div>
 
-			<ConfigureViewDrawer
-				open={configOpen}
-				onOpenChange={setConfigOpen}
-				properties={
-					schemaMetadata && !('error' in schemaMetadata)
-						? schemaMetadata.properties
-						: []
-				}
-				config={config}
-				onSave={updateConfig}
-			/>
-		</div>
-	)
+      <ConfigureViewDrawer
+        open={configOpen}
+        onOpenChange={setConfigOpen}
+        properties={schemaMetadata && !('error' in schemaMetadata) ? schemaMetadata.properties : []}
+        config={config}
+        onSave={updateConfig}
+      />
+    </div>
+  )
 }

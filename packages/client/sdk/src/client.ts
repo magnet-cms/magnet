@@ -1,4 +1,5 @@
 import createFetchClient from 'openapi-fetch'
+
 import type { MagnetClientConfig } from './types'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -16,110 +17,94 @@ type AnyPaths = Record<string, any>
  * const { data } = await client.content.list('articles')
  * ```
  */
-export function createMagnetClient<Paths extends AnyPaths = AnyPaths>(
-	config: MagnetClientConfig,
-) {
-	const headers: Record<string, string> = { ...config.headers }
-	if (config.token) {
-		headers.Authorization = `Bearer ${config.token}`
-	}
-	if (config.apiKey) {
-		headers['x-api-key'] = config.apiKey
-	}
+export function createMagnetClient<Paths extends AnyPaths = AnyPaths>(config: MagnetClientConfig) {
+  const headers: Record<string, string> = { ...config.headers }
+  if (config.token) {
+    headers.Authorization = `Bearer ${config.token}`
+  }
+  if (config.apiKey) {
+    headers['x-api-key'] = config.apiKey
+  }
 
-	const raw = createFetchClient<Paths>({ baseUrl: config.baseUrl, headers })
+  const raw = createFetchClient<Paths>({ baseUrl: config.baseUrl, headers })
 
-	const content = {
-		list: (schema: string, params?: Record<string, unknown>) =>
-			raw.GET(
-				'/content/{schema}' as never,
-				{
-					params: { path: { schema }, query: params },
-				} as never,
-			),
+  const content = {
+    list: (schema: string, params?: Record<string, unknown>) =>
+      raw.GET(
+        '/content/{schema}' as never,
+        {
+          params: { path: { schema }, query: params },
+        } as never,
+      ),
 
-		get: (
-			schema: string,
-			documentId: string,
-			params?: Record<string, unknown>,
-		) =>
-			raw.GET(
-				'/content/{schema}/{documentId}' as never,
-				{
-					params: { path: { schema, documentId }, query: params },
-				} as never,
-			),
+    get: (schema: string, documentId: string, params?: Record<string, unknown>) =>
+      raw.GET(
+        '/content/{schema}/{documentId}' as never,
+        {
+          params: { path: { schema, documentId }, query: params },
+        } as never,
+      ),
 
-		create: (schema: string, body: Record<string, unknown>) =>
-			raw.POST(
-				'/content/{schema}' as never,
-				{
-					params: { path: { schema } },
-					body,
-				} as never,
-			),
+    create: (schema: string, body: Record<string, unknown>) =>
+      raw.POST(
+        '/content/{schema}' as never,
+        {
+          params: { path: { schema } },
+          body,
+        } as never,
+      ),
 
-		update: (
-			schema: string,
-			documentId: string,
-			body: Record<string, unknown>,
-		) =>
-			raw.PUT(
-				'/content/{schema}/{documentId}' as never,
-				{
-					params: { path: { schema, documentId } },
-					body,
-				} as never,
-			),
+    update: (schema: string, documentId: string, body: Record<string, unknown>) =>
+      raw.PUT(
+        '/content/{schema}/{documentId}' as never,
+        {
+          params: { path: { schema, documentId } },
+          body,
+        } as never,
+      ),
 
-		delete: (schema: string, documentId: string) =>
-			raw.DELETE(
-				'/content/{schema}/{documentId}' as never,
-				{
-					params: { path: { schema, documentId } },
-				} as never,
-			),
+    delete: (schema: string, documentId: string) =>
+      raw.DELETE(
+        '/content/{schema}/{documentId}' as never,
+        {
+          params: { path: { schema, documentId } },
+        } as never,
+      ),
 
-		publish: (schema: string, documentId: string) =>
-			raw.POST(
-				'/content/{schema}/{documentId}/publish' as never,
-				{
-					params: { path: { schema, documentId } },
-				} as never,
-			),
+    publish: (schema: string, documentId: string) =>
+      raw.POST(
+        '/content/{schema}/{documentId}/publish' as never,
+        {
+          params: { path: { schema, documentId } },
+        } as never,
+      ),
 
-		unpublish: (schema: string, documentId: string) =>
-			raw.POST(
-				'/content/{schema}/{documentId}/unpublish' as never,
-				{
-					params: { path: { schema, documentId } },
-				} as never,
-			),
-	}
+    unpublish: (schema: string, documentId: string) =>
+      raw.POST(
+        '/content/{schema}/{documentId}/unpublish' as never,
+        {
+          params: { path: { schema, documentId } },
+        } as never,
+      ),
+  }
 
-	const auth = {
-		login: (email: string, password: string) =>
-			raw.POST('/auth/login' as never, { body: { email, password } } as never),
+  const auth = {
+    login: (email: string, password: string) =>
+      raw.POST('/auth/login' as never, { body: { email, password } } as never),
 
-		register: (data: { email: string; password: string; name?: string }) =>
-			raw.POST('/auth/register' as never, { body: data } as never),
+    register: (data: { email: string; password: string; name?: string }) =>
+      raw.POST('/auth/register' as never, { body: data } as never),
 
-		me: () => raw.GET('/auth/me' as never, {} as never),
-	}
+    me: () => raw.GET('/auth/me' as never, {} as never),
+  }
 
-	const storage = {
-		list: (params?: Record<string, unknown>) =>
-			raw.GET(
-				'/storage/media' as never,
-				{ params: { query: params } } as never,
-			),
+  const storage = {
+    list: (params?: Record<string, unknown>) =>
+      raw.GET('/storage/media' as never, { params: { query: params } } as never),
 
-		delete: (id: string) =>
-			raw.DELETE(
-				'/storage/media/{id}' as never,
-				{ params: { path: { id } } } as never,
-			),
-	}
+    delete: (id: string) =>
+      raw.DELETE('/storage/media/{id}' as never, { params: { path: { id } } } as never),
+  }
 
-	return { content, auth, storage, raw }
+  return { content, auth, storage, raw }
 }

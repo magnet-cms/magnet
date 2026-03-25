@@ -1,12 +1,14 @@
 import { type DynamicModule, Module } from '@nestjs/common'
-import { DatabaseModule } from '~/modules/database'
-import { SettingsModule } from '~/modules/settings'
+
 import { WebhookDelivery } from './schemas/webhook-delivery.schema'
 import { Webhook } from './schemas/webhook.schema'
 import { WebhookController } from './webhook.controller'
 import { WebhookListenerService } from './webhook.listener'
 import { WebhookService } from './webhook.service'
 import { WebhookSettings } from './webhook.settings'
+
+import { DatabaseModule } from '~/modules/database'
+import { SettingsModule } from '~/modules/settings'
 
 /**
  * Webhook Module
@@ -23,17 +25,17 @@ import { WebhookSettings } from './webhook.settings'
  */
 @Module({})
 export class WebhookModule {
-	static forRoot(): DynamicModule {
-		return {
-			module: WebhookModule,
-			imports: [
-				DatabaseModule.forFeature(Webhook),
-				DatabaseModule.forFeature(WebhookDelivery),
-				SettingsModule.forFeature(WebhookSettings),
-			],
-			controllers: [WebhookController],
-			providers: [WebhookService, WebhookListenerService],
-			exports: [WebhookService],
-		}
-	}
+  static forRoot(): DynamicModule {
+    return {
+      module: WebhookModule,
+      imports: [
+        DatabaseModule.forFeature(Webhook),
+        DatabaseModule.forFeature(WebhookDelivery),
+        SettingsModule.forFeature(WebhookSettings),
+      ],
+      controllers: [WebhookController],
+      providers: [WebhookService, WebhookListenerService],
+      exports: [WebhookService],
+    }
+  }
 }

@@ -1,12 +1,12 @@
 import type {
-	Migration,
-	MigrationHistoryRecord,
-	MigrationRunner,
+  Migration,
+  MigrationHistoryRecord,
+  MigrationRunner,
 } from '@magnet-cms/adapter-db-drizzle'
 
 export interface MigrateStatusResult {
-	applied: MigrationHistoryRecord[]
-	pending: Migration[]
+  applied: MigrationHistoryRecord[]
+  pending: Migration[]
 }
 
 /**
@@ -14,8 +14,8 @@ export interface MigrateStatusResult {
  * Separated from Commander glue for testability.
  */
 export async function runMigrateStatus(
-	runner: MigrationRunner,
-	migrations: Migration[],
+  runner: MigrationRunner,
+  migrations: Migration[],
 ): Promise<MigrateStatusResult> {
-	return runner.status(migrations)
+  return runner.status(migrations)
 }

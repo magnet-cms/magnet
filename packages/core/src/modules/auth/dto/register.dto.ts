@@ -1,16 +1,16 @@
 import { IsEmail, IsNotEmpty, MinLength } from 'class-validator'
 
 export class RegisterDTO {
-	@IsEmail()
-	email!: string
+  @IsEmail()
+  email!: string
 
-	@IsNotEmpty()
-	@MinLength(6)
-	password!: string
+  @IsNotEmpty()
+  @MinLength(6)
+  password!: string
 
-	@IsNotEmpty()
-	name!: string
+  @IsNotEmpty()
+  name!: string
 
-	@IsNotEmpty()
-	role!: string
+  @IsNotEmpty()
+  role!: string
 }

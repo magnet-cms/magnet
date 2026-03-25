@@ -1,30 +1,31 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
+
 import './styles/global.css'
 import App from './App'
 import { registerMagnetPlugin } from './core/plugins'
 import type { PluginRegistrationFn } from './core/plugins'
 
 export interface MagnetAdminConfig {
-	/**
-	 * Array of plugin registration functions
-	 * Each plugin should export a registration function from its frontend entry
-	 *
-	 * @example
-	 * ```ts
-	 * import { playgroundPlugin } from '@magnet-cms/plugin-playground/frontend'
-	 *
-	 * createMagnetAdmin({
-	 *   plugins: [playgroundPlugin]
-	 * })
-	 * ```
-	 */
-	plugins?: PluginRegistrationFn[]
+  /**
+   * Array of plugin registration functions
+   * Each plugin should export a registration function from its frontend entry
+   *
+   * @example
+   * ```ts
+   * import { playgroundPlugin } from '@magnet-cms/plugin-playground/frontend'
+   *
+   * createMagnetAdmin({
+   *   plugins: [playgroundPlugin]
+   * })
+   * ```
+   */
+  plugins?: PluginRegistrationFn[]
 
-	/**
-	 * Root element ID (defaults to 'root')
-	 */
-	rootElement?: string
+  /**
+   * Root element ID (defaults to 'root')
+   */
+  rootElement?: string
 }
 
 /**
@@ -46,23 +47,23 @@ export interface MagnetAdminConfig {
  * ```
  */
 export function createMagnetAdmin(config: MagnetAdminConfig = {}): void {
-	const { plugins = [], rootElement = 'root' } = config
+  const { plugins = [], rootElement = 'root' } = config
 
-	// Register all plugins before mounting
-	for (const plugin of plugins) {
-		registerMagnetPlugin(plugin)
-	}
+  // Register all plugins before mounting
+  for (const plugin of plugins) {
+    registerMagnetPlugin(plugin)
+  }
 
-	const root = document.getElementById(rootElement)
-	if (!root) {
-		throw new Error(`Root element "${rootElement}" not found`)
-	}
+  const root = document.getElementById(rootElement)
+  if (!root) {
+    throw new Error(`Root element "${rootElement}" not found`)
+  }
 
-	ReactDOM.createRoot(root).render(
-		<React.StrictMode>
-			<App />
-		</React.StrictMode>,
-	)
+  ReactDOM.createRoot(root).render(
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>,
+  )
 }
 
 /**

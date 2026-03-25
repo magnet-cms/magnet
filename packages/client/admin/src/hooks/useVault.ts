@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+
 import { useAdapter } from '~/core/provider/MagnetProvider'
 
 // ============================================================================
@@ -8,30 +9,30 @@ import { useAdapter } from '~/core/provider/MagnetProvider'
 export type VaultAdapterType = 'db' | 'hashicorp' | 'supabase'
 
 export interface VaultStatus {
-	healthy: boolean
-	adapter: VaultAdapterType
-	masterKeyConfigured?: boolean
+  healthy: boolean
+  adapter: VaultAdapterType
+  masterKeyConfigured?: boolean
 }
 
 export interface VaultSecretMeta {
-	name: string
-	description?: string
-	lastUpdated?: string
+  name: string
+  description?: string
+  lastUpdated?: string
 }
 
 export interface VaultSecret {
-	name: string
-	value: string
+  name: string
+  value: string
 }
 
 export interface VaultSecretList {
-	secrets: VaultSecretMeta[]
+  secrets: VaultSecretMeta[]
 }
 
 export interface VaultSetSecretPayload {
-	key: string
-	value: string
-	description?: string
+  key: string
+  value: string
+  description?: string
 }
 
 // ============================================================================
@@ -39,10 +40,10 @@ export interface VaultSetSecretPayload {
 // ============================================================================
 
 export const VAULT_KEYS = {
-	all: ['vault'] as const,
-	status: () => [...VAULT_KEYS.all, 'status'] as const,
-	secrets: () => [...VAULT_KEYS.all, 'secrets'] as const,
-	secret: (key: string) => [...VAULT_KEYS.all, 'secret', key] as const,
+  all: ['vault'] as const,
+  status: () => [...VAULT_KEYS.all, 'status'] as const,
+  secrets: () => [...VAULT_KEYS.all, 'secrets'] as const,
+  secret: (key: string) => [...VAULT_KEYS.all, 'secret', key] as const,
 }
 
 // ============================================================================
@@ -53,44 +54,41 @@ export const VAULT_KEYS = {
  * Fetch vault adapter status and health.
  */
 export const useVaultStatus = () => {
-	const adapter = useAdapter()
+  const adapter = useAdapter()
 
-	return useQuery<VaultStatus, Error>({
-		queryKey: VAULT_KEYS.status(),
-		queryFn: () => adapter.request<VaultStatus>('/vault/status'),
-		refetchInterval: 30_000,
-	})
+  return useQuery<VaultStatus, Error>({
+    queryKey: VAULT_KEYS.status(),
+    queryFn: () => adapter.request<VaultStatus>('/vault/status'),
+    refetchInterval: 30_000,
+  })
 }
 
 /**
  * Fetch all secret keys in the vault.
  */
 export const useVaultSecrets = (prefix?: string) => {
-	const adapter = useAdapter()
+  const adapter = useAdapter()
 
-	return useQuery<VaultSecretList, Error>({
-		queryKey: [...VAULT_KEYS.secrets(), prefix],
-		queryFn: () => {
-			const url = prefix
-				? `/vault/secrets?prefix=${encodeURIComponent(prefix)}`
-				: '/vault/secrets'
-			return adapter.request<VaultSecretList>(url)
-		},
-	})
+  return useQuery<VaultSecretList, Error>({
+    queryKey: [...VAULT_KEYS.secrets(), prefix],
+    queryFn: () => {
+      const url = prefix ? `/vault/secrets?prefix=${encodeURIComponent(prefix)}` : '/vault/secrets'
+      return adapter.request<VaultSecretList>(url)
+    },
+  })
 }
 
 /**
  * Fetch a single secret by key (returns decrypted value).
  */
 export const useVaultSecret = (key: string) => {
-	const adapter = useAdapter()
+  const adapter = useAdapter()
 
-	return useQuery<VaultSecret, Error>({
-		queryKey: VAULT_KEYS.secret(key),
-		queryFn: () =>
-			adapter.request<VaultSecret>(`/vault/secrets/${encodeURIComponent(key)}`),
-		enabled: !!key,
-	})
+  return useQuery<VaultSecret, Error>({
+    queryKey: VAULT_KEYS.secret(key),
+    queryFn: () => adapter.request<VaultSecret>(`/vault/secrets/${encodeURIComponent(key)}`),
+    enabled: !!key,
+  })
 }
 
 // ============================================================================
@@ -101,55 +99,54 @@ export const useVaultSecret = (key: string) => {
  * Create or update a secret.
  */
 export const useVaultSetSecret = () => {
-	const adapter = useAdapter()
-	const queryClient = useQueryClient()
+  const adapter = useAdapter()
+  const queryClient = useQueryClient()
 
-	return useMutation<{ success: boolean }, Error, VaultSetSecretPayload>({
-		mutationFn: ({ key, value, description }) =>
-			adapter.request<{ success: boolean }>(
-				`/vault/secrets/${encodeURIComponent(key)}`,
-				{ method: 'POST', body: { value, description } },
-			),
-		onSuccess: (_, { key }) => {
-			queryClient.invalidateQueries({ queryKey: VAULT_KEYS.secrets() })
-			queryClient.invalidateQueries({ queryKey: VAULT_KEYS.secret(key) })
-		},
-	})
+  return useMutation<{ success: boolean }, Error, VaultSetSecretPayload>({
+    mutationFn: ({ key, value, description }) =>
+      adapter.request<{ success: boolean }>(`/vault/secrets/${encodeURIComponent(key)}`, {
+        method: 'POST',
+        body: { value, description },
+      }),
+    onSuccess: (_, { key }) => {
+      queryClient.invalidateQueries({ queryKey: VAULT_KEYS.secrets() })
+      queryClient.invalidateQueries({ queryKey: VAULT_KEYS.secret(key) })
+    },
+  })
 }
 
 /**
  * Delete a secret by key.
  */
 export const useVaultDeleteSecret = () => {
-	const adapter = useAdapter()
-	const queryClient = useQueryClient()
+  const adapter = useAdapter()
+  const queryClient = useQueryClient()
 
-	return useMutation<{ success: boolean }, Error, string>({
-		mutationFn: (key) =>
-			adapter.request<{ success: boolean }>(
-				`/vault/secrets/${encodeURIComponent(key)}`,
-				{ method: 'DELETE' },
-			),
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: VAULT_KEYS.secrets() })
-		},
-	})
+  return useMutation<{ success: boolean }, Error, string>({
+    mutationFn: (key) =>
+      adapter.request<{ success: boolean }>(`/vault/secrets/${encodeURIComponent(key)}`, {
+        method: 'DELETE',
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: VAULT_KEYS.secrets() })
+    },
+  })
 }
 
 /**
  * Clear the in-memory vault cache.
  */
 export const useVaultClearCache = () => {
-	const adapter = useAdapter()
-	const queryClient = useQueryClient()
+  const adapter = useAdapter()
+  const queryClient = useQueryClient()
 
-	return useMutation<{ success: boolean }, Error, void>({
-		mutationFn: () =>
-			adapter.request<{ success: boolean }>('/vault/cache/clear', {
-				method: 'POST',
-			}),
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: VAULT_KEYS.all })
-		},
-	})
+  return useMutation<{ success: boolean }, Error, void>({
+    mutationFn: () =>
+      adapter.request<{ success: boolean }>('/vault/cache/clear', {
+        method: 'POST',
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: VAULT_KEYS.all })
+    },
+  })
 }

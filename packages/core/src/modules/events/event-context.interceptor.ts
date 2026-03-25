@@ -1,10 +1,11 @@
 import { AsyncLocalStorage } from 'node:async_hooks'
 import { randomUUID } from 'node:crypto'
+
 import {
-	type CallHandler,
-	type ExecutionContext,
-	Injectable,
-	type NestInterceptor,
+  type CallHandler,
+  type ExecutionContext,
+  Injectable,
+  type NestInterceptor,
 } from '@nestjs/common'
 import { Observable } from 'rxjs'
 
@@ -12,27 +13,27 @@ import { Observable } from 'rxjs'
  * Event context containing request-scoped information
  */
 export interface EventContext {
-	/** Request ID for tracing */
-	requestId: string
-	/** User who triggered the event (if applicable) */
-	userId?: string
-	/** IP address of the request (if applicable) */
-	ipAddress?: string
-	/** Timestamp when context was created */
-	timestamp?: Date
+  /** Request ID for tracing */
+  requestId: string
+  /** User who triggered the event (if applicable) */
+  userId?: string
+  /** IP address of the request (if applicable) */
+  ipAddress?: string
+  /** Timestamp when context was created */
+  timestamp?: Date
 }
 
 /**
  * Request interface for type-safe access
  */
 interface RequestWithUser {
-	headers: Record<string, string | string[] | undefined>
-	user?: { id?: string }
-	ip?: string
+  headers: Record<string, string | string[] | undefined>
+  user?: { id?: string }
+  ip?: string
 }
 
 interface ResponseWithHeader {
-	setHeader(name: string, value: string): void
+  setHeader(name: string, value: string): void
 }
 
 /**
@@ -69,33 +70,32 @@ export const eventContextStorage = new AsyncLocalStorage<EventContext>()
  */
 @Injectable()
 export class EventContextInterceptor implements NestInterceptor {
-	intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
-		const request = context.switchToHttp().getRequest<RequestWithUser>()
-		const response = context.switchToHttp().getResponse<ResponseWithHeader>()
+  intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
+    const request = context.switchToHttp().getRequest<RequestWithUser>()
+    const response = context.switchToHttp().getResponse<ResponseWithHeader>()
 
-		const requestIdHeader = request.headers['x-request-id']
-		const requestId =
-			typeof requestIdHeader === 'string' ? requestIdHeader : randomUUID()
+    const requestIdHeader = request.headers['x-request-id']
+    const requestId = typeof requestIdHeader === 'string' ? requestIdHeader : randomUUID()
 
-		// Echo the request ID back in the response for client-side correlation
-		response.setHeader('x-request-id', requestId)
+    // Echo the request ID back in the response for client-side correlation
+    response.setHeader('x-request-id', requestId)
 
-		const eventContext: EventContext = {
-			requestId,
-			userId: request.user?.id,
-			ipAddress: request.ip,
-		}
+    const eventContext: EventContext = {
+      requestId,
+      userId: request.user?.id,
+      ipAddress: request.ip,
+    }
 
-		return new Observable((subscriber) => {
-			eventContextStorage.run(eventContext, () => {
-				next.handle().subscribe({
-					next: (value) => subscriber.next(value),
-					error: (err: unknown) => subscriber.error(err),
-					complete: () => subscriber.complete(),
-				})
-			})
-		})
-	}
+    return new Observable((subscriber) => {
+      eventContextStorage.run(eventContext, () => {
+        next.handle().subscribe({
+          next: (value) => subscriber.next(value),
+          error: (err: unknown) => subscriber.error(err),
+          complete: () => subscriber.complete(),
+        })
+      })
+    })
+  }
 }
 
 /**
@@ -114,7 +114,7 @@ export class EventContextInterceptor implements NestInterceptor {
  * ```
  */
 export function getEventContext(): EventContext | undefined {
-	return eventContextStorage.getStore()
+  return eventContextStorage.getStore()
 }
 
 /**
@@ -132,12 +132,10 @@ export function getEventContext(): EventContext | undefined {
  * await this.eventService.emit('system.job_completed', payload, context)
  * ```
  */
-export function createEventContext(
-	overrides?: Partial<EventContext>,
-): EventContext {
-	return {
-		requestId: overrides?.requestId ?? randomUUID(),
-		userId: overrides?.userId,
-		ipAddress: overrides?.ipAddress,
-	}
+export function createEventContext(overrides?: Partial<EventContext>): EventContext {
+  return {
+    requestId: overrides?.requestId ?? randomUUID(),
+    userId: overrides?.userId,
+    ipAddress: overrides?.ipAddress,
+  }
 }

@@ -23,13 +23,13 @@ import { AuthGuard } from '@nestjs/passport'
  */
 @Injectable()
 export class DynamicAuthGuard implements CanActivate {
-	/** Set by AuthModule.forRoot() during initialization. Defaults to 'jwt'. */
-	static strategyName = 'jwt'
+  /** Set by AuthModule.forRoot() during initialization. Defaults to 'jwt'. */
+  static strategyName = 'jwt'
 
-	canActivate(context: ExecutionContext): Promise<boolean> | boolean {
-		const guard = new (AuthGuard(DynamicAuthGuard.strategyName))()
-		return guard.canActivate(context) as Promise<boolean> | boolean
-	}
+  canActivate(context: ExecutionContext): Promise<boolean> | boolean {
+    const guard = new (AuthGuard(DynamicAuthGuard.strategyName))()
+    return guard.canActivate(context) as Promise<boolean> | boolean
+  }
 }
 
 /**
@@ -41,13 +41,13 @@ export class DynamicAuthGuard implements CanActivate {
  */
 @Injectable()
 export class OptionalDynamicAuthGuard implements CanActivate {
-	async canActivate(context: ExecutionContext): Promise<boolean> {
-		const guard = new (AuthGuard(DynamicAuthGuard.strategyName))()
-		try {
-			await guard.canActivate(context)
-		} catch {
-			// Authentication failed — allow request through without req.user
-		}
-		return true
-	}
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const guard = new (AuthGuard(DynamicAuthGuard.strategyName))()
+    try {
+      await guard.canActivate(context)
+    } catch {
+      // Authentication failed — allow request through without req.user
+    }
+    return true
+  }
 }

@@ -13,10 +13,7 @@ export { withSentrySpan } from './helpers/span'
 export { SentrySpan } from './decorators/sentry-span.decorator'
 
 // Cron monitoring helpers
-export {
-	SentryCron,
-	MagnetSentryCron,
-} from './decorators/sentry-cron.decorator'
+export { SentryCron, MagnetSentryCron } from './decorators/sentry-cron.decorator'
 
 // Types
 export type { SentryClientConfig, SentryPluginConfig } from './types'

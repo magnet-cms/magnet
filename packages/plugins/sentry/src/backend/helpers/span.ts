@@ -16,18 +16,17 @@
  * ```
  */
 export async function withSentrySpan<T>(
-	name: string,
-	op: string,
-	fn: () => Promise<T>,
+  name: string,
+  op: string,
+  fn: () => Promise<T>,
 ): Promise<T> {
-	try {
-		// eslint-disable-next-line @typescript-eslint/no-require-imports
-		const Sentry = require('@sentry/nestjs') as typeof import('@sentry/nestjs')
-		if (!Sentry.getClient()) return fn()
+  try {
+    const Sentry = require('@sentry/nestjs') as typeof import('@sentry/nestjs')
+    if (!Sentry.getClient()) return fn()
 
-		return await Sentry.startSpan({ name, op }, () => fn())
-	} catch {
-		// @sentry/nestjs not installed or Sentry not initialized — run callback directly
-		return fn()
-	}
+    return await Sentry.startSpan({ name, op }, () => fn())
+  } catch {
+    // @sentry/nestjs not installed or Sentry not initialized — run callback directly
+    return fn()
+  }
 }

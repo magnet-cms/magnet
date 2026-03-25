@@ -1,5 +1,6 @@
 import { DatabaseModule } from '@magnet-cms/core'
 import { Module } from '@nestjs/common'
+
 import { PolarApiController } from './polar-api.controller'
 import { PolarWebhookController } from './polar-webhook.controller'
 import { PolarWebhookService } from './polar-webhook.service'
@@ -28,39 +29,39 @@ import { PolarSubscriptionService } from './services/subscription.service'
  * Auto-imported by the @Plugin decorator's `module` field.
  */
 @Module({
-	imports: [
-		DatabaseModule.forFeature(PolarCustomer),
-		DatabaseModule.forFeature(PolarProduct),
-		DatabaseModule.forFeature(PolarSubscription),
-		DatabaseModule.forFeature(PolarOrder),
-		DatabaseModule.forFeature(PolarBenefit),
-		DatabaseModule.forFeature(PolarBenefitGrant),
-		DatabaseModule.forFeature(PolarProcessedEvent),
-	],
-	controllers: [PolarApiController, PolarWebhookController],
-	providers: [
-		PolarService,
-		PolarWebhookService,
-		PolarCustomerService,
-		PolarProductService,
-		PolarSubscriptionService,
-		PolarOrderService,
-		PolarBenefitService,
-		PolarCheckoutService,
-		PolarPortalService,
-		PolarAccessService,
-		PolarMetricsService,
-	],
-	exports: [
-		PolarService,
-		PolarCustomerService,
-		PolarProductService,
-		PolarSubscriptionService,
-		PolarOrderService,
-		PolarBenefitService,
-		PolarCheckoutService,
-		PolarPortalService,
-		PolarAccessService,
-	],
+  imports: [
+    DatabaseModule.forFeature(PolarCustomer),
+    DatabaseModule.forFeature(PolarProduct),
+    DatabaseModule.forFeature(PolarSubscription),
+    DatabaseModule.forFeature(PolarOrder),
+    DatabaseModule.forFeature(PolarBenefit),
+    DatabaseModule.forFeature(PolarBenefitGrant),
+    DatabaseModule.forFeature(PolarProcessedEvent),
+  ],
+  controllers: [PolarApiController, PolarWebhookController],
+  providers: [
+    PolarService,
+    PolarWebhookService,
+    PolarCustomerService,
+    PolarProductService,
+    PolarSubscriptionService,
+    PolarOrderService,
+    PolarBenefitService,
+    PolarCheckoutService,
+    PolarPortalService,
+    PolarAccessService,
+    PolarMetricsService,
+  ],
+  exports: [
+    PolarService,
+    PolarCustomerService,
+    PolarProductService,
+    PolarSubscriptionService,
+    PolarOrderService,
+    PolarBenefitService,
+    PolarCheckoutService,
+    PolarPortalService,
+    PolarAccessService,
+  ],
 })
 export class PolarModule {}

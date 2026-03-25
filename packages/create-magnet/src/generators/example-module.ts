@@ -1,5 +1,5 @@
 export function generateExampleSchema(): string {
-	return `import { Prop, Schema, UI, Validators } from '@magnet-cms/common'
+  return `import { Prop, Schema, UI, Validators } from '@magnet-cms/common'
 import { IsNotEmpty, IsOptional, IsString, Length } from 'class-validator'
 
 @Schema()
@@ -22,7 +22,7 @@ export class Item {
 }
 
 export function generateExampleDto(): string {
-	return `import { IsBoolean, IsNotEmpty, IsOptional, IsString, Length } from 'class-validator'
+  return `import { IsBoolean, IsNotEmpty, IsOptional, IsString, Length } from 'class-validator'
 
 export class CreateItemDto {
 	@IsString()
@@ -57,7 +57,7 @@ export class UpdateItemDto {
 }
 
 export function generateExampleService(): string {
-	return `import { InjectModel, Model } from '@magnet-cms/common'
+  return `import { InjectModel, Model } from '@magnet-cms/common'
 import { Injectable } from '@nestjs/common'
 import { CreateItemDto, UpdateItemDto } from './dto/item.dto'
 import { Item } from './schemas/item.schema'
@@ -93,7 +93,7 @@ export class ItemsService {
 }
 
 export function generateExampleController(): string {
-	return `import { Resolve } from '@magnet-cms/common'
+  return `import { Resolve } from '@magnet-cms/common'
 import {
 	Body,
 	Controller,
@@ -150,7 +150,7 @@ export class ItemsController {
 }
 
 export function generateExampleModule(): string {
-	return `import { MagnetModule } from '@magnet-cms/core'
+  return `import { MagnetModule } from '@magnet-cms/core'
 import { Module } from '@nestjs/common'
 import { ItemsController } from './items.controller'
 import { ItemsService } from './items.service'

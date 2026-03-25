@@ -1,10 +1,10 @@
 import { CACHE_METADATA_KEY } from '../cache.constants'
 
 export interface CachePutOptions {
-	/** Cache key. If omitted, a default key is generated from class name, method name, and args. */
-	key?: string
-	/** TTL override in seconds. If omitted, the interceptor uses @CacheTTL or adapter default. */
-	ttl?: number
+  /** Cache key. If omitted, a default key is generated from class name, method name, and args. */
+  key?: string
+  /** TTL override in seconds. If omitted, the interceptor uses @CacheTTL or adapter default. */
+  ttl?: number
 }
 
 /**
@@ -26,20 +26,20 @@ export interface CachePutOptions {
  * ```
  */
 export function CachePut(options: CachePutOptions = {}): MethodDecorator {
-	return function cachePutDecorator(
-		targetOrMethod: object,
-		_propertyKeyOrContext?: string | symbol | ClassMethodDecoratorContext,
-		descriptor?: PropertyDescriptor,
-	): PropertyDescriptor | undefined {
-		const metadata = { operation: 'put', ...options }
+  return function cachePutDecorator(
+    targetOrMethod: object,
+    _propertyKeyOrContext?: string | symbol | ClassMethodDecoratorContext,
+    descriptor?: PropertyDescriptor,
+  ): PropertyDescriptor | undefined {
+    const metadata = { operation: 'put', ...options }
 
-		// Legacy decorator form (3 args): target, propertyKey, descriptor
-		if (descriptor !== undefined) {
-			Reflect.defineMetadata(CACHE_METADATA_KEY, metadata, descriptor.value)
-			return descriptor
-		}
+    // Legacy decorator form (3 args): target, propertyKey, descriptor
+    if (descriptor !== undefined) {
+      Reflect.defineMetadata(CACHE_METADATA_KEY, metadata, descriptor.value)
+      return descriptor
+    }
 
-		// Stage 3 TC39 decorator form (2 args): (fn, context)
-		Reflect.defineMetadata(CACHE_METADATA_KEY, metadata, targetOrMethod)
-	} as MethodDecorator
+    // Stage 3 TC39 decorator form (2 args): (fn, context)
+    Reflect.defineMetadata(CACHE_METADATA_KEY, metadata, targetOrMethod)
+  } as MethodDecorator
 }

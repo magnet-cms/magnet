@@ -3,10 +3,7 @@ import type { LucideIcon } from 'lucide-react'
 import type { ComponentType, ElementType, ReactNode } from 'react'
 
 // Support both lucide and tabler icons
-export type IconComponent =
-	| LucideIcon
-	| TablerIcon
-	| ComponentType<{ className?: string }>
+export type IconComponent = LucideIcon | TablerIcon | ComponentType<{ className?: string }>
 
 /**
  * Custom link component type for router integration.
@@ -20,118 +17,118 @@ export type IconComponent =
 export type LinkComponent = ElementType<any>
 
 export interface NavItem {
-	title: string
-	url: string
-	icon?: IconComponent
-	isActive?: boolean
-	items?: {
-		title: string
-		url: string
-		isActive?: boolean
-	}[]
+  title: string
+  url: string
+  icon?: IconComponent
+  isActive?: boolean
+  items?: {
+    title: string
+    url: string
+    isActive?: boolean
+  }[]
 }
 
 export interface NavItemWithChildren extends NavItem {
-	items?: {
-		title: string
-		url: string
-	}[]
+  items?: {
+    title: string
+    url: string
+  }[]
 }
 
 export interface DocumentItem {
-	name: string
-	url: string
-	icon: IconComponent
+  name: string
+  url: string
+  icon: IconComponent
 }
 
 export interface UserInfo {
-	name: string
-	email: string
-	avatar?: string
+  name: string
+  email: string
+  avatar?: string
 }
 
 export interface UserMenuAction {
-	label: string
-	icon?: IconComponent
-	onClick?: () => void
-	href?: string
-	variant?: 'default' | 'destructive'
-	separator?: boolean
-	badgeCount?: number
+  label: string
+  icon?: IconComponent
+  onClick?: () => void
+  href?: string
+  variant?: 'default' | 'destructive'
+  separator?: boolean
+  badgeCount?: number
 }
 
 export interface SidebarConfig {
-	/** Logo/brand component or icon */
-	logo?: ReactNode
-	/** Brand name shown in sidebar header */
-	brandName?: string
-	/** Brand URL for the logo link */
-	brandUrl?: string
-	/** Primary navigation items */
-	navMain?: NavItem[]
-	/** Label for primary navigation group */
-	navMainLabel?: string
-	/** Plugin navigation items (dynamically loaded from plugins) */
-	navPlugins?: NavItem[]
-	/** Label for plugin navigation group */
-	navPluginsLabel?: string
-	/** Security and access management navigation items (users, roles, access control) */
-	navSecurity?: NavItem[]
-	/** Label for security navigation group */
-	navSecurityLabel?: string
-	/** Developer tools navigation items (API keys, vault, webhooks, activity) */
-	navDeveloper?: NavItem[]
-	/** Label for developer navigation group */
-	navDeveloperLabel?: string
-	/** Secondary navigation items (settings, help, etc.) */
-	navSecondary?: NavItem[]
-	/** Label for secondary navigation group */
-	navSecondaryLabel?: string
-	/** Document/resource items */
-	documents?: DocumentItem[]
-	/** User info for the footer */
-	user?: UserInfo
-	/** Custom user menu actions */
-	userMenuActions?: UserMenuAction[]
-	/** Callback for logout action */
-	onLogout?: () => void
-	/** Additional footer actions (rendered to the right of user menu) */
-	footerActions?: ReactNode
-	/**
-	 * Custom link component for router integration.
-	 * Pass React Router's Link for SPA navigation with basename support.
-	 * Defaults to native anchor ('a') element.
-	 */
-	linkComponent?: LinkComponent
+  /** Logo/brand component or icon */
+  logo?: ReactNode
+  /** Brand name shown in sidebar header */
+  brandName?: string
+  /** Brand URL for the logo link */
+  brandUrl?: string
+  /** Primary navigation items */
+  navMain?: NavItem[]
+  /** Label for primary navigation group */
+  navMainLabel?: string
+  /** Plugin navigation items (dynamically loaded from plugins) */
+  navPlugins?: NavItem[]
+  /** Label for plugin navigation group */
+  navPluginsLabel?: string
+  /** Security and access management navigation items (users, roles, access control) */
+  navSecurity?: NavItem[]
+  /** Label for security navigation group */
+  navSecurityLabel?: string
+  /** Developer tools navigation items (API keys, vault, webhooks, activity) */
+  navDeveloper?: NavItem[]
+  /** Label for developer navigation group */
+  navDeveloperLabel?: string
+  /** Secondary navigation items (settings, help, etc.) */
+  navSecondary?: NavItem[]
+  /** Label for secondary navigation group */
+  navSecondaryLabel?: string
+  /** Document/resource items */
+  documents?: DocumentItem[]
+  /** User info for the footer */
+  user?: UserInfo
+  /** Custom user menu actions */
+  userMenuActions?: UserMenuAction[]
+  /** Callback for logout action */
+  onLogout?: () => void
+  /** Additional footer actions (rendered to the right of user menu) */
+  footerActions?: ReactNode
+  /**
+   * Custom link component for router integration.
+   * Pass React Router's Link for SPA navigation with basename support.
+   * Defaults to native anchor ('a') element.
+   */
+  linkComponent?: LinkComponent
 }
 
 export interface HeaderConfig {
-	/** Page title shown in the header */
-	title?: string
-	/** Custom header content (left side, after breadcrumbs/title) */
-	content?: ReactNode
-	/** Custom header actions (right side) */
-	actions?: ReactNode
-	/** Breadcrumb items */
-	breadcrumbs?: {
-		label: string
-		href?: string
-	}[]
-	/**
-	 * Custom link component for router integration (used in breadcrumbs).
-	 * Pass React Router's Link for SPA navigation with basename support.
-	 * Defaults to native anchor ('a') element.
-	 */
-	linkComponent?: LinkComponent
+  /** Page title shown in the header */
+  title?: string
+  /** Custom header content (left side, after breadcrumbs/title) */
+  content?: ReactNode
+  /** Custom header actions (right side) */
+  actions?: ReactNode
+  /** Breadcrumb items */
+  breadcrumbs?: {
+    label: string
+    href?: string
+  }[]
+  /**
+   * Custom link component for router integration (used in breadcrumbs).
+   * Pass React Router's Link for SPA navigation with basename support.
+   * Defaults to native anchor ('a') element.
+   */
+  linkComponent?: LinkComponent
 }
 
 export interface AppLayoutProps {
-	/** Sidebar configuration */
-	sidebar: SidebarConfig
-	/** Header configuration */
-	header?: HeaderConfig
-	/** Main content */
-	children: ReactNode
-	/** Additional class names for the main content area */
-	className?: string
+  /** Sidebar configuration */
+  sidebar: SidebarConfig
+  /** Header configuration */
+  header?: HeaderConfig
+  /** Main content */
+  children: ReactNode
+  /** Additional class names for the main content area */
+  className?: string
 }

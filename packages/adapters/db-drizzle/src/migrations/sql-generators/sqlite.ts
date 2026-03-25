@@ -14,23 +14,23 @@ export type { ColumnDef, IndexDef }
  * Generate CREATE TABLE SQL for SQLite
  */
 export function createTable(tableName: string, columns: ColumnDef[]): string {
-	const cols = columns
-		.map((col) => {
-			let def = `"${col.name}" ${col.type}`
-			if (col.primaryKey) def += ' PRIMARY KEY'
-			if (!col.nullable && !col.primaryKey) def += ' NOT NULL'
-			if (col.default !== undefined) def += ` DEFAULT ${col.default}`
-			return def
-		})
-		.join(',\n\t')
-	return `CREATE TABLE "${tableName}" (\n\t${cols}\n)`
+  const cols = columns
+    .map((col) => {
+      let def = `"${col.name}" ${col.type}`
+      if (col.primaryKey) def += ' PRIMARY KEY'
+      if (!col.nullable && !col.primaryKey) def += ' NOT NULL'
+      if (col.default !== undefined) def += ` DEFAULT ${col.default}`
+      return def
+    })
+    .join(',\n\t')
+  return `CREATE TABLE "${tableName}" (\n\t${cols}\n)`
 }
 
 /**
  * Generate DROP TABLE SQL for SQLite
  */
 export function dropTable(tableName: string): string {
-	return `DROP TABLE "${tableName}"`
+  return `DROP TABLE "${tableName}"`
 }
 
 /**
@@ -38,23 +38,23 @@ export function dropTable(tableName: string): string {
  * Note: SQLite ADD COLUMN is limited — no NOT NULL without DEFAULT, no UNIQUE, no PRIMARY KEY
  */
 export function addColumn(tableName: string, column: ColumnDef): string {
-	let def = `"${column.name}" ${column.type}`
-	if (column.default !== undefined) def += ` DEFAULT ${column.default}`
-	return `ALTER TABLE "${tableName}" ADD COLUMN ${def}`
+  let def = `"${column.name}" ${column.type}`
+  if (column.default !== undefined) def += ` DEFAULT ${column.default}`
+  return `ALTER TABLE "${tableName}" ADD COLUMN ${def}`
 }
 
 /**
  * Generate CREATE INDEX SQL for SQLite
  */
 export function createIndex(idx: IndexDef): string {
-	const unique = idx.unique ? 'UNIQUE ' : ''
-	const cols = idx.columns.map((c) => `"${c}"`).join(', ')
-	return `CREATE ${unique}INDEX "${idx.name}" ON "${idx.table}" (${cols})`
+  const unique = idx.unique ? 'UNIQUE ' : ''
+  const cols = idx.columns.map((c) => `"${c}"`).join(', ')
+  return `CREATE ${unique}INDEX "${idx.name}" ON "${idx.table}" (${cols})`
 }
 
 /**
  * Generate DROP INDEX SQL for SQLite
  */
 export function dropIndex(indexName: string): string {
-	return `DROP INDEX "${indexName}"`
+  return `DROP INDEX "${indexName}"`
 }

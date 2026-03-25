@@ -1,14 +1,16 @@
 import { MagnetModule } from '@magnet-cms/core'
 import { Module } from '@nestjs/common'
+
 import { MedicalRecord } from '../medical-records/schemas/medical-record.schema'
+
 import { CatsController } from './cats.controller'
 import { CatsService } from './cats.service'
 import { CatHooks } from './hooks/cat.hooks'
 import { Cat } from './schemas/cat.schema'
 
 @Module({
-	imports: [MagnetModule.forFeature([Cat, MedicalRecord])],
-	controllers: [CatsController],
-	providers: [CatsService, CatHooks],
+  imports: [MagnetModule.forFeature([Cat, MedicalRecord])],
+  controllers: [CatsController],
+  providers: [CatsService, CatHooks],
 })
 export class CatsModule {}

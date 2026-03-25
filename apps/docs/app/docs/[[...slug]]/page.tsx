@@ -7,42 +7,38 @@ import type { ReactElement } from 'react'
 import { source } from '@/lib/source'
 
 interface PageProps {
-	params: Promise<{ slug?: string[] }>
+  params: Promise<{ slug?: string[] }>
 }
 
-export default async function Page({
-	params,
-}: PageProps): Promise<ReactElement> {
-	const { slug } = await params
-	const page = source.getPage(slug ?? [])
+export default async function Page({ params }: PageProps): Promise<ReactElement> {
+  const { slug } = await params
+  const page = source.getPage(slug ?? [])
 
-	if (!page) notFound()
+  if (!page) notFound()
 
-	const MDX = page.data.body
+  const MDX = page.data.body
 
-	return (
-		<DocsPage toc={page.data.toc}>
-			<DocsBody>
-				<MDX components={defaultMdxComponents} />
-			</DocsBody>
-		</DocsPage>
-	)
+  return (
+    <DocsPage toc={page.data.toc}>
+      <DocsBody>
+        <MDX components={defaultMdxComponents} />
+      </DocsBody>
+    </DocsPage>
+  )
 }
 
 export function generateStaticParams() {
-	return source.generateParams()
+  return source.generateParams()
 }
 
-export async function generateMetadata({
-	params,
-}: PageProps): Promise<Metadata> {
-	const { slug } = await params
-	const page = source.getPage(slug ?? [])
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params
+  const page = source.getPage(slug ?? [])
 
-	if (!page) notFound()
+  if (!page) notFound()
 
-	return {
-		title: `${page.data.title} - Magnet Docs`,
-		description: page.data.description,
-	}
+  return {
+    title: `${page.data.title} - Magnet Docs`,
+    description: page.data.description,
+  }
 }

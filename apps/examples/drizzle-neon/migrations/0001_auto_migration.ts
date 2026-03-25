@@ -1,11 +1,11 @@
 import type { Migration, MigrationDb } from '@magnet-cms/adapter-db-drizzle'
 
 export const migration: Migration = {
-	id: '1774048023985_auto_migration',
-	timestamp: 1774048023985,
+  id: '1774048023985_auto_migration',
+  timestamp: 1774048023985,
 
-	async up(db: MigrationDb): Promise<void> {
-		await db.execute(`CREATE TABLE "cats" (
+  async up(db: MigrationDb): Promise<void> {
+    await db.execute(`CREATE TABLE "cats" (
 	"id" uuid PRIMARY KEY NOT NULL,
 	"document_id" varchar(36) NOT NULL,
 	"locale" varchar(10) DEFAULT 'en' NOT NULL,
@@ -26,7 +26,7 @@ export const migration: Migration = {
 	"updated_at" timestamp NOT NULL
 );
 `)
-		await db.execute(`CREATE TABLE "medicalrecords" (
+    await db.execute(`CREATE TABLE "medicalrecords" (
 	"id" uuid PRIMARY KEY NOT NULL,
 	"document_id" varchar(36) NOT NULL,
 	"locale" varchar(10) DEFAULT 'en' NOT NULL,
@@ -43,7 +43,7 @@ export const migration: Migration = {
 	"updated_at" timestamp NOT NULL
 );
 `)
-		await db.execute(`CREATE TABLE "owners" (
+    await db.execute(`CREATE TABLE "owners" (
 	"id" uuid PRIMARY KEY NOT NULL,
 	"document_id" varchar(36) NOT NULL,
 	"locale" varchar(10) DEFAULT 'en' NOT NULL,
@@ -57,7 +57,7 @@ export const migration: Migration = {
 	"updated_at" timestamp NOT NULL
 );
 `)
-		await db.execute(`CREATE TABLE "posts" (
+    await db.execute(`CREATE TABLE "posts" (
 	"id" uuid PRIMARY KEY NOT NULL,
 	"document_id" varchar(36) NOT NULL,
 	"locale" varchar(10) DEFAULT 'en' NOT NULL,
@@ -74,7 +74,7 @@ export const migration: Migration = {
 	"updated_at" timestamp NOT NULL
 );
 `)
-		await db.execute(`CREATE TABLE "veterinarians" (
+    await db.execute(`CREATE TABLE "veterinarians" (
 	"id" uuid PRIMARY KEY NOT NULL,
 	"document_id" varchar(36) NOT NULL,
 	"locale" varchar(10) DEFAULT 'en' NOT NULL,
@@ -88,7 +88,7 @@ export const migration: Migration = {
 	"updated_at" timestamp NOT NULL
 );
 `)
-		await db.execute(`CREATE TABLE "users" (
+    await db.execute(`CREATE TABLE "users" (
 	"id" uuid PRIMARY KEY NOT NULL,
 	"email" text,
 	"password" text,
@@ -103,7 +103,7 @@ export const migration: Migration = {
 	"updated_at" timestamp NOT NULL
 );
 `)
-		await db.execute(`CREATE TABLE "activities" (
+    await db.execute(`CREATE TABLE "activities" (
 	"id" uuid PRIMARY KEY NOT NULL,
 	"action" text,
 	"entity_type" text,
@@ -120,7 +120,7 @@ export const migration: Migration = {
 	"updated_at" timestamp NOT NULL
 );
 `)
-		await db.execute(`CREATE TABLE "apikeys" (
+    await db.execute(`CREATE TABLE "apikeys" (
 	"id" uuid PRIMARY KEY NOT NULL,
 	"name" text,
 	"description" text,
@@ -142,7 +142,7 @@ export const migration: Migration = {
 	"updated_at" timestamp NOT NULL
 );
 `)
-		await db.execute(`CREATE TABLE "apikeyusages" (
+    await db.execute(`CREATE TABLE "apikeyusages" (
 	"id" uuid PRIMARY KEY NOT NULL,
 	"key_id" text,
 	"endpoint" text,
@@ -158,7 +158,7 @@ export const migration: Migration = {
 	"updated_at" timestamp NOT NULL
 );
 `)
-		await db.execute(`CREATE TABLE "histories" (
+    await db.execute(`CREATE TABLE "histories" (
 	"id" uuid PRIMARY KEY NOT NULL,
 	"document_id" text,
 	"version_id" text,
@@ -173,7 +173,7 @@ export const migration: Migration = {
 	"updated_at" timestamp NOT NULL
 );
 `)
-		await db.execute(`CREATE TABLE "viewconfigs" (
+    await db.execute(`CREATE TABLE "viewconfigs" (
 	"id" uuid PRIMARY KEY NOT NULL,
 	"user_id" text,
 	"schema_name" text,
@@ -185,7 +185,7 @@ export const migration: Migration = {
 	"created_at" timestamp NOT NULL
 );
 `)
-		await db.execute(`CREATE TABLE "media" (
+    await db.execute(`CREATE TABLE "media" (
 	"id" uuid PRIMARY KEY NOT NULL,
 	"filename" text,
 	"original_filename" text,
@@ -205,7 +205,7 @@ export const migration: Migration = {
 	"created_by_name" text
 );
 `)
-		await db.execute(`CREATE TABLE "mediafolders" (
+    await db.execute(`CREATE TABLE "mediafolders" (
 	"id" uuid PRIMARY KEY NOT NULL,
 	"name" text,
 	"path" text,
@@ -216,7 +216,7 @@ export const migration: Migration = {
 	"updated_at" timestamp NOT NULL
 );
 `)
-		await db.execute(`CREATE TABLE "vaultsecrets" (
+    await db.execute(`CREATE TABLE "vaultsecrets" (
 	"id" uuid PRIMARY KEY NOT NULL,
 	"key" text,
 	"description" text,
@@ -227,7 +227,7 @@ export const migration: Migration = {
 	"updated_at" timestamp NOT NULL
 );
 `)
-		await db.execute(`CREATE TABLE "refreshtokens" (
+    await db.execute(`CREATE TABLE "refreshtokens" (
 	"id" uuid PRIMARY KEY NOT NULL,
 	"token" text,
 	"user_id" text,
@@ -244,7 +244,7 @@ export const migration: Migration = {
 	"updated_at" timestamp NOT NULL
 );
 `)
-		await db.execute(`CREATE TABLE "sessions" (
+    await db.execute(`CREATE TABLE "sessions" (
 	"id" uuid PRIMARY KEY NOT NULL,
 	"user_id" text,
 	"session_id" text,
@@ -262,7 +262,7 @@ export const migration: Migration = {
 	"updated_at" timestamp NOT NULL
 );
 `)
-		await db.execute(`CREATE TABLE "loginattempts" (
+    await db.execute(`CREATE TABLE "loginattempts" (
 	"id" uuid PRIMARY KEY NOT NULL,
 	"email" text,
 	"success" boolean,
@@ -274,7 +274,7 @@ export const migration: Migration = {
 	"updated_at" timestamp NOT NULL
 );
 `)
-		await db.execute(`CREATE TABLE "passwordresets" (
+    await db.execute(`CREATE TABLE "passwordresets" (
 	"id" uuid PRIMARY KEY NOT NULL,
 	"user_id" text,
 	"token_hash" text,
@@ -284,7 +284,7 @@ export const migration: Migration = {
 	"updated_at" timestamp NOT NULL
 );
 `)
-		await db.execute(`CREATE TABLE "emailverifications" (
+    await db.execute(`CREATE TABLE "emailverifications" (
 	"id" uuid PRIMARY KEY NOT NULL,
 	"user_id" text,
 	"email" text,
@@ -295,7 +295,7 @@ export const migration: Migration = {
 	"updated_at" timestamp NOT NULL
 );
 `)
-		await db.execute(`CREATE TABLE "notifications" (
+    await db.execute(`CREATE TABLE "notifications" (
 	"id" uuid PRIMARY KEY NOT NULL,
 	"user_id" text,
 	"type" text,
@@ -311,7 +311,7 @@ export const migration: Migration = {
 	"updated_at" timestamp NOT NULL
 );
 `)
-		await db.execute(`CREATE TABLE "roles" (
+    await db.execute(`CREATE TABLE "roles" (
 	"id" uuid PRIMARY KEY NOT NULL,
 	"name" text,
 	"display_name" text,
@@ -322,7 +322,7 @@ export const migration: Migration = {
 	"updated_at" timestamp NOT NULL
 );
 `)
-		await db.execute(`CREATE TABLE "permissions" (
+    await db.execute(`CREATE TABLE "permissions" (
 	"id" uuid PRIMARY KEY NOT NULL,
 	"permission_id" text,
 	"name" text,
@@ -338,7 +338,7 @@ export const migration: Migration = {
 	"updated_at" timestamp NOT NULL
 );
 `)
-		await db.execute(`CREATE TABLE "settings" (
+    await db.execute(`CREATE TABLE "settings" (
 	"id" uuid PRIMARY KEY NOT NULL,
 	"key" text,
 	"value" text,
@@ -348,7 +348,7 @@ export const migration: Migration = {
 	"updated_at" timestamp NOT NULL
 );
 `)
-		await db.execute(`CREATE TABLE "webhooks" (
+    await db.execute(`CREATE TABLE "webhooks" (
 	"id" uuid PRIMARY KEY NOT NULL,
 	"name" text,
 	"url" text,
@@ -361,7 +361,7 @@ export const migration: Migration = {
 	"updated_at" timestamp NOT NULL
 );
 `)
-		await db.execute(`CREATE TABLE "webhookdeliveries" (
+    await db.execute(`CREATE TABLE "webhookdeliveries" (
 	"id" uuid PRIMARY KEY NOT NULL,
 	"webhook_id" text,
 	"event" text,
@@ -377,96 +377,92 @@ export const migration: Migration = {
 	"updated_at" timestamp NOT NULL
 );
 `)
-		await db.execute(
-			`CREATE UNIQUE INDEX "cats_document_locale_status_idx" ON "cats" USING btree ("document_id","locale","status");`,
-		)
-		await db.execute(
-			`CREATE INDEX "cats_document_locale_idx" ON "cats" USING btree ("document_id","locale");`,
-		)
-		await db.execute(
-			`CREATE INDEX "cats_status_locale_idx" ON "cats" USING btree ("status","locale");`,
-		)
-		await db.execute(
-			`CREATE UNIQUE INDEX "cats_tagID_unique_i18n" ON "cats" USING btree ("tag_id") WHERE ("cats"."locale" = 'en' and "cats"."status" = 'draft');`,
-		)
-		await db.execute(
-			`CREATE UNIQUE INDEX "medicalrecords_document_locale_status_idx" ON "medicalrecords" USING btree ("document_id","locale","status");`,
-		)
-		await db.execute(
-			`CREATE INDEX "medicalrecords_document_locale_idx" ON "medicalrecords" USING btree ("document_id","locale");`,
-		)
-		await db.execute(
-			`CREATE INDEX "medicalrecords_status_locale_idx" ON "medicalrecords" USING btree ("status","locale");`,
-		)
-		await db.execute(
-			`CREATE UNIQUE INDEX "owners_document_locale_status_idx" ON "owners" USING btree ("document_id","locale","status");`,
-		)
-		await db.execute(
-			`CREATE INDEX "owners_document_locale_idx" ON "owners" USING btree ("document_id","locale");`,
-		)
-		await db.execute(
-			`CREATE INDEX "owners_status_locale_idx" ON "owners" USING btree ("status","locale");`,
-		)
-		await db.execute(
-			`CREATE UNIQUE INDEX "owners_email_unique_i18n" ON "owners" USING btree ("email") WHERE ("owners"."locale" = 'en' and "owners"."status" = 'draft');`,
-		)
-		await db.execute(
-			`CREATE UNIQUE INDEX "posts_document_locale_status_idx" ON "posts" USING btree ("document_id","locale","status");`,
-		)
-		await db.execute(
-			`CREATE INDEX "posts_document_locale_idx" ON "posts" USING btree ("document_id","locale");`,
-		)
-		await db.execute(
-			`CREATE INDEX "posts_status_locale_idx" ON "posts" USING btree ("status","locale");`,
-		)
-		await db.execute(
-			`CREATE UNIQUE INDEX "veterinarians_document_locale_status_idx" ON "veterinarians" USING btree ("document_id","locale","status");`,
-		)
-		await db.execute(
-			`CREATE INDEX "veterinarians_document_locale_idx" ON "veterinarians" USING btree ("document_id","locale");`,
-		)
-		await db.execute(
-			`CREATE INDEX "veterinarians_status_locale_idx" ON "veterinarians" USING btree ("status","locale");`,
-		)
-		await db.execute(
-			`CREATE UNIQUE INDEX "veterinarians_licenseNumber_unique_i18n" ON "veterinarians" USING btree ("license_number") WHERE ("veterinarians"."locale" = 'en' and "veterinarians"."status" = 'draft');`,
-		)
-		await db.execute(
-			`CREATE UNIQUE INDEX "users_email_unique" ON "users" USING btree ("email");`,
-		)
-		await db.execute(
-			`CREATE UNIQUE INDEX "apikeys_keyHash_unique" ON "apikeys" USING btree ("key_hash");`,
-		)
-		await db.execute(
-			`CREATE UNIQUE INDEX "media_filename_unique" ON "media" USING btree ("filename");`,
-		)
-		await db.execute(
-			`CREATE UNIQUE INDEX "mediafolders_path_unique" ON "mediafolders" USING btree ("path");`,
-		)
-		await db.execute(
-			`CREATE UNIQUE INDEX "vaultsecrets_key_unique" ON "vaultsecrets" USING btree ("key");`,
-		)
-		await db.execute(
-			`CREATE UNIQUE INDEX "refreshtokens_token_unique" ON "refreshtokens" USING btree ("token");`,
-		)
-		await db.execute(
-			`CREATE UNIQUE INDEX "sessions_sessionId_unique" ON "sessions" USING btree ("session_id");`,
-		)
-		await db.execute(
-			`CREATE UNIQUE INDEX "passwordresets_tokenHash_unique" ON "passwordresets" USING btree ("token_hash");`,
-		)
-		await db.execute(
-			`CREATE UNIQUE INDEX "emailverifications_tokenHash_unique" ON "emailverifications" USING btree ("token_hash");`,
-		)
-		await db.execute(
-			`CREATE UNIQUE INDEX "roles_name_unique" ON "roles" USING btree ("name");`,
-		)
-		await db.execute(
-			`CREATE UNIQUE INDEX "permissions_permissionId_unique" ON "permissions" USING btree ("permission_id");`,
-		)
-	},
+    await db.execute(
+      `CREATE UNIQUE INDEX "cats_document_locale_status_idx" ON "cats" USING btree ("document_id","locale","status");`,
+    )
+    await db.execute(
+      `CREATE INDEX "cats_document_locale_idx" ON "cats" USING btree ("document_id","locale");`,
+    )
+    await db.execute(
+      `CREATE INDEX "cats_status_locale_idx" ON "cats" USING btree ("status","locale");`,
+    )
+    await db.execute(
+      `CREATE UNIQUE INDEX "cats_tagID_unique_i18n" ON "cats" USING btree ("tag_id") WHERE ("cats"."locale" = 'en' and "cats"."status" = 'draft');`,
+    )
+    await db.execute(
+      `CREATE UNIQUE INDEX "medicalrecords_document_locale_status_idx" ON "medicalrecords" USING btree ("document_id","locale","status");`,
+    )
+    await db.execute(
+      `CREATE INDEX "medicalrecords_document_locale_idx" ON "medicalrecords" USING btree ("document_id","locale");`,
+    )
+    await db.execute(
+      `CREATE INDEX "medicalrecords_status_locale_idx" ON "medicalrecords" USING btree ("status","locale");`,
+    )
+    await db.execute(
+      `CREATE UNIQUE INDEX "owners_document_locale_status_idx" ON "owners" USING btree ("document_id","locale","status");`,
+    )
+    await db.execute(
+      `CREATE INDEX "owners_document_locale_idx" ON "owners" USING btree ("document_id","locale");`,
+    )
+    await db.execute(
+      `CREATE INDEX "owners_status_locale_idx" ON "owners" USING btree ("status","locale");`,
+    )
+    await db.execute(
+      `CREATE UNIQUE INDEX "owners_email_unique_i18n" ON "owners" USING btree ("email") WHERE ("owners"."locale" = 'en' and "owners"."status" = 'draft');`,
+    )
+    await db.execute(
+      `CREATE UNIQUE INDEX "posts_document_locale_status_idx" ON "posts" USING btree ("document_id","locale","status");`,
+    )
+    await db.execute(
+      `CREATE INDEX "posts_document_locale_idx" ON "posts" USING btree ("document_id","locale");`,
+    )
+    await db.execute(
+      `CREATE INDEX "posts_status_locale_idx" ON "posts" USING btree ("status","locale");`,
+    )
+    await db.execute(
+      `CREATE UNIQUE INDEX "veterinarians_document_locale_status_idx" ON "veterinarians" USING btree ("document_id","locale","status");`,
+    )
+    await db.execute(
+      `CREATE INDEX "veterinarians_document_locale_idx" ON "veterinarians" USING btree ("document_id","locale");`,
+    )
+    await db.execute(
+      `CREATE INDEX "veterinarians_status_locale_idx" ON "veterinarians" USING btree ("status","locale");`,
+    )
+    await db.execute(
+      `CREATE UNIQUE INDEX "veterinarians_licenseNumber_unique_i18n" ON "veterinarians" USING btree ("license_number") WHERE ("veterinarians"."locale" = 'en' and "veterinarians"."status" = 'draft');`,
+    )
+    await db.execute(`CREATE UNIQUE INDEX "users_email_unique" ON "users" USING btree ("email");`)
+    await db.execute(
+      `CREATE UNIQUE INDEX "apikeys_keyHash_unique" ON "apikeys" USING btree ("key_hash");`,
+    )
+    await db.execute(
+      `CREATE UNIQUE INDEX "media_filename_unique" ON "media" USING btree ("filename");`,
+    )
+    await db.execute(
+      `CREATE UNIQUE INDEX "mediafolders_path_unique" ON "mediafolders" USING btree ("path");`,
+    )
+    await db.execute(
+      `CREATE UNIQUE INDEX "vaultsecrets_key_unique" ON "vaultsecrets" USING btree ("key");`,
+    )
+    await db.execute(
+      `CREATE UNIQUE INDEX "refreshtokens_token_unique" ON "refreshtokens" USING btree ("token");`,
+    )
+    await db.execute(
+      `CREATE UNIQUE INDEX "sessions_sessionId_unique" ON "sessions" USING btree ("session_id");`,
+    )
+    await db.execute(
+      `CREATE UNIQUE INDEX "passwordresets_tokenHash_unique" ON "passwordresets" USING btree ("token_hash");`,
+    )
+    await db.execute(
+      `CREATE UNIQUE INDEX "emailverifications_tokenHash_unique" ON "emailverifications" USING btree ("token_hash");`,
+    )
+    await db.execute(`CREATE UNIQUE INDEX "roles_name_unique" ON "roles" USING btree ("name");`)
+    await db.execute(
+      `CREATE UNIQUE INDEX "permissions_permissionId_unique" ON "permissions" USING btree ("permission_id");`,
+    )
+  },
 
-	async down(db: MigrationDb): Promise<void> {
-		// TODO: implement down migration
-	},
+  async down(_db: MigrationDb): Promise<void> {
+    // TODO: implement down migration
+  },
 }

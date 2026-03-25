@@ -1,14 +1,14 @@
 import { CACHE_METADATA_KEY } from '../cache.constants'
 
 export interface CacheableOptions {
-	/**
-	 * Cache key. Supports `:arg0`, `:arg1` placeholders for method arguments.
-	 * If omitted, a default key is generated from the class name, method name,
-	 * and serialized arguments.
-	 */
-	key?: string
-	/** TTL override in seconds. If omitted, the interceptor uses @CacheTTL or adapter default. */
-	ttl?: number
+  /**
+   * Cache key. Supports `:arg0`, `:arg1` placeholders for method arguments.
+   * If omitted, a default key is generated from the class name, method name,
+   * and serialized arguments.
+   */
+  key?: string
+  /** TTL override in seconds. If omitted, the interceptor uses @CacheTTL or adapter default. */
+  ttl?: number
 }
 
 /**
@@ -33,20 +33,20 @@ export interface CacheableOptions {
  * ```
  */
 export function Cacheable(options: CacheableOptions = {}): MethodDecorator {
-	return function cacheableDecorator(
-		targetOrMethod: object,
-		_propertyKeyOrContext?: string | symbol | ClassMethodDecoratorContext,
-		descriptor?: PropertyDescriptor,
-	): PropertyDescriptor | undefined {
-		const metadata = { operation: 'cacheable', ...options }
+  return function cacheableDecorator(
+    targetOrMethod: object,
+    _propertyKeyOrContext?: string | symbol | ClassMethodDecoratorContext,
+    descriptor?: PropertyDescriptor,
+  ): PropertyDescriptor | undefined {
+    const metadata = { operation: 'cacheable', ...options }
 
-		// Legacy decorator form (3 args): target, propertyKey, descriptor
-		if (descriptor !== undefined) {
-			Reflect.defineMetadata(CACHE_METADATA_KEY, metadata, descriptor.value)
-			return descriptor
-		}
+    // Legacy decorator form (3 args): target, propertyKey, descriptor
+    if (descriptor !== undefined) {
+      Reflect.defineMetadata(CACHE_METADATA_KEY, metadata, descriptor.value)
+      return descriptor
+    }
 
-		// Stage 3 TC39 decorator form (2 args): (fn, context)
-		Reflect.defineMetadata(CACHE_METADATA_KEY, metadata, targetOrMethod)
-	} as MethodDecorator
+    // Stage 3 TC39 decorator form (2 args): (fn, context)
+    Reflect.defineMetadata(CACHE_METADATA_KEY, metadata, targetOrMethod)
+  } as MethodDecorator
 }

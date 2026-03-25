@@ -1,23 +1,25 @@
 import {
-	type AuthUser,
-	PERMISSION_METADATA_KEY,
-	PermissionDeniedError,
-	type PermissionOptions,
-	RESOLVED_PERMISSION_KEY,
-	type ResolvedPermission,
+  type AuthUser,
+  PERMISSION_METADATA_KEY,
+  PermissionDeniedError,
+  type PermissionOptions,
+  RESOLVED_PERMISSION_KEY,
+  type ResolvedPermission,
 } from '@magnet-cms/common'
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
 import type { Request } from 'express'
-import { MagnetLogger } from '~/modules/logging/logger.service'
+
 import { RoleService } from '../services/role.service'
+
+import { MagnetLogger } from '~/modules/logging/logger.service'
 
 /**
  * Request with authenticated user
  */
 interface AuthenticatedRequest extends Request {
-	user?: AuthUser
-	params: Record<string, string>
+  user?: AuthUser
+  params: Record<string, string>
 }
 
 /**
@@ -46,108 +48,91 @@ interface AuthenticatedRequest extends Request {
  */
 @Injectable()
 export class PermissionGuard implements CanActivate {
-	constructor(
-		private readonly reflector: Reflector,
-		private readonly roleService: RoleService,
-		private readonly logger: MagnetLogger,
-	) {
-		this.logger.setContext(PermissionGuard.name)
-	}
+  constructor(
+    private readonly reflector: Reflector,
+    private readonly roleService: RoleService,
+    private readonly logger: MagnetLogger,
+  ) {
+    this.logger.setContext(PermissionGuard.name)
+  }
 
-	async canActivate(context: ExecutionContext): Promise<boolean> {
-		const request = context.switchToHttp().getRequest<AuthenticatedRequest>()
-		const user = request.user
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const request = context.switchToHttp().getRequest<AuthenticatedRequest>()
+    const user = request.user
 
-		// Get permission metadata from the handler
-		const permissionOptions = this.getPermissionOptions(context, request)
+    // Get permission metadata from the handler
+    const permissionOptions = this.getPermissionOptions(context, request)
 
-		// If no permission required, allow access
-		if (!permissionOptions) {
-			return true
-		}
+    // If no permission required, allow access
+    if (!permissionOptions) {
+      return true
+    }
 
-		// If no user, deny access
-		if (!user) {
-			this.logger.debug(
-				`Access denied: No authenticated user for permission ${permissionOptions.id}`,
-			)
-			throw new PermissionDeniedError(
-				'Authentication required',
-				permissionOptions.id,
-			)
-		}
+    // If no user, deny access
+    if (!user) {
+      this.logger.debug(
+        `Access denied: No authenticated user for permission ${permissionOptions.id}`,
+      )
+      throw new PermissionDeniedError('Authentication required', permissionOptions.id)
+    }
 
-		// Resolve dynamic permission ID (e.g., replace {schema} with actual value)
-		const resolvedPermission = this.resolvePermission(
-			permissionOptions,
-			request.params,
-		)
+    // Resolve dynamic permission ID (e.g., replace {schema} with actual value)
+    const resolvedPermission = this.resolvePermission(permissionOptions, request.params)
 
-		// Check if user has the permission
-		const hasPermission = await this.roleService.hasPermission(
-			user.id,
-			resolvedPermission.id,
-		)
+    // Check if user has the permission
+    const hasPermission = await this.roleService.hasPermission(user.id, resolvedPermission.id)
 
-		if (!hasPermission) {
-			this.logger.debug(
-				`Access denied: User ${user.id} lacks permission ${resolvedPermission.id}`,
-			)
-			throw new PermissionDeniedError(
-				`You don't have permission to ${resolvedPermission.name.toLowerCase()}`,
-				resolvedPermission.id,
-			)
-		}
+    if (!hasPermission) {
+      this.logger.debug(`Access denied: User ${user.id} lacks permission ${resolvedPermission.id}`)
+      throw new PermissionDeniedError(
+        `You don't have permission to ${resolvedPermission.name.toLowerCase()}`,
+        resolvedPermission.id,
+      )
+    }
 
-		this.logger.debug(
-			`Access granted: User ${user.id} has permission ${resolvedPermission.id}`,
-		)
+    this.logger.debug(`Access granted: User ${user.id} has permission ${resolvedPermission.id}`)
 
-		return true
-	}
+    return true
+  }
 
-	/**
-	 * Get permission options from decorator or resolved permission
-	 */
-	private getPermissionOptions(
-		context: ExecutionContext,
-		request: AuthenticatedRequest,
-	): PermissionOptions | undefined {
-		// First check for resolved permission (set by DynamicPermissionInterceptor)
-		const resolvedPermission = Reflect.getMetadata(
-			RESOLVED_PERMISSION_KEY,
-			request,
-		) as ResolvedPermission | undefined
+  /**
+   * Get permission options from decorator or resolved permission
+   */
+  private getPermissionOptions(
+    context: ExecutionContext,
+    request: AuthenticatedRequest,
+  ): PermissionOptions | undefined {
+    // First check for resolved permission (set by DynamicPermissionInterceptor)
+    const resolvedPermission = Reflect.getMetadata(RESOLVED_PERMISSION_KEY, request) as
+      | ResolvedPermission
+      | undefined
 
-		if (resolvedPermission) {
-			return resolvedPermission
-		}
+    if (resolvedPermission) {
+      return resolvedPermission
+    }
 
-		// Fall back to handler decorator
-		return this.reflector.get<PermissionOptions>(
-			PERMISSION_METADATA_KEY,
-			context.getHandler(),
-		)
-	}
+    // Fall back to handler decorator
+    return this.reflector.get<PermissionOptions>(PERMISSION_METADATA_KEY, context.getHandler())
+  }
 
-	/**
-	 * Resolve dynamic permission placeholders
-	 */
-	private resolvePermission(
-		options: PermissionOptions,
-		params: Record<string, string>,
-	): ResolvedPermission {
-		let resolvedId = options.id
+  /**
+   * Resolve dynamic permission placeholders
+   */
+  private resolvePermission(
+    options: PermissionOptions,
+    params: Record<string, string>,
+  ): ResolvedPermission {
+    let resolvedId = options.id
 
-		// Replace all {param} placeholders with actual values
-		for (const [key, value] of Object.entries(params)) {
-			resolvedId = resolvedId.replace(`{${key}}`, value)
-		}
+    // Replace all {param} placeholders with actual values
+    for (const [key, value] of Object.entries(params)) {
+      resolvedId = resolvedId.replace(`{${key}}`, value)
+    }
 
-		return {
-			...options,
-			id: resolvedId,
-			template: options.id !== resolvedId ? options.id : undefined,
-		}
-	}
+    return {
+      ...options,
+      id: resolvedId,
+      template: options.id !== resolvedId ? options.id : undefined,
+    }
+  }
 }

@@ -5,7 +5,6 @@
 ### Minor Changes
 
 - [`1e54cb4`](https://github.com/magnet-cms/magnet/commit/1e54cb48d65f0ca6a2ccd893357a1aec82722dfa) Thanks [@gjsoaresc](https://github.com/gjsoaresc)! - Add `autoSave` and `readOnly` options to the `@Schema` decorator:
-
   - `autoSave: false` — disables auto-draft creation on "New Entry"; the document is only saved when the user explicitly clicks "Save Draft"
   - `readOnly: true` — hides create/edit/delete actions in the admin panel; entries can still be managed via the API
 
@@ -20,7 +19,6 @@
 ### Minor Changes
 
 - [`5f4dc9e`](https://github.com/magnet-cms/magnet/commit/5f4dc9e042a84ba552be67c8c06024630cf447d5) Thanks [@gjsoaresc](https://github.com/gjsoaresc)! - Add post-signup onboarding wizard, optional auth guard, and UI improvements
-
   - **Setup wizard**: New post-signup onboarding flow for admin users to configure project settings (site name, base URL, language, timezone)
   - **OptionalDynamicAuthGuard**: New guard that populates `req.user` when a valid token is present without rejecting unauthenticated requests. Applied to `GET /auth/status` so `onboardingCompleted` is returned for authenticated users.
   - **Auth status cache invalidation**: `useLogin` and `useRegister` hooks now invalidate `AUTH_STATUS_KEY` after login/registration to get fresh onboarding state.
@@ -33,7 +31,6 @@
 ### Minor Changes
 
 - [`f63ef65`](https://github.com/magnet-cms/magnet/commit/f63ef6520c8395b90e35eb530f0d2e2aee4adf12) Thanks [@gjsoaresc](https://github.com/gjsoaresc)! - Add cache module with in-memory and Redis adapters, migrate admin and plugins to semantic theme tokens
-
   - **core**: Add `CacheModule` with `@Cacheable`, `@CachePut`, `@CacheEvict`, `@CacheTtl` decorators, `CacheInterceptor`, `MemoryCacheAdapter` (LRU eviction), and `CacheSettings` for runtime configuration
   - **adapter-cache-redis**: New package — Redis/Dragonfly cache adapter using ioredis with SCAN-based pattern deletion
   - **common**: Add `CacheAdapter` interface, `CacheEntry`, `CacheOptions`, and related types
@@ -48,7 +45,6 @@
 - [`a124238`](https://github.com/magnet-cms/magnet/commit/a12423819ebaa77c5998efe76921c531e5d4e5b6) Thanks [@gjsoaresc](https://github.com/gjsoaresc)! - Recent updates and bug fixes across all packages:
 
   **@magnet-cms/core:**
-
   - Add extensible authentication strategy system
   - Add media storage module with upload, transforms, and admin UI
   - Add runtime plugin loading system
@@ -58,11 +54,9 @@
   - Skip validation for drafts, validate on publish
 
   **@magnet-cms/adapter-mongoose:**
-
   - Add query builder for advanced database queries
 
   **@magnet-cms/admin:**
-
   - Enhance content manager with versioning, media uploads, and UI improvements
   - Add dialog service and improve playground layout
   - Add reusable PageHeader component and sidebar styling
@@ -73,24 +67,19 @@
   - Filter relationship selectors to show only published items
 
   **@magnet-cms/plugin-content-builder:**
-
   - Add rich text editor and relation config modal
   - Add backend module generation and UI improvements
 
   **@magnet-cms/common:**
-
   - Type updates and improvements
 
   **@magnet-cms/ui:**
-
   - Component library updates
 
   **@magnet-cms/utils:**
-
   - Utility function improvements
 
   **@magnet-cms/plugin-seo:**
-
   - Initial setup improvements
 
 ## 0.1.0
@@ -98,7 +87,6 @@
 ### Minor Changes
 
 - Initial public release of Magnet CMS packages
-
   - @magnet-cms/common: Shared types, decorators, and utilities
   - @magnet-cms/utils: Utility functions
   - @magnet-cms/core: Core NestJS module with Admin, Auth, Content, Database modules

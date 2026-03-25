@@ -22,18 +22,18 @@ import { CACHE_TTL_KEY } from '../cache.constants'
  * ```
  */
 export function CacheTTL(seconds: number): MethodDecorator {
-	return function cacheTTLDecorator(
-		targetOrMethod: object,
-		_propertyKeyOrContext?: string | symbol | ClassMethodDecoratorContext,
-		descriptor?: PropertyDescriptor,
-	): PropertyDescriptor | undefined {
-		// Legacy decorator form (3 args): target, propertyKey, descriptor
-		if (descriptor !== undefined) {
-			Reflect.defineMetadata(CACHE_TTL_KEY, seconds, descriptor.value)
-			return descriptor
-		}
+  return function cacheTTLDecorator(
+    targetOrMethod: object,
+    _propertyKeyOrContext?: string | symbol | ClassMethodDecoratorContext,
+    descriptor?: PropertyDescriptor,
+  ): PropertyDescriptor | undefined {
+    // Legacy decorator form (3 args): target, propertyKey, descriptor
+    if (descriptor !== undefined) {
+      Reflect.defineMetadata(CACHE_TTL_KEY, seconds, descriptor.value)
+      return descriptor
+    }
 
-		// Stage 3 TC39 decorator form (2 args): (fn, context)
-		Reflect.defineMetadata(CACHE_TTL_KEY, seconds, targetOrMethod)
-	} as MethodDecorator
+    // Stage 3 TC39 decorator form (2 args): (fn, context)
+    Reflect.defineMetadata(CACHE_TTL_KEY, seconds, targetOrMethod)
+  } as MethodDecorator
 }

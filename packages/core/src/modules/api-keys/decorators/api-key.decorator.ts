@@ -1,8 +1,5 @@
-import {
-	ExecutionContext,
-	SetMetadata,
-	createParamDecorator,
-} from '@nestjs/common'
+import { ExecutionContext, SetMetadata, createParamDecorator } from '@nestjs/common'
+
 import type { ApiKeyRequest } from '../guards/api-key.guard'
 import type { ApiKey } from '../schemas/api-key.schema'
 
@@ -43,7 +40,7 @@ export const API_KEY_SCHEMA_KEY = 'api_key_schema'
  * ```
  */
 export const RequireApiKeyPermission = (permission: string) =>
-	SetMetadata(API_KEY_PERMISSION_KEY, permission)
+  SetMetadata(API_KEY_PERMISSION_KEY, permission)
 
 /**
  * Decorator to require access to a specific schema for an API key endpoint.
@@ -65,8 +62,7 @@ export const RequireApiKeyPermission = (permission: string) =>
  * }
  * ```
  */
-export const RequireApiKeySchema = (schema: string) =>
-	SetMetadata(API_KEY_SCHEMA_KEY, schema)
+export const RequireApiKeySchema = (schema: string) => SetMetadata(API_KEY_SCHEMA_KEY, schema)
 
 /**
  * Parameter decorator to inject the current API key into a controller method.
@@ -87,8 +83,8 @@ export const RequireApiKeySchema = (schema: string) =>
  * ```
  */
 export const CurrentApiKey = createParamDecorator(
-	(_data: unknown, ctx: ExecutionContext): ApiKey | undefined => {
-		const request = ctx.switchToHttp().getRequest<ApiKeyRequest>()
-		return request.apiKey
-	},
+  (_data: unknown, ctx: ExecutionContext): ApiKey | undefined => {
+    const request = ctx.switchToHttp().getRequest<ApiKeyRequest>()
+    return request.apiKey
+  },
 )

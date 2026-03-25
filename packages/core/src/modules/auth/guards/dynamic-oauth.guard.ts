@@ -16,27 +16,24 @@ import type { Request } from 'express'
  */
 @Injectable()
 export class DynamicOAuthGuard implements CanActivate {
-	async canActivate(context: ExecutionContext): Promise<boolean> {
-		const request = context.switchToHttp().getRequest<Request>()
-		const provider = request.params.provider
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const request = context.switchToHttp().getRequest<Request>()
+    const provider = request.params.provider
 
-		if (!provider) {
-			throw new NotFoundException('OAuth provider not specified')
-		}
+    if (!provider) {
+      throw new NotFoundException('OAuth provider not specified')
+    }
 
-		const guard = new (AuthGuard(provider))({ session: false })
-		try {
-			return (await guard.canActivate(context)) as boolean
-		} catch (error) {
-			if (
-				error instanceof Error &&
-				error.message.includes('Unknown authentication strategy')
-			) {
-				throw new NotFoundException(
-					`OAuth provider "${provider}" is not configured. Please add credentials in the admin settings panel.`,
-				)
-			}
-			throw error
-		}
-	}
+    const guard = new (AuthGuard(provider))({ session: false })
+    try {
+      return (await guard.canActivate(context)) as boolean
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('Unknown authentication strategy')) {
+        throw new NotFoundException(
+          `OAuth provider "${provider}" is not configured. Please add credentials in the admin settings panel.`,
+        )
+      }
+      throw error
+    }
+  }
 }

@@ -2,24 +2,16 @@ import type { DatabaseAdapter } from '~/types/database.types'
 
 // globalThis + Symbol.for: @magnet-cms/core dist may bundle a second copy of
 // common; module-level state would not be shared with adapter packages.
-const GETTER_KEY = Symbol.for(
-	'@magnet-cms/common/database-adapter-singleton-for-feature',
-)
+const GETTER_KEY = Symbol.for('@magnet-cms/common/database-adapter-singleton-for-feature')
 
 function getGetterSlot(): (() => DatabaseAdapter) | null {
-	const g = globalThis as Record<
-		symbol,
-		(() => DatabaseAdapter) | null | undefined
-	>
-	return (g[GETTER_KEY] as (() => DatabaseAdapter) | null | undefined) ?? null
+  const g = globalThis as Record<symbol, (() => DatabaseAdapter) | null | undefined>
+  return (g[GETTER_KEY] as (() => DatabaseAdapter) | null | undefined) ?? null
 }
 
 function setGetterSlot(getter: (() => DatabaseAdapter) | null): void {
-	const g = globalThis as Record<
-		symbol,
-		(() => DatabaseAdapter) | null | undefined
-	>
-	g[GETTER_KEY] = getter
+  const g = globalThis as Record<symbol, (() => DatabaseAdapter) | null | undefined>
+  g[GETTER_KEY] = getter
 }
 
 /**
@@ -36,10 +28,8 @@ function setGetterSlot(getter: (() => DatabaseAdapter) | null): void {
  * Custom third-party DB adapters should register here if they see the same
  * load-order failure.
  */
-export function registerDatabaseAdapterSingletonForFeature(
-	getter: () => DatabaseAdapter,
-): void {
-	setGetterSlot(getter)
+export function registerDatabaseAdapterSingletonForFeature(getter: () => DatabaseAdapter): void {
+  setGetterSlot(getter)
 }
 
 /**
@@ -47,16 +37,16 @@ export function registerDatabaseAdapterSingletonForFeature(
  * `DatabaseModule.register()` has not run yet.
  */
 export function getDatabaseAdapterSingletonForFeature(): DatabaseAdapter | null {
-	const databaseAdapterSingletonGetter = getGetterSlot()
-	if (!databaseAdapterSingletonGetter) return null
-	try {
-		return databaseAdapterSingletonGetter()
-	} catch {
-		return null
-	}
+  const databaseAdapterSingletonGetter = getGetterSlot()
+  if (!databaseAdapterSingletonGetter) return null
+  try {
+    return databaseAdapterSingletonGetter()
+  } catch {
+    return null
+  }
 }
 
 /** @internal Clear between isolated tests if needed */
 export function clearDatabaseAdapterSingletonForFeature(): void {
-	setGetterSlot(null)
+  setGetterSlot(null)
 }

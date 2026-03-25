@@ -1,95 +1,94 @@
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres'
 import type { PgDatabase, PgQueryResultHKT } from 'drizzle-orm/pg-core'
+
 import type { MigrationConfig } from './migrations/types'
 
 /**
  * Drizzle configuration for MagnetModuleOptions
  */
 export interface DrizzleConfig {
-	/** Database connection string */
-	connectionString: string
-	/** SQL dialect to use */
-	dialect: 'postgresql' | 'mysql' | 'sqlite'
-	/** Database driver to use (auto-detected if not specified) */
-	driver?: 'pg' | 'neon' | 'mysql2' | 'better-sqlite3'
-	/** Enable debug logging */
-	debug?: boolean
-	/**
-	 * Migration configuration. If omitted, falls back to legacy CREATE TABLE IF NOT EXISTS behavior.
-	 */
-	migrations?: Partial<MigrationConfig>
+  /** Database connection string */
+  connectionString: string
+  /** SQL dialect to use */
+  dialect: 'postgresql' | 'mysql' | 'sqlite'
+  /** Database driver to use (auto-detected if not specified) */
+  driver?: 'pg' | 'neon' | 'mysql2' | 'better-sqlite3'
+  /** Enable debug logging */
+  debug?: boolean
+  /**
+   * Migration configuration. If omitted, falls back to legacy CREATE TABLE IF NOT EXISTS behavior.
+   */
+  migrations?: Partial<MigrationConfig>
 }
 
 /**
  * Supported Drizzle database types.
  * MySQL and SQLite connections are cast to this type at runtime for API compatibility.
  */
-export type DrizzleDB =
-	| NodePgDatabase
-	| PgDatabase<PgQueryResultHKT, Record<string, never>>
+export type DrizzleDB = NodePgDatabase | PgDatabase<PgQueryResultHKT, Record<string, never>>
 
 /**
  * Schema metadata stored via decorators
  */
 export interface SchemaMetadata {
-	/** Schema class name */
-	name: string
-	/** Whether i18n is enabled (default: true) */
-	i18n?: boolean
-	/** Whether versioning is enabled (default: false) */
-	versioning?: boolean
-	/** Table name (defaults to lowercase pluralized class name) */
-	tableName?: string
+  /** Schema class name */
+  name: string
+  /** Whether i18n is enabled (default: true) */
+  i18n?: boolean
+  /** Whether versioning is enabled (default: false) */
+  versioning?: boolean
+  /** Table name (defaults to lowercase pluralized class name) */
+  tableName?: string
 }
 
 /**
  * Property metadata stored via decorators
  */
 export interface PropMetadata {
-	/** Property name */
-	name: string
-	/** Property type */
-	type?: any
-	/** Whether the property is required */
-	required?: boolean
-	/** Whether the property is unique */
-	unique?: boolean
-	/** Default value */
-	default?: any
-	/** Whether the property is nullable */
-	nullable?: boolean
-	/** Whether the property supports i18n */
-	intl?: boolean
-	/** Whether the property is hidden from API responses */
-	hidden?: boolean
-	/** Whether the property is readonly */
-	readonly?: boolean
-	/** Reference to another schema (for relationships) */
-	ref?: string
-	/** Description for documentation */
-	description?: string
+  /** Property name */
+  name: string
+  /** Property type */
+  type?: any
+  /** Whether the property is required */
+  required?: boolean
+  /** Whether the property is unique */
+  unique?: boolean
+  /** Default value */
+  default?: any
+  /** Whether the property is nullable */
+  nullable?: boolean
+  /** Whether the property supports i18n */
+  intl?: boolean
+  /** Whether the property is hidden from API responses */
+  hidden?: boolean
+  /** Whether the property is readonly */
+  readonly?: boolean
+  /** Reference to another schema (for relationships) */
+  ref?: string
+  /** Description for documentation */
+  description?: string
 }
 
 /**
  * Generated Drizzle table schema
  */
 export interface GeneratedSchema {
-	/** The Drizzle table definition */
-	table: any
-	/** The schema class reference */
-	schemaClass: any
-	/** Schema metadata */
-	metadata: SchemaMetadata
-	/** Property metadata map */
-	properties: Map<string, PropMetadata>
+  /** The Drizzle table definition */
+  table: any
+  /** The schema class reference */
+  schemaClass: any
+  /** Schema metadata */
+  metadata: SchemaMetadata
+  /** Property metadata map */
+  properties: Map<string, PropMetadata>
 }
 
 /**
  * Drizzle module options for NestJS dynamic module
  */
 export interface DrizzleModuleOptions {
-	/** Drizzle database instance */
-	db: DrizzleDB
-	/** Configuration */
-	config: DrizzleConfig
+  /** Drizzle database instance */
+  db: DrizzleDB
+  /** Configuration */
+  config: DrizzleConfig
 }

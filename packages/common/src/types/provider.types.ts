@@ -1,12 +1,13 @@
 import type { Type } from '@nestjs/common'
+
 import type { AuthConfig } from './auth.types'
 import type { CacheAdapter } from './cache.types'
 import type {
-	AdminConfig,
-	GraphQLConfig,
-	InternationalizationOptions,
-	OpenAPIConfig,
-	PlaygroundOptions,
+  AdminConfig,
+  GraphQLConfig,
+  InternationalizationOptions,
+  OpenAPIConfig,
+  PlaygroundOptions,
 } from './config.types'
 import type { DBConfig, DatabaseAdapter } from './database.types'
 import type { EmailAdapter } from './email.types'
@@ -23,12 +24,12 @@ import type { VaultAdapter, VaultAdapterType } from './vault.types'
  * Used by MagnetModule to validate all env vars before NestJS bootstraps.
  */
 export interface EnvVarRequirement {
-	/** Environment variable name (e.g., 'DATABASE_URL') */
-	name: string
-	/** Whether this env var is required for the adapter to function */
-	required: boolean
-	/** Human-readable description shown in error messages */
-	description?: string
+  /** Environment variable name (e.g., 'DATABASE_URL') */
+  name: string
+  /** Whether this env var is required for the adapter to function */
+  required: boolean
+  /** Human-readable description shown in error messages */
+  description?: string
 }
 
 // ============================================================================
@@ -49,48 +50,48 @@ export interface EnvVarRequirement {
  * ```
  */
 export interface MagnetGlobalOptions {
-	/** JWT configuration for authentication */
-	jwt?: {
-		/** JWT signing secret. Auto-resolved from JWT_SECRET env var if not provided. */
-		secret?: string
-		/** Token expiration time (e.g., '7d', '1h'). Default: '7d' */
-		expiresIn?: string
-	}
-	/**
-	 * Admin panel configuration (enabled by default when omitted).
-	 * @example admin: false // API-only / headless
-	 * @example admin: { enabled: true, path: '/dashboard' }
-	 */
-	admin?: boolean | AdminConfig
-	/** RBAC (Role-Based Access Control) configuration */
-	rbac?: RBACModuleOptions
-	/** Internationalization settings */
-	internationalization?: InternationalizationOptions
-	/** Global Playground (schema builder) settings */
-	playground?: PlaygroundOptions
-	/**
-	 * OpenAPI / Swagger configuration.
-	 * Set to `false` to disable entirely (e.g., in production).
-	 * @example openapi: false          // disable
-	 * @example openapi: { title: 'My API', path: '/docs' }
-	 */
-	openapi?: OpenAPIConfig | false
-	/**
-	 * Email system configuration.
-	 * Provides layout component for wrapping email body content.
-	 */
-	email?: {
-		/**
-		 * React Email layout component wrapping the email body.
-		 * Typed as `unknown` to avoid a React dependency in @magnet-cms/common.
-		 * Expected shape: `(props: { content: string; [key: string]: unknown }) => ReactElement`
-		 *
-		 * @example
-		 * import { EmailLayout } from './templates/email/layout'
-		 * MagnetModule.forRoot([...], { email: { layout: EmailLayout } })
-		 */
-		layout?: unknown
-	}
+  /** JWT configuration for authentication */
+  jwt?: {
+    /** JWT signing secret. Auto-resolved from JWT_SECRET env var if not provided. */
+    secret?: string
+    /** Token expiration time (e.g., '7d', '1h'). Default: '7d' */
+    expiresIn?: string
+  }
+  /**
+   * Admin panel configuration (enabled by default when omitted).
+   * @example admin: false // API-only / headless
+   * @example admin: { enabled: true, path: '/dashboard' }
+   */
+  admin?: boolean | AdminConfig
+  /** RBAC (Role-Based Access Control) configuration */
+  rbac?: RBACModuleOptions
+  /** Internationalization settings */
+  internationalization?: InternationalizationOptions
+  /** Global Playground (schema builder) settings */
+  playground?: PlaygroundOptions
+  /**
+   * OpenAPI / Swagger configuration.
+   * Set to `false` to disable entirely (e.g., in production).
+   * @example openapi: false          // disable
+   * @example openapi: { title: 'My API', path: '/docs' }
+   */
+  openapi?: OpenAPIConfig | false
+  /**
+   * Email system configuration.
+   * Provides layout component for wrapping email body content.
+   */
+  email?: {
+    /**
+     * React Email layout component wrapping the email body.
+     * Typed as `unknown` to avoid a React dependency in @magnet-cms/common.
+     * Expected shape: `(props: { content: string; [key: string]: unknown }) => ReactElement`
+     *
+     * @example
+     * import { EmailLayout } from './templates/email/layout'
+     * MagnetModule.forRoot([...], { email: { layout: EmailLayout } })
+     */
+    layout?: unknown
+  }
 }
 
 // ============================================================================
@@ -102,8 +103,8 @@ export interface MagnetGlobalOptions {
  * Every adapter and plugin declares its environment variable requirements.
  */
 interface BaseMagnetProvider {
-	/** Environment variables this provider needs */
-	envVars: EnvVarRequirement[]
+  /** Environment variables this provider needs */
+  envVars: EnvVarRequirement[]
 }
 
 /**
@@ -111,11 +112,11 @@ interface BaseMagnetProvider {
  * Returned by database adapter `.forRoot()` methods.
  */
 export interface DatabaseMagnetProvider extends BaseMagnetProvider {
-	type: 'database'
-	/** The database adapter instance */
-	adapter: DatabaseAdapter
-	/** Resolved database configuration */
-	config: DBConfig
+  type: 'database'
+  /** The database adapter instance */
+  adapter: DatabaseAdapter
+  /** Resolved database configuration */
+  config: DBConfig
 }
 
 /**
@@ -123,11 +124,11 @@ export interface DatabaseMagnetProvider extends BaseMagnetProvider {
  * Returned by storage adapter `.forRoot()` methods.
  */
 export interface StorageMagnetProvider extends BaseMagnetProvider {
-	type: 'storage'
-	/** The storage adapter instance */
-	adapter: StorageAdapter
-	/** Adapter-specific resolved configuration */
-	config?: Record<string, unknown>
+  type: 'storage'
+  /** The storage adapter instance */
+  adapter: StorageAdapter
+  /** Adapter-specific resolved configuration */
+  config?: Record<string, unknown>
 }
 
 /**
@@ -135,11 +136,11 @@ export interface StorageMagnetProvider extends BaseMagnetProvider {
  * Returned by email adapter `.forRoot()` methods.
  */
 export interface EmailMagnetProvider extends BaseMagnetProvider {
-	type: 'email'
-	/** The email adapter instance */
-	adapter: EmailAdapter
-	/** Default email settings */
-	defaults?: { from?: string; replyTo?: string }
+  type: 'email'
+  /** The email adapter instance */
+  adapter: EmailAdapter
+  /** Default email settings */
+  defaults?: { from?: string; replyTo?: string }
 }
 
 /**
@@ -151,15 +152,15 @@ export interface EmailMagnetProvider extends BaseMagnetProvider {
  * - `adapterFactory` for adapters that need ModuleRef (e.g., built-in DB vault)
  */
 export interface VaultMagnetProvider extends BaseMagnetProvider {
-	type: 'vault'
-	/** Direct adapter instance (for adapters that don't need DI) */
-	adapter?: VaultAdapter
-	/** Factory function for adapters that need NestJS ModuleRef */
-	adapterFactory?: (moduleRef: unknown) => VaultAdapter
-	/** Vault adapter type identifier (used to report adapter in status endpoint) */
-	adapterType?: VaultAdapterType
-	/** Vault configuration */
-	config?: { cacheTtl?: number }
+  type: 'vault'
+  /** Direct adapter instance (for adapters that don't need DI) */
+  adapter?: VaultAdapter
+  /** Factory function for adapters that need NestJS ModuleRef */
+  adapterFactory?: (moduleRef: unknown) => VaultAdapter
+  /** Vault adapter type identifier (used to report adapter in status endpoint) */
+  adapterType?: VaultAdapterType
+  /** Vault configuration */
+  config?: { cacheTtl?: number }
 }
 
 /**
@@ -167,9 +168,9 @@ export interface VaultMagnetProvider extends BaseMagnetProvider {
  * Returned by auth adapter `.forRoot()` methods.
  */
 export interface AuthMagnetProvider extends BaseMagnetProvider {
-	type: 'auth'
-	/** Auth configuration including strategy name */
-	config: AuthConfig
+  type: 'auth'
+  /** Auth configuration including strategy name */
+  config: AuthConfig
 }
 
 /**
@@ -177,11 +178,11 @@ export interface AuthMagnetProvider extends BaseMagnetProvider {
  * Returned by plugin `.forRoot()` methods.
  */
 export interface PluginMagnetProvider extends BaseMagnetProvider {
-	type: 'plugin'
-	/** The @Plugin() decorated class */
-	plugin: Type<unknown>
-	/** Plugin-specific options (injected via PLUGIN_OPTIONS token) */
-	options?: Record<string, unknown>
+  type: 'plugin'
+  /** The @Plugin() decorated class */
+  plugin: Type<unknown>
+  /** Plugin-specific options (injected via PLUGIN_OPTIONS token) */
+  options?: Record<string, unknown>
 }
 
 /**
@@ -198,17 +199,17 @@ export interface PluginMagnetProvider extends BaseMagnetProvider {
  * ```
  */
 export interface GraphQLMagnetProvider extends BaseMagnetProvider {
-	type: 'graphql'
-	/**
-	 * Pre-built NestJS DynamicModule for the GraphQL server.
-	 * Typed as `object` (not `DynamicModule`) to avoid a TypeScript error caused by
-	 * `@nestjs/graphql` pulling in its own copy of `@nestjs/common` via `@nestjs/core`,
-	 * creating two structurally identical but nominally different `DynamicModule` types.
-	 * Cast to `DynamicModule` in `magnet-module-imports.ts` when adding to the imports array.
-	 */
-	module: object
-	/** Resolved GraphQL configuration */
-	config: GraphQLConfig
+  type: 'graphql'
+  /**
+   * Pre-built NestJS DynamicModule for the GraphQL server.
+   * Typed as `object` (not `DynamicModule`) to avoid a TypeScript error caused by
+   * `@nestjs/graphql` pulling in its own copy of `@nestjs/common` via `@nestjs/core`,
+   * creating two structurally identical but nominally different `DynamicModule` types.
+   * Cast to `DynamicModule` in `magnet-module-imports.ts` when adding to the imports array.
+   */
+  module: object
+  /** Resolved GraphQL configuration */
+  config: GraphQLConfig
 }
 
 /**
@@ -225,9 +226,9 @@ export interface GraphQLMagnetProvider extends BaseMagnetProvider {
  * ```
  */
 export interface CacheMagnetProvider extends BaseMagnetProvider {
-	type: 'cache'
-	/** The cache adapter instance */
-	adapter: CacheAdapter
+  type: 'cache'
+  /** The cache adapter instance */
+  adapter: CacheAdapter
 }
 
 /**
@@ -244,11 +245,11 @@ export interface CacheMagnetProvider extends BaseMagnetProvider {
  * ```
  */
 export type MagnetProvider =
-	| DatabaseMagnetProvider
-	| StorageMagnetProvider
-	| EmailMagnetProvider
-	| VaultMagnetProvider
-	| AuthMagnetProvider
-	| PluginMagnetProvider
-	| CacheMagnetProvider
-	| GraphQLMagnetProvider
+  | DatabaseMagnetProvider
+  | StorageMagnetProvider
+  | EmailMagnetProvider
+  | VaultMagnetProvider
+  | AuthMagnetProvider
+  | PluginMagnetProvider
+  | CacheMagnetProvider
+  | GraphQLMagnetProvider

@@ -22,41 +22,40 @@ process.env.SMTP_HOST = 'localhost'
 process.env.SMTP_PORT = '1025'
 process.env.EMAIL_FROM = 'noreply@magnet.local'
 process.env.TEMPLATE_NAME = 'mongoose'
-process.env.MAGNET_PLAYGROUND_MODULES_PATH =
-	'/tmp/magnet-e2e-playground-modules'
+process.env.MAGNET_PLAYGROUND_MODULES_PATH = '/tmp/magnet-e2e-playground-modules'
 
 console.log('Starting admin development environment for mongoose...')
 
 const sharedDevEnv = {
-	...process.env,
-	NODE_ENV: 'development',
-	MAGNET_E2E_DISABLE_AUTH_THROTTLE: '1',
+  ...process.env,
+  NODE_ENV: 'development',
+  MAGNET_E2E_DISABLE_AUTH_THROTTLE: '1',
 }
 
 const nestjs = spawn('bun', ['run', 'dev'], {
-	cwd: resolve(projectRoot, 'apps', 'examples', 'mongoose'),
-	stdio: 'inherit',
-	shell: true,
-	env: sharedDevEnv,
+  cwd: resolve(projectRoot, 'apps', 'examples', 'mongoose'),
+  stdio: 'inherit',
+  shell: true,
+  env: sharedDevEnv,
 })
 
 const vite = spawn('bun', ['run', 'dev'], {
-	cwd: resolve(projectRoot, 'packages', 'client', 'admin'),
-	stdio: 'inherit',
-	shell: true,
-	env: sharedDevEnv,
+  cwd: resolve(projectRoot, 'packages', 'client', 'admin'),
+  stdio: 'inherit',
+  shell: true,
+  env: sharedDevEnv,
 })
 
 console.log('NestJS server and Vite dev server started')
 
 process.on('SIGINT', () => {
-	nestjs.kill('SIGINT')
-	vite.kill('SIGINT')
-	process.exit(0)
+  nestjs.kill('SIGINT')
+  vite.kill('SIGINT')
+  process.exit(0)
 })
 
 process.on('SIGTERM', () => {
-	nestjs.kill('SIGTERM')
-	vite.kill('SIGTERM')
-	process.exit(0)
+  nestjs.kill('SIGTERM')
+  vite.kill('SIGTERM')
+  process.exit(0)
 })

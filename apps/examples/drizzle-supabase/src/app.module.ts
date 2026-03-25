@@ -6,6 +6,7 @@ import { MagnetModule } from '@magnet-cms/core'
 import { PlaygroundPlugin } from '@magnet-cms/plugin-playground'
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
+
 import { CatsModule } from './modules/cats/cats.module'
 import { MedicalRecordsModule } from './modules/medical-records/medical-records.module'
 import { OwnersModule } from './modules/owners/owners.module'
@@ -30,25 +31,25 @@ import { VeterinariansModule } from './modules/veterinarians/veterinarians.modul
  * 4. Access Supabase Studio at http://localhost:3010
  */
 @Module({
-	imports: [
-		ConfigModule.forRoot({ isGlobal: true }),
-		MagnetModule.forRoot([
-			DrizzleDatabaseAdapter.forRoot({
-				dialect: 'postgresql',
-				driver: 'pg',
-				debug: process.env.NODE_ENV === 'development',
-				// No migrations config: uses CREATE TABLE IF NOT EXISTS.
-				// Supabase Auth creates its own tables; auto-migration can conflict.
-			}),
-			SupabaseAuthStrategy.forRoot(),
-			SupabaseStorageAdapter.forRoot(),
-			SupabaseVaultAdapter.forRoot(),
-			PlaygroundPlugin.forRoot(),
-		]),
-		CatsModule,
-		OwnersModule,
-		VeterinariansModule,
-		MedicalRecordsModule,
-	],
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+    MagnetModule.forRoot([
+      DrizzleDatabaseAdapter.forRoot({
+        dialect: 'postgresql',
+        driver: 'pg',
+        debug: process.env.NODE_ENV === 'development',
+        // No migrations config: uses CREATE TABLE IF NOT EXISTS.
+        // Supabase Auth creates its own tables; auto-migration can conflict.
+      }),
+      SupabaseAuthStrategy.forRoot(),
+      SupabaseStorageAdapter.forRoot(),
+      SupabaseVaultAdapter.forRoot(),
+      PlaygroundPlugin.forRoot(),
+    ]),
+    CatsModule,
+    OwnersModule,
+    VeterinariansModule,
+    MedicalRecordsModule,
+  ],
 })
 export class AppModule {}

@@ -22,10 +22,10 @@ export { StripeSubscription } from '../schemas/subscription.schema'
 
 // Types
 export type {
-	CreateCheckoutDto,
-	CreatePortalDto,
-	SessionResponse,
-	StripeMetricsResponse,
-	StripePluginConfig,
-	SubscriptionAccessResponse,
+  CreateCheckoutDto,
+  CreatePortalDto,
+  SessionResponse,
+  StripeMetricsResponse,
+  StripePluginConfig,
+  SubscriptionAccessResponse,
 } from '../types'

@@ -6,31 +6,31 @@ import { Field, Schema } from '@magnet-cms/common'
  */
 @Schema({ versioning: false, i18n: false, visible: false })
 export class PolarBenefit {
-	/** Polar Benefit ID */
-	@Field.Text({ required: true, unique: true })
-	polarBenefitId!: string
+  /** Polar Benefit ID */
+  @Field.Text({ required: true, unique: true })
+  polarBenefitId!: string
 
-	/** Benefit type (license_keys, downloadables, discord, custom, github_repository, meter_credit, etc.) */
-	@Field.Text({ required: true })
-	type!: string
+  /** Benefit type (license_keys, downloadables, discord, custom, github_repository, meter_credit, etc.) */
+  @Field.Text({ required: true })
+  type!: string
 
-	/** Benefit description */
-	@Field.Text()
-	description?: string
+  /** Benefit description */
+  @Field.Text()
+  description?: string
 
-	/** Polar Organization ID */
-	@Field.Text()
-	organizationId?: string
+  /** Polar Organization ID */
+  @Field.Text()
+  organizationId?: string
 
-	/** Whether the benefit is selectable by the customer */
-	@Field.Boolean({ default: false })
-	selectable = false
+  /** Whether the benefit is selectable by the customer */
+  @Field.Boolean({ default: false })
+  selectable = false
 
-	/** Whether the benefit can be deleted */
-	@Field.Boolean({ default: true })
-	deletable = true
+  /** Whether the benefit can be deleted */
+  @Field.Boolean({ default: true })
+  deletable = true
 
-	/** When the benefit was created */
-	@Field.Date({ required: true, default: () => new Date() })
-	createdAt!: Date
+  /** When the benefit was created */
+  @Field.Date({ required: true, default: () => new Date() })
+  createdAt!: Date
 }

@@ -1,24 +1,24 @@
 import type { ProjectConfig } from '../types.js'
 
 export function generateDockerCompose(config: ProjectConfig): string {
-	const { database, projectName, supabaseLocalMode } = config
+  const { database, projectName, supabaseLocalMode } = config
 
-	if (database === 'mongoose') {
-		return generateMongoDockerCompose(projectName)
-	}
+  if (database === 'mongoose') {
+    return generateMongoDockerCompose(projectName)
+  }
 
-	// Supabase CLI mode uses `supabase start` instead of Docker Compose
-	if (database === 'drizzle-supabase' && supabaseLocalMode === 'cli') {
-		return ''
-	}
+  // Supabase CLI mode uses `supabase start` instead of Docker Compose
+  if (database === 'drizzle-supabase' && supabaseLocalMode === 'cli') {
+    return ''
+  }
 
-	return generatePostgresDockerCompose(projectName)
+  return generatePostgresDockerCompose(projectName)
 }
 
 function generateMongoDockerCompose(projectName: string): string {
-	const containerName = projectName.replace(/[^a-z0-9-]/gi, '-')
+  const containerName = projectName.replace(/[^a-z0-9-]/gi, '-')
 
-	return `services:
+  return `services:
   mongodb:
     image: mongo:7.0
     container_name: ${containerName}-mongodb
@@ -58,9 +58,9 @@ volumes:
 }
 
 function generatePostgresDockerCompose(projectName: string): string {
-	const containerName = projectName.replace(/[^a-z0-9-]/gi, '-')
+  const containerName = projectName.replace(/[^a-z0-9-]/gi, '-')
 
-	return `services:
+  return `services:
   postgres:
     image: postgres:16-alpine
     container_name: ${containerName}-postgres
@@ -99,7 +99,7 @@ volumes:
 }
 
 export function generateSupabaseConfig(projectName: string): string {
-	return `[project]
+  return `[project]
 id = "${projectName}"
 name = "${projectName}"
 

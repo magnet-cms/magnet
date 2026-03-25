@@ -1,19 +1,21 @@
 import type { AuthResult, AuthUser, ExternalAuthInfo } from '@magnet-cms/common'
 import {
-	Body,
-	Controller,
-	Delete,
-	Get,
-	Param,
-	Post,
-	Put,
-	Req,
-	UnauthorizedException,
-	UseGuards,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  Req,
+  UnauthorizedException,
+  UseGuards,
 } from '@nestjs/common'
 import { SkipThrottle, Throttle, ThrottlerGuard } from '@nestjs/throttler'
 import type { Request } from 'express'
+
 import { SettingsService } from '../settings/settings.service'
+
 import type { RequestContext, SessionInfo } from './auth.service'
 import { AuthService } from './auth.service'
 import { ChangePasswordDto } from './dto/change-password.dto'
@@ -23,26 +25,23 @@ import { RefreshTokenDto } from './dto/refresh-token.dto'
 import { RegisterDTO } from './dto/register.dto'
 import { ResetPasswordDto } from './dto/reset-password.dto'
 import { UpdateProfileDto } from './dto/update-profile.dto'
-import {
-	DynamicAuthGuard,
-	OptionalDynamicAuthGuard,
-} from './guards/dynamic-auth.guard'
+import { DynamicAuthGuard, OptionalDynamicAuthGuard } from './guards/dynamic-auth.guard'
 
 /**
  * Authenticated user from JWT payload
  */
 interface AuthenticatedUser {
-	id: string
-	email: string
-	role: string
+  id: string
+  email: string
+  role: string
 }
 
 /**
  * Extended request with user and session info
  */
 interface AuthenticatedRequest extends Request {
-	user: AuthenticatedUser
-	sessionId?: string
+  user: AuthenticatedUser
+  sessionId?: string
 }
 
 /**
@@ -56,301 +55,279 @@ interface AuthenticatedRequest extends Request {
 @Controller('auth')
 @UseGuards(ThrottlerGuard)
 export class AuthController {
-	constructor(
-		private authService: AuthService,
-		private settingsService: SettingsService,
-	) {}
+  constructor(
+    private authService: AuthService,
+    private settingsService: SettingsService,
+  ) {}
 
-	// ============================================================================
-	// Authentication
-	// ============================================================================
+  // ============================================================================
+  // Authentication
+  // ============================================================================
 
-	/**
-	 * Register a new user
-	 */
-	@Throttle({ default: { limit: 5, ttl: 60000 } })
-	@Post('register')
-	async register(
-		@Body() registerDto: RegisterDTO,
-		@Req() req: Request,
-	): Promise<AuthResult> {
-		await this.authService.register(registerDto)
-		try {
-			return await this.authService.login(
-				{ email: registerDto.email, password: registerDto.password },
-				this.getRequestContext(req),
-			)
-		} catch {
-			throw new UnauthorizedException(
-				'Registration successful. Please check your email to confirm your account before signing in.',
-			)
-		}
-	}
+  /**
+   * Register a new user
+   */
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  @Post('register')
+  async register(@Body() registerDto: RegisterDTO, @Req() req: Request): Promise<AuthResult> {
+    await this.authService.register(registerDto)
+    try {
+      return await this.authService.login(
+        { email: registerDto.email, password: registerDto.password },
+        this.getRequestContext(req),
+      )
+    } catch {
+      throw new UnauthorizedException(
+        'Registration successful. Please check your email to confirm your account before signing in.',
+      )
+    }
+  }
 
-	/**
-	 * Login with credentials
-	 */
-	@Throttle({ default: { limit: 10, ttl: 60000 } })
-	@Post('login')
-	async login(
-		@Body() loginDto: LoginDto,
-		@Req() req: Request,
-	): Promise<AuthResult> {
-		return this.authService.login(loginDto, this.getRequestContext(req))
-	}
+  /**
+   * Login with credentials
+   */
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
+  @Post('login')
+  async login(@Body() loginDto: LoginDto, @Req() req: Request): Promise<AuthResult> {
+    return this.authService.login(loginDto, this.getRequestContext(req))
+  }
 
-	/**
-	 * Refresh access token
-	 */
-	@Throttle({ default: { limit: 20, ttl: 60000 } })
-	@Post('refresh')
-	async refresh(
-		@Body() refreshTokenDto: RefreshTokenDto,
-		@Req() req: Request,
-	): Promise<AuthResult> {
-		return this.authService.refresh(
-			refreshTokenDto.refresh_token,
-			this.getRequestContext(req),
-		)
-	}
+  /**
+   * Refresh access token
+   */
+  @Throttle({ default: { limit: 20, ttl: 60000 } })
+  @Post('refresh')
+  async refresh(
+    @Body() refreshTokenDto: RefreshTokenDto,
+    @Req() req: Request,
+  ): Promise<AuthResult> {
+    return this.authService.refresh(refreshTokenDto.refresh_token, this.getRequestContext(req))
+  }
 
-	/**
-	 * Logout (revoke refresh token)
-	 */
-	@SkipThrottle({ default: true })
-	@Post('logout')
-	@UseGuards(DynamicAuthGuard)
-	async logout(
-		@Body() refreshTokenDto: RefreshTokenDto,
-	): Promise<{ message: string }> {
-		await this.authService.logout(refreshTokenDto.refresh_token)
-		return { message: 'Logged out successfully' }
-	}
+  /**
+   * Logout (revoke refresh token)
+   */
+  @SkipThrottle({ default: true })
+  @Post('logout')
+  @UseGuards(DynamicAuthGuard)
+  async logout(@Body() refreshTokenDto: RefreshTokenDto): Promise<{ message: string }> {
+    await this.authService.logout(refreshTokenDto.refresh_token)
+    return { message: 'Logged out successfully' }
+  }
 
-	/**
-	 * Logout from all devices
-	 */
-	@Post('logout-all')
-	@UseGuards(DynamicAuthGuard)
-	async logoutAll(
-		@Req() req: AuthenticatedRequest,
-	): Promise<{ message: string }> {
-		await this.authService.logoutAll(req.user.id)
-		return { message: 'Logged out from all devices' }
-	}
+  /**
+   * Logout from all devices
+   */
+  @Post('logout-all')
+  @UseGuards(DynamicAuthGuard)
+  async logoutAll(@Req() req: AuthenticatedRequest): Promise<{ message: string }> {
+    await this.authService.logoutAll(req.user.id)
+    return { message: 'Logged out from all devices' }
+  }
 
-	/**
-	 * Get current user info
-	 */
-	@SkipThrottle({ default: true })
-	@UseGuards(DynamicAuthGuard)
-	@Get('me')
-	async me(@Req() req: AuthenticatedRequest): Promise<AuthUser> {
-		try {
-			// Try to get full user info from database
-			const user = await this.authService.getUserById(req.user.id)
-			return {
-				id: user.id,
-				email: user.email,
-				role: user.role ?? 'user',
-				name: user.name,
-			}
-		} catch {
-			// For external auth providers (Supabase, Auth0) or custom strategies,
-			// the user may not exist in the local database. Return JWT payload instead.
-			return {
-				id: req.user.id,
-				email: req.user.email,
-				role: req.user.role,
-				name: req.user.email.split('@')[0], // Use email prefix as fallback name
-			}
-		}
-	}
+  /**
+   * Get current user info
+   */
+  @SkipThrottle({ default: true })
+  @UseGuards(DynamicAuthGuard)
+  @Get('me')
+  async me(@Req() req: AuthenticatedRequest): Promise<AuthUser> {
+    try {
+      // Try to get full user info from database
+      const user = await this.authService.getUserById(req.user.id)
+      return {
+        id: user.id,
+        email: user.email,
+        role: user.role ?? 'user',
+        name: user.name,
+      }
+    } catch {
+      // For external auth providers (Supabase, Auth0) or custom strategies,
+      // the user may not exist in the local database. Return JWT payload instead.
+      return {
+        id: req.user.id,
+        email: req.user.email,
+        role: req.user.role,
+        name: req.user.email.split('@')[0], // Use email prefix as fallback name
+      }
+    }
+  }
 
-	/**
-	 * Get auth status (public endpoint with optional auth).
-	 * Returns authentication state, setup requirement, the list of
-	 * enabled OAuth providers, and the active auth strategy info.
-	 * When a valid token is present, also returns onboardingCompleted.
-	 */
-	@SkipThrottle({ default: true })
-	@UseGuards(OptionalDynamicAuthGuard)
-	@Get('status')
-	async status(@Req() req: Request & { user?: AuthenticatedUser }): Promise<{
-		authenticated: boolean
-		requiresSetup?: boolean
-		onboardingCompleted?: boolean
-		message?: string
-		user?: AuthenticatedUser
-		providers?: string[]
-		authStrategy: string
-		externalAuthInfo?: ExternalAuthInfo
-	}> {
-		const [providers, authInfo] = await Promise.all([
-			this.authService.getEnabledOAuthProviders(),
-			this.authService.getAuthInfo(),
-		])
+  /**
+   * Get auth status (public endpoint with optional auth).
+   * Returns authentication state, setup requirement, the list of
+   * enabled OAuth providers, and the active auth strategy info.
+   * When a valid token is present, also returns onboardingCompleted.
+   */
+  @SkipThrottle({ default: true })
+  @UseGuards(OptionalDynamicAuthGuard)
+  @Get('status')
+  async status(@Req() req: Request & { user?: AuthenticatedUser }): Promise<{
+    authenticated: boolean
+    requiresSetup?: boolean
+    onboardingCompleted?: boolean
+    message?: string
+    user?: AuthenticatedUser
+    providers?: string[]
+    authStrategy: string
+    externalAuthInfo?: ExternalAuthInfo
+  }> {
+    const [providers, authInfo] = await Promise.all([
+      this.authService.getEnabledOAuthProviders(),
+      this.authService.getAuthInfo(),
+    ])
 
-		const base = {
-			authStrategy: authInfo.strategy,
-			...(authInfo.isExternal ? { externalAuthInfo: authInfo } : {}),
-		}
+    const base = {
+      authStrategy: authInfo.strategy,
+      ...(authInfo.isExternal ? { externalAuthInfo: authInfo } : {}),
+    }
 
-		if (req.user) {
-			const onboardingCompleted = await this.checkOnboardingCompleted()
-			return {
-				authenticated: true,
-				onboardingCompleted,
-				user: req.user,
-				providers,
-				...base,
-			}
-		}
+    if (req.user) {
+      const onboardingCompleted = await this.checkOnboardingCompleted()
+      return {
+        authenticated: true,
+        onboardingCompleted,
+        user: req.user,
+        providers,
+        ...base,
+      }
+    }
 
-		const existingUser = await this.authService.exists()
+    const existingUser = await this.authService.exists()
 
-		return {
-			authenticated: false,
-			requiresSetup: !existingUser,
-			message: existingUser
-				? 'Authentication required.'
-				: 'No users found. Initial setup required.',
-			providers,
-			...base,
-		}
-	}
+    return {
+      authenticated: false,
+      requiresSetup: !existingUser,
+      message: existingUser
+        ? 'Authentication required.'
+        : 'No users found. Initial setup required.',
+      providers,
+      ...base,
+    }
+  }
 
-	/**
-	 * Check if the project onboarding has been completed by verifying
-	 * whether general settings differ from their defaults.
-	 */
-	private async checkOnboardingCompleted(): Promise<boolean> {
-		try {
-			const settings = await this.settingsService.getSettingsByGroup('general')
-			const siteNameSetting = settings.find((s) => s.key === 'siteName')
-			const baseUrlSetting = settings.find((s) => s.key === 'baseUrl')
-			const siteName = siteNameSetting?.value ?? 'Magnet CMS'
-			const baseUrl = baseUrlSetting?.value ?? 'http://localhost:3000'
-			return siteName !== 'Magnet CMS' || baseUrl !== 'http://localhost:3000'
-		} catch {
-			return false
-		}
-	}
+  /**
+   * Check if the project onboarding has been completed by verifying
+   * whether general settings differ from their defaults.
+   */
+  private async checkOnboardingCompleted(): Promise<boolean> {
+    try {
+      const settings = await this.settingsService.getSettingsByGroup('general')
+      const siteNameSetting = settings.find((s) => s.key === 'siteName')
+      const baseUrlSetting = settings.find((s) => s.key === 'baseUrl')
+      const siteName = siteNameSetting?.value ?? 'Magnet CMS'
+      const baseUrl = baseUrlSetting?.value ?? 'http://localhost:3000'
+      return siteName !== 'Magnet CMS' || baseUrl !== 'http://localhost:3000'
+    } catch {
+      return false
+    }
+  }
 
-	// ============================================================================
-	// Sessions
-	// ============================================================================
+  // ============================================================================
+  // Sessions
+  // ============================================================================
 
-	/**
-	 * Get active sessions
-	 */
-	@SkipThrottle({ default: true })
-	@Get('sessions')
-	@UseGuards(DynamicAuthGuard)
-	async getSessions(@Req() req: AuthenticatedRequest): Promise<SessionInfo[]> {
-		return this.authService.getSessions(req.user.id, req.sessionId)
-	}
+  /**
+   * Get active sessions
+   */
+  @SkipThrottle({ default: true })
+  @Get('sessions')
+  @UseGuards(DynamicAuthGuard)
+  async getSessions(@Req() req: AuthenticatedRequest): Promise<SessionInfo[]> {
+    return this.authService.getSessions(req.user.id, req.sessionId)
+  }
 
-	/**
-	 * Revoke a specific session
-	 */
-	@Delete('sessions/:sessionId')
-	@UseGuards(DynamicAuthGuard)
-	async revokeSession(
-		@Req() req: AuthenticatedRequest,
-		@Param('sessionId') sessionId: string,
-	): Promise<{ message: string }> {
-		await this.authService.revokeSession(req.user.id, sessionId)
-		return { message: 'Session revoked' }
-	}
+  /**
+   * Revoke a specific session
+   */
+  @Delete('sessions/:sessionId')
+  @UseGuards(DynamicAuthGuard)
+  async revokeSession(
+    @Req() req: AuthenticatedRequest,
+    @Param('sessionId') sessionId: string,
+  ): Promise<{ message: string }> {
+    await this.authService.revokeSession(req.user.id, sessionId)
+    return { message: 'Session revoked' }
+  }
 
-	// ============================================================================
-	// Password Management
-	// ============================================================================
+  // ============================================================================
+  // Password Management
+  // ============================================================================
 
-	/**
-	 * Request password reset (sends email with token)
-	 */
-	@Throttle({ default: { limit: 3, ttl: 60000 } })
-	@Post('forgot-password')
-	async forgotPassword(
-		@Body() forgotPasswordDto: ForgotPasswordDto,
-	): Promise<{ message: string }> {
-		// Always return same message to prevent email enumeration
-		try {
-			await this.authService.requestPasswordReset(forgotPasswordDto.email)
-		} catch {
-			// Swallow errors to prevent email enumeration
-		}
-		return {
-			message:
-				'If an account exists with that email, a password reset link has been sent.',
-		}
-	}
+  /**
+   * Request password reset (sends email with token)
+   */
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
+  @Post('forgot-password')
+  async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto): Promise<{ message: string }> {
+    // Always return same message to prevent email enumeration
+    try {
+      await this.authService.requestPasswordReset(forgotPasswordDto.email)
+    } catch {
+      // Swallow errors to prevent email enumeration
+    }
+    return {
+      message: 'If an account exists with that email, a password reset link has been sent.',
+    }
+  }
 
-	/**
-	 * Reset password with token
-	 */
-	@Throttle({ default: { limit: 5, ttl: 60000 } })
-	@Post('reset-password')
-	async resetPassword(
-		@Body() resetPasswordDto: ResetPasswordDto,
-	): Promise<{ message: string }> {
-		await this.authService.resetPassword(
-			resetPasswordDto.token,
-			resetPasswordDto.password,
-		)
-		return {
-			message:
-				'Password reset successfully. Please login with your new password.',
-		}
-	}
+  /**
+   * Reset password with token
+   */
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  @Post('reset-password')
+  async resetPassword(@Body() resetPasswordDto: ResetPasswordDto): Promise<{ message: string }> {
+    await this.authService.resetPassword(resetPasswordDto.token, resetPasswordDto.password)
+    return {
+      message: 'Password reset successfully. Please login with your new password.',
+    }
+  }
 
-	/**
-	 * Change password (authenticated)
-	 */
-	@UseGuards(DynamicAuthGuard)
-	@Put('account/password')
-	async changePassword(
-		@Req() req: AuthenticatedRequest,
-		@Body() changePasswordDto: ChangePasswordDto,
-	): Promise<{ message: string }> {
-		return this.authService.changePassword(req.user.id, changePasswordDto)
-	}
+  /**
+   * Change password (authenticated)
+   */
+  @UseGuards(DynamicAuthGuard)
+  @Put('account/password')
+  async changePassword(
+    @Req() req: AuthenticatedRequest,
+    @Body() changePasswordDto: ChangePasswordDto,
+  ): Promise<{ message: string }> {
+    return this.authService.changePassword(req.user.id, changePasswordDto)
+  }
 
-	// ============================================================================
-	// Profile
-	// ============================================================================
+  // ============================================================================
+  // Profile
+  // ============================================================================
 
-	/**
-	 * Update user profile
-	 */
-	@SkipThrottle({ default: true })
-	@UseGuards(DynamicAuthGuard)
-	@Put('account/profile')
-	async updateProfile(
-		@Req() req: AuthenticatedRequest,
-		@Body() updateProfileDto: UpdateProfileDto,
-	): Promise<{
-		id: string
-		email: string
-		name: string
-		role: string | undefined
-	}> {
-		return this.authService.updateProfile(req.user.id, updateProfileDto)
-	}
+  /**
+   * Update user profile
+   */
+  @SkipThrottle({ default: true })
+  @UseGuards(DynamicAuthGuard)
+  @Put('account/profile')
+  async updateProfile(
+    @Req() req: AuthenticatedRequest,
+    @Body() updateProfileDto: UpdateProfileDto,
+  ): Promise<{
+    id: string
+    email: string
+    name: string
+    role: string | undefined
+  }> {
+    return this.authService.updateProfile(req.user.id, updateProfileDto)
+  }
 
-	// ============================================================================
-	// Helpers
-	// ============================================================================
+  // ============================================================================
+  // Helpers
+  // ============================================================================
 
-	/**
-	 * Extract request context for auth operations
-	 */
-	private getRequestContext(req: Request): RequestContext {
-		return {
-			ipAddress: req.ip ?? req.socket?.remoteAddress,
-			userAgent: req.headers['user-agent'],
-		}
-	}
+  /**
+   * Extract request context for auth operations
+   */
+  private getRequestContext(req: Request): RequestContext {
+    return {
+      ipAddress: req.ip ?? req.socket?.remoteAddress,
+      userAgent: req.headers['user-agent'],
+    }
+  }
 }

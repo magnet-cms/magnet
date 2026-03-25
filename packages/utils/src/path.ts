@@ -5,14 +5,14 @@ import { resolve } from 'node:path'
  * Options for findPathInParentDirectories function
  */
 export interface FindPathOptions {
-	/**
-	 * The base directory to start searching from (default: process.cwd())
-	 */
-	baseDir?: string
-	/**
-	 * Maximum parent directory levels to search (default: 5)
-	 */
-	maxLevels?: number
+  /**
+   * The base directory to start searching from (default: process.cwd())
+   */
+  baseDir?: string
+  /**
+   * Maximum parent directory levels to search (default: 5)
+   */
+  maxLevels?: number
 }
 
 /**
@@ -34,19 +34,19 @@ export interface FindPathOptions {
  * })
  */
 export function findPathInParentDirectories(
-	relativePath: string,
-	options?: FindPathOptions,
+  relativePath: string,
+  options?: FindPathOptions,
 ): string | null {
-	const baseDir = options?.baseDir ?? process.cwd()
-	const maxLevels = options?.maxLevels ?? 5
+  const baseDir = options?.baseDir ?? process.cwd()
+  const maxLevels = options?.maxLevels ?? 5
 
-	let prefix = ''
-	for (let level = 0; level <= maxLevels; level++) {
-		const fullPath = resolve(baseDir, prefix, relativePath)
-		if (existsSync(fullPath)) {
-			return fullPath
-		}
-		prefix = prefix ? `${prefix}/..` : '..'
-	}
-	return null
+  let prefix = ''
+  for (let level = 0; level <= maxLevels; level++) {
+    const fullPath = resolve(baseDir, prefix, relativePath)
+    if (existsSync(fullPath)) {
+      return fullPath
+    }
+    prefix = prefix ? `${prefix}/..` : '..'
+  }
+  return null
 }

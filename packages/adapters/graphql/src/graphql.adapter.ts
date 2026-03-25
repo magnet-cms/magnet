@@ -1,4 +1,5 @@
 import type { GraphQLConfig, GraphQLMagnetProvider } from '@magnet-cms/common'
+
 import { MagnetGraphQLModule } from './graphql.module'
 
 /**
@@ -14,26 +15,26 @@ import { MagnetGraphQLModule } from './graphql.module'
  * ```
  */
 export class GraphQLAdapter {
-	/**
-	 * Create a configured GraphQL provider for MagnetModule.forRoot().
-	 * Generates the full Apollo Server module from discovered content schemas at startup.
-	 *
-	 * @param config - Optional GraphQL configuration. All fields have defaults.
-	 * @returns A GraphQLMagnetProvider to pass to MagnetModule.forRoot()
-	 */
-	static forRoot(config: Partial<GraphQLConfig> = {}): GraphQLMagnetProvider {
-		const resolvedConfig: GraphQLConfig = {
-			path: config.path ?? '/graphql',
-			playground: config.playground ?? true,
-			introspection: config.introspection ?? true,
-			debug: config.debug ?? false,
-		}
+  /**
+   * Create a configured GraphQL provider for MagnetModule.forRoot().
+   * Generates the full Apollo Server module from discovered content schemas at startup.
+   *
+   * @param config - Optional GraphQL configuration. All fields have defaults.
+   * @returns A GraphQLMagnetProvider to pass to MagnetModule.forRoot()
+   */
+  static forRoot(config: Partial<GraphQLConfig> = {}): GraphQLMagnetProvider {
+    const resolvedConfig: GraphQLConfig = {
+      path: config.path ?? '/graphql',
+      playground: config.playground ?? true,
+      introspection: config.introspection ?? true,
+      debug: config.debug ?? false,
+    }
 
-		return {
-			type: 'graphql',
-			module: MagnetGraphQLModule.forRoot(resolvedConfig),
-			config: resolvedConfig,
-			envVars: [],
-		}
-	}
+    return {
+      type: 'graphql',
+      module: MagnetGraphQLModule.forRoot(resolvedConfig),
+      config: resolvedConfig,
+      envVars: [],
+    }
+  }
 }

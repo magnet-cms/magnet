@@ -1,4 +1,5 @@
 import sanitizeHtml from 'sanitize-html'
+
 import type { DiscoveryService } from '../../discovery/discovery.service'
 
 /**
@@ -6,52 +7,52 @@ import type { DiscoveryService } from '../../discovery/discovery.service'
  * Covers everything a typical rich text editor (e.g., Lexical) produces.
  */
 const ALLOWED_TAGS = [
-	'p',
-	'br',
-	'strong',
-	'em',
-	'u',
-	's',
-	'h1',
-	'h2',
-	'h3',
-	'h4',
-	'h5',
-	'h6',
-	'ul',
-	'ol',
-	'li',
-	'a',
-	'img',
-	'blockquote',
-	'pre',
-	'code',
-	'table',
-	'thead',
-	'tbody',
-	'tr',
-	'th',
-	'td',
-	'span',
-	'div',
-	'sub',
-	'sup',
-	'hr',
+  'p',
+  'br',
+  'strong',
+  'em',
+  'u',
+  's',
+  'h1',
+  'h2',
+  'h3',
+  'h4',
+  'h5',
+  'h6',
+  'ul',
+  'ol',
+  'li',
+  'a',
+  'img',
+  'blockquote',
+  'pre',
+  'code',
+  'table',
+  'thead',
+  'tbody',
+  'tr',
+  'th',
+  'td',
+  'span',
+  'div',
+  'sub',
+  'sup',
+  'hr',
 ]
 
 const SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
-	allowedTags: ALLOWED_TAGS,
-	allowedAttributes: {
-		a: ['href', 'target'],
-		img: ['src', 'alt', 'width', 'height'],
-		span: ['class', 'style'],
-		'*': ['class'],
-	},
-	// Only allow safe URL schemes — strips javascript: and data: hrefs
-	allowedSchemes: ['http', 'https', 'mailto', 'ftp'],
-	allowedSchemesByTag: {
-		img: ['http', 'https', 'data'],
-	},
+  allowedTags: ALLOWED_TAGS,
+  allowedAttributes: {
+    a: ['href', 'target'],
+    img: ['src', 'alt', 'width', 'height'],
+    span: ['class', 'style'],
+    '*': ['class'],
+  },
+  // Only allow safe URL schemes — strips javascript: and data: hrefs
+  allowedSchemes: ['http', 'https', 'mailto', 'ftp'],
+  allowedSchemesByTag: {
+    img: ['http', 'https', 'data'],
+  },
 }
 
 /**
@@ -71,34 +72,34 @@ const SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
  * @returns A new data object with richtext fields sanitized
  */
 export function sanitizeRichTextFields<T extends Record<string, unknown>>(
-	schemaName: string,
-	data: T,
-	discoveryService: DiscoveryService,
+  schemaName: string,
+  data: T,
+  discoveryService: DiscoveryService,
 ): T {
-	const schema = discoveryService.getDiscoveredSchema(schemaName)
+  const schema = discoveryService.getDiscoveredSchema(schemaName)
 
-	if ('error' in schema) {
-		return data
-	}
+  if ('error' in schema) {
+    return data
+  }
 
-	const richTextFieldNames = schema.properties
-		.filter((prop) => {
-			const uiType = prop.ui?.type
-			return prop.type === 'richtext' || uiType === 'richText'
-		})
-		.map((prop) => prop.name)
+  const richTextFieldNames = schema.properties
+    .filter((prop) => {
+      const uiType = prop.ui?.type
+      return prop.type === 'richtext' || uiType === 'richText'
+    })
+    .map((prop) => prop.name)
 
-	if (richTextFieldNames.length === 0) {
-		return data
-	}
+  if (richTextFieldNames.length === 0) {
+    return data
+  }
 
-	const sanitized: Record<string, unknown> = { ...data }
-	for (const fieldName of richTextFieldNames) {
-		const value = sanitized[fieldName]
-		if (typeof value === 'string') {
-			sanitized[fieldName] = sanitizeHtml(value, SANITIZE_OPTIONS)
-		}
-	}
+  const sanitized: Record<string, unknown> = { ...data }
+  for (const fieldName of richTextFieldNames) {
+    const value = sanitized[fieldName]
+    if (typeof value === 'string') {
+      sanitized[fieldName] = sanitizeHtml(value, SANITIZE_OPTIONS)
+    }
+  }
 
-	return sanitized as T
+  return sanitized as T
 }

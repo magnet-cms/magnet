@@ -6,8 +6,8 @@ import { Type } from '@nestjs/common'
  * @returns Injection token string
  */
 export function getModelToken(schema: Type | string): string {
-	const name = typeof schema === 'string' ? schema : schema.name
-	return `MAGNET_MODEL_${name.toUpperCase()}`
+  const name = typeof schema === 'string' ? schema : schema.name
+  return `MAGNET_MODEL_${name.toUpperCase()}`
 }
 
 /**
@@ -15,7 +15,7 @@ export function getModelToken(schema: Type | string): string {
  * @returns Injection token for the database adapter
  */
 export function getAdapterToken(): string {
-	return 'MAGNET_DATABASE_ADAPTER'
+  return 'MAGNET_DATABASE_ADAPTER'
 }
 
 /**
@@ -26,9 +26,9 @@ export function getAdapterToken(): string {
 const globalModelRegistry = new Map<string, unknown>()
 
 export function registerModel(token: string, model: unknown): void {
-	globalModelRegistry.set(token, model)
+  globalModelRegistry.set(token, model)
 }
 
 export function getRegisteredModel<T>(token: string): T | undefined {
-	return globalModelRegistry.get(token) as T | undefined
+  return globalModelRegistry.get(token) as T | undefined
 }

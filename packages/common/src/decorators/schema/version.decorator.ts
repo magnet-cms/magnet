@@ -7,7 +7,7 @@ export const VERSION_METADATA_KEY = 'version:metadata'
  * @param config Version configuration
  */
 export function Version(config: VersionConfig = {}): ClassDecorator {
-	return (target: Function): void => {
-		Reflect.defineMetadata(VERSION_METADATA_KEY, config, target)
-	}
+  return (target: Function): void => {
+    Reflect.defineMetadata(VERSION_METADATA_KEY, config, target)
+  }
 }

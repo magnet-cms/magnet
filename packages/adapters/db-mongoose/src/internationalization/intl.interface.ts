@@ -1,12 +1,12 @@
 export interface IntlOptions {
-	locales: string[]
-	defaultLocale: string
+  locales: string[]
+  defaultLocale: string
 }
 
 export interface LocalizedField {
-	[locale: string]: any
+  [locale: string]: any
 }
 
 export interface LocaleOptions {
-	locale: string
+  locale: string
 }

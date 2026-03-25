@@ -4,50 +4,43 @@ export type SettingType = 'string' | 'boolean' | 'number' | 'object' | 'array'
  * Settings object type for nested settings
  */
 export interface SettingObject {
-	[key: string]: SettingValue
+  [key: string]: SettingValue
 }
 
 /**
  * Settings value types - union of all possible setting values
  * This replaces `any` in settings-related code
  */
-export type SettingValue =
-	| string
-	| number
-	| boolean
-	| string[]
-	| number[]
-	| SettingObject
-	| null
+export type SettingValue = string | number | boolean | string[] | number[] | SettingObject | null
 
 export interface SchemaSetting {
-	key: string
-	value: SettingValue
-	type: SettingType | string
+  key: string
+  value: SettingValue
+  type: SettingType | string
 }
 
 export interface SettingsFeatureOptions<T = unknown> {
-	group: string
-	schema: new () => T
+  group: string
+  schema: new () => T
 }
 
 /**
  * Settings update payload for a single setting
  */
 export interface SettingsUpdatePayload {
-	group: string
-	key: string
-	value: SettingValue
+  group: string
+  key: string
+  value: SettingValue
 }
 
 /**
  * Settings bulk update payload
  */
 export interface SettingsBulkUpdatePayload {
-	settings: Array<{
-		key: string
-		value: SettingValue
-	}>
+  settings: Array<{
+    key: string
+    value: SettingValue
+  }>
 }
 
 /**
@@ -64,161 +57,155 @@ export type SettingSectionVariant = 'default' | 'danger'
  * Section definition for grouping settings fields visually
  */
 export interface SettingSectionDefinition {
-	/** Unique section identifier */
-	name: string
-	/** Display label for the section */
-	label: string
-	/** Icon identifier (lucide icon name) */
-	icon?: string
-	/** Description of the section */
-	description?: string
-	/** Display order within the settings group */
-	order?: number
-	/** Visual variant for the section */
-	variant?: SettingSectionVariant
+  /** Unique section identifier */
+  name: string
+  /** Display label for the section */
+  label: string
+  /** Icon identifier (lucide icon name) */
+  icon?: string
+  /** Description of the section */
+  description?: string
+  /** Display order within the settings group */
+  order?: number
+  /** Visual variant for the section */
+  variant?: SettingSectionVariant
 }
 
 /**
  * Options for the @Settings() class decorator
  */
 export interface SettingsDecoratorOptions {
-	/** Unique group identifier for this settings class */
-	group: string
-	/** Display label in admin UI */
-	label: string
-	/** Icon identifier for admin UI */
-	icon?: string
-	/** Description of what these settings control */
-	description?: string
-	/** Display order in settings list */
-	order?: number
-	/** Section definitions for grouping fields visually */
-	sections?: SettingSectionDefinition[]
+  /** Unique group identifier for this settings class */
+  group: string
+  /** Display label in admin UI */
+  label: string
+  /** Icon identifier for admin UI */
+  icon?: string
+  /** Description of what these settings control */
+  description?: string
+  /** Display order in settings list */
+  order?: number
+  /** Section definitions for grouping fields visually */
+  sections?: SettingSectionDefinition[]
 }
 
 /**
  * Base options for Setting field decorators
  */
 export interface SettingFieldBaseOptions {
-	/** Display label in admin UI */
-	label: string
-	/** Help text/description */
-	description?: string
-	/** Default value */
-	default?: SettingValue
-	/** Display order */
-	order?: number
-	/** Hide from admin UI */
-	hidden?: boolean
-	/** Make read-only in admin UI */
-	readonly?: boolean
-	/** Section this field belongs to (references section name) */
-	section?: string
+  /** Display label in admin UI */
+  label: string
+  /** Help text/description */
+  description?: string
+  /** Default value */
+  default?: SettingValue
+  /** Display order */
+  order?: number
+  /** Hide from admin UI */
+  hidden?: boolean
+  /** Make read-only in admin UI */
+  readonly?: boolean
+  /** Section this field belongs to (references section name) */
+  section?: string
 }
 
 /**
  * Text setting field options
  */
 export interface SettingTextOptions extends SettingFieldBaseOptions {
-	default?: string
-	minLength?: number
-	maxLength?: number
-	placeholder?: string
+  default?: string
+  minLength?: number
+  maxLength?: number
+  placeholder?: string
 }
 
 /**
  * Number setting field options
  */
 export interface SettingNumberOptions extends SettingFieldBaseOptions {
-	default?: number
-	min?: number
-	max?: number
-	step?: number
+  default?: number
+  min?: number
+  max?: number
+  step?: number
 }
 
 /**
  * Boolean setting field options
  */
 export interface SettingBooleanOptions extends SettingFieldBaseOptions {
-	default?: boolean
+  default?: boolean
 }
 
 /**
  * Select setting field options
  */
 export interface SettingSelectOptions extends SettingFieldBaseOptions {
-	options:
-		| ReadonlyArray<{ label: string; value: string }>
-		| ReadonlyArray<string>
-	default?: string | string[]
-	/** Enable multi-select mode */
-	multiple?: boolean
+  options: ReadonlyArray<{ label: string; value: string }> | ReadonlyArray<string>
+  default?: string | string[]
+  /** Enable multi-select mode */
+  multiple?: boolean
 }
 
 /**
  * Secret setting field options (for API keys, passwords, etc.)
  */
 export interface SettingSecretOptions extends SettingFieldBaseOptions {
-	/** Mask value in UI (show only last 4 characters) */
-	masked?: boolean
+  /** Mask value in UI (show only last 4 characters) */
+  masked?: boolean
 }
 
 /**
  * Image setting field options
  */
 export interface SettingImageOptions extends SettingFieldBaseOptions {
-	folder?: string
-	maxSize?: number
+  folder?: string
+  maxSize?: number
 }
 
 /**
  * JSON setting field options
  */
 export interface SettingJSONOptions extends SettingFieldBaseOptions {
-	default?: SettingObject
+  default?: SettingObject
 }
 
 /**
  * Setting field type identifiers
  */
 export type SettingFieldTypeId =
-	| 'text'
-	| 'number'
-	| 'boolean'
-	| 'select'
-	| 'secret'
-	| 'image'
-	| 'json'
-	| 'textarea'
+  | 'text'
+  | 'number'
+  | 'boolean'
+  | 'select'
+  | 'secret'
+  | 'image'
+  | 'json'
+  | 'textarea'
 
 /**
  * Setting field metadata stored via reflection
  */
-export interface SettingFieldMetadata<
-	T extends SettingFieldBaseOptions = SettingFieldBaseOptions,
-> {
-	/** Field type identifier */
-	type: SettingFieldTypeId
-	/** Typed options for this field */
-	options: T
-	/** Property key */
-	propertyKey: string | symbol
+export interface SettingFieldMetadata<T extends SettingFieldBaseOptions = SettingFieldBaseOptions> {
+  /** Field type identifier */
+  type: SettingFieldTypeId
+  /** Typed options for this field */
+  options: T
+  /** Property key */
+  propertyKey: string | symbol
 }
 
 /**
  * Type guard to check if a value is SettingFieldMetadata
  */
-export function isSettingFieldMetadata(
-	value: unknown,
-): value is SettingFieldMetadata {
-	if (typeof value !== 'object' || value === null) {
-		return false
-	}
-	const metadata = value as Record<string, unknown>
-	return (
-		typeof metadata.type === 'string' &&
-		typeof metadata.options === 'object' &&
-		metadata.options !== null &&
-		'propertyKey' in metadata
-	)
+export function isSettingFieldMetadata(value: unknown): value is SettingFieldMetadata {
+  if (typeof value !== 'object' || value === null) {
+    return false
+  }
+  const metadata = value as Record<string, unknown>
+  return (
+    typeof metadata.type === 'string' &&
+    typeof metadata.options === 'object' &&
+    metadata.options !== null &&
+    'propertyKey' in metadata
+  )
 }

@@ -50,10 +50,10 @@ export type { MagnetAdminConfig } from './createMagnetAdmin'
 // =============================================================================
 
 export {
-	MagnetProvider,
-	useMagnet,
-	useAdapter,
-	useTokenStorage,
+  MagnetProvider,
+  useMagnet,
+  useAdapter,
+  useTokenStorage,
 } from './core/provider/MagnetProvider'
 export type { MagnetProviderProps } from './core/provider/MagnetProvider'
 
@@ -76,17 +76,17 @@ export type { HttpAdapterConfig } from './core/adapters/http-adapter'
 // =============================================================================
 
 export {
-	createLocalStorage,
-	createLegacyLocalStorage,
-	LEGACY_TOKEN_KEY,
-	LEGACY_REFRESH_TOKEN_KEY,
-	LEGACY_TOKEN_EXPIRY_KEY,
+  createLocalStorage,
+  createLegacyLocalStorage,
+  LEGACY_TOKEN_KEY,
+  LEGACY_REFRESH_TOKEN_KEY,
+  LEGACY_TOKEN_EXPIRY_KEY,
 } from './core/storage/localStorage'
 export type { LocalStorageOptions } from './core/storage/localStorage'
 
 export {
-	createMemoryStorage,
-	createMemoryStorageWithInitialValues,
+  createMemoryStorage,
+  createMemoryStorageWithInitialValues,
 } from './core/storage/memoryStorage'
 
 export { createCookieStorage } from './core/storage/cookieStorage'
@@ -97,26 +97,26 @@ export type { CookieStorageOptions } from './core/storage/cookieStorage'
 // =============================================================================
 
 export type {
-	// Config
-	MagnetConfig,
-	RouterType,
-	// API Request/Response
-	ApiRequestConfig,
-	// Token Storage
-	TokenStorage,
-	// Main Adapter Interface
-	MagnetApiAdapter,
-	// Auth Types
-	LoginCredentials,
-	RegisterCredentials,
-	AuthTokens,
-	AuthUser,
-	AuthStatus,
-	// Discovery Types
-	SchemaMetadata,
-	ControllerMetadata,
-	// History Types
-	VersionInfo,
+  // Config
+  MagnetConfig,
+  RouterType,
+  // API Request/Response
+  ApiRequestConfig,
+  // Token Storage
+  TokenStorage,
+  // Main Adapter Interface
+  MagnetApiAdapter,
+  // Auth Types
+  LoginCredentials,
+  RegisterCredentials,
+  AuthTokens,
+  AuthUser,
+  AuthStatus,
+  // Discovery Types
+  SchemaMetadata,
+  ControllerMetadata,
+  // History Types
+  VersionInfo,
 } from './core/adapters/types'
 
 // =============================================================================
@@ -125,26 +125,26 @@ export type {
 
 // Auth hooks
 export {
-	useLogin,
-	useRegister,
-	useRefreshToken,
-	useMe,
-	useStatus,
-	useLogout,
-	useAuth,
-	AUTH_ME_KEY,
-	AUTH_STATUS_KEY,
-	AUTH_USER_KEY,
+  useLogin,
+  useRegister,
+  useRefreshToken,
+  useMe,
+  useStatus,
+  useLogout,
+  useAuth,
+  AUTH_ME_KEY,
+  AUTH_STATUS_KEY,
+  AUTH_USER_KEY,
 } from './hooks/useAuth'
 
 // Discovery hooks
 export {
-	useSchemas,
-	useSchema,
-	useSettings,
-	useSetting,
-	useControllers,
-	useController,
+  useSchemas,
+  useSchema,
+  useSettings,
+  useSetting,
+  useControllers,
+  useController,
 } from './hooks/useDiscovery'
 
 // Content hooks
@@ -166,23 +166,18 @@ export { AdminProvider, useAdmin } from './contexts/useAdmin'
 export { FormBuilder } from './components/FormBuilder'
 export { AuthLayout } from './layouts/AuthLayout'
 export { Loader } from './components/Loader'
-export {
-	PageHeader,
-	PageContent,
-	PageHeaderStatus,
-	PageHeaderTabs,
-} from './components/PageHeader'
+export { PageHeader, PageContent, PageHeaderStatus, PageHeaderTabs } from './components/PageHeader'
 export type {
-	EditableTitleConfig,
-	PageContentProps,
-	PageHeaderProps,
-	PageHeaderStatusProps,
-	PageHeaderTabsProps,
-	StatusBadge,
-	StatusType,
-	TabItem,
-	TabsConfig,
-	TitleConfig,
+  EditableTitleConfig,
+  PageContentProps,
+  PageHeaderProps,
+  PageHeaderStatusProps,
+  PageHeaderTabsProps,
+  StatusBadge,
+  StatusType,
+  TabItem,
+  TabsConfig,
+  TitleConfig,
 } from './components/PageHeader'
 
 // =============================================================================
@@ -196,20 +191,20 @@ export { routes, getBasePath, normalizePath } from './routes'
 // =============================================================================
 
 export {
-	registerMagnetPlugin,
-	getRegisteredPluginRoutes,
-	usePluginRegistry,
-	usePluginRoutes,
-	usePluginSidebarItems,
-	PluginRegistryProvider,
+  registerMagnetPlugin,
+  getRegisteredPluginRoutes,
+  usePluginRegistry,
+  usePluginRoutes,
+  usePluginSidebarItems,
+  PluginRegistryProvider,
 } from './core/plugins'
 export type {
-	FrontendPluginManifest,
-	PluginRegistrationFn,
-	PluginRouteDefinition,
-	PluginSidebarItem,
-	ResolvedPlugin,
-	ResolvedSidebarItem,
+  FrontendPluginManifest,
+  PluginRegistrationFn,
+  PluginRouteDefinition,
+  PluginSidebarItem,
+  ResolvedPlugin,
+  ResolvedSidebarItem,
 } from './core/plugins'
 
 // =============================================================================

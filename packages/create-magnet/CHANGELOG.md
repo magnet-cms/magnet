@@ -5,7 +5,6 @@
 ### Major Changes
 
 - [`f248064`](https://github.com/magnet-cms/magnet/commit/f248064db8a0d1a5669546dbdf40b6f7dc57a5b7) Thanks [@gjsoaresc](https://github.com/gjsoaresc)! - BREAKING: Renamed Supabase environment variables to match Supabase's current API key naming.
-
   - `SUPABASE_ANON_KEY` → `SUPABASE_PUBLISHABLE_KEY`
   - `SUPABASE_SERVICE_KEY` → `SUPABASE_SECRET_KEY`
 
@@ -16,7 +15,6 @@
 ### Patch Changes
 
 - [`e09297f`](https://github.com/magnet-cms/magnet/commit/e09297ffb5d24db3afa8784a8f730b49ce0cf226) Thanks [@gjsoaresc](https://github.com/gjsoaresc)! - fix: set NODE_ENV=production in generated .env.example for standalone projects
-
   - Changed default NODE_ENV from 'development' to 'production' in scaffolded projects
   - Fixed README to show correct admin URL at /admin instead of port 3001
   - This fixes the admin proxy error that occurs when NODE_ENV=development
@@ -41,7 +39,6 @@
 - [`b300d68`](https://github.com/magnet-cms/magnet/commit/b300d6823ff6d900e36e7c9fbe82b9e004790c01) Thanks [@gjsoaresc](https://github.com/gjsoaresc)! - Add create-magnet CLI tool for scaffolding new Magnet CMS projects
 
   Features:
-
   - Interactive prompts for project configuration
   - Database adapter selection (Mongoose, Drizzle+Neon, Drizzle+Supabase)
   - Plugin selection (Content Builder, SEO)

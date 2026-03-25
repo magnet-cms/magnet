@@ -30,32 +30,29 @@ import type { SentryPluginConfig } from './types'
  * @param config - Optional Sentry configuration. Defaults to reading
  *   `SENTRY_DSN` and other env vars automatically.
  */
-export function initSentryInstrumentation(
-	config?: Partial<SentryPluginConfig>,
-): void {
-	try {
-		// eslint-disable-next-line @typescript-eslint/no-require-imports
-		const Sentry = require('@sentry/nestjs') as typeof import('@sentry/nestjs')
+export function initSentryInstrumentation(config?: Partial<SentryPluginConfig>): void {
+  try {
+    const Sentry = require('@sentry/nestjs') as typeof import('@sentry/nestjs')
 
-		// Skip if already initialized
-		if (Sentry.getClient()) return
+    // Skip if already initialized
+    if (Sentry.getClient()) return
 
-		Sentry.init({
-			dsn: config?.dsn ?? process.env.SENTRY_DSN,
-			tracesSampleRate: config?.tracesSampleRate ?? 0.1,
-			profileSessionSampleRate: config?.profileSessionSampleRate ?? 1.0,
-			environment:
-				config?.environment ??
-				process.env.SENTRY_ENVIRONMENT ??
-				process.env.NODE_ENV ??
-				'development',
-			release: config?.release ?? process.env.SENTRY_RELEASE,
-			debug: config?.debug ?? false,
-			enabled: config?.enabled ?? true,
-			attachStacktrace: config?.attachStacktrace ?? true,
-			maxBreadcrumbs: config?.maxBreadcrumbs ?? 100,
-		})
-	} catch {
-		// @sentry/nestjs is not installed — no-op
-	}
+    Sentry.init({
+      dsn: config?.dsn ?? process.env.SENTRY_DSN,
+      tracesSampleRate: config?.tracesSampleRate ?? 0.1,
+      profileSessionSampleRate: config?.profileSessionSampleRate ?? 1.0,
+      environment:
+        config?.environment ??
+        process.env.SENTRY_ENVIRONMENT ??
+        process.env.NODE_ENV ??
+        'development',
+      release: config?.release ?? process.env.SENTRY_RELEASE,
+      debug: config?.debug ?? false,
+      enabled: config?.enabled ?? true,
+      attachStacktrace: config?.attachStacktrace ?? true,
+      maxBreadcrumbs: config?.maxBreadcrumbs ?? 100,
+    })
+  } catch {
+    // @sentry/nestjs is not installed — no-op
+  }
 }

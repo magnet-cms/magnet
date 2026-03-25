@@ -1,4 +1,5 @@
 import { Controller, Headers, HttpCode, Post, Req } from '@nestjs/common'
+
 import { StripeWebhookService } from './stripe-webhook.service'
 import { StripeService } from './stripe.service'
 
@@ -13,34 +14,32 @@ import { StripeService } from './stripe.service'
  */
 @Controller('stripe/webhooks')
 export class StripeWebhookController {
-	constructor(
-		private readonly stripeService: StripeService,
-		private readonly webhookService: StripeWebhookService,
-	) {}
+  constructor(
+    private readonly stripeService: StripeService,
+    private readonly webhookService: StripeWebhookService,
+  ) {}
 
-	@Post()
-	@HttpCode(200)
-	async handleWebhook(
-		@Req() req: { rawBody?: Buffer },
-		@Headers('stripe-signature') signature: string,
-	): Promise<{ received: boolean }> {
-		this.stripeService.verifyRawBodyAvailable(req)
+  @Post()
+  @HttpCode(200)
+  async handleWebhook(
+    @Req() req: { rawBody?: Buffer },
+    @Headers('stripe-signature') signature: string,
+  ): Promise<{ received: boolean }> {
+    this.stripeService.verifyRawBodyAvailable(req)
 
-		const { webhookSecret } = this.stripeService.pluginConfig
-		if (!webhookSecret) {
-			throw new Error(
-				'[StripePlugin] webhookSecret is required for webhook verification',
-			)
-		}
+    const { webhookSecret } = this.stripeService.pluginConfig
+    if (!webhookSecret) {
+      throw new Error('[StripePlugin] webhookSecret is required for webhook verification')
+    }
 
-		const event = this.stripeService.client.webhooks.constructEvent(
-			req.rawBody,
-			signature,
-			webhookSecret,
-		)
+    const event = this.stripeService.client.webhooks.constructEvent(
+      req.rawBody,
+      signature,
+      webhookSecret,
+    )
 
-		await this.webhookService.processEvent(event)
+    await this.webhookService.processEvent(event)
 
-		return { received: true }
-	}
+    return { received: true }
+  }
 }

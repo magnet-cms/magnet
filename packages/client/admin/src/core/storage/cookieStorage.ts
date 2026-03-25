@@ -1,42 +1,42 @@
 import type { TokenStorage } from '../adapters/types'
 
 export interface CookieStorageOptions {
-	/**
-	 * Prefix for cookie names (default: 'magnet')
-	 */
-	prefix?: string
+  /**
+   * Prefix for cookie names (default: 'magnet')
+   */
+  prefix?: string
 
-	/**
-	 * Function to get a cookie value
-	 */
-	getCookie: (name: string) => string | undefined
+  /**
+   * Function to get a cookie value
+   */
+  getCookie: (name: string) => string | undefined
 
-	/**
-	 * Function to set a cookie value
-	 */
-	setCookie: (
-		name: string,
-		value: string,
-		options?: {
-			maxAge?: number
-			secure?: boolean
-			sameSite?: 'strict' | 'lax' | 'none'
-		},
-	) => void
+  /**
+   * Function to set a cookie value
+   */
+  setCookie: (
+    name: string,
+    value: string,
+    options?: {
+      maxAge?: number
+      secure?: boolean
+      sameSite?: 'strict' | 'lax' | 'none'
+    },
+  ) => void
 
-	/**
-	 * Function to delete a cookie
-	 */
-	deleteCookie: (name: string) => void
+  /**
+   * Function to delete a cookie
+   */
+  deleteCookie: (name: string) => void
 
-	/**
-	 * Default cookie options
-	 */
-	cookieOptions?: {
-		secure?: boolean
-		sameSite?: 'strict' | 'lax' | 'none'
-		maxAge?: number
-	}
+  /**
+   * Default cookie options
+   */
+  cookieOptions?: {
+    secure?: boolean
+    sameSite?: 'strict' | 'lax' | 'none'
+    maxAge?: number
+  }
 }
 
 /**
@@ -63,51 +63,49 @@ export interface CookieStorageOptions {
  *   deleteCookie: (name) => cookies().delete(name),
  * })
  */
-export function createCookieStorage(
-	options: CookieStorageOptions,
-): TokenStorage {
-	const {
-		prefix = 'magnet',
-		getCookie,
-		setCookie,
-		deleteCookie,
-		cookieOptions = { secure: true, sameSite: 'strict' },
-	} = options
+export function createCookieStorage(options: CookieStorageOptions): TokenStorage {
+  const {
+    prefix = 'magnet',
+    getCookie,
+    setCookie,
+    deleteCookie,
+    cookieOptions = { secure: true, sameSite: 'strict' },
+  } = options
 
-	const tokenKey = `${prefix}_token`
-	const refreshTokenKey = `${prefix}_refresh_token`
-	const expiryKey = `${prefix}_token_expiry`
+  const tokenKey = `${prefix}_token`
+  const refreshTokenKey = `${prefix}_refresh_token`
+  const expiryKey = `${prefix}_token_expiry`
 
-	return {
-		getAccessToken(): string | null {
-			return getCookie(tokenKey) || null
-		},
+  return {
+    getAccessToken(): string | null {
+      return getCookie(tokenKey) || null
+    },
 
-		setAccessToken(token: string): void {
-			setCookie(tokenKey, token, cookieOptions)
-		},
+    setAccessToken(token: string): void {
+      setCookie(tokenKey, token, cookieOptions)
+    },
 
-		getRefreshToken(): string | null {
-			return getCookie(refreshTokenKey) || null
-		},
+    getRefreshToken(): string | null {
+      return getCookie(refreshTokenKey) || null
+    },
 
-		setRefreshToken(token: string): void {
-			setCookie(refreshTokenKey, token, cookieOptions)
-		},
+    setRefreshToken(token: string): void {
+      setCookie(refreshTokenKey, token, cookieOptions)
+    },
 
-		getTokenExpiry(): number | null {
-			const expiry = getCookie(expiryKey)
-			return expiry ? Number.parseInt(expiry, 10) : null
-		},
+    getTokenExpiry(): number | null {
+      const expiry = getCookie(expiryKey)
+      return expiry ? Number.parseInt(expiry, 10) : null
+    },
 
-		setTokenExpiry(expiry: number): void {
-			setCookie(expiryKey, expiry.toString(), cookieOptions)
-		},
+    setTokenExpiry(expiry: number): void {
+      setCookie(expiryKey, expiry.toString(), cookieOptions)
+    },
 
-		clearAll(): void {
-			deleteCookie(tokenKey)
-			deleteCookie(refreshTokenKey)
-			deleteCookie(expiryKey)
-		},
-	}
+    clearAll(): void {
+      deleteCookie(tokenKey)
+      deleteCookie(refreshTokenKey)
+      deleteCookie(expiryKey)
+    },
+  }
 }

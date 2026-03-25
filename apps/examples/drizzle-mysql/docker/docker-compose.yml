@@ -6,14 +6,14 @@ services:
     container_name: drizzle-mysql-db
     restart: unless-stopped
     ports:
-      - "3307:3306"
+      - '3307:3306'
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: magnet
     volumes:
       - drizzle-mysql-data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost', '-u', 'root', '-proot']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -23,8 +23,8 @@ services:
     container_name: drizzle-mysql-minio
     restart: unless-stopped
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - '9000:9000'
+      - '9001:9001'
     environment:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin
@@ -32,7 +32,7 @@ services:
     volumes:
       - drizzle-mysql-minio-data:/data
     healthcheck:
-      test: ["CMD", "mc", "ready", "local"]
+      test: ['CMD', 'mc', 'ready', 'local']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -43,7 +43,7 @@ services:
     depends_on:
       minio:
         condition: service_healthy
-    restart: "no"
+    restart: 'no'
     entrypoint: /bin/sh
     command:
       - -c
@@ -57,10 +57,10 @@ services:
     container_name: drizzle-mysql-mailpit
     restart: unless-stopped
     ports:
-      - "1025:1025"
-      - "8025:8025"
+      - '1025:1025'
+      - '8025:8025'
     healthcheck:
-      test: ["CMD", "wget", "--spider", "--quiet", "http://localhost:8025/api/v1/messages"]
+      test: ['CMD', 'wget', '--spider', '--quiet', 'http://localhost:8025/api/v1/messages']
       interval: 10s
       timeout: 5s
       retries: 5

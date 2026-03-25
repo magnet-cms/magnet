@@ -6,30 +6,30 @@ import type { ReactElement, ReactNode } from 'react'
 import 'fumadocs-ui/style.css'
 
 const fontSans = Geist({
-	subsets: ['latin'],
-	variable: '--font-sans',
+  subsets: ['latin'],
+  variable: '--font-sans',
 })
 
 const fontMono = Geist_Mono({
-	subsets: ['latin'],
-	variable: '--font-mono',
+  subsets: ['latin'],
+  variable: '--font-mono',
 })
 
 export const metadata: Metadata = {
-	title: 'Magnet Documentation',
-	description: 'Documentation for the Magnet headless CMS framework',
+  title: 'Magnet Documentation',
+  description: 'Documentation for the Magnet headless CMS framework',
 }
 
 export default function RootLayout({
-	children,
+  children,
 }: Readonly<{
-	children: ReactNode
+  children: ReactNode
 }>): ReactElement {
-	return (
-		<html lang="en" suppressHydrationWarning>
-			<body className={`${fontSans.variable} ${fontMono.variable}`}>
-				<RootProvider>{children}</RootProvider>
-			</body>
-		</html>
-	)
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${fontSans.variable} ${fontMono.variable}`}>
+        <RootProvider>{children}</RootProvider>
+      </body>
+    </html>
+  )
 }

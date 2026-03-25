@@ -1,4 +1,5 @@
 import { Global, Module } from '@nestjs/common'
+
 import { MagnetLogger } from './logger.service'
 import { LoggingInterceptor } from './logging.interceptor'
 
@@ -27,7 +28,7 @@ import { LoggingInterceptor } from './logging.interceptor'
  */
 @Global()
 @Module({
-	providers: [MagnetLogger, LoggingInterceptor],
-	exports: [MagnetLogger, LoggingInterceptor],
+  providers: [MagnetLogger, LoggingInterceptor],
+  exports: [MagnetLogger, LoggingInterceptor],
 })
 export class LoggingModule {}

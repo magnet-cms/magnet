@@ -14,6 +14,6 @@ export const PLUGIN_MODULE = 'plugin:module'
  * ```
  */
 export function getPluginOptionsToken(pluginName: string): string {
-	const normalized = pluginName.toUpperCase().replace(/-/g, '_')
-	return `PLUGIN_${normalized}_OPTIONS`
+  const normalized = pluginName.toUpperCase().replace(/-/g, '_')
+  return `PLUGIN_${normalized}_OPTIONS`
 }

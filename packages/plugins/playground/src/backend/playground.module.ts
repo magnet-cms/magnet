@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common'
+
 import { PlaygroundController } from './playground.controller'
 import { PlaygroundService } from './playground.service'
 
@@ -9,8 +10,8 @@ import { PlaygroundService } from './playground.service'
  * `PlaygroundPlugin` is registered separately via `MagnetModule.forRoot()`.
  */
 @Module({
-	controllers: [PlaygroundController],
-	providers: [PlaygroundService],
-	exports: [PlaygroundService],
+  controllers: [PlaygroundController],
+  providers: [PlaygroundService],
+  exports: [PlaygroundService],
 })
 export class PlaygroundModule {}

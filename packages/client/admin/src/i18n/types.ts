@@ -10,7 +10,7 @@ export type MessageId = keyof typeof messages
  * Typed message descriptor for use with intl.formatMessage()
  */
 export interface TypedMessageDescriptor {
-	id: MessageId
-	defaultMessage: string
-	description?: string
+  id: MessageId
+  defaultMessage: string
+  description?: string
 }

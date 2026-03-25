@@ -1,58 +1,58 @@
 import { useState } from 'react'
 
 interface UploadProgress {
-	file: File
-	progress: number
-	status: 'uploading' | 'success' | 'error'
-	error?: string
+  file: File
+  progress: number
+  status: 'uploading' | 'success' | 'error'
+  error?: string
 }
 
 export function useMediaUpload() {
-	const [uploads, setUploads] = useState<UploadProgress[]>([])
-	const [isUploading, setIsUploading] = useState(false)
+  const [uploads, setUploads] = useState<UploadProgress[]>([])
+  const [isUploading, setIsUploading] = useState(false)
 
-	const uploadFiles = async (files: File[]) => {
-		setIsUploading(true)
-		const newUploads: UploadProgress[] = files.map((file) => ({
-			file,
-			progress: 0,
-			status: 'uploading',
-		}))
+  const uploadFiles = async (files: File[]) => {
+    setIsUploading(true)
+    const newUploads: UploadProgress[] = files.map((file) => ({
+      file,
+      progress: 0,
+      status: 'uploading',
+    }))
 
-		setUploads(newUploads)
+    setUploads(newUploads)
 
-		// Simulate upload progress
-		for (const [i, upload] of newUploads.entries()) {
-			if (!upload) continue
-			// Simulate progress
-			for (let progress = 0; progress <= 100; progress += 10) {
-				await new Promise((resolve) => setTimeout(resolve, 100))
-				setUploads((prev) => {
-					const updated = [...prev]
-					updated[i] = { file: upload.file, progress, status: 'uploading' }
-					return updated
-				})
-			}
+    // Simulate upload progress
+    for (const [i, upload] of newUploads.entries()) {
+      if (!upload) continue
+      // Simulate progress
+      for (let progress = 0; progress <= 100; progress += 10) {
+        await new Promise((resolve) => setTimeout(resolve, 100))
+        setUploads((prev) => {
+          const updated = [...prev]
+          updated[i] = { file: upload.file, progress, status: 'uploading' }
+          return updated
+        })
+      }
 
-			// Mark as success
-			setUploads((prev) => {
-				const updated = [...prev]
-				updated[i] = { file: upload.file, progress: 100, status: 'success' }
-				return updated
-			})
-		}
+      // Mark as success
+      setUploads((prev) => {
+        const updated = [...prev]
+        updated[i] = { file: upload.file, progress: 100, status: 'success' }
+        return updated
+      })
+    }
 
-		setIsUploading(false)
+    setIsUploading(false)
 
-		// Clear uploads after a delay
-		setTimeout(() => {
-			setUploads([])
-		}, 3000)
-	}
+    // Clear uploads after a delay
+    setTimeout(() => {
+      setUploads([])
+    }, 3000)
+  }
 
-	return {
-		uploads,
-		isUploading,
-		uploadFiles,
-	}
+  return {
+    uploads,
+    isUploading,
+    uploadFiles,
+  }
 }

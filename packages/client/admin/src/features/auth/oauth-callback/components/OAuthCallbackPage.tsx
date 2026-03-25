@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+
 import { useTokenStorage } from '~/core/provider/MagnetProvider'
 import { useAppIntl } from '~/i18n'
 
@@ -20,48 +21,48 @@ import { useAppIntl } from '~/i18n'
  * On failure (no token, or `error` param present) it redirects to /login.
  */
 export function OAuthCallbackPage() {
-	const intl = useAppIntl()
-	const tokenStorage = useTokenStorage()
-	const navigate = useNavigate()
-	const handled = useRef(false)
+  const intl = useAppIntl()
+  const tokenStorage = useTokenStorage()
+  const navigate = useNavigate()
+  const handled = useRef(false)
 
-	useEffect(() => {
-		if (handled.current) return
-		handled.current = true
+  useEffect(() => {
+    if (handled.current) return
+    handled.current = true
 
-		const params = new URLSearchParams(window.location.search)
-		const accessToken = params.get('access_token')
-		const refreshToken = params.get('refresh_token')
-		const expiresIn = params.get('expires_in')
-		const error = params.get('error')
+    const params = new URLSearchParams(window.location.search)
+    const accessToken = params.get('access_token')
+    const refreshToken = params.get('refresh_token')
+    const expiresIn = params.get('expires_in')
+    const error = params.get('error')
 
-		if (error || !accessToken) {
-			navigate('/login', { replace: true })
-			return
-		}
+    if (error || !accessToken) {
+      navigate('/login', { replace: true })
+      return
+    }
 
-		tokenStorage.setAccessToken(accessToken)
+    tokenStorage.setAccessToken(accessToken)
 
-		if (refreshToken) {
-			tokenStorage.setRefreshToken(refreshToken)
-		}
+    if (refreshToken) {
+      tokenStorage.setRefreshToken(refreshToken)
+    }
 
-		if (expiresIn) {
-			const expiryTime = Date.now() + Number(expiresIn) * 1000
-			tokenStorage.setTokenExpiry(expiryTime)
-		}
+    if (expiresIn) {
+      const expiryTime = Date.now() + Number(expiresIn) * 1000
+      tokenStorage.setTokenExpiry(expiryTime)
+    }
 
-		navigate('/', { replace: true })
-	}, [tokenStorage, navigate])
+    navigate('/', { replace: true })
+  }, [tokenStorage, navigate])
 
-	return (
-		<div className="flex min-h-screen items-center justify-center">
-			<p className="text-muted-foreground text-sm">
-				{intl.formatMessage({
-					id: 'auth.oauthCallback.signingIn',
-					defaultMessage: 'Signing you in…',
-				})}
-			</p>
-		</div>
-	)
+  return (
+    <div className="flex min-h-screen items-center justify-center">
+      <p className="text-muted-foreground text-sm">
+        {intl.formatMessage({
+          id: 'auth.oauthCallback.signingIn',
+          defaultMessage: 'Signing you in…',
+        })}
+      </p>
+    </div>
+  )
 }

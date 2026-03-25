@@ -1,8 +1,6 @@
 import { SetMetadata } from '@nestjs/common'
-import {
-	PERMISSION_METADATA_KEY,
-	PERMISSION_OPTIONS_METADATA_KEY,
-} from '../../constants'
+
+import { PERMISSION_METADATA_KEY, PERMISSION_OPTIONS_METADATA_KEY } from '../../constants'
 import type { PermissionOptions } from '../../types/rbac.types'
 
 /**
@@ -36,18 +34,18 @@ import type { PermissionOptions } from '../../types/rbac.types'
  * ```
  */
 export function RequirePermission(options: PermissionOptions): MethodDecorator {
-	return <T>(
-		target: object,
-		propertyKey: string | symbol,
-		descriptor: TypedPropertyDescriptor<T>,
-	): TypedPropertyDescriptor<T> => {
-		SetMetadata(PERMISSION_METADATA_KEY, options)(
-			target,
-			propertyKey,
-			descriptor as TypedPropertyDescriptor<unknown>,
-		)
-		return descriptor
-	}
+  return <T>(
+    target: object,
+    propertyKey: string | symbol,
+    descriptor: TypedPropertyDescriptor<T>,
+  ): TypedPropertyDescriptor<T> => {
+    SetMetadata(PERMISSION_METADATA_KEY, options)(
+      target,
+      propertyKey,
+      descriptor as TypedPropertyDescriptor<unknown>,
+    )
+    return descriptor
+  }
 }
 
 /**
@@ -69,23 +67,23 @@ export function RequirePermission(options: PermissionOptions): MethodDecorator {
  * ```
  */
 export function HasPermission(permission: string): MethodDecorator {
-	return <T>(
-		target: object,
-		propertyKey: string | symbol,
-		descriptor: TypedPropertyDescriptor<T>,
-	): TypedPropertyDescriptor<T> => {
-		const options: PermissionOptions = {
-			id: permission,
-			name: permission.split('.').pop() ?? permission,
-			description: `Requires ${permission} permission`,
-		}
-		SetMetadata(PERMISSION_METADATA_KEY, options)(
-			target,
-			propertyKey,
-			descriptor as TypedPropertyDescriptor<unknown>,
-		)
-		return descriptor
-	}
+  return <T>(
+    target: object,
+    propertyKey: string | symbol,
+    descriptor: TypedPropertyDescriptor<T>,
+  ): TypedPropertyDescriptor<T> => {
+    const options: PermissionOptions = {
+      id: permission,
+      name: permission.split('.').pop() ?? permission,
+      description: `Requires ${permission} permission`,
+    }
+    SetMetadata(PERMISSION_METADATA_KEY, options)(
+      target,
+      propertyKey,
+      descriptor as TypedPropertyDescriptor<unknown>,
+    )
+    return descriptor
+  }
 }
 
 /**
@@ -95,45 +93,38 @@ export function HasPermission(permission: string): MethodDecorator {
  *
  * @param options - Additional permission options
  */
-export function PermissionMeta(
-	options: Partial<PermissionOptions>,
-): MethodDecorator {
-	return <T>(
-		target: object,
-		propertyKey: string | symbol,
-		descriptor: TypedPropertyDescriptor<T>,
-	): TypedPropertyDescriptor<T> => {
-		SetMetadata(PERMISSION_OPTIONS_METADATA_KEY, options)(
-			target,
-			propertyKey,
-			descriptor as TypedPropertyDescriptor<unknown>,
-		)
-		return descriptor
-	}
+export function PermissionMeta(options: Partial<PermissionOptions>): MethodDecorator {
+  return <T>(
+    target: object,
+    propertyKey: string | symbol,
+    descriptor: TypedPropertyDescriptor<T>,
+  ): TypedPropertyDescriptor<T> => {
+    SetMetadata(PERMISSION_OPTIONS_METADATA_KEY, options)(
+      target,
+      propertyKey,
+      descriptor as TypedPropertyDescriptor<unknown>,
+    )
+    return descriptor
+  }
 }
 
 /**
  * Helper to extract permission metadata from a method
  */
 export function getPermissionMetadata(
-	target: object,
-	propertyKey: string | symbol,
+  target: object,
+  propertyKey: string | symbol,
 ): PermissionOptions | undefined {
-	const method = (target as Record<string | symbol, unknown>)[propertyKey]
-	if (typeof method !== 'function') return undefined
-	return Reflect.getMetadata(PERMISSION_METADATA_KEY, method) as
-		| PermissionOptions
-		| undefined
+  const method = (target as Record<string | symbol, unknown>)[propertyKey]
+  if (typeof method !== 'function') return undefined
+  return Reflect.getMetadata(PERMISSION_METADATA_KEY, method) as PermissionOptions | undefined
 }
 
 /**
  * Helper to check if a method has permission decorator
  */
-export function hasPermissionDecorator(
-	target: object,
-	propertyKey: string | symbol,
-): boolean {
-	const method = (target as Record<string | symbol, unknown>)[propertyKey]
-	if (typeof method !== 'function') return false
-	return Reflect.hasMetadata(PERMISSION_METADATA_KEY, method)
+export function hasPermissionDecorator(target: object, propertyKey: string | symbol): boolean {
+  const method = (target as Record<string | symbol, unknown>)[propertyKey]
+  if (typeof method !== 'function') return false
+  return Reflect.hasMetadata(PERMISSION_METADATA_KEY, method)
 }

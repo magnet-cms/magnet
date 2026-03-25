@@ -18,52 +18,51 @@ import { Plugin } from '@magnet-cms/core'
  * in the sidebar.
  */
 @Plugin({
-	name: 'playground',
-	description:
-		'Playground: visual schema builder and code generator for Magnet CMS',
-	version: '1.0.0',
-	module: () => require('./backend/playground.module').PlaygroundModule,
-	frontend: {
-		routes: [
-			{
-				path: 'playground',
-				componentId: 'PlaygroundIndex',
-				requiresAuth: true,
-				children: [
-					{ path: '', componentId: 'PlaygroundIndex' },
-					{ path: 'new', componentId: 'PlaygroundEditor' },
-					{ path: ':schemaName', componentId: 'PlaygroundEditor' },
-				],
-			},
-		],
-		sidebar: [
-			{
-				id: 'playground',
-				title: 'Playground',
-				url: '/playground',
-				icon: 'Boxes',
-				order: 20,
-			},
-		],
-	},
+  name: 'playground',
+  description: 'Playground: visual schema builder and code generator for Magnet CMS',
+  version: '1.0.0',
+  module: () => require('./backend/playground.module').PlaygroundModule,
+  frontend: {
+    routes: [
+      {
+        path: 'playground',
+        componentId: 'PlaygroundIndex',
+        requiresAuth: true,
+        children: [
+          { path: '', componentId: 'PlaygroundIndex' },
+          { path: 'new', componentId: 'PlaygroundEditor' },
+          { path: ':schemaName', componentId: 'PlaygroundEditor' },
+        ],
+      },
+    ],
+    sidebar: [
+      {
+        id: 'playground',
+        title: 'Playground',
+        url: '/playground',
+        icon: 'Boxes',
+        order: 20,
+      },
+    ],
+  },
 })
 export class PlaygroundPlugin {
-	/**
-	 * Create a configured plugin provider for MagnetModule.forRoot().
-	 *
-	 * @example
-	 * ```typescript
-	 * MagnetModule.forRoot([
-	 *   PlaygroundPlugin.forRoot(),
-	 * ])
-	 * ```
-	 */
-	static forRoot(config?: { modulesPath?: string }): PluginMagnetProvider {
-		return {
-			type: 'plugin',
-			plugin: PlaygroundPlugin,
-			options: config as Record<string, unknown> | undefined,
-			envVars: [],
-		}
-	}
+  /**
+   * Create a configured plugin provider for MagnetModule.forRoot().
+   *
+   * @example
+   * ```typescript
+   * MagnetModule.forRoot([
+   *   PlaygroundPlugin.forRoot(),
+   * ])
+   * ```
+   */
+  static forRoot(config?: { modulesPath?: string }): PluginMagnetProvider {
+    return {
+      type: 'plugin',
+      plugin: PlaygroundPlugin,
+      options: config as Record<string, unknown> | undefined,
+      envVars: [],
+    }
+  }
 }

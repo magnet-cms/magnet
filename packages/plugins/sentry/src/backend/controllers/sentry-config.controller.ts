@@ -1,5 +1,6 @@
 import { RestrictedRoute } from '@magnet-cms/core'
 import { Controller, Get, Inject } from '@nestjs/common'
+
 import { SENTRY_OPTIONS } from '../constants'
 import type { SentryClientConfig, SentryPluginConfig } from '../types'
 
@@ -12,24 +13,21 @@ import type { SentryClientConfig, SentryPluginConfig } from '../types'
  */
 @Controller('sentry')
 export class SentryConfigController {
-	constructor(
-		@Inject(SENTRY_OPTIONS) private readonly options: SentryPluginConfig,
-	) {}
+  constructor(@Inject(SENTRY_OPTIONS) private readonly options: SentryPluginConfig) {}
 
-	/**
-	 * Return the public Sentry config needed to initialize the Browser SDK
-	 * in the admin UI feedback widget.
-	 *
-	 * Requires authentication — uses the standard Magnet admin guard.
-	 */
-	@Get('config')
-	@RestrictedRoute()
-	getConfig(): SentryClientConfig {
-		return {
-			dsn: this.options.dsn ?? '',
-			enabled: this.options.enabled ?? true,
-			environment:
-				this.options.environment ?? process.env.NODE_ENV ?? 'production',
-		}
-	}
+  /**
+   * Return the public Sentry config needed to initialize the Browser SDK
+   * in the admin UI feedback widget.
+   *
+   * Requires authentication — uses the standard Magnet admin guard.
+   */
+  @Get('config')
+  @RestrictedRoute()
+  getConfig(): SentryClientConfig {
+    return {
+      dsn: this.options.dsn ?? '',
+      enabled: this.options.enabled ?? true,
+      environment: this.options.environment ?? process.env.NODE_ENV ?? 'production',
+    }
+  }
 }

@@ -1,10 +1,6 @@
 import type { RBACModuleOptions } from '@magnet-cms/common'
 import { DynamicModule, Module, forwardRef } from '@nestjs/common'
-import { DatabaseModule } from '~/modules/database'
-import { DiscoveryModule } from '~/modules/discovery'
-import { EventsModule } from '~/modules/events'
-import { SettingsModule } from '~/modules/settings'
-import { UserModule } from '~/modules/user'
+
 import { PermissionGuard } from './guards/permission.guard'
 import { DynamicPermissionInterceptor } from './interceptors/dynamic-permission.interceptor'
 import { RBAC_CONFIG } from './rbac.constants'
@@ -15,6 +11,12 @@ import { Role } from './schemas/role.schema'
 import { PermissionDiscoveryService } from './services/permission-discovery.service'
 import { PermissionService } from './services/permission.service'
 import { RoleService } from './services/role.service'
+
+import { DatabaseModule } from '~/modules/database'
+import { DiscoveryModule } from '~/modules/discovery'
+import { EventsModule } from '~/modules/events'
+import { SettingsModule } from '~/modules/settings'
+import { UserModule } from '~/modules/user'
 
 /**
  * RBAC (Role-Based Access Control) Module
@@ -37,44 +39,44 @@ import { RoleService } from './services/role.service'
  */
 @Module({})
 export class RBACModule {
-	/**
-	 * Register the RBAC module with configuration
-	 *
-	 * @param options - RBAC configuration options
-	 */
-	static forRoot(options?: RBACModuleOptions): DynamicModule {
-		return {
-			module: RBACModule,
-			global: true,
-			imports: [
-				DatabaseModule,
-				DatabaseModule.forFeature(Role),
-				DatabaseModule.forFeature(Permission),
-				forwardRef(() => UserModule),
-				EventsModule,
-				DiscoveryModule,
-				// PluginModule is globally available from MagnetModule.forRoot()
-				SettingsModule.forFeature(RBACSettings),
-			],
-			controllers: [RBACController],
-			providers: [
-				{
-					provide: RBAC_CONFIG,
-					useValue: options ?? {},
-				},
-				PermissionDiscoveryService,
-				PermissionService,
-				RoleService,
-				PermissionGuard,
-				DynamicPermissionInterceptor,
-			],
-			exports: [
-				RoleService,
-				PermissionDiscoveryService,
-				PermissionService,
-				PermissionGuard,
-				DynamicPermissionInterceptor,
-			],
-		}
-	}
+  /**
+   * Register the RBAC module with configuration
+   *
+   * @param options - RBAC configuration options
+   */
+  static forRoot(options?: RBACModuleOptions): DynamicModule {
+    return {
+      module: RBACModule,
+      global: true,
+      imports: [
+        DatabaseModule,
+        DatabaseModule.forFeature(Role),
+        DatabaseModule.forFeature(Permission),
+        forwardRef(() => UserModule),
+        EventsModule,
+        DiscoveryModule,
+        // PluginModule is globally available from MagnetModule.forRoot()
+        SettingsModule.forFeature(RBACSettings),
+      ],
+      controllers: [RBACController],
+      providers: [
+        {
+          provide: RBAC_CONFIG,
+          useValue: options ?? {},
+        },
+        PermissionDiscoveryService,
+        PermissionService,
+        RoleService,
+        PermissionGuard,
+        DynamicPermissionInterceptor,
+      ],
+      exports: [
+        RoleService,
+        PermissionDiscoveryService,
+        PermissionService,
+        PermissionGuard,
+        DynamicPermissionInterceptor,
+      ],
+    }
+  }
 }

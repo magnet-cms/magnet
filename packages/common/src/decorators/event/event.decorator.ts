@@ -1,8 +1,9 @@
 import { SetMetadata } from '@nestjs/common'
+
 import type {
-	EventHandlerMetadata,
-	EventHandlerOptions,
-	EventPayloadMap,
+  EventHandlerMetadata,
+  EventHandlerOptions,
+  EventPayloadMap,
 } from '../../types/events.types'
 
 /**
@@ -37,20 +38,20 @@ export const EVENT_HANDLER_METADATA = 'magnet:event_handler'
  * ```
  */
 export function OnEvent(
-	event: keyof EventPayloadMap,
-	options: EventHandlerOptions = {},
+  event: keyof EventPayloadMap,
+  options: EventHandlerOptions = {},
 ): MethodDecorator {
-	return <T>(
-		target: object,
-		propertyKey: string | symbol,
-		descriptor: TypedPropertyDescriptor<T>,
-	): TypedPropertyDescriptor<T> => {
-		const metadata: EventHandlerMetadata = { event, options }
-		SetMetadata(EVENT_HANDLER_METADATA, metadata)(
-			target,
-			propertyKey,
-			descriptor as TypedPropertyDescriptor<unknown>,
-		)
-		return descriptor
-	}
+  return <T>(
+    target: object,
+    propertyKey: string | symbol,
+    descriptor: TypedPropertyDescriptor<T>,
+  ): TypedPropertyDescriptor<T> => {
+    const metadata: EventHandlerMetadata = { event, options }
+    SetMetadata(EVENT_HANDLER_METADATA, metadata)(
+      target,
+      propertyKey,
+      descriptor as TypedPropertyDescriptor<unknown>,
+    )
+    return descriptor
+  }
 }

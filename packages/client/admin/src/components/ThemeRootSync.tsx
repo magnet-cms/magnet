@@ -13,23 +13,23 @@ const HTML_THEME_CLASSES = ['light', 'dark', 'system'] as const
  * variables. Sync <html> in useLayoutEffect so it matches resolvedTheme before the browser paints.
  */
 export function ThemeRootSync({ children }: { children: ReactNode }) {
-	const { resolvedTheme } = useTheme()
+  const { resolvedTheme } = useTheme()
 
-	useLayoutEffect(() => {
-		if (resolvedTheme !== 'light' && resolvedTheme !== 'dark') {
-			return
-		}
-		const el = document.documentElement
-		for (const t of HTML_THEME_CLASSES) {
-			el.classList.remove(t)
-		}
-		el.classList.add(resolvedTheme)
-		el.style.colorScheme = resolvedTheme
-	}, [resolvedTheme])
+  useLayoutEffect(() => {
+    if (resolvedTheme !== 'light' && resolvedTheme !== 'dark') {
+      return
+    }
+    const el = document.documentElement
+    for (const t of HTML_THEME_CLASSES) {
+      el.classList.remove(t)
+    }
+    el.classList.add(resolvedTheme)
+    el.style.colorScheme = resolvedTheme
+  }, [resolvedTheme])
 
-	return (
-		<div data-magnet-theme-root style={{ minHeight: '100vh' }}>
-			{children}
-		</div>
-	)
+  return (
+    <div data-magnet-theme-root style={{ minHeight: '100vh' }}>
+      {children}
+    </div>
+  )
 }

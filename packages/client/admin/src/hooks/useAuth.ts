@@ -1,10 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useState } from 'react'
+
 import type {
-	AuthStatus,
-	AuthUser,
-	LoginCredentials,
-	RegisterCredentials,
+  AuthStatus,
+  AuthUser,
+  LoginCredentials,
+  RegisterCredentials,
 } from '~/core/adapters/types'
 import { useAdapter, useTokenStorage } from '~/core/provider/MagnetProvider'
 
@@ -19,265 +20,262 @@ export const REFRESH_TOKEN_KEY = 'auth_refresh_token'
 export const TOKEN_EXPIRY_KEY = 'auth_token_expiry'
 
 type AuthError = {
-	message: string
-	code?: string
-	status?: number
+  message: string
+  code?: string
+  status?: number
 }
 
 export const useLogin = () => {
-	const adapter = useAdapter()
-	const tokenStorage = useTokenStorage()
-	const queryClient = useQueryClient()
+  const adapter = useAdapter()
+  const tokenStorage = useTokenStorage()
+  const queryClient = useQueryClient()
 
-	return useMutation({
-		mutationFn: async (credentials: LoginCredentials) => {
-			return adapter.auth.login(credentials)
-		},
-		onSuccess: (data) => {
-			const { accessToken, refreshToken, expiresIn } = data
+  return useMutation({
+    mutationFn: async (credentials: LoginCredentials) => {
+      return adapter.auth.login(credentials)
+    },
+    onSuccess: (data) => {
+      const { accessToken, refreshToken, expiresIn } = data
 
-			// Store tokens
-			tokenStorage.setAccessToken(accessToken)
+      // Store tokens
+      tokenStorage.setAccessToken(accessToken)
 
-			// Store refresh token if available
-			if (refreshToken) {
-				tokenStorage.setRefreshToken(refreshToken)
-			}
+      // Store refresh token if available
+      if (refreshToken) {
+        tokenStorage.setRefreshToken(refreshToken)
+      }
 
-			// Store expiry if available
-			if (expiresIn) {
-				const expiryTime = Date.now() + expiresIn * 1000
-				tokenStorage.setTokenExpiry(expiryTime)
-			}
+      // Store expiry if available
+      if (expiresIn) {
+        const expiryTime = Date.now() + expiresIn * 1000
+        tokenStorage.setTokenExpiry(expiryTime)
+      }
 
-			// Invalidate queries to refetch user data (including status for onboardingCompleted)
-			queryClient.invalidateQueries({ queryKey: AUTH_USER_KEY })
-			queryClient.invalidateQueries({ queryKey: AUTH_ME_KEY })
-			queryClient.invalidateQueries({ queryKey: AUTH_STATUS_KEY })
-		},
-	})
+      // Invalidate queries to refetch user data (including status for onboardingCompleted)
+      queryClient.invalidateQueries({ queryKey: AUTH_USER_KEY })
+      queryClient.invalidateQueries({ queryKey: AUTH_ME_KEY })
+      queryClient.invalidateQueries({ queryKey: AUTH_STATUS_KEY })
+    },
+  })
 }
 
 export const useRegister = () => {
-	const adapter = useAdapter()
-	const tokenStorage = useTokenStorage()
-	const queryClient = useQueryClient()
+  const adapter = useAdapter()
+  const tokenStorage = useTokenStorage()
+  const queryClient = useQueryClient()
 
-	return useMutation({
-		mutationFn: async (credentials: RegisterCredentials) => {
-			return adapter.auth.register(credentials)
-		},
-		onSuccess: (data) => {
-			const { accessToken, refreshToken, expiresIn } = data
+  return useMutation({
+    mutationFn: async (credentials: RegisterCredentials) => {
+      return adapter.auth.register(credentials)
+    },
+    onSuccess: (data) => {
+      const { accessToken, refreshToken, expiresIn } = data
 
-			// Store tokens
-			tokenStorage.setAccessToken(accessToken)
+      // Store tokens
+      tokenStorage.setAccessToken(accessToken)
 
-			// Store refresh token if available
-			if (refreshToken) {
-				tokenStorage.setRefreshToken(refreshToken)
-			}
+      // Store refresh token if available
+      if (refreshToken) {
+        tokenStorage.setRefreshToken(refreshToken)
+      }
 
-			// Store expiry if available
-			if (expiresIn) {
-				const expiryTime = Date.now() + expiresIn * 1000
-				tokenStorage.setTokenExpiry(expiryTime)
-			}
+      // Store expiry if available
+      if (expiresIn) {
+        const expiryTime = Date.now() + expiresIn * 1000
+        tokenStorage.setTokenExpiry(expiryTime)
+      }
 
-			// Invalidate queries to refetch user data (including status for onboardingCompleted)
-			queryClient.invalidateQueries({ queryKey: AUTH_USER_KEY })
-			queryClient.invalidateQueries({ queryKey: AUTH_ME_KEY })
-			queryClient.invalidateQueries({ queryKey: AUTH_STATUS_KEY })
-		},
-	})
+      // Invalidate queries to refetch user data (including status for onboardingCompleted)
+      queryClient.invalidateQueries({ queryKey: AUTH_USER_KEY })
+      queryClient.invalidateQueries({ queryKey: AUTH_ME_KEY })
+      queryClient.invalidateQueries({ queryKey: AUTH_STATUS_KEY })
+    },
+  })
 }
 
 export const useRefreshToken = () => {
-	const adapter = useAdapter()
-	const tokenStorage = useTokenStorage()
-	const queryClient = useQueryClient()
+  const adapter = useAdapter()
+  const tokenStorage = useTokenStorage()
+  const queryClient = useQueryClient()
 
-	return useMutation({
-		mutationFn: async () => {
-			const refreshToken = tokenStorage.getRefreshToken()
+  return useMutation({
+    mutationFn: async () => {
+      const refreshToken = tokenStorage.getRefreshToken()
 
-			if (!refreshToken) {
-				throw new Error('No refresh token available')
-			}
+      if (!refreshToken) {
+        throw new Error('No refresh token available')
+      }
 
-			return adapter.auth.refresh(refreshToken)
-		},
-		onSuccess: (data) => {
-			const { accessToken, refreshToken, expiresIn } = data
+      return adapter.auth.refresh(refreshToken)
+    },
+    onSuccess: (data) => {
+      const { accessToken, refreshToken, expiresIn } = data
 
-			// Store new tokens
-			tokenStorage.setAccessToken(accessToken)
+      // Store new tokens
+      tokenStorage.setAccessToken(accessToken)
 
-			// Store new refresh token if available
-			if (refreshToken) {
-				tokenStorage.setRefreshToken(refreshToken)
-			}
+      // Store new refresh token if available
+      if (refreshToken) {
+        tokenStorage.setRefreshToken(refreshToken)
+      }
 
-			// Store new expiry if available
-			if (expiresIn) {
-				const expiryTime = Date.now() + expiresIn * 1000
-				tokenStorage.setTokenExpiry(expiryTime)
-			}
+      // Store new expiry if available
+      if (expiresIn) {
+        const expiryTime = Date.now() + expiresIn * 1000
+        tokenStorage.setTokenExpiry(expiryTime)
+      }
 
-			// Invalidate queries to refetch user data
-			queryClient.invalidateQueries({ queryKey: AUTH_USER_KEY })
-		},
-		onError: () => {
-			// If refresh fails, log the user out
-			tokenStorage.clearAll()
-			queryClient.removeQueries({ queryKey: AUTH_USER_KEY })
-			queryClient.removeQueries({ queryKey: AUTH_ME_KEY })
-		},
-	})
+      // Invalidate queries to refetch user data
+      queryClient.invalidateQueries({ queryKey: AUTH_USER_KEY })
+    },
+    onError: () => {
+      // If refresh fails, log the user out
+      tokenStorage.clearAll()
+      queryClient.removeQueries({ queryKey: AUTH_USER_KEY })
+      queryClient.removeQueries({ queryKey: AUTH_ME_KEY })
+    },
+  })
 }
 
 export const useMe = () => {
-	const adapter = useAdapter()
+  const adapter = useAdapter()
 
-	return useQuery<AuthUser, AuthError>({
-		queryKey: AUTH_ME_KEY,
-		queryFn: () => adapter.auth.getMe(),
-	})
+  return useQuery<AuthUser, AuthError>({
+    queryKey: AUTH_ME_KEY,
+    queryFn: () => adapter.auth.getMe(),
+  })
 }
 
 export const useStatus = () => {
-	const adapter = useAdapter()
+  const adapter = useAdapter()
 
-	return useQuery<AuthStatus, AuthError>({
-		queryKey: AUTH_STATUS_KEY,
-		queryFn: () => adapter.auth.getStatus(),
-		staleTime: 5 * 60 * 1000,
-	})
+  return useQuery<AuthStatus, AuthError>({
+    queryKey: AUTH_STATUS_KEY,
+    queryFn: () => adapter.auth.getStatus(),
+    staleTime: 5 * 60 * 1000,
+  })
 }
 
 export const useLogout = () => {
-	const adapter = useAdapter()
-	const tokenStorage = useTokenStorage()
-	const queryClient = useQueryClient()
+  const adapter = useAdapter()
+  const tokenStorage = useTokenStorage()
+  const queryClient = useQueryClient()
 
-	return useCallback(async () => {
-		// Call adapter logout (clears tokens internally)
-		await adapter.auth.logout()
+  return useCallback(async () => {
+    // Call adapter logout (clears tokens internally)
+    await adapter.auth.logout()
 
-		// Also clear via tokenStorage for good measure
-		tokenStorage.clearAll()
+    // Also clear via tokenStorage for good measure
+    tokenStorage.clearAll()
 
-		// Clear auth-related queries from cache
-		queryClient.removeQueries({ queryKey: AUTH_USER_KEY })
-		queryClient.removeQueries({ queryKey: AUTH_ME_KEY })
-		queryClient.removeQueries({ queryKey: AUTH_STATUS_KEY })
-	}, [adapter, tokenStorage, queryClient])
+    // Clear auth-related queries from cache
+    queryClient.removeQueries({ queryKey: AUTH_USER_KEY })
+    queryClient.removeQueries({ queryKey: AUTH_ME_KEY })
+    queryClient.removeQueries({ queryKey: AUTH_STATUS_KEY })
+  }, [adapter, tokenStorage, queryClient])
 }
 
 export const useAuth = () => {
-	const adapter = useAdapter()
-	const tokenStorage = useTokenStorage()
-	const [token, setToken] = useState<string | null>(null)
-	const [isInitializing, setIsInitializing] = useState(true)
-	const { mutate: refreshToken } = useRefreshToken()
+  const adapter = useAdapter()
+  const tokenStorage = useTokenStorage()
+  const [token, setToken] = useState<string | null>(null)
+  const [isInitializing, setIsInitializing] = useState(true)
+  const { mutate: refreshToken } = useRefreshToken()
 
-	// Initialize auth state from storage
-	useEffect(() => {
-		const storedToken = tokenStorage.getAccessToken()
-		const tokenExpiry = tokenStorage.getTokenExpiry()
+  // Initialize auth state from storage
+  useEffect(() => {
+    const storedToken = tokenStorage.getAccessToken()
+    const tokenExpiry = tokenStorage.getTokenExpiry()
 
-		if (storedToken) {
-			// Check if token is expired
-			if (tokenExpiry && tokenExpiry < Date.now()) {
-				// Token expired, try to refresh
-				refreshToken(undefined, {
-					onSettled: () => {
-						setIsInitializing(false)
-					},
-				})
-			} else {
-				// Token valid
-				setToken(storedToken)
-				setIsInitializing(false)
-			}
-		} else {
-			setIsInitializing(false)
-		}
-	}, [tokenStorage, refreshToken])
+    if (storedToken) {
+      // Check if token is expired
+      if (tokenExpiry && tokenExpiry < Date.now()) {
+        // Token expired, try to refresh
+        refreshToken(undefined, {
+          onSettled: () => {
+            setIsInitializing(false)
+          },
+        })
+      } else {
+        // Token valid
+        setToken(storedToken)
+        setIsInitializing(false)
+      }
+    } else {
+      setIsInitializing(false)
+    }
+  }, [tokenStorage, refreshToken])
 
-	// Set up token refresh interval if needed
-	useEffect(() => {
-		if (!token) return
+  // Set up token refresh interval if needed
+  useEffect(() => {
+    if (!token) return
 
-		const tokenExpiry = tokenStorage.getTokenExpiry()
-		if (!tokenExpiry) return
+    const tokenExpiry = tokenStorage.getTokenExpiry()
+    if (!tokenExpiry) return
 
-		const timeUntilExpiry = tokenExpiry - Date.now()
+    const timeUntilExpiry = tokenExpiry - Date.now()
 
-		// Refresh 1 minute before expiry
-		const refreshTime = Math.max(0, timeUntilExpiry - 60000)
+    // Refresh 1 minute before expiry
+    const refreshTime = Math.max(0, timeUntilExpiry - 60000)
 
-		const refreshTimerId = setTimeout(() => {
-			refreshToken()
-		}, refreshTime)
+    const refreshTimerId = setTimeout(() => {
+      refreshToken()
+    }, refreshTime)
 
-		return () => clearTimeout(refreshTimerId)
-	}, [token, tokenStorage, refreshToken])
+    return () => clearTimeout(refreshTimerId)
+  }, [token, tokenStorage, refreshToken])
 
-	const queryClient = useQueryClient()
+  const queryClient = useQueryClient()
 
-	const {
-		data: user,
-		isLoading: isUserLoading,
-		error,
-	} = useQuery<AuthUser, AuthError>({
-		queryKey: AUTH_USER_KEY,
-		queryFn: () => adapter.auth.getMe(),
-		enabled: !!token && !isInitializing,
-		retry: false, // Don't retry 401s - immediate failure is expected
-		staleTime: 5 * 60 * 1000, // 5 minutes
-	})
+  const {
+    data: user,
+    isLoading: isUserLoading,
+    error,
+  } = useQuery<AuthUser, AuthError>({
+    queryKey: AUTH_USER_KEY,
+    queryFn: () => adapter.auth.getMe(),
+    enabled: !!token && !isInitializing,
+    retry: false, // Don't retry 401s - immediate failure is expected
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  })
 
-	// Watch for auth errors (401) and clear tokens
-	useEffect(() => {
-		if (
-			error &&
-			(error.status === 401 || error.message?.includes('Unauthorized'))
-		) {
-			// Clear all tokens on 401
-			tokenStorage.clearAll()
-			// Clear the token state to trigger re-render
-			setToken(null)
-			// Remove cached user data
-			queryClient.removeQueries({ queryKey: AUTH_USER_KEY })
-		}
-	}, [error, tokenStorage, queryClient])
+  // Watch for auth errors (401) and clear tokens
+  useEffect(() => {
+    if (error && (error.status === 401 || error.message?.includes('Unauthorized'))) {
+      // Clear all tokens on 401
+      tokenStorage.clearAll()
+      // Clear the token state to trigger re-render
+      setToken(null)
+      // Remove cached user data
+      queryClient.removeQueries({ queryKey: AUTH_USER_KEY })
+    }
+  }, [error, tokenStorage, queryClient])
 
-	const logout = useLogout()
+  const logout = useLogout()
 
-	// Check if user has specific role
-	const hasRole = useCallback(
-		(role: string | string[]) => {
-			if (!user) return false
+  // Check if user has specific role
+  const hasRole = useCallback(
+    (role: string | string[]) => {
+      if (!user) return false
 
-			if (Array.isArray(role)) {
-				return role.includes(user.role)
-			}
+      if (Array.isArray(role)) {
+        return role.includes(user.role)
+      }
 
-			return user.role === role
-		},
-		[user],
-	)
+      return user.role === role
+    },
+    [user],
+  )
 
-	return {
-		user,
-		isLoading: isUserLoading || isInitializing,
-		isInitializing,
-		error,
-		// User is authenticated only if we have user data AND no auth error
-		isAuthenticated: !!user && !error,
-		hasRole,
-		logout,
-		refreshToken: () => refreshToken(),
-	}
+  return {
+    user,
+    isLoading: isUserLoading || isInitializing,
+    isInitializing,
+    error,
+    // User is authenticated only if we have user data AND no auth error
+    isAuthenticated: !!user && !error,
+    hasRole,
+    logout,
+    refreshToken: () => refreshToken(),
+  }
 }
