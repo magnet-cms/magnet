@@ -7,8 +7,9 @@
     "dev": "next dev --port 3002",
     "build": "next build",
     "start": "next start --port 3002",
-    "lint": "biome check .",
-    "check-types": "next typegen && tsc --noEmit"
+    "lint": "eslint . --max-warnings 0",
+    "check-types": "next typegen && tsc --noEmit",
+    "lint:fix": "eslint . --max-warnings 0 --fix"
   },
   "dependencies": {
     "@types/mdx": "^2.0.13",
@@ -20,13 +21,13 @@
     "react-dom": "^19.2.0"
   },
   "devDependencies": {
-    "@repo/biome": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/node": "^22.15.3",
     "@types/react": "19.2.2",
     "@types/react-dom": "19.2.2",
     "tailwindcss": "4.2.2",
     "typescript": "5.7.3",
-    "zod": "4.3.6"
+    "zod": "4.3.6",
+    "@repo/eslint-config": "workspace:*"
   }
 }

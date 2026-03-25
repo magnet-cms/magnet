@@ -21,17 +21,18 @@
   ],
   "scripts": {
     "build:dev": "tsup --watch",
-    "build": "tsup"
+    "build": "tsup",
+    "lint:fix": "eslint . --max-warnings 0 --fix"
   },
   "dependencies": {
     "pg": "^8.13.0"
   },
   "devDependencies": {
     "@magnet-cms/common": "workspace:*",
-    "@repo/biome": "workspace:*",
     "@repo/tsup": "workspace:*",
     "@repo/typescript-config": "workspace:*",
-    "@types/pg": "^8.11.0"
+    "@types/pg": "^8.11.0",
+    "@repo/eslint-config": "workspace:*"
   },
   "peerDependencies": {
     "@magnet-cms/common": "^0.4.0"

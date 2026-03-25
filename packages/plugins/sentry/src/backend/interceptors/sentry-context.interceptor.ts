@@ -1,14 +1,14 @@
 import {
-	type CallHandler,
-	type ExecutionContext,
-	Injectable,
-	type NestInterceptor,
+  type CallHandler,
+  type ExecutionContext,
+  Injectable,
+  type NestInterceptor,
 } from '@nestjs/common'
 import { Observable } from 'rxjs'
 
 interface RequestWithUser {
-	user?: { id?: string }
-	ip?: string
+  user?: { id?: string }
+  ip?: string
 }
 
 /**
@@ -28,47 +28,44 @@ interface RequestWithUser {
  */
 @Injectable()
 export class SentryContextInterceptor implements NestInterceptor {
-	intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
-		if (context.getType() !== 'http') {
-			return next.handle()
-		}
+  intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
+    if (context.getType() !== 'http') {
+      return next.handle()
+    }
 
-		const request = context.switchToHttp().getRequest<RequestWithUser>()
+    const request = context.switchToHttp().getRequest<RequestWithUser>()
 
-		try {
-			// eslint-disable-next-line @typescript-eslint/no-require-imports
-			// biome-ignore format: split import() breaks Bun parser
-			const Sentry = require('@sentry/nestjs') as typeof import('@sentry/nestjs')
-			if (!Sentry.getClient()) return next.handle()
+    try {
+      // prettier-ignore -- split import() breaks Bun parser
+      const Sentry = require('@sentry/nestjs') as typeof import('@sentry/nestjs')
+      if (!Sentry.getClient()) return next.handle()
 
-			// Set user context — available on exceptions AND successful responses
-			if (request.user?.id) {
-				Sentry.setUser({
-					id: request.user.id,
-					ip_address: request.ip,
-				})
-			} else {
-				Sentry.setUser({ ip_address: request.ip })
-			}
+      // Set user context — available on exceptions AND successful responses
+      if (request.user?.id) {
+        Sentry.setUser({
+          id: request.user.id,
+          ip_address: request.ip,
+        })
+      } else {
+        Sentry.setUser({ ip_address: request.ip })
+      }
 
-			// Set requestId tag before handling the request so exceptions include it.
-			// EventContextInterceptor (which runs first) stores the requestId in
-			// AsyncLocalStorage, so it is available synchronously here.
-			try {
-				// eslint-disable-next-line @typescript-eslint/no-require-imports
-				const { getEventContext } =
-					require('@magnet-cms/core') as typeof import('@magnet-cms/core')
-				const ctx = getEventContext()
-				if (ctx?.requestId) {
-					Sentry.setTag('requestId', ctx.requestId)
-				}
-			} catch {
-				// @magnet-cms/core not available in this context — no-op
-			}
-		} catch {
-			// @sentry/nestjs not installed — no-op
-		}
+      // Set requestId tag before handling the request so exceptions include it.
+      // EventContextInterceptor (which runs first) stores the requestId in
+      // AsyncLocalStorage, so it is available synchronously here.
+      try {
+        const { getEventContext } = require('@magnet-cms/core') as typeof import('@magnet-cms/core')
+        const ctx = getEventContext()
+        if (ctx?.requestId) {
+          Sentry.setTag('requestId', ctx.requestId)
+        }
+      } catch {
+        // @magnet-cms/core not available in this context — no-op
+      }
+    } catch {
+      // @sentry/nestjs not installed — no-op
+    }
 
-		return next.handle()
-	}
+    return next.handle()
+  }
 }

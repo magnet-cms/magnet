@@ -1,235 +1,226 @@
 import type { ProjectConfig } from '../types.js'
 
 export function generateTsconfig(): string {
-	return JSON.stringify(
-		{
-			compilerOptions: {
-				module: 'commonjs',
-				declaration: true,
-				removeComments: true,
-				emitDecoratorMetadata: true,
-				experimentalDecorators: true,
-				allowSyntheticDefaultImports: true,
-				target: 'ES2021',
-				sourceMap: true,
-				outDir: './dist',
-				baseUrl: './',
-				incremental: true,
-				skipLibCheck: true,
-				strictNullChecks: true,
-				noImplicitAny: true,
-				strictBindCallApply: true,
-				forceConsistentCasingInFileNames: true,
-				noFallthroughCasesInSwitch: true,
-				paths: {
-					'~/*': ['src/*'],
-				},
-			},
-		},
-		null,
-		2,
-	)
+  return JSON.stringify(
+    {
+      compilerOptions: {
+        module: 'commonjs',
+        declaration: true,
+        removeComments: true,
+        emitDecoratorMetadata: true,
+        experimentalDecorators: true,
+        allowSyntheticDefaultImports: true,
+        target: 'ES2021',
+        sourceMap: true,
+        outDir: './dist',
+        baseUrl: './',
+        incremental: true,
+        skipLibCheck: true,
+        strictNullChecks: true,
+        noImplicitAny: true,
+        strictBindCallApply: true,
+        forceConsistentCasingInFileNames: true,
+        noFallthroughCasesInSwitch: true,
+        paths: {
+          '~/*': ['src/*'],
+        },
+      },
+    },
+    null,
+    2,
+  )
 }
 
 export function generateTsconfigBuild(): string {
-	return JSON.stringify(
-		{
-			extends: './tsconfig.json',
-			exclude: ['node_modules', 'dist', 'test', '**/*spec.ts'],
-		},
-		null,
-		2,
-	)
+  return JSON.stringify(
+    {
+      extends: './tsconfig.json',
+      exclude: ['node_modules', 'dist', 'test', '**/*spec.ts'],
+    },
+    null,
+    2,
+  )
 }
 
 export function generateNestCliJson(): string {
-	return JSON.stringify(
-		{
-			$schema: 'https://json.schemastore.org/nest-cli',
-			collection: '@nestjs/schematics',
-			sourceRoot: 'src',
-			compilerOptions: {
-				deleteOutDir: true,
-			},
-		},
-		null,
-		2,
-	)
+  return JSON.stringify(
+    {
+      $schema: 'https://json.schemastore.org/nest-cli',
+      collection: '@nestjs/schematics',
+      sourceRoot: 'src',
+      compilerOptions: {
+        deleteOutDir: true,
+      },
+    },
+    null,
+    2,
+  )
 }
 
-export function generateBiomeJson(): string {
-	return JSON.stringify(
-		{
-			$schema: 'https://biomejs.dev/schemas/1.9.4/schema.json',
-			vcs: {
-				enabled: true,
-				clientKind: 'git',
-				useIgnoreFile: true,
-			},
-			organizeImports: {
-				enabled: true,
-			},
-			formatter: {
-				enabled: true,
-				indentStyle: 'tab',
-				indentWidth: 2,
-				lineWidth: 100,
-			},
-			linter: {
-				enabled: true,
-				rules: {
-					recommended: true,
-					correctness: {
-						noUnusedImports: 'error',
-						noUnusedVariables: 'error',
-					},
-					style: {
-						noNonNullAssertion: 'off',
-					},
-				},
-			},
-			javascript: {
-				formatter: {
-					quoteStyle: 'single',
-					semicolons: 'asNeeded',
-				},
-			},
-		},
-		null,
-		2,
-	)
+export function generateEslintConfig(): string {
+  return `// @ts-check
+import js from '@eslint/js'
+import eslintConfigPrettier from 'eslint-config-prettier'
+import prettierPlugin from 'eslint-plugin-prettier'
+import tseslint from 'typescript-eslint'
+
+/** @type {import("eslint").Linter.Config[]} */
+export default [
+  js.configs.recommended,
+  eslintConfigPrettier,
+  ...tseslint.configs.recommended,
+  {
+    plugins: {
+      prettier: prettierPlugin,
+    },
+    rules: {
+      'prettier/prettier': 'error',
+      '@typescript-eslint/no-explicit-any': 'error',
+      '@typescript-eslint/no-unused-vars': 'error',
+      'no-unused-vars': 'off',
+    },
+  },
+  {
+    ignores: ['node_modules/**', 'dist/**'],
+  },
+]
+`
+}
+
+export function generatePrettierConfig(): string {
+  return JSON.stringify(
+    {
+      semi: false,
+      singleQuote: true,
+      trailingComma: 'all',
+      tabWidth: 2,
+      printWidth: 100,
+      endOfLine: 'auto',
+    },
+    null,
+    2,
+  )
 }
 
 export function generateEnvExample(config: ProjectConfig): string {
-	const { database, storage, plugins } = config
+  const { database, storage, plugins } = config
 
-	const lines: string[] = [
-		'# Application',
-		'NODE_ENV=production',
-		'PORT=3000',
-		'',
-	]
+  const lines: string[] = ['# Application', 'NODE_ENV=production', 'PORT=3000', '']
 
-	// Database
-	lines.push('# Database')
-	if (database === 'mongoose') {
-		lines.push('MONGODB_URI=mongodb://localhost:27017/my-app')
-	} else if (database === 'drizzle-neon') {
-		lines.push('DATABASE_URL=postgres://user:password@host/database')
-	} else if (database === 'drizzle-supabase') {
-		lines.push('DATABASE_URL=postgres://user:password@host/database')
-		lines.push('')
-		lines.push('# Supabase')
-		lines.push('SUPABASE_URL=https://your-project.supabase.co')
-		lines.push('SUPABASE_PUBLISHABLE_KEY=your-publishable-key')
-		lines.push('SUPABASE_SECRET_KEY=your-secret-key')
-	}
-	lines.push('')
+  // Database
+  lines.push('# Database')
+  if (database === 'mongoose') {
+    lines.push('MONGODB_URI=mongodb://localhost:27017/my-app')
+  } else if (database === 'drizzle-neon') {
+    lines.push('DATABASE_URL=postgres://user:password@host/database')
+  } else if (database === 'drizzle-supabase') {
+    lines.push('DATABASE_URL=postgres://user:password@host/database')
+    lines.push('')
+    lines.push('# Supabase')
+    lines.push('SUPABASE_URL=https://your-project.supabase.co')
+    lines.push('SUPABASE_PUBLISHABLE_KEY=your-publishable-key')
+    lines.push('SUPABASE_SECRET_KEY=your-secret-key')
+  }
+  lines.push('')
 
-	// JWT
-	lines.push('# Authentication')
-	lines.push('JWT_SECRET=your-super-secret-jwt-key-change-in-production')
-	lines.push('')
+  // JWT
+  lines.push('# Authentication')
+  lines.push('JWT_SECRET=your-super-secret-jwt-key-change-in-production')
+  lines.push('')
 
-	// Storage
-	if (storage !== 'none') {
-		lines.push('# Storage')
-		if (storage === 's3') {
-			lines.push('S3_BUCKET=your-bucket-name')
-			lines.push('S3_REGION=us-east-1')
-			lines.push('S3_ACCESS_KEY_ID=your-access-key')
-			lines.push('S3_SECRET_ACCESS_KEY=your-secret-key')
-		} else if (storage === 'r2') {
-			lines.push('R2_BUCKET=your-bucket-name')
-			lines.push('R2_ACCOUNT_ID=your-account-id')
-			lines.push('R2_ACCESS_KEY_ID=your-access-key')
-			lines.push('R2_SECRET_ACCESS_KEY=your-secret-key')
-		} else if (storage === 'supabase') {
-			lines.push('SUPABASE_STORAGE_BUCKET=media')
-		}
-		lines.push('')
-	}
+  // Storage
+  if (storage !== 'none') {
+    lines.push('# Storage')
+    if (storage === 's3') {
+      lines.push('S3_BUCKET=your-bucket-name')
+      lines.push('S3_REGION=us-east-1')
+      lines.push('S3_ACCESS_KEY_ID=your-access-key')
+      lines.push('S3_SECRET_ACCESS_KEY=your-secret-key')
+    } else if (storage === 'r2') {
+      lines.push('R2_BUCKET=your-bucket-name')
+      lines.push('R2_ACCOUNT_ID=your-account-id')
+      lines.push('R2_ACCESS_KEY_ID=your-access-key')
+      lines.push('R2_SECRET_ACCESS_KEY=your-secret-key')
+    } else if (storage === 'supabase') {
+      lines.push('SUPABASE_STORAGE_BUCKET=media')
+    }
+    lines.push('')
+  }
 
-	// Sentry plugin
-	if (plugins.includes('sentry')) {
-		lines.push('# Sentry (Error Tracking & Performance)')
-		lines.push('SENTRY_DSN=https://your-dsn@o0.ingest.sentry.io/12345')
-		lines.push('')
-	}
+  // Sentry plugin
+  if (plugins.includes('sentry')) {
+    lines.push('# Sentry (Error Tracking & Performance)')
+    lines.push('SENTRY_DSN=https://your-dsn@o0.ingest.sentry.io/12345')
+    lines.push('')
+  }
 
-	return lines.join('\n')
+  return lines.join('\n')
 }
 
 export function generateDotEnv(config: ProjectConfig): string {
-	const { database, projectName, vault } = config
+  const { database, projectName, vault } = config
 
-	const lines: string[] = [
-		'# Generated by create-magnet for local development',
-		'# These values connect to the Docker services in docker/docker-compose.yml',
-		'',
-		'# Application',
-		'NODE_ENV=development',
-		'PORT=3000',
-		'',
-	]
+  const lines: string[] = [
+    '# Generated by create-magnet for local development',
+    '# These values connect to the Docker services in docker/docker-compose.yml',
+    '',
+    '# Application',
+    'NODE_ENV=development',
+    'PORT=3000',
+    '',
+  ]
 
-	// Database
-	lines.push('# Database')
-	if (database === 'mongoose') {
-		lines.push(
-			`MONGODB_URI=mongodb://magnet:magnet@localhost:27017/${projectName}`,
-		)
-	} else if (database === 'drizzle-neon') {
-		lines.push(
-			`DATABASE_URL=postgresql://magnet:magnet@localhost:5432/${projectName}`,
-		)
-	} else if (database === 'drizzle-supabase') {
-		lines.push(
-			`DATABASE_URL=postgresql://magnet:magnet@localhost:5432/${projectName}`,
-		)
-		lines.push('')
-		lines.push('# Supabase (update these with your project values)')
-		lines.push('SUPABASE_URL=http://localhost:54321')
-		lines.push('SUPABASE_PUBLISHABLE_KEY=your-publishable-key')
-		lines.push('SUPABASE_SECRET_KEY=your-secret-key')
-	}
-	lines.push('')
+  // Database
+  lines.push('# Database')
+  if (database === 'mongoose') {
+    lines.push(`MONGODB_URI=mongodb://magnet:magnet@localhost:27017/${projectName}`)
+  } else if (database === 'drizzle-neon') {
+    lines.push(`DATABASE_URL=postgresql://magnet:magnet@localhost:5432/${projectName}`)
+  } else if (database === 'drizzle-supabase') {
+    lines.push(`DATABASE_URL=postgresql://magnet:magnet@localhost:5432/${projectName}`)
+    lines.push('')
+    lines.push('# Supabase (update these with your project values)')
+    lines.push('SUPABASE_URL=http://localhost:54321')
+    lines.push('SUPABASE_PUBLISHABLE_KEY=your-publishable-key')
+    lines.push('SUPABASE_SECRET_KEY=your-secret-key')
+  }
+  lines.push('')
 
-	// JWT
-	lines.push('# Authentication')
-	lines.push('JWT_SECRET=magnet-local-dev-secret-change-in-production')
-	lines.push('')
+  // JWT
+  lines.push('# Authentication')
+  lines.push('JWT_SECRET=magnet-local-dev-secret-change-in-production')
+  lines.push('')
 
-	// Vault
-	const masterKey = generateVaultMasterKey()
-	lines.push('# Vault')
-	lines.push(
-		'# VAULT_MASTER_KEY: generated at scaffold time — do not regenerate without re-encrypting vault data',
-	)
-	if (vault === 'db') {
-		lines.push(`VAULT_MASTER_KEY=${masterKey}`)
-	} else if (vault === 'hashicorp') {
-		lines.push('VAULT_ADDR=http://localhost:8200')
-		lines.push('VAULT_TOKEN=dev-token')
-		lines.push(`VAULT_MASTER_KEY=${masterKey}`)
-	} else if (vault === 'supabase') {
-		lines.push(`VAULT_MASTER_KEY=${masterKey}`)
-	}
-	lines.push('')
+  // Vault
+  const masterKey = generateVaultMasterKey()
+  lines.push('# Vault')
+  lines.push(
+    '# VAULT_MASTER_KEY: generated at scaffold time — do not regenerate without re-encrypting vault data',
+  )
+  if (vault === 'db') {
+    lines.push(`VAULT_MASTER_KEY=${masterKey}`)
+  } else if (vault === 'hashicorp') {
+    lines.push('VAULT_ADDR=http://localhost:8200')
+    lines.push('VAULT_TOKEN=dev-token')
+    lines.push(`VAULT_MASTER_KEY=${masterKey}`)
+  } else if (vault === 'supabase') {
+    lines.push(`VAULT_MASTER_KEY=${masterKey}`)
+  }
+  lines.push('')
 
-	return lines.join('\n')
+  return lines.join('\n')
 }
 
 function generateVaultMasterKey(): string {
-	const bytes = new Uint8Array(32)
-	crypto.getRandomValues(bytes)
-	return Array.from(bytes)
-		.map((b) => b.toString(16).padStart(2, '0'))
-		.join('')
+  const bytes = new Uint8Array(32)
+  crypto.getRandomValues(bytes)
+  return Array.from(bytes)
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('')
 }
 
 export function generateGitignore(): string {
-	return `# Dependencies
+  return `# Dependencies
 node_modules/
 .pnp
 .pnp.js
@@ -273,15 +264,15 @@ uploads/
 }
 
 export function generateReadme(config: ProjectConfig): string {
-	const { projectName, database, packageManager } = config
-	const runCmd = packageManager === 'npm' ? 'npm run' : packageManager
+  const { projectName, database, packageManager } = config
+  const runCmd = packageManager === 'npm' ? 'npm run' : packageManager
 
-	const dbInfo =
-		database === 'mongoose'
-			? 'MongoDB via Docker (Mongo Express admin at http://localhost:8081)'
-			: 'PostgreSQL via Docker (pgAdmin at http://localhost:5050)'
+  const dbInfo =
+    database === 'mongoose'
+      ? 'MongoDB via Docker (Mongo Express admin at http://localhost:8081)'
+      : 'PostgreSQL via Docker (pgAdmin at http://localhost:5050)'
 
-	return `# ${projectName}
+  return `# ${projectName}
 
 A headless CMS built with [Magnet CMS](https://github.com/magnet-cms/magnet) and NestJS.
 

@@ -23,18 +23,19 @@
     "build:dev": "tsup --watch",
     "build": "tsup",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "lint:fix": "eslint . --max-warnings 0 --fix"
   },
   "devDependencies": {
     "@magnet-cms/common": "workspace:*",
-    "@repo/biome": "workspace:*",
     "@repo/tsup": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@repo/vitest": "workspace:*",
     "@vitest/coverage-v8": "^3.1.1",
     "reflect-metadata": "0.2.2",
     "vitest": "^3.1.1",
-    "resend": "^4.0.0"
+    "resend": "^4.0.0",
+    "@repo/eslint-config": "workspace:*"
   },
   "peerDependencies": {
     "@magnet-cms/common": "^0.4.0",

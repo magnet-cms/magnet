@@ -1,0 +1,14 @@
+node_modules
+dist
+**/dist
+.next
+**/.next
+.source
+**/.source
+*.min.js
+bun.lock
+pnpm-lock.yaml
+playwright-report
+**/playwright-report
+test-results
+**/test-results

@@ -34,10 +34,11 @@
   "scripts": {
     "build:dev": "tsup --watch",
     "build": "tsup",
-    "lint": "biome check src",
+    "lint": "eslint . --max-warnings 0",
     "check-types": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "lint:fix": "eslint . --max-warnings 0 --fix"
   },
   "dependencies": {
     "@nestjs/terminus": "^11.0.0",
@@ -58,7 +59,6 @@
     "@nestjs/jwt": "^11.0.0",
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.1.12",
-    "@repo/biome": "workspace:*",
     "@repo/tsup": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@repo/vitest": "workspace:*",
@@ -93,7 +93,8 @@
     "passport-google-oauth20": "2.0.0",
     "passport-jwt": "^4.0.1",
     "rxjs": "^7.8.1",
-    "sharp": "^0.33.5"
+    "sharp": "^0.33.5",
+    "@repo/eslint-config": "workspace:*"
   },
   "peerDependencies": {
     "@magnet-cms/common": "^0.4.0",

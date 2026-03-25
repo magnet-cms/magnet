@@ -20,14 +20,15 @@
     "docker:start-all": "./scripts/start-all-docker.sh",
     "setup": "./scripts/setup-test-env.sh",
     "teardown": "./scripts/teardown-test-env.sh",
-    "lint": "biome check tests scripts src",
-    "check-types": "tsc --noEmit"
+    "lint": "eslint . --max-warnings 0",
+    "check-types": "tsc --noEmit",
+    "lint:fix": "eslint . --max-warnings 0 --fix"
   },
   "devDependencies": {
     "cross-env": "^7.0.3",
     "@playwright/test": "^1.50.0",
-    "@repo/biome": "workspace:*",
     "@repo/typescript-config": "workspace:*",
-    "typescript": "^5.7.3"
+    "typescript": "^5.7.3",
+    "@repo/eslint-config": "workspace:*"
   }
 }

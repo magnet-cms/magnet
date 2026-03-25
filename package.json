@@ -5,6 +5,7 @@
     "build": "turbo run build --filter=!@magnet/docs",
     "dev": "turbo run dev",
     "lint": "turbo run lint",
+    "lint:fix": "turbo run lint:fix",
     "check-types": "turbo run check-types",
     "dev:admin": "node scripts/dev-admin.js",
     "dev:docs": "turbo run dev --filter=@magnet/docs",
@@ -19,11 +20,12 @@
     "release": "bun run build && changeset publish"
   },
   "devDependencies": {
-    "@biomejs/biome": "1.9.4",
-    "@repo/biome": "workspace:*",
+    "@repo/eslint-config": "workspace:*",
     "@repo/tsup": "workspace:*",
     "@swc/core": "^1.11.5",
     "@types/node": "^22.13.1",
+    "eslint": "^9.39.1",
+    "prettier": "^3.6.2",
     "tsup": "8.3.6",
     "@changesets/changelog-github": "0.5.2",
     "@changesets/cli": "2.29.8",
@@ -44,8 +46,12 @@
     "packages/**/*"
   ],
   "lint-staged": {
-    "*.{js,jsx,ts,tsx,json,css}": [
-      "biome check --write"
+    "*.{js,jsx,ts,tsx}": [
+      "prettier --write",
+      "eslint --fix --max-warnings 0"
+    ],
+    "*.{json,css,md,yml,yaml}": [
+      "prettier --write"
     ]
   },
   "overrides": {

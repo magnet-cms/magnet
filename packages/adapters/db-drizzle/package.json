@@ -24,14 +24,14 @@
     "build:dev": "tsup --watch",
     "build": "tsup",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "lint:fix": "eslint . --max-warnings 0 --fix"
   },
   "devDependencies": {
     "@magnet-cms/common": "workspace:*",
     "@magnet-cms/utils": "workspace:*",
     "@neondatabase/serverless": "^0.10.0",
     "@nestjs/common": "^11.1.12",
-    "@repo/biome": "workspace:*",
     "@repo/tsup": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@repo/vitest": "workspace:*",
@@ -44,7 +44,8 @@
     "drizzle-orm": "^0.38.0",
     "mysql2": "^3.11.0",
     "pg": "^8.13.0",
-    "reflect-metadata": "0.2.2"
+    "reflect-metadata": "0.2.2",
+    "@repo/eslint-config": "workspace:*"
   },
   "peerDependencies": {
     "@magnet-cms/common": "^0.4.0",

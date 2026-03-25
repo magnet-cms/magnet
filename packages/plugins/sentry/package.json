@@ -40,7 +40,8 @@
     "build:dev": "tsup --watch",
     "build": "tsup && bun run build:frontend",
     "build:frontend": "vite build",
-    "build:frontend:watch": "vite build --watch"
+    "build:frontend:watch": "vite build --watch",
+    "lint:fix": "eslint . --max-warnings 0 --fix"
   },
   "devDependencies": {
     "@magnet-cms/admin": "workspace:*",
@@ -50,7 +51,6 @@
     "@magnet-cms/utils": "workspace:*",
     "@nestjs/common": "^11.1.12",
     "@nestjs/core": "^11.1.12",
-    "@repo/biome": "workspace:*",
     "@repo/tsup": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@sentry/browser": "^9.0.0",
@@ -60,7 +60,8 @@
     "react": "^19.0.0",
     "react-router-dom": "^7.1.1",
     "reflect-metadata": "0.2.2",
-    "vite": "^6.0.7"
+    "vite": "^6.0.7",
+    "@repo/eslint-config": "workspace:*"
   },
   "peerDependencies": {
     "@magnet-cms/admin": "^0.5.0",

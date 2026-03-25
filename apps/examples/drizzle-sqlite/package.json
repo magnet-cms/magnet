@@ -13,7 +13,8 @@
     "dev:debug": "nest start --debug --watch",
     "docker:up": "docker compose -f docker/docker-compose.yml up -d",
     "docker:down": "docker compose -f docker/docker-compose.yml down",
-    "docker:logs": "docker compose -f docker/docker-compose.yml logs -f"
+    "docker:logs": "docker compose -f docker/docker-compose.yml logs -f",
+    "lint:fix": "eslint . --max-warnings 0 --fix"
   },
   "dependencies": {
     "@magnet-cms/adapter-db-drizzle": "workspace:*",
@@ -37,7 +38,6 @@
     "@types/better-sqlite3": "^7.6.11",
     "@nestjs/cli": "^11.0.16",
     "@nestjs/schematics": "^11.0.9",
-    "@repo/biome": "workspace:*",
     "@types/express": "^5.0.0",
     "@types/node": "^22.13.1",
     "cross-env": "^7.0.3",
@@ -45,6 +45,7 @@
     "ts-loader": "^9.4.3",
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.7.3"
+    "typescript": "^5.7.3",
+    "@repo/eslint-config": "workspace:*"
   }
 }

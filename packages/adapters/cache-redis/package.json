@@ -22,14 +22,15 @@
   "scripts": {
     "build:dev": "tsup --watch",
     "build": "tsup",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "lint:fix": "eslint . --max-warnings 0 --fix"
   },
   "devDependencies": {
     "@magnet-cms/common": "workspace:*",
-    "@repo/biome": "workspace:*",
     "@repo/tsup": "workspace:*",
     "@repo/typescript-config": "workspace:*",
-    "ioredis": "^5.4.2"
+    "ioredis": "^5.4.2",
+    "@repo/eslint-config": "workspace:*"
   },
   "peerDependencies": {
     "@magnet-cms/common": "^0.4.0",
