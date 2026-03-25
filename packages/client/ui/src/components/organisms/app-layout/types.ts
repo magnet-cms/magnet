@@ -75,6 +75,14 @@ export interface SidebarConfig {
 	navPlugins?: NavItem[]
 	/** Label for plugin navigation group */
 	navPluginsLabel?: string
+	/** Security and access management navigation items (users, roles, access control) */
+	navSecurity?: NavItem[]
+	/** Label for security navigation group */
+	navSecurityLabel?: string
+	/** Developer tools navigation items (API keys, vault, webhooks, activity) */
+	navDeveloper?: NavItem[]
+	/** Label for developer navigation group */
+	navDeveloperLabel?: string
 	/** Secondary navigation items (settings, help, etc.) */
 	navSecondary?: NavItem[]
 	/** Label for secondary navigation group */

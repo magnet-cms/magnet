@@ -11,6 +11,7 @@ import {
 	SidebarMenuItem,
 } from '../../atoms/sidebar'
 
+import { cn } from '../../../lib/utils'
 import type { LinkComponent, NavItem } from './types'
 
 export interface NavSecondaryProps
@@ -49,10 +50,11 @@ export function NavSecondary({
 	items,
 	label,
 	linkComponent,
+	className,
 	...props
 }: NavSecondaryProps) {
 	return (
-		<SidebarGroup {...props} className="pt-0">
+		<SidebarGroup {...props} className={cn(className, 'pt-0')}>
 			{label && <SidebarGroupLabel>{label}</SidebarGroupLabel>}
 			<SidebarGroupContent>
 				<SidebarMenu>

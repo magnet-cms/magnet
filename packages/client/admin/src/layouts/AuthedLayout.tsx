@@ -20,6 +20,7 @@ import {
 	ShieldCheck,
 	User,
 	Users,
+	Webhook,
 } from 'lucide-react'
 import { type ReactNode, useCallback, useMemo, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
@@ -31,6 +32,11 @@ import { NotificationsDrawer } from '~/features/notifications'
 import { useAuth, useLogout } from '~/hooks/useAuth'
 import { useSchemas } from '~/hooks/useDiscovery'
 import { useUnreadNotificationCount } from '~/hooks/useNotifications'
+
+/** Returns true when the given nav item URL matches the current pathname (exact or sub-path). */
+export function isNavItemActive(itemUrl: string, pathname: string): boolean {
+	return pathname === itemUrl || pathname.startsWith(`${itemUrl}/`)
+}
 
 interface AuthedLayoutProps {
 	children: ReactNode
@@ -150,7 +156,7 @@ export function AuthedLayout({ children, header, sidebar }: AuthedLayoutProps) {
 			navMainLabel: 'Platform',
 			navPlugins: pluginNavItems,
 			navPluginsLabel: 'Plugins',
-			navSecondary: [
+			navSecurity: [
 				{
 					title: 'Users',
 					url: '/users',
@@ -161,15 +167,13 @@ export function AuthedLayout({ children, header, sidebar }: AuthedLayoutProps) {
 					url: '/access-control',
 					icon: ShieldCheck,
 				},
+			],
+			navSecurityLabel: 'Security & Access',
+			navDeveloper: [
 				{
 					title: 'API Keys',
 					url: '/api-keys',
 					icon: Key,
-				},
-				{
-					title: 'Activity',
-					url: '/activity',
-					icon: Activity,
 				},
 				{
 					title: 'Vault',
@@ -177,12 +181,24 @@ export function AuthedLayout({ children, header, sidebar }: AuthedLayoutProps) {
 					icon: KeyRound,
 				},
 				{
+					title: 'Webhooks',
+					url: '/webhooks',
+					icon: Webhook,
+				},
+				{
+					title: 'Activity',
+					url: '/activity',
+					icon: Activity,
+				},
+			],
+			navDeveloperLabel: 'Developer',
+			navSecondary: [
+				{
 					title: 'Settings',
 					url: '/settings',
 					icon: Settings,
 				},
 			],
-			navSecondaryLabel: 'Administration',
 			documents: [],
 			user: authUser,
 			onLogout: handleLogout,
@@ -228,19 +244,35 @@ export function AuthedLayout({ children, header, sidebar }: AuthedLayoutProps) {
 			}
 		})
 
+		// Process navSecurity items for active state
+		const navSecurity = (defaultSidebarConfig.navSecurity ?? []).map(
+			(item) => ({
+				...item,
+				isActive: isNavItemActive(item.url, location.pathname),
+			}),
+		)
+
+		// Process navDeveloper items for active state
+		const navDeveloper = (defaultSidebarConfig.navDeveloper ?? []).map(
+			(item) => ({
+				...item,
+				isActive: isNavItemActive(item.url, location.pathname),
+			}),
+		)
+
 		// Process navSecondary items for active state
 		const navSecondary = (defaultSidebarConfig.navSecondary ?? []).map(
 			(item) => ({
 				...item,
-				isActive:
-					location.pathname === item.url ||
-					location.pathname.startsWith(`${item.url}/`),
+				isActive: isNavItemActive(item.url, location.pathname),
 			}),
 		)
 
 		return {
 			...defaultSidebarConfig,
 			navMain,
+			navSecurity,
+			navDeveloper,
 			navSecondary,
 		}
 	}, [location.pathname, defaultSidebarConfig])
@@ -250,6 +282,9 @@ export function AuthedLayout({ children, header, sidebar }: AuthedLayoutProps) {
 		...activeSidebarConfig,
 		...sidebar,
 		navMain: sidebar?.navMain ?? activeSidebarConfig.navMain,
+		navSecurity: sidebar?.navSecurity ?? activeSidebarConfig.navSecurity,
+		navDeveloper: sidebar?.navDeveloper ?? activeSidebarConfig.navDeveloper,
+		navSecondary: sidebar?.navSecondary ?? activeSidebarConfig.navSecondary,
 		userMenuActions: sidebar?.userMenuActions ?? userMenuActions,
 		footerActions: sidebar?.footerActions ?? <ThemeSwitcher />,
 	}

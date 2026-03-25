@@ -60,6 +60,10 @@ export function AppSidebar({ config, ...props }: AppSidebarProps) {
 		navMainLabel,
 		navPlugins = [],
 		navPluginsLabel,
+		navSecurity = [],
+		navSecurityLabel,
+		navDeveloper = [],
+		navDeveloperLabel,
 		navSecondary = [],
 		navSecondaryLabel,
 		documents = [],
@@ -119,11 +123,26 @@ export function AppSidebar({ config, ...props }: AppSidebarProps) {
 				{documents.length > 0 && (
 					<NavDocuments items={documents} linkComponent={linkComponent} />
 				)}
+				{navSecurity.length > 0 && (
+					<NavSecondary
+						items={navSecurity}
+						label={navSecurityLabel}
+						linkComponent={linkComponent}
+					/>
+				)}
+				{navDeveloper.length > 0 && (
+					<NavSecondary
+						items={navDeveloper}
+						label={navDeveloperLabel}
+						linkComponent={linkComponent}
+					/>
+				)}
 				{navSecondary.length > 0 && (
 					<NavSecondary
 						items={navSecondary}
 						label={navSecondaryLabel}
 						linkComponent={linkComponent}
+						className="mt-auto"
 					/>
 				)}
 			</SidebarContent>
