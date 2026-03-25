@@ -55,6 +55,7 @@
         "@playwright/test": "^1.50.0",
         "@repo/biome": "workspace:*",
         "@repo/typescript-config": "workspace:*",
+        "cross-env": "^7.0.3",
         "typescript": "^5.7.3",
       },
     },
@@ -206,6 +207,7 @@
       "version": "0.0.7",
       "dependencies": {
         "@apollo/server": "^4.0.0",
+        "@as-integrations/express5": "^1.1.2",
         "@magnet-cms/adapter-db-mongoose": "workspace:*",
         "@magnet-cms/adapter-graphql": "workspace:*",
         "@magnet-cms/adapter-vault-hashicorp": "workspace:*",
@@ -1086,6 +1088,8 @@
     "@apollo/utils.withrequired": ["@apollo/utils.withrequired@2.0.1", "", {}, "sha512-YBDiuAX9i1lLc6GeTy1m7DGLFn/gMnvXqlalOIMjM7DeOgIacEjjfwPqb0M1CQ2v11HhR15d1NmxJoRCfrNqcA=="],
 
     "@apollographql/graphql-playground-html": ["@apollographql/graphql-playground-html@1.6.29", "", { "dependencies": { "xss": "^1.0.8" } }, "sha512-xCcXpoz52rI4ksJSdOCxeOCn2DLocxwHf9dVT/Q90Pte1LX+LY+91SFtJF3KXVHH8kEin+g1KKCQPKBjZJfWNA=="],
+
+    "@as-integrations/express5": ["@as-integrations/express5@1.1.2", "", { "peerDependencies": { "@apollo/server": "^4.0.0 || ^5.0.0", "express": "^5.0.0" } }, "sha512-BxfwtcWNf2CELDkuPQxi5Zl3WqY/dQVJYafeCBOGoFQjv5M0fjhxmAFZ9vKx/5YKKNeok4UY6PkFbHzmQrdxIA=="],
 
     "@aws-crypto/crc32": ["@aws-crypto/crc32@5.2.0", "", { "dependencies": { "@aws-crypto/util": "^5.2.0", "@aws-sdk/types": "^3.222.0", "tslib": "^2.6.2" } }, "sha512-nLbCWqQNgUiwwtFsen1AdzAtvuLRsQS8rYgMuxCrdKf9kOssamGLuPwyTY9wyYblNr9+1XM8v6zoDTPPSIeANg=="],
 

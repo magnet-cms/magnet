@@ -110,7 +110,7 @@ jobs:
         run: cd apps/e2e && npx playwright install --with-deps chromium
 
       - name: Run E2E tests
-        run: cd apps/e2e && bun run test
+        run: cd apps/e2e && bun run test:ci
         env:
           API_BASE_URL: http://localhost:3000
           UI_BASE_URL: http://localhost:3001
@@ -226,7 +226,7 @@ jobs:
         run: cd apps/e2e && npx playwright install --with-deps chromium
 
       - name: Run E2E tests
-        run: cd apps/e2e && bun run test
+        run: cd apps/e2e && bun run test:ci
         env:
           API_BASE_URL: http://localhost:3000
           UI_BASE_URL: http://localhost:3001
@@ -334,7 +334,7 @@ jobs:
         run: cd apps/e2e && npx playwright install --with-deps chromium
 
       - name: Run E2E tests
-        run: cd apps/e2e && bun run test
+        run: cd apps/e2e && bun run test:ci
         env:
           API_BASE_URL: http://localhost:3000
           UI_BASE_URL: http://localhost:3001
@@ -455,7 +455,7 @@ jobs:
         run: cd apps/e2e && npx playwright install --with-deps chromium
 
       - name: Run E2E tests
-        run: cd apps/e2e && bun run test
+        run: cd apps/e2e && bun run test:ci
         env:
           API_BASE_URL: http://localhost:3000
           UI_BASE_URL: http://localhost:3001
@@ -558,7 +558,7 @@ jobs:
         run: cd apps/e2e && npx playwright install --with-deps chromium
 
       - name: Run E2E tests
-        run: cd apps/e2e && bun run test
+        run: cd apps/e2e && bun run test:ci
         env:
           API_BASE_URL: http://localhost:3000
           UI_BASE_URL: http://localhost:3001
