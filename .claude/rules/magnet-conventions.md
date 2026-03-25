@@ -19,6 +19,7 @@
 ## Commit Guidelines
 
 Conventional commits: `type(scope): message`
+
 - Types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
 - Reference issues: `fixes #123`
 - Atomic, focused commits
@@ -37,10 +38,10 @@ When creating a new feature, module, or significant change:
 
 **ALWAYS write E2E tests for new code:**
 
-| Type | Location |
-|------|----------|
-| API endpoints | `apps/e2e/tests/api/{feature}.spec.ts` |
-| UI features | `apps/e2e/tests/ui/{feature}.spec.ts` |
+| Type          | Location                                       |
+| ------------- | ---------------------------------------------- |
+| API endpoints | `apps/e2e/tests/api/{feature}.spec.ts`         |
+| UI features   | `apps/e2e/tests/ui/{feature}.spec.ts`          |
 | Admin serving | `apps/e2e/tests/admin-serve/{feature}.spec.ts` |
 
 Playwright projects: `api`, `ui`, `admin-serve` — run specific with `--project=<name>`.
@@ -50,23 +51,28 @@ Create/update page objects in `apps/e2e/src/page-objects/` for new UI components
 ## Package-Specific Rules
 
 ### @magnet-cms/core
+
 - Document modules in `apps/docs/content/docs/core/`
 - JSDoc on services and controller endpoints
 - Update core `index.mdx` when adding sub-modules
 
 ### @magnet-cms/common
+
 - Document decorators with usage examples in `apps/docs/content/docs/common/`
 - All exported types must have JSDoc descriptions
 
 ### @magnet-cms/admin
+
 - Typed React component props
 - E2E tests in `apps/e2e/tests/ui/`
 
 ### Database Adapters
+
 - Implement `DatabaseAdapter` interface with generics
 - Document in `apps/docs/content/docs/adapters/`
 
 ### Plugins
+
 - Type-safe plugin config (no `Record<string, any>`)
 - Document hooks and config in `apps/docs/content/docs/plugins/`
 

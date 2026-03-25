@@ -208,12 +208,12 @@ We maintain a [public roadmap](https://github.com/orgs/magnet-cms/projects/3) th
 
 ### Roadmap Overview
 
-| Phase | Milestone | Focus Area |
-|-------|-----------|------------|
-| Phase 1 | v1.0 - Security & Access | RBAC, User Management, API Keys, Audit Logging |
-| Phase 2 | v1.1 - Integration & Automation | Webhooks, Scheduling, Event Hooks |
-| Phase 3 | v1.2 - Developer Experience | GraphQL, Search, Preview Mode |
-| Phase 4 | v1.3 - Team Collaboration | Workflows, Comments, Bulk Operations |
+| Phase   | Milestone                       | Focus Area                                     |
+| ------- | ------------------------------- | ---------------------------------------------- |
+| Phase 1 | v1.0 - Security & Access        | RBAC, User Management, API Keys, Audit Logging |
+| Phase 2 | v1.1 - Integration & Automation | Webhooks, Scheduling, Event Hooks              |
+| Phase 3 | v1.2 - Developer Experience     | GraphQL, Search, Preview Mode                  |
+| Phase 4 | v1.3 - Team Collaboration       | Workflows, Comments, Bulk Operations           |
 
 ### How to Pick Up a Roadmap Issue
 
@@ -231,18 +231,21 @@ We maintain a [public roadmap](https://github.com/orgs/magnet-cms/projects/3) th
 ### Issue Labels Reference
 
 **Phase Labels:**
+
 - `phase: 1-security` - Security & Access features
 - `phase: 2-integration` - Integration & Automation features
 - `phase: 3-dx` - Developer Experience features
 - `phase: 4-collaboration` - Team Collaboration features
 
 **Area Labels:**
+
 - `area: core` - Core package changes
 - `area: admin` - Admin UI changes
 - `area: api` - API endpoint changes
 - `area: auth` - Authentication/Authorization changes
 
 **Type Labels:**
+
 - `type: feature` - New feature implementation
 - `type: infrastructure` - Architecture/infrastructure work
 - `type: plugin` - Plugin development
@@ -271,7 +274,7 @@ We maintain a [public roadmap](https://github.com/orgs/magnet-cms/projects/3) th
 
 ### Documentation Format
 
-```typescript
+````typescript
 /**
  * Creates a new schema instance with the provided options.
  *
@@ -284,7 +287,7 @@ We maintain a [public roadmap](https://github.com/orgs/magnet-cms/projects/3) th
  * }
  * ```
  */
-```
+````
 
 ## Pull Request Process
 

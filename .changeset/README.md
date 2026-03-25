@@ -11,6 +11,7 @@ bun changeset
 ```
 
 This will prompt you to:
+
 1. Select which packages have changed
 2. Choose the version bump type (major/minor/patch)
 3. Write a summary of the changes
@@ -26,11 +27,11 @@ A markdown file will be created in this folder describing your changes.
 
 ## Commands
 
-| Command | Description |
-|---------|-------------|
-| `bun changeset` | Create a new changeset |
+| Command                    | Description                                         |
+| -------------------------- | --------------------------------------------------- |
+| `bun changeset`            | Create a new changeset                              |
 | `bun run version-packages` | Apply changesets and update versions (CI does this) |
-| `bun run release` | Build and publish packages (CI does this) |
+| `bun run release`          | Build and publish packages (CI does this)           |
 
 ## Guidelines
 

@@ -9,6 +9,7 @@ import { config as reactConfig } from '@repo/eslint-config/react-internal'
  * those overrides using `files` patterns so lint-staged works correctly.
  */
 export default [
+  { ignores: ['apps/docs/.source/**'] },
   ...baseConfig,
 
   // Load React + react-hooks plugins for React packages (needed to resolve eslint-disable comments)
@@ -23,9 +24,9 @@ export default [
       ],
     })),
 
-  // Node.js globals for scripts and sdk bin
+  // Node.js globals for scripts, sdk bin, and root config files
   {
-    files: ['scripts/**/*.{js,ts}', 'packages/client/sdk/**/*.{js,ts}'],
+    files: ['scripts/**/*.{js,ts}', 'packages/client/sdk/**/*.{js,ts}', '*.{js,cjs}'],
     languageOptions: {
       globals: {
         process: 'readonly',

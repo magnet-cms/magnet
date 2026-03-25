@@ -14,12 +14,13 @@ description: Guide for adding typed settings to a Magnet CMS module using @Setti
    import { SettingField, Settings } from '@magnet-cms/common'
 
    @Settings({
-     group: '<name>',           // Unique group identifier
+     group: '<name>', // Unique group identifier
      label: 'Display Name',
-     icon: 'lucide-icon-name',  // Lucide icon name
-     order: 10,                 // Position in settings UI
+     icon: 'lucide-icon-name', // Lucide icon name
+     order: 10, // Position in settings UI
      description: 'Description shown in settings UI',
-     sections: [                // Optional: group fields into sections
+     sections: [
+       // Optional: group fields into sections
        { name: 'general', label: 'General', icon: 'settings', order: 1 },
        { name: 'advanced', label: 'Advanced', icon: 'wrench', order: 2 },
      ],
@@ -29,7 +30,7 @@ description: Guide for adding typed settings to a Magnet CMS module using @Setti
        label: 'Site Name',
        description: 'Help text shown below the field',
        default: 'My Site',
-       section: 'general',  // Must match a section name
+       section: 'general', // Must match a section name
        order: 1,
      })
      siteName = 'My Site'
@@ -50,6 +51,7 @@ description: Guide for adding typed settings to a Magnet CMS module using @Setti
    - `JSON` — JSON editor
 
 3. **Register in SettingsModule** — add the class to `SettingsModule.forFeature()` in your module:
+
    ```typescript
    @Module({
      imports: [SettingsModule.forFeature([MySettings])],
@@ -57,9 +59,11 @@ description: Guide for adding typed settings to a Magnet CMS module using @Setti
    })
    export class MyModule {}
    ```
+
    Settings are auto-initialized with defaults on bootstrap.
 
 4. **Use in services** — inject `SettingsService` and read typed settings:
+
    ```typescript
    const config = await this.settingsService.get(MySettings)
    console.log(config.siteName) // typed access

@@ -12,6 +12,7 @@ description: Guide for creating a new plugin for Magnet CMS (backend + frontend)
    - Reference: `packages/plugins/playground/`
 
 2. **Create NestJS module** in `src/backend/<name>.module.ts`
+
    ```typescript
    @Module({
      controllers: [MyController],
@@ -22,6 +23,7 @@ description: Guide for creating a new plugin for Magnet CMS (backend + frontend)
    ```
 
 3. **Define plugin class** in `src/plugin.ts` using `@Plugin` from `@magnet-cms/core`
+
    ```typescript
    import { Plugin } from '@magnet-cms/core'
    import { MyPluginModule } from './backend/my-plugin.module'
@@ -33,7 +35,9 @@ description: Guide for creating a new plugin for Magnet CMS (backend + frontend)
      module: MyPluginModule,
      frontend: {
        routes: [{ path: 'my-page', componentId: 'MyPage' }],
-       sidebar: [{ id: 'my-page', title: 'My Page', url: '/my-page', icon: 'LucideIconName', order: 30 }],
+       sidebar: [
+         { id: 'my-page', title: 'My Page', url: '/my-page', icon: 'LucideIconName', order: 30 },
+       ],
      },
    })
    export class MyPlugin {}
@@ -48,6 +52,7 @@ description: Guide for creating a new plugin for Magnet CMS (backend + frontend)
 6. **Create frontend entry** at `src/frontend/index.ts`
    - Self-registers on `window.__MAGNET_PLUGINS__` when script loads
    - Map `componentId` strings to lazy imports
+
    ```typescript
    const manifest = { pluginName: 'my-plugin', routes: [...], sidebar: [...] }
    const components = {

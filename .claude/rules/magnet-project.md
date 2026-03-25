@@ -21,35 +21,35 @@ Bun-based Turbo monorepo — headless CMS framework built on NestJS.
 
 ## Packages
 
-| Package | Path | Description |
-|---------|------|-------------|
-| `@magnet-cms/core` | `packages/core` | Core NestJS module (17 sub-modules) |
-| `@magnet-cms/common` | `packages/common` | Shared types, decorators, utilities |
-| `@magnet-cms/adapter-db-mongoose` | `packages/adapters/db-mongoose` | Mongoose database adapter |
-| `@magnet-cms/adapter-db-drizzle` | `packages/adapters/db-drizzle` | Drizzle database adapter |
-| `@magnet-cms/adapter-auth-supabase` | `packages/adapters/auth-supabase` | Supabase auth strategy |
-| `@magnet-cms/adapter-auth-clerk` | `packages/adapters/auth-clerk` | Clerk auth strategy (RS256/JWKS via @clerk/backend) |
-| `@magnet-cms/adapter-storage-supabase` | `packages/adapters/storage-supabase` | Supabase storage adapter |
-| `@magnet-cms/adapter-storage-s3` | `packages/adapters/storage-s3` | AWS S3 storage adapter |
-| `@magnet-cms/adapter-storage-r2` | `packages/adapters/storage-r2` | Cloudflare R2 storage adapter |
-| `@magnet-cms/email-nodemailer` | `packages/adapters/email-nodemailer` | Nodemailer email adapter |
-| `@magnet-cms/email-resend` | `packages/adapters/email-resend` | Resend email adapter |
-| `@magnet-cms/admin` | `packages/client/admin` | React admin UI (Vite) |
-| `@magnet-cms/ui` | `packages/client/ui` | Shared UI component library |
-| `@magnet-cms/plugin-playground` | `packages/plugins/playground` | Playground (schema builder) plugin |
-| `@magnet-cms/plugin-seo` | `packages/plugins/seo` | SEO plugin |
-| `@magnet-cms/utils` | `packages/utils` | Utility functions |
-| `create-magnet` | `packages/create-magnet` | CLI scaffolding tool |
+| Package                                | Path                                 | Description                                         |
+| -------------------------------------- | ------------------------------------ | --------------------------------------------------- |
+| `@magnet-cms/core`                     | `packages/core`                      | Core NestJS module (17 sub-modules)                 |
+| `@magnet-cms/common`                   | `packages/common`                    | Shared types, decorators, utilities                 |
+| `@magnet-cms/adapter-db-mongoose`      | `packages/adapters/db-mongoose`      | Mongoose database adapter                           |
+| `@magnet-cms/adapter-db-drizzle`       | `packages/adapters/db-drizzle`       | Drizzle database adapter                            |
+| `@magnet-cms/adapter-auth-supabase`    | `packages/adapters/auth-supabase`    | Supabase auth strategy                              |
+| `@magnet-cms/adapter-auth-clerk`       | `packages/adapters/auth-clerk`       | Clerk auth strategy (RS256/JWKS via @clerk/backend) |
+| `@magnet-cms/adapter-storage-supabase` | `packages/adapters/storage-supabase` | Supabase storage adapter                            |
+| `@magnet-cms/adapter-storage-s3`       | `packages/adapters/storage-s3`       | AWS S3 storage adapter                              |
+| `@magnet-cms/adapter-storage-r2`       | `packages/adapters/storage-r2`       | Cloudflare R2 storage adapter                       |
+| `@magnet-cms/email-nodemailer`         | `packages/adapters/email-nodemailer` | Nodemailer email adapter                            |
+| `@magnet-cms/email-resend`             | `packages/adapters/email-resend`     | Resend email adapter                                |
+| `@magnet-cms/admin`                    | `packages/client/admin`              | React admin UI (Vite)                               |
+| `@magnet-cms/ui`                       | `packages/client/ui`                 | Shared UI component library                         |
+| `@magnet-cms/plugin-playground`        | `packages/plugins/playground`        | Playground (schema builder) plugin                  |
+| `@magnet-cms/plugin-seo`               | `packages/plugins/seo`               | SEO plugin                                          |
+| `@magnet-cms/utils`                    | `packages/utils`                     | Utility functions                                   |
+| `create-magnet`                        | `packages/create-magnet`             | CLI scaffolding tool                                |
 
 ## Apps
 
-| App | Path | Description |
-|-----|------|-------------|
-| `mongoose-example` | `apps/examples/mongoose` | Example NestJS app (Mongoose) |
-| `drizzle-neon-example` | `apps/examples/drizzle-neon` | Example NestJS app (Drizzle/Neon) |
+| App                        | Path                             | Description                           |
+| -------------------------- | -------------------------------- | ------------------------------------- |
+| `mongoose-example`         | `apps/examples/mongoose`         | Example NestJS app (Mongoose)         |
+| `drizzle-neon-example`     | `apps/examples/drizzle-neon`     | Example NestJS app (Drizzle/Neon)     |
 | `drizzle-supabase-example` | `apps/examples/drizzle-supabase` | Example NestJS app (Drizzle/Supabase) |
-| `docs` | `apps/docs` | Fumadocs documentation site |
-| `e2e` | `apps/e2e` | Playwright E2E tests |
+| `docs`                     | `apps/docs`                      | Fumadocs documentation site           |
+| `e2e`                      | `apps/e2e`                       | Playwright E2E tests                  |
 
 ## Core Modules
 
@@ -80,20 +80,20 @@ magnet/
 
 ## Commands
 
-| Task | Command |
-|------|---------|
-| Install | `bun install` |
-| Dev (all) | `bun run dev` |
-| Dev (admin) | `bun run dev:admin` |
-| Dev (docs) | `bun run dev:docs` |
-| Build | `bun run build` |
-| Lint | `bun run lint` |
-| Type check | `bun run check-types` |
-| E2E tests | `bun run test:e2e` |
-| E2E (API only) | `bun run test:e2e --project=api` |
-| E2E (UI only) | `bun run test:e2e --project=ui` |
+| Task              | Command                                  |
+| ----------------- | ---------------------------------------- |
+| Install           | `bun install`                            |
+| Dev (all)         | `bun run dev`                            |
+| Dev (admin)       | `bun run dev:admin`                      |
+| Dev (docs)        | `bun run dev:docs`                       |
+| Build             | `bun run build`                          |
+| Lint              | `bun run lint`                           |
+| Type check        | `bun run check-types`                    |
+| E2E tests         | `bun run test:e2e`                       |
+| E2E (API only)    | `bun run test:e2e --project=api`         |
+| E2E (UI only)     | `bun run test:e2e --project=ui`          |
 | E2E (Admin serve) | `bun run test:e2e --project=admin-serve` |
-| Add changeset | `bun changeset` |
-| Release | `bun run build && changeset publish` |
+| Add changeset     | `bun changeset`                          |
+| Release           | `bun run build && changeset publish`     |
 
 **IMPORTANT:** Always run `bun run check-types` before committing.

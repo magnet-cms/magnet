@@ -12,6 +12,7 @@ A modern, headless CMS framework built on NestJS. Magnet provides a flexible arc
 - **Plugin System**: Extend functionality with plugins like Content Builder and SEO
 
 ![Magnet CMS Demo](docs/assets/magnet-demo.gif)
+
 - **TypeScript First**: Full TypeScript support throughout the entire stack
 - **Schema Discovery**: Automatic schema detection and metadata extraction
 - **Authentication**: Built-in JWT authentication with guards and strategies
@@ -40,6 +41,7 @@ bunx create-magnet my-project
 ```
 
 The CLI will guide you through selecting:
+
 - **Database adapter**: MongoDB (Mongoose), PostgreSQL (Drizzle + Neon), or Supabase
 - **Plugins**: Content Builder, SEO
 - **Storage adapter**: Local, S3, R2, Supabase, or none
@@ -77,42 +79,42 @@ bun run dev:admin
 
 ### CLI
 
-| Package | Description |
-|---------|-------------|
+| Package         | Description                                  |
+| --------------- | -------------------------------------------- |
 | `create-magnet` | CLI tool to scaffold new Magnet CMS projects |
 
 ### Core Packages
 
-| Package | Description |
-|---------|-------------|
-| `@magnet-cms/core` | Core NestJS module with Admin, Auth, Content, and Database modules |
-| `@magnet-cms/common` | Shared types, decorators, and utilities |
-| `@magnet-cms/utils` | Utility functions and helpers |
+| Package              | Description                                                        |
+| -------------------- | ------------------------------------------------------------------ |
+| `@magnet-cms/core`   | Core NestJS module with Admin, Auth, Content, and Database modules |
+| `@magnet-cms/common` | Shared types, decorators, and utilities                            |
+| `@magnet-cms/utils`  | Utility functions and helpers                                      |
 
 ### Adapters
 
-| Package | Description |
-|---------|-------------|
-| `@magnet-cms/adapter-db-mongoose` | Mongoose database adapter with schema decorators for MongoDB |
-| `@magnet-cms/adapter-db-drizzle` | Drizzle ORM adapter supporting PostgreSQL, MySQL, and SQLite |
-| `@magnet-cms/adapter-auth-supabase` | Supabase auth strategy |
-| `@magnet-cms/adapter-storage-supabase` | Supabase storage adapter |
-| `@magnet-cms/adapter-storage-s3` | AWS S3 storage adapter |
-| `@magnet-cms/adapter-storage-r2` | Cloudflare R2 storage adapter |
+| Package                                | Description                                                  |
+| -------------------------------------- | ------------------------------------------------------------ |
+| `@magnet-cms/adapter-db-mongoose`      | Mongoose database adapter with schema decorators for MongoDB |
+| `@magnet-cms/adapter-db-drizzle`       | Drizzle ORM adapter supporting PostgreSQL, MySQL, and SQLite |
+| `@magnet-cms/adapter-auth-supabase`    | Supabase auth strategy                                       |
+| `@magnet-cms/adapter-storage-supabase` | Supabase storage adapter                                     |
+| `@magnet-cms/adapter-storage-s3`       | AWS S3 storage adapter                                       |
+| `@magnet-cms/adapter-storage-r2`       | Cloudflare R2 storage adapter                                |
 
 ### Client Packages
 
-| Package | Description |
-|---------|-------------|
-| `@magnet-cms/admin` | React-based admin UI application |
-| `@magnet-cms/ui` | Shared UI component library (shadcn/ui based) |
+| Package             | Description                                   |
+| ------------------- | --------------------------------------------- |
+| `@magnet-cms/admin` | React-based admin UI application              |
+| `@magnet-cms/ui`    | Shared UI component library (shadcn/ui based) |
 
 ### Plugins
 
-| Package | Description |
-|---------|-------------|
+| Package                         | Description                        |
+| ------------------------------- | ---------------------------------- |
 | `@magnet-cms/plugin-playground` | Playground (visual schema builder) |
-| `@magnet-cms/plugin-seo` | SEO management plugin |
+| `@magnet-cms/plugin-seo`        | SEO management plugin              |
 
 ## Project Structure
 
@@ -291,12 +293,12 @@ export class Cat {
 
 We maintain a public roadmap to track upcoming features and improvements. The roadmap is organized into four phases:
 
-| Phase | Focus | Key Features |
-|-------|-------|--------------|
-| **v1.0** | Security & Access | RBAC, User Management, API Keys, Audit Logging |
-| **v1.1** | Integration & Automation | Webhooks, Scheduled Publishing, Event Hooks |
-| **v1.2** | Developer Experience | GraphQL API, Full-Text Search, Preview Mode |
-| **v1.3** | Team Collaboration | Approval Workflows, Comments, Bulk Operations |
+| Phase    | Focus                    | Key Features                                   |
+| -------- | ------------------------ | ---------------------------------------------- |
+| **v1.0** | Security & Access        | RBAC, User Management, API Keys, Audit Logging |
+| **v1.1** | Integration & Automation | Webhooks, Scheduled Publishing, Event Hooks    |
+| **v1.2** | Developer Experience     | GraphQL API, Full-Text Search, Preview Mode    |
+| **v1.3** | Team Collaboration       | Approval Workflows, Comments, Bulk Operations  |
 
 **[View Full Roadmap →](https://github.com/orgs/magnet-cms/projects/3)**
 
