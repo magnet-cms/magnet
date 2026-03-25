@@ -39,12 +39,16 @@ describe('createConnection', () => {
 	})
 
 	it('accepts .db SQLite file path', async () => {
-		const err = await createConnection('/tmp/test.db').catch((e) => e as Error)
-		expect(err.message).not.toContain('Unsupported database URL scheme')
+		const result = await createConnection('/tmp/test.db').catch(
+			(e) => e as Error,
+		)
+		const msg = result instanceof Error ? result.message : 'connected-ok'
+		expect(msg).not.toContain('Unsupported database URL scheme')
 	})
 
 	it('accepts :memory: SQLite path', async () => {
-		const err = await createConnection(':memory:').catch((e) => e as Error)
-		expect(err.message).not.toContain('Unsupported database URL scheme')
+		const result = await createConnection(':memory:').catch((e) => e as Error)
+		const msg = result instanceof Error ? result.message : 'connected-ok'
+		expect(msg).not.toContain('Unsupported database URL scheme')
 	})
 })

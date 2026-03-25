@@ -132,6 +132,14 @@ export class Cat {
 	// Note: medicalRecords is a virtual relation (One-to-Many from MedicalRecord.cat)
 	// Accessed via reverse populate in queries
 
+	@Field.RichText({
+		required: false,
+		tab: 'General',
+		description: 'Additional notes (rich text)',
+	})
+	@Field.Validators(IsOptional())
+	notes?: string
+
 	@Field.Boolean({
 		required: true,
 		tab: 'General',

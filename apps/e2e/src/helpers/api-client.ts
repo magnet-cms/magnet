@@ -1411,4 +1411,61 @@ export class ApiClient {
 			data,
 		})
 	}
+
+	// Notification endpoints
+	async getNotifications(
+		options: { limit?: number; offset?: number; unreadOnly?: boolean } = {},
+	) {
+		const params = new URLSearchParams()
+		if (options.limit !== undefined) params.set('limit', String(options.limit))
+		if (options.offset !== undefined)
+			params.set('offset', String(options.offset))
+		if (options.unreadOnly !== undefined)
+			params.set('unreadOnly', String(options.unreadOnly))
+		const qs = params.toString() ? `?${params.toString()}` : ''
+		return this.request.get(`${this.baseURL}/notifications${qs}`, {
+			headers: this.getHeaders(),
+		})
+	}
+
+	async getUnreadCount() {
+		return this.request.get(`${this.baseURL}/notifications/unread-count`, {
+			headers: this.getHeaders(),
+		})
+	}
+
+	async markNotificationAsRead(id: string) {
+		return this.request.patch(`${this.baseURL}/notifications/${id}/read`, {
+			headers: this.getHeaders(),
+		})
+	}
+
+	async markAllNotificationsAsRead() {
+		return this.request.patch(`${this.baseURL}/notifications/read-all`, {
+			headers: this.getHeaders(),
+		})
+	}
+
+	async sendNotification(body: {
+		userId: string | string[]
+		type: string
+		title: string
+		message: string
+		channels?: Array<'platform' | 'email'>
+		href?: string
+		metadata?: Record<string, unknown>
+	}) {
+		return this.request.post(`${this.baseURL}/notifications`, {
+			headers: this.getHeaders(),
+			data: body,
+		})
+	}
+
+	async cleanupNotifications(retentionDays?: number) {
+		const qs =
+			retentionDays !== undefined ? `?retentionDays=${retentionDays}` : ''
+		return this.request.delete(`${this.baseURL}/notifications/cleanup${qs}`, {
+			headers: this.getHeaders(),
+		})
+	}
 }

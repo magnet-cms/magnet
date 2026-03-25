@@ -50,7 +50,7 @@ export class ConfigLoader {
 
 	private loadFromEnv(): MagnetCliConfig {
 		const databaseUrl = process.env.DATABASE_URL
-		if (!databaseUrl) {
+		if (!databaseUrl || databaseUrl === 'undefined') {
 			throw new Error(
 				'No database configuration found. ' +
 					'Create a magnet.config.ts or set the DATABASE_URL environment variable.',
@@ -65,7 +65,11 @@ export class ConfigLoader {
 			(raw.database as Record<string, unknown>)?.url ??
 			process.env.DATABASE_URL
 
-		if (!databaseUrl || typeof databaseUrl !== 'string') {
+		if (
+			!databaseUrl ||
+			typeof databaseUrl !== 'string' ||
+			databaseUrl === 'undefined'
+		) {
 			throw new Error(
 				'Config file must export a databaseUrl string or set DATABASE_URL env var.',
 			)

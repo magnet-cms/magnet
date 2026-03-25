@@ -45,7 +45,8 @@
   ],
   "scripts": {
     "build:dev": "tsup --watch",
-    "build": "tsup"
+    "build": "tsup",
+    "test": "vitest run"
   },
   "devDependencies": {
     "@magnet-cms/common": "workspace:*",
@@ -53,7 +54,9 @@
     "@repo/biome": "workspace:*",
     "@repo/tsup": "workspace:*",
     "@repo/typescript-config": "workspace:*",
-    "reflect-metadata": "0.2.2"
+    "@repo/vitest": "workspace:*",
+    "reflect-metadata": "0.2.2",
+    "vitest": "^3.1.1"
   },
   "peerDependencies": {
     "@nestjs/common": "^11.1.12",

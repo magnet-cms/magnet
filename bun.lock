@@ -60,7 +60,7 @@
     },
     "apps/examples/drizzle-mysql": {
       "name": "magnet-template-drizzle-mysql",
-      "version": "0.0.6",
+      "version": "0.0.7",
       "dependencies": {
         "@magnet-cms/adapter-db-drizzle": "workspace:*",
         "@magnet-cms/adapter-storage-s3": "workspace:*",
@@ -95,7 +95,7 @@
     },
     "apps/examples/drizzle-neon": {
       "name": "magnet-template-drizzle-neon",
-      "version": "0.0.6",
+      "version": "0.0.7",
       "dependencies": {
         "@magnet-cms/adapter-db-drizzle": "workspace:*",
         "@magnet-cms/adapter-storage-s3": "workspace:*",
@@ -130,7 +130,7 @@
     },
     "apps/examples/drizzle-sqlite": {
       "name": "magnet-template-drizzle-sqlite",
-      "version": "0.0.6",
+      "version": "0.0.7",
       "dependencies": {
         "@magnet-cms/adapter-db-drizzle": "workspace:*",
         "@magnet-cms/adapter-storage-s3": "workspace:*",
@@ -166,7 +166,7 @@
     },
     "apps/examples/drizzle-supabase": {
       "name": "magnet-template-drizzle-supabase",
-      "version": "0.0.6",
+      "version": "0.0.7",
       "dependencies": {
         "@magnet-cms/adapter-auth-supabase": "workspace:*",
         "@magnet-cms/adapter-db-drizzle": "workspace:*",
@@ -203,7 +203,7 @@
     },
     "apps/examples/mongoose": {
       "name": "magnet-template-mongoose-cats",
-      "version": "0.0.6",
+      "version": "0.0.7",
       "dependencies": {
         "@apollo/server": "^4.0.0",
         "@magnet-cms/adapter-db-mongoose": "workspace:*",
@@ -243,7 +243,7 @@
     },
     "packages/adapters/auth-clerk": {
       "name": "@magnet-cms/adapter-auth-clerk",
-      "version": "3.0.0",
+      "version": "4.0.0",
       "devDependencies": {
         "@clerk/backend": "^3.2.0",
         "@magnet-cms/common": "workspace:*",
@@ -257,14 +257,14 @@
       },
       "peerDependencies": {
         "@clerk/backend": "^3.0.0",
-        "@magnet-cms/common": "^0.3.1",
+        "@magnet-cms/common": "^0.4.0",
         "@nestjs/common": "^11.1.12",
         "passport": "^0.7.0",
       },
     },
     "packages/adapters/auth-supabase": {
       "name": "@magnet-cms/adapter-auth-supabase",
-      "version": "4.0.0",
+      "version": "5.0.0",
       "devDependencies": {
         "@magnet-cms/common": "workspace:*",
         "@nestjs/common": "^11.1.12",
@@ -276,7 +276,7 @@
         "passport-jwt": "^4.0.1",
       },
       "peerDependencies": {
-        "@magnet-cms/common": "^0.3.1",
+        "@magnet-cms/common": "^0.4.0",
         "@nestjs/common": "^11.1.12",
         "@supabase/supabase-js": "^2.49.0",
         "passport-jwt": "^4.0.1",
@@ -284,7 +284,7 @@
     },
     "packages/adapters/cache-redis": {
       "name": "@magnet-cms/adapter-cache-redis",
-      "version": "2.0.0",
+      "version": "3.0.0",
       "devDependencies": {
         "@magnet-cms/common": "workspace:*",
         "@repo/biome": "workspace:*",
@@ -293,13 +293,13 @@
         "ioredis": "^5.4.2",
       },
       "peerDependencies": {
-        "@magnet-cms/common": "^0.3.1",
+        "@magnet-cms/common": "^0.4.0",
         "ioredis": "^5.0.0",
       },
     },
     "packages/adapters/db-drizzle": {
       "name": "@magnet-cms/adapter-db-drizzle",
-      "version": "3.0.0",
+      "version": "4.0.0",
       "devDependencies": {
         "@magnet-cms/common": "workspace:*",
         "@magnet-cms/utils": "workspace:*",
@@ -321,7 +321,7 @@
         "vitest": "^3.1.1",
       },
       "peerDependencies": {
-        "@magnet-cms/common": "^0.3.1",
+        "@magnet-cms/common": "^0.4.0",
         "@magnet-cms/utils": "^0.1.1",
         "@nestjs/common": "^11.1.12",
         "drizzle-orm": "^0.38.0",
@@ -330,7 +330,7 @@
     },
     "packages/adapters/db-mongoose": {
       "name": "@magnet-cms/adapter-db-mongoose",
-      "version": "3.0.0",
+      "version": "4.0.0",
       "devDependencies": {
         "@magnet-cms/common": "workspace:*",
         "@nestjs/common": "^11.1.12",
@@ -342,7 +342,7 @@
         "reflect-metadata": "0.2.2",
       },
       "peerDependencies": {
-        "@magnet-cms/common": "^0.3.1",
+        "@magnet-cms/common": "^0.4.0",
         "@nestjs/common": "^11.1.12",
         "@nestjs/mongoose": "^11.0.0",
         "mongoose": "^8.10.0",
@@ -351,7 +351,7 @@
     },
     "packages/adapters/email-nodemailer": {
       "name": "@magnet-cms/email-nodemailer",
-      "version": "2.0.0",
+      "version": "3.0.0",
       "devDependencies": {
         "@magnet-cms/common": "workspace:*",
         "@repo/biome": "workspace:*",
@@ -365,13 +365,13 @@
         "vitest": "^3.1.1",
       },
       "peerDependencies": {
-        "@magnet-cms/common": "^0.3.1",
+        "@magnet-cms/common": "^0.4.0",
         "nodemailer": "^6.9.0",
       },
     },
     "packages/adapters/email-resend": {
       "name": "@magnet-cms/email-resend",
-      "version": "2.0.0",
+      "version": "3.0.0",
       "devDependencies": {
         "@magnet-cms/common": "workspace:*",
         "@repo/biome": "workspace:*",
@@ -384,13 +384,13 @@
         "vitest": "^3.1.1",
       },
       "peerDependencies": {
-        "@magnet-cms/common": "^0.3.1",
+        "@magnet-cms/common": "^0.4.0",
         "resend": "^4.0.0",
       },
     },
     "packages/adapters/graphql": {
       "name": "@magnet-cms/adapter-graphql",
-      "version": "1.0.0",
+      "version": "2.0.0",
       "devDependencies": {
         "@apollo/server": "^4.0.0",
         "@magnet-cms/common": "workspace:*",
@@ -411,8 +411,8 @@
       },
       "peerDependencies": {
         "@apollo/server": "^4.0.0",
-        "@magnet-cms/common": "^0.3.1",
-        "@magnet-cms/core": "^3.1.0",
+        "@magnet-cms/common": "^0.4.0",
+        "@magnet-cms/core": "^4.0.0",
         "@nestjs/apollo": "^13.0.0",
         "@nestjs/common": "^11.0.0",
         "@nestjs/core": "^11.0.0",
@@ -423,7 +423,7 @@
     },
     "packages/adapters/storage-r2": {
       "name": "@magnet-cms/adapter-storage-r2",
-      "version": "3.0.0",
+      "version": "4.0.0",
       "devDependencies": {
         "@aws-sdk/client-s3": "^3.700.0",
         "@aws-sdk/s3-request-presigner": "^3.700.0",
@@ -435,12 +435,12 @@
       "peerDependencies": {
         "@aws-sdk/client-s3": "^3.0.0",
         "@aws-sdk/s3-request-presigner": "^3.0.0",
-        "@magnet-cms/common": "^0.3.1",
+        "@magnet-cms/common": "^0.4.0",
       },
     },
     "packages/adapters/storage-s3": {
       "name": "@magnet-cms/adapter-storage-s3",
-      "version": "3.0.0",
+      "version": "4.0.0",
       "devDependencies": {
         "@aws-sdk/client-s3": "^3.700.0",
         "@aws-sdk/s3-request-presigner": "^3.700.0",
@@ -452,12 +452,12 @@
       "peerDependencies": {
         "@aws-sdk/client-s3": "^3.0.0",
         "@aws-sdk/s3-request-presigner": "^3.0.0",
-        "@magnet-cms/common": "^0.3.1",
+        "@magnet-cms/common": "^0.4.0",
       },
     },
     "packages/adapters/storage-supabase": {
       "name": "@magnet-cms/adapter-storage-supabase",
-      "version": "4.0.0",
+      "version": "5.0.0",
       "devDependencies": {
         "@magnet-cms/common": "workspace:*",
         "@repo/biome": "workspace:*",
@@ -466,13 +466,13 @@
         "@supabase/supabase-js": "^2.49.0",
       },
       "peerDependencies": {
-        "@magnet-cms/common": "^0.3.1",
+        "@magnet-cms/common": "^0.4.0",
         "@supabase/supabase-js": "^2.49.0",
       },
     },
     "packages/adapters/vault-hashicorp": {
       "name": "@magnet-cms/adapter-vault-hashicorp",
-      "version": "3.0.0",
+      "version": "4.0.0",
       "devDependencies": {
         "@magnet-cms/common": "workspace:*",
         "@repo/biome": "workspace:*",
@@ -481,13 +481,13 @@
         "node-vault-client": "^1.0.0",
       },
       "peerDependencies": {
-        "@magnet-cms/common": "^0.3.1",
+        "@magnet-cms/common": "^0.4.0",
         "node-vault-client": "^1.0.0",
       },
     },
     "packages/adapters/vault-supabase": {
       "name": "@magnet-cms/adapter-vault-supabase",
-      "version": "4.0.0",
+      "version": "5.0.0",
       "dependencies": {
         "pg": "^8.13.0",
       },
@@ -499,12 +499,12 @@
         "@types/pg": "^8.11.0",
       },
       "peerDependencies": {
-        "@magnet-cms/common": "^0.3.1",
+        "@magnet-cms/common": "^0.4.0",
       },
     },
     "packages/cli": {
       "name": "@magnet-cms/cli",
-      "version": "2.0.0",
+      "version": "3.0.0",
       "bin": {
         "magnet": "./bin/magnet.js",
       },
@@ -539,7 +539,7 @@
     },
     "packages/client/admin": {
       "name": "@magnet-cms/admin",
-      "version": "0.4.1",
+      "version": "0.5.0",
       "dependencies": {
         "@dnd-kit/core": "^6.3.1",
         "@dnd-kit/sortable": "^10.0.0",
@@ -707,7 +707,7 @@
     },
     "packages/common": {
       "name": "@magnet-cms/common",
-      "version": "0.3.1",
+      "version": "0.4.0",
       "devDependencies": {
         "@nestjs/common": "^11.1.12",
         "@repo/biome": "workspace:*",
@@ -725,12 +725,15 @@
     },
     "packages/core": {
       "name": "@magnet-cms/core",
-      "version": "3.1.0",
+      "version": "4.0.0",
       "dependencies": {
         "@nestjs/terminus": "^11.0.0",
+        "@nestjs/throttler": "^6.4.0",
         "@react-email/components": "1.0.10",
         "@react-email/render": "2.0.4",
         "handlebars": "4.7.8",
+        "helmet": "^8.0.0",
+        "sanitize-html": "^2.13.0",
       },
       "devDependencies": {
         "@magnet-cms/admin": "workspace:*",
@@ -756,6 +759,7 @@
         "@types/passport-google-oauth20": "2.0.17",
         "@types/passport-jwt": "^4.0.1",
         "@types/react": "^19.0.0",
+        "@types/sanitize-html": "^2.13.0",
         "@vitest/coverage-v8": "^3.1.1",
         "bcryptjs": "^3.0.2",
         "class-transformer": "^0.5.1",
@@ -779,7 +783,7 @@
         "vitest": "^3.1.1",
       },
       "peerDependencies": {
-        "@magnet-cms/common": "^0.3.1",
+        "@magnet-cms/common": "^0.4.0",
         "@magnet-cms/utils": "^0.1.1",
         "@nestjs/common": "^11.1.12",
         "@nestjs/config": "^4.0.0",
@@ -818,7 +822,7 @@
     },
     "packages/plugins/playground": {
       "name": "@magnet-cms/plugin-playground",
-      "version": "4.0.0",
+      "version": "5.0.0",
       "devDependencies": {
         "@dnd-kit/core": "^6.3.1",
         "@magnet-cms/admin": "workspace:*",
@@ -839,9 +843,9 @@
         "vite": "^6.0.7",
       },
       "peerDependencies": {
-        "@magnet-cms/admin": "^0.4.1",
-        "@magnet-cms/common": "^0.3.1",
-        "@magnet-cms/core": "^3.1.0",
+        "@magnet-cms/admin": "^0.5.0",
+        "@magnet-cms/common": "^0.4.0",
+        "@magnet-cms/core": "^4.0.0",
         "@magnet-cms/ui": "^0.1.3",
         "@magnet-cms/utils": "^0.1.1",
         "@nestjs/common": "^11.1.12",
@@ -853,7 +857,7 @@
     },
     "packages/plugins/polar": {
       "name": "@magnet-cms/plugin-polar",
-      "version": "3.0.0",
+      "version": "4.0.0",
       "devDependencies": {
         "@magnet-cms/admin": "workspace:*",
         "@magnet-cms/common": "workspace:*",
@@ -875,9 +879,9 @@
         "vite": "^6.0.7",
       },
       "peerDependencies": {
-        "@magnet-cms/admin": "^0.4.1",
-        "@magnet-cms/common": "^0.3.1",
-        "@magnet-cms/core": "^3.1.0",
+        "@magnet-cms/admin": "^0.5.0",
+        "@magnet-cms/common": "^0.4.0",
+        "@magnet-cms/core": "^4.0.0",
         "@magnet-cms/ui": "^0.1.3",
         "@magnet-cms/utils": "^0.1.1",
         "@nestjs/common": "^11.1.12",
@@ -890,7 +894,7 @@
     },
     "packages/plugins/sentry": {
       "name": "@magnet-cms/plugin-sentry",
-      "version": "3.0.0",
+      "version": "4.0.0",
       "devDependencies": {
         "@magnet-cms/admin": "workspace:*",
         "@magnet-cms/common": "workspace:*",
@@ -912,9 +916,9 @@
         "vite": "^6.0.7",
       },
       "peerDependencies": {
-        "@magnet-cms/admin": "^0.4.1",
-        "@magnet-cms/common": "^0.3.1",
-        "@magnet-cms/core": "^3.1.0",
+        "@magnet-cms/admin": "^0.5.0",
+        "@magnet-cms/common": "^0.4.0",
+        "@magnet-cms/core": "^4.0.0",
         "@magnet-cms/ui": "^0.1.3",
         "@magnet-cms/utils": "^0.1.1",
         "@nestjs/common": "^11.1.12",
@@ -942,7 +946,7 @@
     },
     "packages/plugins/stripe": {
       "name": "@magnet-cms/plugin-stripe",
-      "version": "3.0.0",
+      "version": "4.0.0",
       "devDependencies": {
         "@magnet-cms/admin": "workspace:*",
         "@magnet-cms/common": "workspace:*",
@@ -964,9 +968,9 @@
         "vite": "^6.0.7",
       },
       "peerDependencies": {
-        "@magnet-cms/admin": "^0.4.1",
-        "@magnet-cms/common": "^0.3.1",
-        "@magnet-cms/core": "^3.1.0",
+        "@magnet-cms/admin": "^0.5.0",
+        "@magnet-cms/common": "^0.4.0",
+        "@magnet-cms/core": "^4.0.0",
         "@magnet-cms/ui": "^0.1.3",
         "@magnet-cms/utils": "^0.1.1",
         "@nestjs/common": "^11.1.12",
@@ -1021,7 +1025,9 @@
         "@repo/biome": "workspace:*",
         "@repo/tsup": "workspace:*",
         "@repo/typescript-config": "workspace:*",
+        "@repo/vitest": "workspace:*",
         "reflect-metadata": "0.2.2",
+        "vitest": "^3.1.1",
       },
       "peerDependencies": {
         "@nestjs/common": "^11.1.12",
@@ -1698,6 +1704,8 @@
     "@nestjs/schematics": ["@nestjs/schematics@11.0.9", "", { "dependencies": { "@angular-devkit/core": "19.2.17", "@angular-devkit/schematics": "19.2.17", "comment-json": "4.4.1", "jsonc-parser": "3.3.1", "pluralize": "8.0.0" }, "peerDependencies": { "typescript": ">=4.8.2" } }, "sha512-0NfPbPlEaGwIT8/TCThxLzrlz3yzDNkfRNpbL7FiplKq3w4qXpJg0JYwqgMEJnLQZm3L/L/5XjoyfJHUO3qX9g=="],
 
     "@nestjs/terminus": ["@nestjs/terminus@11.1.1", "", { "dependencies": { "boxen": "5.1.2", "check-disk-space": "3.4.0" }, "peerDependencies": { "@grpc/grpc-js": "*", "@grpc/proto-loader": "*", "@mikro-orm/core": "*", "@mikro-orm/nestjs": "*", "@nestjs/axios": "^2.0.0 || ^3.0.0 || ^4.0.0", "@nestjs/common": "^10.0.0 || ^11.0.0", "@nestjs/core": "^10.0.0 || ^11.0.0", "@nestjs/microservices": "^10.0.0 || ^11.0.0", "@nestjs/mongoose": "^11.0.0", "@nestjs/sequelize": "^10.0.0 || ^11.0.0", "@nestjs/typeorm": "^10.0.0 || ^11.0.0", "@prisma/client": "*", "mongoose": "*", "reflect-metadata": "0.1.x || 0.2.x", "rxjs": "7.x", "sequelize": "*", "typeorm": "*" }, "optionalPeers": ["@grpc/grpc-js", "@grpc/proto-loader", "@mikro-orm/core", "@mikro-orm/nestjs", "@nestjs/axios", "@nestjs/microservices", "@nestjs/mongoose", "@nestjs/sequelize", "@nestjs/typeorm", "@prisma/client", "mongoose", "sequelize", "typeorm"] }, "sha512-Ssql79H+EQY/Wg108eJqN4NiNsO/tLrj+qbzOWSQUf2JE4vJQ2RG3WTqUOrYjfjWmVHD3+Ys0+azed7LSMKScw=="],
+
+    "@nestjs/throttler": ["@nestjs/throttler@6.5.0", "", { "peerDependencies": { "@nestjs/common": "^7.0.0 || ^8.0.0 || ^9.0.0 || ^10.0.0 || ^11.0.0", "@nestjs/core": "^7.0.0 || ^8.0.0 || ^9.0.0 || ^10.0.0 || ^11.0.0", "reflect-metadata": "^0.1.13 || ^0.2.0" } }, "sha512-9j0ZRfH0QE1qyrj9JjIRDz5gQLPqq9yVC2nHsrosDVAfI5HHw08/aUAWx9DZLSdQf4HDkmhTTEGLrRFHENvchQ=="],
 
     "@next/env": ["@next/env@16.2.1", "", {}, "sha512-n8P/HCkIWW+gVal2Z8XqXJ6aB3J0tuM29OcHpCsobWlChH/SITBs1DFBk/HajgrwDkqqBXPbuUuzgDvUekREPg=="],
 
@@ -2441,6 +2449,8 @@
 
     "@types/react-transition-group": ["@types/react-transition-group@4.4.12", "", { "peerDependencies": { "@types/react": "*" } }, "sha512-8TV6R3h2j7a91c+1DXdJi3Syo69zzIZbz7Lg5tORM5LEJG7X/E6a1V3drRyBRZq7/utz7A+c4OgYLiLcYGHG6w=="],
 
+    "@types/sanitize-html": ["@types/sanitize-html@2.16.1", "", { "dependencies": { "htmlparser2": "^10.1" } }, "sha512-n9wjs8bCOTyN/ynwD8s/nTcTreIHB1vf31vhLMGqUPNHaweKC4/fAl4Dj+hUlCTKYgm4P3k83fmiFfzkZ6sgMA=="],
+
     "@types/send": ["@types/send@1.2.1", "", { "dependencies": { "@types/node": "*" } }, "sha512-arsCikDvlU99zl1g69TcAB3mzZPpxgw0UQnaHeC1Nwb015xp8bknZv5rIfri9xTOcMuaVgvabfIRA7PSZVuZIQ=="],
 
     "@types/serve-static": ["@types/serve-static@2.2.0", "", { "dependencies": { "@types/http-errors": "*", "@types/node": "*" } }, "sha512-8mam4H1NHLtu7nmtalF7eyBH14QyOASmcxHhSfEoRyr0nP/YdoesEtU+uSRvMe96TW/HPTtkoKqQLl53N7UXMQ=="],
@@ -2955,7 +2965,7 @@
 
     "enquirer": ["enquirer@2.4.1", "", { "dependencies": { "ansi-colors": "^4.1.1", "strip-ansi": "^6.0.1" } }, "sha512-rRqJg/6gd538VHvR3PSrdRBb/1Vy2YfzHqzvbhGIQpDRKIa4FgV/54b5Q1xYSxOOwKvjXweS26E0Q+nAMwp2pQ=="],
 
-    "entities": ["entities@4.5.0", "", {}, "sha512-V0hjH4dGPh9Ao5p0MoRY6BVqtwCjhz6vI5LT8AJ55H+4g9/4vbHx1I54fS0XuclLhDHArPQCiMjDxjaL8fPxhw=="],
+    "entities": ["entities@7.0.1", "", {}, "sha512-TWrgLOFUQTH994YUyl1yT4uyavY5nNB5muff+RtWaqNVCAK408b5ZnnbNAUEWLTCpum9w6arT70i1XdQ4UeOPA=="],
 
     "env-paths": ["env-paths@2.2.1", "", {}, "sha512-+h1lkLKhZMTYjog1VEpJNG7NZJWcuc2DDk/qsqSTRRCOXiLjeQ1d1/udrUGhqMxUgAlwKNZ0cf2uqan5GLuS2A=="],
 
@@ -3189,6 +3199,8 @@
 
     "he": ["he@1.2.0", "", { "bin": { "he": "bin/he" } }, "sha512-F/1DnUGPopORZi0ni+CvrCgHQ5FyEAHRLSApuYWMmrbSwoN2Mn/7k+Gl38gJnR7yyDZk6WLXwiGod1JOWNDKGw=="],
 
+    "helmet": ["helmet@8.1.0", "", {}, "sha512-jOiHyAZsmnr8LqoPGmCjYAaiuWwjAPLgY8ZX2XrmHawt99/u1y6RgrZMTeoPfpUbV96HOalYgz1qzkRbw54Pmg=="],
+
     "hoist-non-react-statics": ["hoist-non-react-statics@3.3.2", "", { "dependencies": { "react-is": "^16.7.0" } }, "sha512-/gGivxi8JPKWNm/W0jSmzcMPpfpPLc3dY/6GxhX2hQ9iGj3aDfklV4ET7NjKpSinLpJ5vafa9iiGIEZg10SfBw=="],
 
     "html-escaper": ["html-escaper@2.0.2", "", {}, "sha512-H2iMtd0I4Mt5eYiapRdIDjp+XzelXQ0tFE4JS7YFwFevXXMmOp9myNrUvCg0D6ws8iqkRPBfKHgbwig1SmlLfg=="],
@@ -3197,7 +3209,7 @@
 
     "html-void-elements": ["html-void-elements@3.0.0", "", {}, "sha512-bEqo66MRXsUGxWHV5IP0PUiAWwoEjba4VCzg0LjFJBpchPaTfyfCKTG6bc5F8ucKec3q5y6qOdGyYTSBEvhCrg=="],
 
-    "htmlparser2": ["htmlparser2@8.0.2", "", { "dependencies": { "domelementtype": "^2.3.0", "domhandler": "^5.0.3", "domutils": "^3.0.1", "entities": "^4.4.0" } }, "sha512-GYdjWKDkbRLkZ5geuHs5NY1puJ+PXwP7+fHPRz06Eirsb9ugf6d8kkXav6ADhcODhFFPMIXyxkxSuMf3D6NCFA=="],
+    "htmlparser2": ["htmlparser2@10.1.0", "", { "dependencies": { "domelementtype": "^2.3.0", "domhandler": "^5.0.3", "domutils": "^3.2.2", "entities": "^7.0.1" } }, "sha512-VTZkM9GWRAtEpveh7MSF6SjjrpNVNNVJfFup7xTY3UpFtm67foy9HDVXneLtFVt4pMz5kZtgNcvCniNFb1hlEQ=="],
 
     "http-errors": ["http-errors@2.0.1", "", { "dependencies": { "depd": "~2.0.0", "inherits": "~2.0.4", "setprototypeof": "~1.2.0", "statuses": "~2.0.2", "toidentifier": "~1.0.1" } }, "sha512-4FbRdAX+bSdmo4AUFuS0WNiPz8NgFt+r8ThgNWmlrjQjt1Q7ZR9+zTlce2859x4KSXrwIsaeTqDoKQmtP8pLmQ=="],
 
@@ -3769,6 +3781,8 @@
 
     "parse-ms": ["parse-ms@1.0.1", "", {}, "sha512-LpH1Cf5EYuVjkBvCDBYvkUPh+iv2bk3FHflxHkpCYT0/FZ1d3N3uJaLiHr4yGuMcFUhv6eAivitTvWZI4B/chg=="],
 
+    "parse-srcset": ["parse-srcset@1.0.2", "", {}, "sha512-/2qh0lav6CmI15FzA3i/2Bzk2zCgQhGMkvhOhKNcBVQ1ldgpbfiNTVslmooUmWJcADi1f1kIeynbDRVzNlfR6Q=="],
+
     "parse5": ["parse5@7.3.0", "", { "dependencies": { "entities": "^6.0.0" } }, "sha512-IInvU7fabl34qmi9gY8XOVxhYyMyuH2xUNpb2q8/Y+7552KlejkRvqvD19nMoUW/uQGGbqNpA6Tufu5FL5BZgw=="],
 
     "parseley": ["parseley@0.12.1", "", { "dependencies": { "leac": "^0.6.0", "peberminta": "^0.9.0" } }, "sha512-e6qHKe3a9HWr0oMRVDTRhKce+bRO8VGQR3NyVwcjwrbhMmFCX9KszEV35+rn4AdilFAq9VPxP/Fe1wC9Qjd2lw=="],
@@ -4040,6 +4054,8 @@
     "safe-buffer": ["safe-buffer@5.2.1", "", {}, "sha512-rp3So07KcdmmKbGvgaNxQSJr7bGVSVk5S9Eq1F+ppbRo70+YeaDxkw5Dd8NPN+GD6bjnYm2VuPuCXmpuYvmCXQ=="],
 
     "safer-buffer": ["safer-buffer@2.1.2", "", {}, "sha512-YZo3K82SD7Riyi0E1EQPojLz7kpepnSQI9IyPbHHg1XXXevb5dJI7tpyN2ADxGcQbHG7vcyRHk0cbwqcQriUtg=="],
+
+    "sanitize-html": ["sanitize-html@2.17.2", "", { "dependencies": { "deepmerge": "^4.2.2", "escape-string-regexp": "^4.0.0", "htmlparser2": "^10.1.0", "is-plain-object": "^5.0.0", "parse-srcset": "^1.0.2", "postcss": "^8.3.11" } }, "sha512-EnffJUl46VE9uvZ0XeWzObHLurClLlT12gsOk1cHyP2Ol1P0BnBnsXmShlBmWVJM+dKieQI68R0tsPY5m/B+Jg=="],
 
     "scheduler": ["scheduler@0.27.0", "", {}, "sha512-eNv+WrVbKu1f3vbYJT/xtiF5syA5HPIMtf9IgY/nKg0sWqzAUEvqY/xm7OcZc/qafLx/iO9FgOmeSAp4v5ti/Q=="],
 
@@ -4627,8 +4643,6 @@
 
     "@types/express/@types/express-serve-static-core": ["@types/express-serve-static-core@5.1.1", "", { "dependencies": { "@types/node": "*", "@types/qs": "*", "@types/range-parser": "*", "@types/send": "*" } }, "sha512-v4zIMr/cX7/d2BpAEX3KNKL/JrT1s43s96lLvvdTmza1oEvDudCqK9aF/djc/SWgy8Yh0h30TZx5VpzqFCxk5A=="],
 
-    "@vue/compiler-core/entities": ["entities@7.0.1", "", {}, "sha512-TWrgLOFUQTH994YUyl1yT4uyavY5nNB5muff+RtWaqNVCAK408b5ZnnbNAUEWLTCpum9w6arT70i1XdQ4UeOPA=="],
-
     "@vue/compiler-core/estree-walker": ["estree-walker@2.0.2", "", {}, "sha512-Rfkk/Mp/DL7JVje3u18FxFujQlTNR2q6QfMSMB7AvCBx91NGj/ba3kCfza0f6dVDbw7YlRf/nDrn7pQrCCyQ/w=="],
 
     "@vue/language-core/minimatch": ["minimatch@9.0.9", "", { "dependencies": { "brace-expansion": "^2.0.2" } }, "sha512-OBwBN9AL4dqmETlpS2zasx+vTeWclWzkblfZk7KTA5j3jeOONz/tRCnZomUyvNg83wL5Zv9Ss6HMJXAgL8R2Yg=="],
@@ -4662,6 +4676,8 @@
     "cmdk/@radix-ui/react-primitive": ["@radix-ui/react-primitive@2.1.4", "", { "dependencies": { "@radix-ui/react-slot": "1.2.4" }, "peerDependencies": { "@types/react": "*", "@types/react-dom": "*", "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc", "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc" }, "optionalPeers": ["@types/react", "@types/react-dom"] }, "sha512-9hQc4+GNVtJAIEPEqlYqW5RiYdrr8ea5XQ0ZOnD6fgru+83kqT15mq2OCcbe8KnjRZl5vF3ks69AKz3kh1jrhg=="],
 
     "cosmiconfig/parse-json": ["parse-json@5.2.0", "", { "dependencies": { "@babel/code-frame": "^7.0.0", "error-ex": "^1.3.1", "json-parse-even-better-errors": "^2.3.0", "lines-and-columns": "^1.1.6" } }, "sha512-ayCKvm/phCGxOkYRSCM82iDwct8/EonSEgCSxWxD7ve6jHggsFl4fZVQBPRNgQoKiuV/odhFrGzQXZwbifC8Rg=="],
+
+    "dom-serializer/entities": ["entities@4.5.0", "", {}, "sha512-V0hjH4dGPh9Ao5p0MoRY6BVqtwCjhz6vI5LT8AJ55H+4g9/4vbHx1I54fS0XuclLhDHArPQCiMjDxjaL8fPxhw=="],
 
     "dotenv-expand/dotenv": ["dotenv@16.6.1", "", {}, "sha512-uBq4egWHTcTt33a72vpSG0z3HnPuIl6NqYcTrKEg2azoEyl2hpW0zqlxysq2pK9HlDIHyHyakeYaYnSAwd8bow=="],
 
@@ -4704,6 +4720,8 @@
     "har-validator/ajv": ["ajv@6.14.0", "", { "dependencies": { "fast-deep-equal": "^3.1.1", "fast-json-stable-stringify": "^2.0.0", "json-schema-traverse": "^0.4.1", "uri-js": "^4.2.2" } }, "sha512-IWrosm/yrn43eiKqkfkHis7QioDleaXQHdDVPKg0FSwwd/DuvyX79TZnFOnYpB7dcsFAMmtFztZuXPDvSePkFw=="],
 
     "hoist-non-react-statics/react-is": ["react-is@16.13.1", "", {}, "sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ=="],
+
+    "html-to-text/htmlparser2": ["htmlparser2@8.0.2", "", { "dependencies": { "domelementtype": "^2.3.0", "domhandler": "^5.0.3", "domutils": "^3.0.1", "entities": "^4.4.0" } }, "sha512-GYdjWKDkbRLkZ5geuHs5NY1puJ+PXwP7+fHPRz06Eirsb9ugf6d8kkXav6ADhcODhFFPMIXyxkxSuMf3D6NCFA=="],
 
     "import-fresh/resolve-from": ["resolve-from@4.0.0", "", {}, "sha512-pb/MYmXstAkysRFx8piNI1tGFNQIFA3vkE3Gq4EuA1dF6gHp/+vgZqsCGJapvy8N3Q+4o7FwvquPJcnZ7RYy4g=="],
 
@@ -5138,6 +5156,8 @@
     "fumadocs-mdx/esbuild/@esbuild/win32-x64": ["@esbuild/win32-x64@0.27.4", "", { "os": "win32", "cpu": "x64" }, "sha512-+knoa0BDoeXgkNvvV1vvbZX4+hizelrkwmGJBdT17t8FNPwG2lKemmuMZlmaNQ3ws3DKKCxpb4zRZEIp3UxFCg=="],
 
     "har-validator/ajv/json-schema-traverse": ["json-schema-traverse@0.4.1", "", {}, "sha512-xbbCH5dCYU5T8LcEhhuh7HJ88HXuW3qsI3Y0zOZFKfZEHcpWiHU/Jxzk629Brsab/mMiHQti9wMP+845RPe3Vg=="],
+
+    "html-to-text/htmlparser2/entities": ["entities@4.5.0", "", {}, "sha512-V0hjH4dGPh9Ao5p0MoRY6BVqtwCjhz6vI5LT8AJ55H+4g9/4vbHx1I54fS0XuclLhDHArPQCiMjDxjaL8fPxhw=="],
 
     "log-symbols/chalk/supports-color": ["supports-color@7.2.0", "", { "dependencies": { "has-flag": "^4.0.0" } }, "sha512-qpCAvRl9stuOHveKsn7HncJRvv501qIacKzQlO/+Lwxc9+0q2wLyv4Dfvt80/DPn2pqOBsJdDiogXGR9+OvwRw=="],
 
