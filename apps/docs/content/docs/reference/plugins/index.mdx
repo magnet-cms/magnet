@@ -1,0 +1,114 @@
+---
+title: Plugins Reference
+description: Plugin API types, manifest interfaces, and lifecycle hooks
+---
+
+# Plugins Reference
+
+Reference for `@magnet-cms/common` plugin types and the plugin system API. For setup instructions, see [Setup Plugins](/docs/guides/setup-plugins).
+
+## @Plugin() Decorator
+
+```typescript
+import { Plugin } from '@magnet-cms/common'
+
+@Plugin({
+  name: 'my-plugin',
+  description: 'My custom plugin',
+  version: '1.0.0',
+  module: MyPluginModule,
+  frontend: { routes: [...], sidebar: [...] },
+})
+export class MyPlugin implements PluginLifecycle {
+  async onPluginInit() { /* initialization */ }
+  async onPluginDestroy() { /* cleanup */ }
+}
+```
+
+## PluginMetadata
+
+```typescript
+interface PluginMetadata {
+  name: string              // Unique identifier
+  description?: string      // Human-readable description
+  version?: string          // Semantic version
+  dependencies?: string[]   // Required plugins
+  module?: Type<unknown>    // NestJS module
+  frontend?: PluginFrontendManifest
+}
+```
+
+## PluginFrontendManifest
+
+```typescript
+interface PluginFrontendManifest {
+  routes?: PluginRouteDefinition[]
+  sidebar?: PluginSidebarItem[]
+  settings?: PluginSettingsPage[]
+  permissions?: string[]
+}
+```
+
+## PluginRouteDefinition
+
+```typescript
+interface PluginRouteDefinition {
+  path: string              // Route path
+  componentId: string       // Component identifier
+  requiresAuth?: boolean    // Require authentication
+  permissions?: string[]    // Required permissions
+  children?: PluginRouteDefinition[]
+}
+```
+
+## PluginSidebarItem
+
+```typescript
+interface PluginSidebarItem {
+  id: string                // Unique ID
+  title: string             // Display title
+  url: string               // Route path
+  icon: string              // Lucide icon name
+  order?: number            // Sort order (lower = higher)
+  items?: PluginSidebarItem[]  // Nested items
+  badge?: string | number   // Optional badge
+}
+```
+
+## Injecting Plugin Options
+
+```typescript
+import { Injectable, Inject } from '@nestjs/common'
+import { getPluginOptionsToken } from '@magnet-cms/common'
+
+@Injectable()
+export class MyPluginService {
+  constructor(
+    @Inject(getPluginOptionsToken('my-plugin'))
+    private options: MyPluginOptions,
+  ) {}
+}
+```
+
+## REST Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/plugins` | List registered plugins |
+| `GET` | `/plugins/manifests` | Frontend manifests with bundle URLs |
+
+## Available Plugins
+
+| Plugin | Package |
+|--------|---------|
+| Playground | `@magnet-cms/plugin-playground` |
+| Sentry | `@magnet-cms/plugin-sentry` |
+| Stripe | `@magnet-cms/plugin-stripe` |
+| Polar | `@magnet-cms/plugin-polar` |
+| SEO | `@magnet-cms/plugin-seo` (in development) |
+
+## Related
+
+- [Plugin System Concept](/docs/concepts/plugin-system) — architecture overview
+- [Playground Reference](/docs/reference/plugins/playground) — schema builder API
+- [Sentry Reference](/docs/reference/plugins/sentry) — monitoring configuration

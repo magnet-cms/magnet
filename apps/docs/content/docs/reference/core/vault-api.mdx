@@ -1,0 +1,56 @@
+---
+title: Vault API
+description: VaultAdapter interface and VaultService methods
+---
+
+# Vault API
+
+## VaultAdapter Interface
+
+```typescript
+import type { VaultAdapter } from '@magnet-cms/common'
+
+interface VaultAdapter {
+  get(key: string): Promise<string | null>
+  set(key: string, value: string): Promise<void>
+  delete(key: string): Promise<void>
+  list(prefix?: string): Promise<string[]>
+}
+```
+
+All three backends implement this interface: DB (built-in), HashiCorp Vault, and Supabase Vault.
+
+## VaultService
+
+```typescript
+import { VaultService } from '@magnet-cms/core'
+```
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `get` | `(key: string) => Promise<string \| null>` | Retrieve secret |
+| `set` | `(key: string, value: string) => Promise<void>` | Store secret |
+| `delete` | `(key: string) => Promise<void>` | Delete secret |
+| `list` | `(prefix?: string) => Promise<string[]>` | List keys by prefix |
+
+## REST Endpoints (Admin)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/vault/secrets` | List secret keys |
+| `GET` | `/vault/secrets/:key` | Get secret value |
+| `POST` | `/vault/secrets` | Create/update secret |
+| `DELETE` | `/vault/secrets/:key` | Delete secret |
+
+## DB Backend Configuration
+
+```bash
+VAULT_MASTER_KEY=at-least-32-characters-long-key
+```
+
+No extra package needed — DB backend is the default when no vault adapter is registered.
+
+## Related
+
+- [Vault](/docs/concepts/vault) — backend comparison and adapter pattern
+- [Setup HashiCorp Vault](/docs/guides/setup-vault-hashicorp) — HashiCorp backend setup

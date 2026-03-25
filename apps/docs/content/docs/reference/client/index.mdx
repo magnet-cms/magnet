@@ -1,0 +1,52 @@
+---
+title: Client Reference
+description: Admin UI, UI components, and client SDK reference
+---
+
+# Client Reference
+
+| Package | Description |
+|---------|-------------|
+| `@magnet-cms/admin` | React admin UI application |
+| `@magnet-cms/ui` | Shared UI component library (shadcn/ui + Tailwind) |
+| `@magnet-cms/client` | Type-safe HTTP client for the Magnet CMS API |
+
+## @magnet-cms/admin
+
+The admin UI is automatically served by `@magnet-cms/core` at `/admin`. It provides:
+
+- **Content Manager** — Create, edit, publish, delete content
+- **Media Library** — Upload and manage files
+- **Settings** — System configuration grouped by module
+- **Account** — Profile and password management
+- **Plugins** — Extended UI from installed plugins
+
+## @magnet-cms/ui Components
+
+Component categories:
+
+| Category | Components |
+|----------|-----------|
+| Layout | Sidebar, Card |
+| Forms | Input, Select, Checkbox, Switch, DatePicker |
+| Feedback | Alert, Toast, Progress, Skeleton |
+| Navigation | Tabs, Breadcrumb, Pagination |
+| Data Display | Table, Badge, Avatar |
+| Overlays | Dialog, DropdownMenu, Popover, Tooltip |
+
+## @magnet-cms/client
+
+Type-safe HTTP client powered by `openapi-fetch`. Namespaces:
+
+| Namespace | Purpose |
+|-----------|---------|
+| `client.content` | Content CRUD + publish/unpublish |
+| `client.auth` | Login, register, current user |
+| `client.raw` | Full `openapi-fetch` client with all typed paths |
+
+## Related
+
+- [Client SDK API](/docs/reference/client/sdk) — client methods and types
+- [Type Generation](/docs/reference/client/codegen) — CLI flags and generated types
+- [Admin UI Reference](/docs/reference/client/admin) — keyboard shortcuts, embedding
+- [UI Components](/docs/reference/client/ui) — component reference

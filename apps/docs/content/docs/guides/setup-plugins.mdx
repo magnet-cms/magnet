@@ -1,0 +1,78 @@
+---
+title: Setup Plugins
+description: Install and register official Magnet CMS plugins
+---
+
+# Setup Plugins
+
+Plugins extend Magnet CMS with backend services, API endpoints, and admin UI pages. They are registered in `MagnetModule.forRoot()` alongside database and auth adapters.
+
+## How to Register a Plugin
+
+All plugins follow the same pattern:
+
+```typescript
+import { Module } from '@nestjs/common'
+import { MagnetModule } from '@magnet-cms/core'
+import { MongooseDatabaseAdapter } from '@magnet-cms/adapter-db-mongoose'
+import { PlaygroundPlugin } from '@magnet-cms/plugin-playground'
+
+@Module({
+  imports: [
+    MagnetModule.forRoot([
+      MongooseDatabaseAdapter.forRoot(),
+      PlaygroundPlugin.forRoot(),
+    ]),
+  ],
+})
+export class AppModule {}
+```
+
+Multiple plugins can be registered together:
+
+```typescript
+MagnetModule.forRoot([
+  MongooseDatabaseAdapter.forRoot(),
+  PlaygroundPlugin.forRoot(),
+  SentryPlugin.forRoot({ dsn: process.env.SENTRY_DSN }),
+  StripePlugin.forRoot(),
+])
+```
+
+## Available Plugins
+
+| Plugin | Package | Purpose |
+|--------|---------|---------|
+| Playground | `@magnet-cms/plugin-playground` | Visual schema builder in the admin UI |
+| Sentry | `@magnet-cms/plugin-sentry` | Error and performance monitoring |
+| Stripe | `@magnet-cms/plugin-stripe` | Payments, subscriptions, and billing |
+| Polar | `@magnet-cms/plugin-polar` | Polar.sh billing and benefits |
+
+Setup guides for each plugin:
+
+- [Setup Playground](/docs/guides/setup-playground)
+- [Setup Sentry](/docs/guides/setup-sentry)
+- [Setup Stripe](/docs/guides/setup-stripe)
+- [Setup Polar](/docs/guides/setup-polar)
+
+## Conditional Registration
+
+Enable or disable plugins conditionally without removing imports:
+
+```typescript
+const providers = [MongooseDatabaseAdapter.forRoot()]
+
+if (process.env.NODE_ENV === 'development') {
+  providers.push(PlaygroundPlugin.forRoot())
+}
+
+if (process.env.SENTRY_DSN) {
+  providers.push(SentryPlugin.forRoot())
+}
+
+MagnetModule.forRoot(providers)
+```
+
+## Related
+
+- [Plugin System](/docs/concepts/plugin-system) — plugin architecture and custom plugin guide

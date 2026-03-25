@@ -1,0 +1,72 @@
+---
+title: Webhooks API
+description: WebhookService methods, REST endpoints, payload format, and event reference
+---
+
+# Webhooks API
+
+## REST Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/webhooks` | List webhooks (secrets masked) |
+| `GET` | `/webhooks/:id` | Get webhook |
+| `POST` | `/webhooks` | Create webhook (returns secret once) |
+| `PUT` | `/webhooks/:id` | Update webhook |
+| `DELETE` | `/webhooks/:id` | Delete webhook |
+| `POST` | `/webhooks/:id/test` | Send test delivery |
+| `POST` | `/webhooks/:id/regenerate-secret` | Rotate secret |
+| `GET` | `/webhooks/:id/deliveries` | Paginated delivery history |
+
+## Payload Format
+
+```typescript
+interface WebhookPayload {
+  event: string             // e.g. 'content.published'
+  timestamp: string         // ISO 8601
+  data: Record<string, unknown>
+}
+```
+
+## Signature Header
+
+```
+X-Magnet-Signature: sha256=<hex>
+X-Magnet-Event: content.published
+```
+
+Verify with: `sha256=HMAC-SHA256(requestBody, secret)`
+
+## Available Events
+
+**Content:** `content.created`, `content.updated`, `content.deleted`, `content.published`, `content.unpublished`, `content.version.created`, `content.version.restored`
+
+**User:** `user.created`, `user.updated`, `user.deleted`, `user.login`, `user.logout`, `user.password_changed`
+
+**Media:** `media.uploaded`, `media.deleted`, `media.folder_created`
+
+**RBAC:** `role.created`, `role.updated`, `role.deleted`, `role.permissions_updated`
+
+**Settings:** `settings.updated`
+
+**System:** `system.startup`, `system.shutdown`, `api_key.created`, `api_key.revoked`
+
+## WebhookService
+
+```typescript
+import { WebhookService } from '@magnet-cms/core'
+```
+
+| Method | Description |
+|--------|-------------|
+| `findById(id)` | Get webhook (secret masked) |
+| `findByIdWithSecret(id)` | Get webhook with raw secret |
+| `deliver(webhook, event, payload)` | Trigger delivery |
+| `deliverWithRetry(webhook, event, payload)` | Deliver with exponential backoff |
+| `getDeliveries(webhookId, page?, limit?)` | Paginated delivery history |
+| `regenerateSecret(id)` | Rotate HMAC secret |
+
+## Related
+
+- [Webhooks](/docs/concepts/webhooks) — event-driven architecture and retry
+- [Setup Webhooks](/docs/guides/setup-webhooks) — creating and managing webhooks

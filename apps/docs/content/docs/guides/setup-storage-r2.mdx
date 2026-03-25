@@ -1,0 +1,80 @@
+---
+title: Setup R2 Storage
+description: Route media uploads to Cloudflare R2 with Magnet CMS
+---
+
+# Setup R2 Storage
+
+Route Magnet media uploads to Cloudflare R2.
+
+## Prerequisites
+
+- A Cloudflare account with R2 enabled
+- A Cloudflare R2 bucket and API token
+- NestJS app with `@magnet-cms/core` and a database adapter installed
+
+## 1. Install
+
+```bash
+bun add @magnet-cms/adapter-storage-r2 @aws-sdk/client-s3 @aws-sdk/s3-request-presigner
+```
+
+## 2. Create an R2 API Token
+
+In Cloudflare Dashboard → R2 → Manage R2 API Tokens:
+1. Create a token with **Object Read & Write** permissions
+2. Scope it to your specific bucket (recommended)
+3. Copy the Access Key ID and Secret Access Key
+
+## 3. Set Environment Variables
+
+```bash
+# .env
+R2_BUCKET=media
+R2_ACCOUNT_ID=your-cloudflare-account-id
+R2_ACCESS_KEY_ID=...
+R2_SECRET_ACCESS_KEY=...
+R2_PUBLIC_URL=https://pub-xxxx.r2.dev   # or your custom domain
+```
+
+Find your Account ID in Cloudflare Dashboard → R2 → Overview.
+
+## 4. Register the Adapter
+
+```typescript
+import { Module } from '@nestjs/common'
+import { MagnetModule } from '@magnet-cms/core'
+import { MongooseDatabaseAdapter } from '@magnet-cms/adapter-db-mongoose'
+import { R2StorageAdapter } from '@magnet-cms/adapter-storage-r2'
+
+@Module({
+  imports: [
+    MagnetModule.forRoot([
+      MongooseDatabaseAdapter.forRoot(),
+      R2StorageAdapter.forRoot({
+        bucket: process.env.R2_BUCKET,
+        accountId: process.env.R2_ACCOUNT_ID,
+        publicUrl: process.env.R2_PUBLIC_URL,
+      }),
+    ]),
+  ],
+})
+export class AppModule {}
+```
+
+## 5. Enable Public Access (Optional)
+
+To serve files publicly, either:
+- Set the bucket to **Public** in the Cloudflare R2 dashboard
+- Or connect a custom domain to the bucket
+
+The `publicUrl` must match the accessible URL for your bucket.
+
+## 6. Verify
+
+Upload a file via the admin UI Media Library and confirm it appears in your R2 bucket. The returned URL should use your configured `publicUrl`.
+
+## Related
+
+- [Storage](/docs/concepts/storage) — storage adapter architecture
+- [Setup S3 Storage](/docs/guides/setup-storage-s3) — AWS S3 alternative

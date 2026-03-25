@@ -1,0 +1,60 @@
+---
+title: RBAC API
+description: Role and permission endpoints, service methods, and permission format
+---
+
+# RBAC API
+
+## Permission Format
+
+Permissions use dot-separated `resource.action` or `resource.subresource.action`:
+
+```
+content.posts.create
+content.posts.find
+rbac.roles.update
+settings.read
+*                    # all permissions
+content.*            # all content permissions
+```
+
+Exact match is checked before wildcard prefix match.
+
+## REST Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/rbac/roles` | List all roles |
+| `GET` | `/rbac/roles/:id` | Get role with permissions |
+| `POST` | `/rbac/roles` | Create role |
+| `PUT` | `/rbac/roles/:id` | Update role |
+| `DELETE` | `/rbac/roles/:id` | Delete role (non-system) |
+| `POST` | `/rbac/roles/:id/duplicate` | Duplicate role |
+| `PUT` | `/rbac/roles/:id/permissions` | Set role permissions |
+| `GET` | `/rbac/permissions` | List all discovered permissions |
+| `PUT` | `/rbac/users/:userId/roles` | Assign roles to user |
+
+## Default Roles
+
+| Role | Permissions | Deletable |
+|------|-------------|-----------|
+| `admin` | `*` | No |
+| `authenticated` | none | No |
+| `public` | none | No |
+
+## Configuration
+
+```typescript
+MagnetModule.forRoot(adapters, {
+  rbac: {
+    defaultRole: 'authenticated',
+    allowPublicAccess: false,
+    cacheTTL: 300,          // seconds
+  },
+})
+```
+
+## Related
+
+- [RBAC](/docs/concepts/rbac) — permission model and auto-discovery
+- [Setup RBAC](/docs/guides/setup-rbac) — configuring roles and protecting routes

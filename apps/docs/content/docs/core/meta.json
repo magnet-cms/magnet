@@ -1,4 +1,0 @@
-{
-  "title": "Core",
-  "pages": ["index", "content-module", "auth-module", "api-keys-module", "rbac-module", "admin-module", "database-module", "email-module", "cache-module", "vault-module", "settings-module", "storage-module", "notifications-module", "webhooks-module", "openapi-module"]
-}

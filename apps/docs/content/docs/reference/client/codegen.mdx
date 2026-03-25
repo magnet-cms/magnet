@@ -1,0 +1,74 @@
+---
+title: Type Generation Reference
+description: magnet-client generate CLI flags and generated type structure
+---
+
+# Type Generation Reference
+
+Reference for the `magnet-client generate` CLI. For workflow integration, see [Type Generation Guide](/docs/guides/codegen).
+
+## CLI Options
+
+```bash
+npx magnet-client generate [options]
+```
+
+| Flag | Alias | Default | Description |
+|------|-------|---------|-------------|
+| `--url <url>` | | | URL of the OpenAPI spec (e.g., `http://localhost:3000/oas.json`) |
+| `--input <path>` | | | Path to a local OpenAPI JSON/YAML file |
+| `--output <path>` | `-o` | `./magnet.d.ts` | Output file path for the generated types |
+
+Either `--url` or `--input` is required.
+
+## Generated Type Structure
+
+The generated file contains TypeScript interfaces for all API paths and component schemas:
+
+```typescript
+export interface paths {
+  '/content/{schema}': {
+    get: {
+      parameters: {
+        path: { schema: string }
+        query?: { page?: number; limit?: number; status?: string }
+      }
+      responses: {
+        200: {
+          content: {
+            'application/json': {
+              items: components['schemas']['Post'][]
+              total: number
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+export interface components {
+  schemas: {
+    Post: {
+      _id: string
+      title: string
+      body?: string
+      publishedAt?: string
+    }
+  }
+}
+```
+
+## Troubleshooting
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| `Either --url or --input must be provided` | Missing flag | Add `--url` or `--input` |
+| `ECONNREFUSED` | Server not running | Start your Magnet app before generating |
+| Empty content schemas | Discovery module inactive | Check `@magnet-cms/core` module setup |
+
+## Related
+
+- [Type Generation Guide](/docs/guides/codegen) — workflow integration
+- [Client SDK API](/docs/reference/client/sdk) — using generated types with `createMagnetClient`
+- [OpenAPI Reference](/docs/reference/core/openapi-api) — spec endpoint configuration

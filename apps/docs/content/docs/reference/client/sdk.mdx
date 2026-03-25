@@ -1,0 +1,96 @@
+---
+title: Client SDK API
+description: createMagnetClient methods, types, and configuration reference
+---
+
+# Client SDK API
+
+Reference for `@magnet-cms/client`. For setup instructions, see [Client SDK Guide](/docs/guides/client-sdk).
+
+## createMagnetClient
+
+```typescript
+import { createMagnetClient } from '@magnet-cms/client'
+import type { paths } from './magnet.d.ts'
+
+const client = createMagnetClient<paths>({
+  baseUrl: 'http://localhost:3000',
+  token: 'your-jwt-token',
+})
+```
+
+**Configuration:**
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `baseUrl` | `string` | Base URL of your Magnet CMS server (required) |
+| `token` | `string` | JWT bearer token for authenticated requests |
+| `apiKey` | `string` | API key (`x-api-key` header) |
+| `headers` | `Record<string, string>` | Additional request headers |
+
+When both `token` and `apiKey` are provided, `token` takes precedence.
+
+## client.content
+
+Type-safe CRUD methods for content management.
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `list` | `(schema, params?) => Promise<Result>` | List documents |
+| `get` | `(schema, documentId) => Promise<Result>` | Get a document |
+| `create` | `(schema, data) => Promise<Result>` | Create a document |
+| `update` | `(schema, documentId, data) => Promise<Result>` | Update a document |
+| `delete` | `(schema, documentId) => Promise<Result>` | Delete a document |
+| `publish` | `(schema, documentId) => Promise<Result>` | Publish a document |
+| `unpublish` | `(schema, documentId) => Promise<Result>` | Unpublish a document |
+
+```typescript
+const { data } = await client.content.list('post', {
+  page: 1,
+  limit: 20,
+  status: 'published',
+})
+
+const { data } = await client.content.get('post', 'document-id')
+const { data, error } = await client.content.create('post', { title: 'Hello' })
+await client.content.publish('post', 'document-id')
+```
+
+## client.auth
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `login` | `(email, password) => Promise<Result>` | Authenticate, returns token |
+| `register` | `(data) => Promise<Result>` | Create account |
+| `me` | `() => Promise<Result>` | Get current user |
+
+```typescript
+const { data } = await client.auth.login('user@example.com', 'password')
+// data.token → JWT token
+
+const { data } = await client.auth.me()
+// data.user → current user
+```
+
+## client.raw
+
+Full `openapi-fetch` client with all typed paths. Use for endpoints not covered by convenience methods:
+
+```typescript
+const { data } = await client.raw.GET('/content/{schema}', {
+  params: {
+    path: { schema: 'post' },
+    query: { limit: 10 },
+  },
+})
+```
+
+## Environment Support
+
+`@magnet-cms/client` uses the native `fetch` API and works in Node.js 18+, Bun, modern browsers, and edge runtimes (Cloudflare Workers, Vercel Edge).
+
+## Related
+
+- [Client SDK Guide](/docs/guides/client-sdk) — setup and usage guide
+- [Type Generation](/docs/reference/client/codegen) — generate `paths` type from server
+- [OpenAPI Reference](/docs/reference/core/openapi-api) — spec endpoint configuration

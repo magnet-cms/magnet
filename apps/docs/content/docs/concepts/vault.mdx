@@ -1,0 +1,39 @@
+---
+title: Vault
+description: Encrypted secrets, three storage backends, and the vault adapter pattern
+---
+
+# Vault
+
+The Vault module stores and retrieves encrypted secrets — API keys, webhook signing keys, and other sensitive values that should not live in plain-text environment variables or database fields.
+
+## Why Vault
+
+Environment variables are readable by anyone with server access. Database fields are readable by anyone with DB access. Vault-stored secrets are encrypted at rest with a master key that is never stored alongside the data.
+
+## Three Backends
+
+| Backend | Package | When to use |
+|---------|---------|-------------|
+| **DB** (default) | built-in | Simple setup; secrets encrypted in your database |
+| **HashiCorp Vault** | `@magnet-cms/adapter-vault-hashicorp` | Enterprise compliance, audit trails, dynamic secrets |
+| **Supabase Vault** | `@magnet-cms/adapter-vault-supabase` | Already using Supabase; secrets in pgsodium |
+
+## DB Backend (Default)
+
+No extra package needed. Set `VAULT_MASTER_KEY` (≥32 characters) and secrets are AES-encrypted in your database:
+
+```typescript
+// No vault adapter in forRoot() = DB backend is used automatically
+MagnetModule.forRoot([MongooseDatabaseAdapter.forRoot()])
+```
+
+## Adapter Pattern
+
+All three backends implement the `VaultAdapter` interface from `@magnet-cms/common`. The `VaultService` depends only on this interface — swapping backends requires only changing the provider in `forRoot()`.
+
+## Related
+
+- [Setup HashiCorp Vault](/docs/guides/setup-vault-hashicorp) — configure HashiCorp backend
+- [Setup Supabase](/docs/guides/setup-supabase) — Supabase Vault setup
+- [Vault API](/docs/reference/core/vault-api) — VaultAdapter interface reference

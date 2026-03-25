@@ -1,0 +1,56 @@
+---
+title: Email
+description: Email service architecture, template engine, console fallback, and the adapter pattern
+---
+
+# Email
+
+The Email module sends transactional and templated emails. It is registered automatically by `MagnetModule.forRoot()` and works out of the box — without any adapter, emails are printed to the console, making local development frictionless.
+
+## Console Fallback
+
+When no email adapter is registered, `EmailService` logs messages to the console instead of sending them. No crashes, no missing environment variables, no config required during development. In production, add a transport adapter to actually send mail.
+
+## Adapter Pattern
+
+Two official transport adapters are available:
+
+| Adapter | Package | When to use |
+|---------|---------|-------------|
+| **Resend** | `@magnet-cms/email-resend` | Modern API-first delivery service |
+| **Nodemailer** | `@magnet-cms/email-nodemailer` | SMTP, Gmail relay, or self-hosted MTA |
+
+Both implement the same `EmailAdapter` interface. Swapping providers requires only changing the adapter in `forRoot()` — `EmailService` and all templates stay the same.
+
+## Template Engine
+
+Email bodies are Handlebars templates rendered at send time. Template subjects and bodies can reference context variables:
+
+```handlebars
+Hello {{firstName}},
+
+Your order {{orderId}} has shipped.
+```
+
+Templates are managed in the admin UI under **Settings → Email → Templates**. Five seed templates are created on first boot: welcome email, password reset, email verification, notification digest, and a generic alert.
+
+Templates are wrapped in a React Email layout before sending, giving consistent branding across all emails without duplicating HTML.
+
+## Seeded Templates
+
+| Template | Trigger |
+|----------|---------|
+| Welcome | New user registration |
+| Password Reset | Forgot password request |
+| Email Verification | Account verification flow |
+| Notification Digest | Periodic notification summary |
+| Alert | Generic system alerts |
+
+## Settings Integration
+
+Email behavior can be toggled at runtime from the admin panel — enable/disable globally, set the from address, and configure per-template overrides. The `EmailSettings` class is exposed from `@magnet-cms/core` for programmatic access.
+
+## Related
+
+- [Setup Email](/docs/guides/setup-email) — configure Resend or Nodemailer
+- [Email API](/docs/reference/core/email-api) — EmailService methods and template schema

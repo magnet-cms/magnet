@@ -1,0 +1,95 @@
+---
+title: Client SDK
+description: Use the typed Magnet CMS client SDK to fetch content and manage resources
+---
+
+# Client SDK
+
+`@magnet-cms/client` is a type-safe HTTP client for the Magnet CMS API. It works in Node.js, Bun, browsers, and edge runtimes — no dependency on `@magnet-cms/core` or NestJS.
+
+## 1. Install
+
+```bash
+bun add @magnet-cms/client
+# or
+npm install @magnet-cms/client
+```
+
+## 2. Generate Types
+
+Generate TypeScript types from your running Magnet server's OpenAPI spec:
+
+```bash
+npx magnet-client generate --url http://localhost:3000/oas.json -o ./src/magnet.d.ts
+```
+
+See [Type Generation](/docs/guides/codegen) for more options.
+
+## 3. Create a Client
+
+```typescript
+import { createMagnetClient } from '@magnet-cms/client'
+import type { paths } from './magnet.d.ts'
+
+const client = createMagnetClient<paths>({
+  baseUrl: 'http://localhost:3000',
+  token: 'your-jwt-token',    // or apiKey: 'mgnt_...'
+})
+```
+
+## 4. Fetch Content
+
+```typescript
+// List published posts
+const { data, error } = await client.content.list('post', {
+  status: 'published',
+  page: 1,
+  limit: 20,
+})
+
+// Get a single document
+const { data: post } = await client.content.get('post', documentId)
+
+// Create a document
+const { data: newPost } = await client.content.create('post', {
+  title: 'Hello World',
+  body: 'My first post',
+})
+```
+
+## 5. Authenticate
+
+```typescript
+// Login with JWT auth
+const { data } = await client.auth.login('user@example.com', 'password')
+const token = data?.token
+
+// Get current user
+const { data: user } = await client.auth.me()
+```
+
+## 6. Access Raw API
+
+For endpoints not covered by convenience methods, use `client.raw` for full typed access:
+
+```typescript
+const { data } = await client.raw.GET('/webhooks', {
+  headers: { Authorization: `Bearer ${token}` },
+})
+```
+
+`client.raw` provides autocomplete for all paths in your generated `paths` type.
+
+## Environment Support
+
+Works without any polyfills in:
+- Node.js 18+
+- Bun
+- Modern browsers
+- Edge runtimes (Cloudflare Workers, Vercel Edge Functions)
+
+## Related
+
+- [Type Generation](/docs/guides/codegen) — generate types from your server's OpenAPI spec
+- [Setup OpenAPI](/docs/guides/setup-openapi) — configure the spec endpoint on the server
+- [Next.js Integration](/docs/guides/nextjs-integration) — use the client in a Next.js frontend

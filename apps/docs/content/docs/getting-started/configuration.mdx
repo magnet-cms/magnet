@@ -8,7 +8,7 @@ description: Magnet providers, global options, and a full-stack example
 `MagnetModule.forRoot` accepts:
 
 1. **Providers** — Either a single array `forRoot([...])` or variadic `forRoot(p1, p2, …)`. Each item is a **Magnet provider** (discriminated by `type`: `database`, `auth`, `storage`, `vault`, `email`, `cache`, `graphql`, `plugin`).
-2. **Global options** (optional second argument when using the array form) — `jwt`, `rbac`, `internationalization`, `playground`, `email` (React Email `layout`), etc. The admin UI is **on by default**; pass `admin: false` for API-only mode ([Admin module](/docs/core/admin-module)).
+2. **Global options** (optional second argument when using the array form) — `jwt`, `rbac`, `internationalization`, `playground`, `email` (React Email `layout`), etc. The admin UI is **on by default**; pass `admin: false` for API-only mode ([Admin UI](/docs/concepts/admin-ui)).
 
 You must pass **exactly one database** provider. Everything else is optional.
 
@@ -75,14 +75,14 @@ Magnet collects `envVars` from each provider and validates required variables **
 
 | Topic | Doc |
 |-------|-----|
-| Email | [Email module](/docs/core/email-module) |
-| Cache | [Cache module](/docs/core/cache-module) |
-| Vault | [Vault module](/docs/core/vault-module) |
-| Storage | [Storage module](/docs/core/storage-module) |
-| Settings | [Settings module](/docs/core/settings-module) |
-| Adapters index | [Adapters](/docs/adapters) |
+| Email | [Email concept](/docs/concepts/email) · [Email API](/docs/reference/core/email-api) |
+| Cache | [Cache API](/docs/reference/core/cache-api) |
+| Vault | [Vault concept](/docs/concepts/vault) · [Vault API](/docs/reference/core/vault-api) |
+| Storage | [Storage concept](/docs/concepts/storage) · [Storage API](/docs/reference/core/storage-api) |
+| Settings | [Settings concept](/docs/concepts/settings) · [Settings API](/docs/reference/core/settings-api) |
+| Adapters index | [Adapters reference](/docs/reference/adapters) |
 
 ## Next steps
 
 - [Quick Start](/docs/getting-started/quick-start)
-- [Database migrations](/docs/migrations) (Drizzle)
+- [Database migrations](/docs/guides/drizzle-migrations) (Drizzle)

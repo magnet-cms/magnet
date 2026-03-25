@@ -1,0 +1,120 @@
+---
+title: Content Model
+description: Schema-driven content, draft/publish lifecycle, multi-locale support, and versioning
+---
+
+# Content Model
+
+Magnet's content system is schema-driven: you define the shape of your content with TypeScript decorators, and the CMS generates REST endpoints, admin UI fields, and database columns automatically.
+
+## Schemas
+
+A content schema is a TypeScript class decorated with `@Schema` and `@Field` from `@magnet-cms/common`:
+
+```typescript
+import { Schema, Field } from '@magnet-cms/common'
+
+@Schema()
+export class Article {
+  @Field.Text({ required: true })
+  title: string
+
+  @Field.RichText()
+  body: string
+
+  @Field.Date()
+  publishedAt?: Date
+
+  @Field.Select({ options: ['tech', 'design', 'business'] })
+  category?: string
+}
+```
+
+Schemas are registered in `MagnetModule.forRoot(providers, { schemas: [Article] })` or discovered automatically by the discovery module. Once registered, Magnet creates:
+
+- `GET/POST /content/articles` — list and create endpoints
+- `GET/PUT/DELETE /content/articles/:documentId` — item endpoints
+- `POST /content/articles/:documentId/publish` — publish workflow
+- Admin UI fields matching the declared field types
+
+## Document Lifecycle
+
+Every document moves through a draft/publish lifecycle:
+
+```
+Create → Draft → Publish → Published
+                              ↓
+                        Edit → New Draft → Re-publish
+```
+
+1. **Draft** — The working copy. Updates always modify the draft.
+2. **Published** — The public version. Only created explicitly via the publish action.
+3. **Draft + Published** — A document can have both simultaneously: the published version is live while you edit the next draft.
+4. **Unpublish** — Removes the published version, leaving the draft.
+
+This lifecycle applies per locale — the English version can be published while the Portuguese draft is still in progress.
+
+## Multi-Locale Support
+
+Each document is identified by a `documentId` (stable across locales) and a `locale` code. Locales are independent: each has its own draft and published state.
+
+```typescript
+// Document "abc123" in English — published
+// Document "abc123" in Portuguese — draft only
+await contentService.getLocaleStatuses('Article', 'abc123')
+// { en: { draft: true, published: true }, 'pt-BR': { draft: true, published: false } }
+```
+
+Locales are enabled in global options: `internationalization: { locales: ['en', 'pt-BR'], defaultLocale: 'en' }`.
+
+## Version History
+
+When a document is published, Magnet snapshots the full document state as a version. Versions are immutable records you can restore from:
+
+```typescript
+// View history
+const versions = await contentService.getVersions('Article', documentId, 'en')
+// [{ versionNumber: 3, createdAt: ..., data: {...} }, ...]
+
+// Restore an older version as the current draft
+await contentService.restoreVersion('Article', documentId, 'en', 2)
+```
+
+## System Fields
+
+Every document has system fields alongside your schema fields:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Internal database ID |
+| `documentId` | string | Stable cross-locale identifier |
+| `locale` | string | Locale code (`en`, `pt-BR`, …) |
+| `status` | `draft` \| `published` | Current state |
+| `publishedAt` | Date \| null | When last published |
+| `createdAt` / `updatedAt` | Date | Timestamps |
+| `createdBy` / `updatedBy` | string | User ID if auth is configured |
+
+## Field Types
+
+The `@Field` namespace covers the full range of CMS content:
+
+| Decorator | Description |
+|-----------|-------------|
+| `@Field.Text` | Short text, slugs, names |
+| `@Field.RichText` | Long-form content (Lexical editor) |
+| `@Field.Number` | Integers and decimals |
+| `@Field.Boolean` | Toggles |
+| `@Field.Date` | Dates and timestamps |
+| `@Field.Select` | Single-choice from options list |
+| `@Field.MultiSelect` | Multi-choice |
+| `@Field.Relation` | Reference to another schema |
+| `@Field.Upload` | Media/file reference |
+| `@Field.JSON` | Raw JSON object |
+| `@Field.Group` | Nested object group |
+| `@Field.Array` | Repeating field array |
+
+## Related
+
+- [Setup Mongoose](/docs/guides/setup-mongoose) or [Setup Drizzle](/docs/guides/setup-drizzle) — configure your database
+- [Content API](/docs/reference/core/content-api) — full endpoint and service method reference
+- [Database Adapters](/docs/concepts/database-adapters) — how schemas map to database tables/collections

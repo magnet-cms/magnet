@@ -1,0 +1,74 @@
+---
+title: Authentication
+description: Auth strategies, guards, JWT vs external providers, and the session system
+---
+
+# Authentication
+
+Magnet's authentication system is built around a strategy pattern. The default strategy uses JWT; external providers (Supabase, Clerk) replace the built-in user/password system entirely.
+
+## Strategy Pattern
+
+The `DynamicAuthGuard` is applied globally to all Magnet routes. At request time, it delegates to whichever auth strategy is registered:
+
+- **JWT** (default) — validates the `Authorization: Bearer <token>` header against `JWT_SECRET`
+- **Supabase** — validates the token against Supabase's JWKS endpoint
+- **Clerk** — validates the token against Clerk's RS256 JWKS endpoint
+
+When you register an external auth adapter, it replaces the JWT validator. The guard code never changes — only the strategy implementation changes.
+
+## JWT (Default)
+
+JWT auth is built into the core with no additional packages:
+
+```typescript
+MagnetModule.forRoot(
+  [MongooseDatabaseAdapter.forRoot()],
+  { jwt: { expiresIn: '7d' } },
+)
+```
+
+`JWT_SECRET` is read from `process.env`. The auth module manages user registration, login, password hashing (bcrypt), refresh token rotation, and optional session tracking.
+
+## External Providers
+
+External providers offload user management to a third party. Magnet verifies their JWTs but does not manage passwords or registration:
+
+```typescript
+// Supabase
+MagnetModule.forRoot([
+  DrizzleDatabaseAdapter.forRoot({ dialect: 'postgresql' }),
+  SupabaseAuthAdapter.forRoot(),
+])
+
+// Clerk
+MagnetModule.forRoot([
+  DrizzleDatabaseAdapter.forRoot({ dialect: 'postgresql' }),
+  ClerkAuthAdapter.forRoot(),
+])
+```
+
+With external providers, the `/auth/register` and `/auth/login` endpoints are disabled — sign-up and login happen in the external service's UI or SDK.
+
+## Guards
+
+Two guards protect routes:
+
+| Guard | Purpose |
+|-------|---------|
+| `AuthGuard` | Requires a valid JWT — rejects unauthenticated requests |
+| `PermissionGuard` | Requires a specific RBAC permission — works on top of `AuthGuard` |
+
+All Magnet admin and content endpoints are protected by `AuthGuard` by default.
+
+## Sessions
+
+When sessions are enabled, each login creates a session record. Refresh tokens are rotated on each use — a stolen refresh token can only be used once before the legitimate user's next request invalidates it.
+
+## Related
+
+- [Setup Auth](/docs/guides/setup-auth) — configure JWT auth
+- [Setup Supabase](/docs/guides/setup-supabase) — use Supabase as auth provider
+- [Setup Clerk](/docs/guides/setup-auth-clerk) — use Clerk as auth provider
+- [Auth API](/docs/reference/core/auth-api) — endpoint and type reference
+- [RBAC](/docs/concepts/rbac) — permission-based access on top of authentication

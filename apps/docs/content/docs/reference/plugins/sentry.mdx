@@ -1,0 +1,104 @@
+---
+title: Sentry Plugin Reference
+description: Configuration options, decorators, and environment variables for the Sentry plugin
+---
+
+# Sentry Plugin Reference
+
+Reference for `@magnet-cms/plugin-sentry`. For setup instructions, see [Setup Sentry](/docs/guides/setup-sentry).
+
+## Configuration Options
+
+```typescript
+SentryPlugin.forRoot({
+  dsn: string,             // Sentry Data Source Name (or SENTRY_DSN env var)
+  tracesSampleRate: number, // 0.0–1.0 (default: 0.1)
+  environment: string,     // Deployment environment tag
+  release: string,         // Release version tag
+  debug: boolean,          // Enable Sentry debug logging (default: false)
+  enabled: boolean,        // Toggle all Sentry activity (default: true)
+  attachStacktrace: boolean, // Stack traces on all events (default: true)
+  maxBreadcrumbs: number,  // Max breadcrumbs per event (default: 100)
+})
+```
+
+## Environment Variables
+
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `SENTRY_DSN` | Sentry Data Source Name | Yes (or pass via `forRoot`) |
+| `SENTRY_RELEASE` | Release version tag | No |
+| `SENTRY_ENVIRONMENT` | Environment override | No (falls back to `NODE_ENV`) |
+
+## Early Initialization
+
+For full startup tracing, initialize before NestJS boots:
+
+```typescript
+// src/instrument.ts
+import { initSentryInstrumentation } from '@magnet-cms/plugin-sentry'
+
+initSentryInstrumentation({
+  dsn: process.env.SENTRY_DSN,
+  tracesSampleRate: 1.0,
+})
+```
+
+Import as the first line of `main.ts`. The plugin automatically detects double-init and skips the duplicate `Sentry.init()`.
+
+## Decorators & Helpers
+
+### @SentrySpan
+
+Wraps an async method in a Sentry performance span:
+
+```typescript
+@SentrySpan('generate-report', 'task')
+async generateReport(id: string): Promise<Report> { ... }
+```
+
+### withSentrySpan
+
+Programmatic span wrapper:
+
+```typescript
+return withSentrySpan('process-data', 'function', async () => {
+  // instrumented code
+})
+```
+
+Both degrade gracefully to no-ops when Sentry is not initialized.
+
+## Cron Monitoring Decorators
+
+Apply after `@Cron()` from `@nestjs/schedule`:
+
+### @SentryCron
+
+Explicit monitor slug:
+
+```typescript
+@Cron(CronExpression.EVERY_HOUR)
+@SentryCron('hourly-digest', {
+  schedule: { type: 'crontab', value: '0 * * * *' },
+  checkinMargin: 5,   // minutes before alert on late check-in
+  maxRuntime: 30,     // minutes before alert on long run
+})
+async sendDigest() { ... }
+```
+
+### @MagnetSentryCron
+
+Auto-generates slug from `ClassName-methodName`:
+
+```typescript
+@Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+@MagnetSentryCron()
+async cleanup() { ... }
+// Slug: "tasksservice-cleanup"
+```
+
+## Related
+
+- [Setup Sentry](/docs/guides/setup-sentry) — installation guide
+- [Plugins Reference](/docs/reference/plugins) — plugin API types

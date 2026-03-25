@@ -1,0 +1,81 @@
+---
+title: Admin UI
+description: The built-in admin interface, its sections, how it connects to the backend, and embedding options
+---
+
+# Admin UI
+
+The `@magnet-cms/admin` package provides a complete admin interface for managing content, media, users, and settings. It is a React + Vite SPA served at `/admin` by the `admin-serve` module in `@magnet-cms/core`.
+
+## Architecture
+
+The admin UI communicates with the Magnet REST API. It uses the same endpoints that external clients use — there is no separate admin-only API. RBAC permissions control what each user can see and do inside the admin.
+
+On startup, the admin fetches:
+- The schema registry (content type definitions) to build the content manager UI dynamically
+- Plugin manifests to mount plugin-provided routes and sidebar items
+- The current user's role and permissions to show/hide sections
+
+This means adding a new content schema immediately appears in the admin UI — no code generation or rebuild required.
+
+## Sections
+
+### Content Manager
+
+Lists all registered content schemas in the sidebar. For each schema, users can:
+- Browse all documents with filtering by status (draft/published) and locale
+- Create, edit, and delete documents
+- Publish and unpublish individual documents
+- View version history and restore previous versions
+- Switch between locales for i18n-enabled schemas
+
+### Media Library
+
+Grid and list view of all uploaded files. Supports:
+- Drag-and-drop or click-to-upload
+- Folder creation and navigation
+- Image alt text and tagging
+- Inline media picker for content fields
+
+### Settings
+
+Displays all registered settings groups as panels. Groups registered with `SettingsModule.forFeature()` appear automatically with the appropriate input controls for each field type.
+
+### RBAC
+
+Create and manage roles, assign permissions, and see which users are assigned to each role. Permissions are shown organized by resource, with check states matching the current role.
+
+### Users
+
+List users, view profiles, assign roles, and manage account status.
+
+## Plugin Integration
+
+Plugins that declare a frontend manifest inject additional sidebar items and routes into the admin shell. These load as separate bundles at runtime — the admin shell does not need to be rebuilt when plugins are added.
+
+## Embedding
+
+The admin can be embedded in an existing React application:
+
+```typescript
+import { AdminPanel } from '@magnet-cms/admin'
+
+function App() {
+  return (
+    <AdminPanel
+      apiUrl="http://localhost:3000"
+      basePath="/admin"
+    />
+  )
+}
+```
+
+## Serving the Admin
+
+The `admin-serve` module in `@magnet-cms/core` handles serving the admin SPA and its static assets. The admin file path defaults to the installed `@magnet-cms/admin` package location and can be overridden with `MAGNET_ADMIN_PATH`.
+
+## Related
+
+- [Setup Admin](/docs/guides/setup-admin) — configure and serve the admin UI
+- [RBAC](/docs/concepts/rbac) — permission model that controls admin access
+- [Plugin System](/docs/concepts/plugin-system) — adding plugin pages to the admin

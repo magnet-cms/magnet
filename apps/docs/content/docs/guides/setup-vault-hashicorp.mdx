@@ -1,0 +1,105 @@
+---
+title: Setup HashiCorp Vault
+description: Store encrypted secrets in HashiCorp Vault with Magnet CMS
+---
+
+# Setup HashiCorp Vault
+
+Use HashiCorp Vault KV v2 for encrypted secrets storage in Magnet CMS. Recommended for enterprise environments requiring audit trails and dynamic secrets.
+
+## Prerequisites
+
+- A running HashiCorp Vault server (dev mode or production cluster)
+- NestJS app with `@magnet-cms/core` and a database adapter installed
+
+## 1. Install
+
+```bash
+bun add @magnet-cms/adapter-vault-hashicorp
+```
+
+## 2. Configure Vault
+
+On your Vault server, enable the KV v2 secrets engine:
+
+```bash
+vault secrets enable -path=secret kv-v2
+```
+
+Create a token with read/write permissions to the `secret/` path:
+
+```bash
+vault token create -policy=default
+```
+
+## 3. Set Environment Variables
+
+```bash
+# .env
+VAULT_ADDR=https://vault.example.com:8200
+VAULT_TOKEN=hvs.xxxxx
+```
+
+## 4. Register the Adapter
+
+```typescript
+import { Module } from '@nestjs/common'
+import { MagnetModule } from '@magnet-cms/core'
+import { MongooseDatabaseAdapter } from '@magnet-cms/adapter-db-mongoose'
+import { HashiCorpVaultAdapter } from '@magnet-cms/adapter-vault-hashicorp'
+
+@Module({
+  imports: [
+    MagnetModule.forRoot([
+      MongooseDatabaseAdapter.forRoot(),
+      HashiCorpVaultAdapter.forRoot(),
+    ]),
+  ],
+})
+export class AppModule {}
+```
+
+With explicit config:
+
+```typescript
+HashiCorpVaultAdapter.forRoot({
+  url: 'https://vault.example.com:8200',
+  mountPath: 'secret',
+  auth: { type: 'token', token: process.env.VAULT_TOKEN },
+})
+```
+
+## 5. Verify
+
+Start the application and store a test secret via the admin API:
+
+```bash
+curl -X POST http://localhost:3000/vault/secrets \
+  -H "Authorization: Bearer <admin-token>" \
+  -H "Content-Type: application/json" \
+  -d '{"key": "test-secret", "value": "hello-world"}'
+
+# Retrieve it
+curl http://localhost:3000/vault/secrets/test-secret \
+  -H "Authorization: Bearer <admin-token>"
+```
+
+## Local Development
+
+HashiCorp Vault in dev mode runs in-memory and is useful for local testing:
+
+```bash
+vault server -dev
+# Vault is unsealed with token: hvs.XXXXXX
+```
+
+```bash
+# .env (local)
+VAULT_ADDR=http://localhost:8200
+VAULT_TOKEN=hvs.XXXXXX
+```
+
+## Related
+
+- [Vault](/docs/concepts/vault) — vault architecture and backend comparison
+- [Setup Supabase](/docs/guides/setup-supabase) — Supabase Vault alternative

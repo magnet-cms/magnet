@@ -1,0 +1,75 @@
+---
+title: Architecture
+description: How Magnet modules, providers, and adapters fit together
+---
+
+# Architecture
+
+Magnet CMS is a NestJS module — not a framework you install alongside NestJS, but a module you import into your own `AppModule`. This keeps you in full control of your application while Magnet supplies the CMS layer.
+
+## The Provider Pattern
+
+Magnet is assembled through a single call:
+
+```typescript
+MagnetModule.forRoot([
+  MongooseDatabaseAdapter.forRoot(),
+  SupabaseAuthStrategy.forRoot(),
+  S3StorageAdapter.forRoot(),
+  ResendEmailAdapter.forRoot(),
+  PlaygroundPlugin.forRoot(),
+])
+```
+
+The array is a list of **providers** — adapters and plugins that each expose a static `forRoot()` method returning a `MagnetProvider`. The database adapter is required; everything else is optional.
+
+Each provider:
+- Registers its own NestJS services and modules
+- Declares the environment variables it requires (validated at startup)
+- Participates in the module's dependency injection graph
+
+If a required env var is missing, the app fails to start with a clear error — before any request is served.
+
+## Module Layers
+
+```
+AppModule
+└── MagnetModule
+    ├── Core services (content, auth, rbac, admin, ...)
+    ├── Database adapter (Mongoose or Drizzle)
+    ├── Optional adapters (auth, storage, email, cache, vault, graphql)
+    └── Plugins (playground, seo, stripe, polar, sentry, ...)
+```
+
+The core services are always present. Adapters and plugins extend behavior — an app without an email adapter simply logs emails to the console instead of sending them.
+
+## Adapter Contracts
+
+Every adapter category has a TypeScript interface defined in `@magnet-cms/common`. For example, `DatabaseAdapter<T>` defines `find`, `findOne`, `create`, `update`, `delete`, and `findMany`. Both the Mongoose and Drizzle adapters implement this interface.
+
+This means core services never import adapter-specific code — they depend on the interface and receive the implementation through NestJS injection.
+
+## Auto-Detection
+
+For the database adapter, Magnet uses auto-detection at startup. When you register `MongooseDatabaseAdapter.forRoot()`, it sets a token that the core modules resolve. You never need to configure which adapter to use in multiple places — registration is the only configuration point.
+
+## Global Options
+
+The second argument to `forRoot` sets framework-wide options:
+
+```typescript
+MagnetModule.forRoot(providers, {
+  jwt: { secret: process.env.JWT_SECRET },
+  rbac: { defaultRole: 'viewer' },
+  admin: false, // disable admin UI entirely
+  internationalization: { locales: ['en', 'pt-BR'], defaultLocale: 'en' },
+})
+```
+
+These options affect behavior across multiple modules without configuring each module separately.
+
+## Related
+
+- [Setup Mongoose](/docs/guides/setup-mongoose) or [Setup Drizzle](/docs/guides/setup-drizzle) — pick and configure your database
+- [Database Adapters](/docs/concepts/database-adapters) — how the adapter contract works in detail
+- [Content Model](/docs/concepts/content-model) — how schemas and documents are structured

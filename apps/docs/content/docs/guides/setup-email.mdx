@@ -1,0 +1,83 @@
+---
+title: Setup Email
+description: Configure email templates and send transactional emails with Magnet CMS
+---
+
+# Setup Email
+
+The email module is registered automatically by Magnet. Without a transport adapter, emails are logged to the console — suitable for development. This guide covers template customization and sending emails from your own services.
+
+## Prerequisites
+
+- A transport adapter installed (see [Setup Email (Resend)](/docs/guides/setup-email-resend) or [Setup Email (Nodemailer)](/docs/guides/setup-email-nodemailer))
+
+## 1. Customize Email Templates
+
+Five templates are seeded on first boot and editable from the admin UI under **Settings → Email → Templates**:
+
+| Template | Purpose |
+|----------|---------|
+| Welcome | Sent when a user registers |
+| Password Reset | Sent on forgot-password request |
+| Email Verification | Sent to verify email address |
+| Notification Digest | Periodic notification summary |
+| Alert | Generic system notification |
+
+Edit subject and body using Handlebars template syntax:
+
+```handlebars
+Subject: Welcome to {{siteName}}, {{firstName}}!
+
+Hello {{firstName}},
+
+Your account is ready. Visit {{loginUrl}} to get started.
+```
+
+## 2. Send an Email from Your Code
+
+Inject `EmailService` into any service:
+
+```typescript
+import { Injectable } from '@nestjs/common'
+import { EmailService } from '@magnet-cms/core'
+
+@Injectable()
+export class OrderService {
+  constructor(private readonly email: EmailService) {}
+
+  async sendOrderConfirmation(to: string, orderId: string) {
+    await this.email.send({
+      to,
+      subject: `Order ${orderId} confirmed`,
+      html: `<p>Your order <strong>${orderId}</strong> has been received.</p>`,
+    })
+  }
+}
+```
+
+## 3. Send a Templated Email
+
+Use a saved template by name with context variables:
+
+```typescript
+await this.email.sendTemplate(to, 'welcome', {
+  firstName: 'Alice',
+  siteName: 'My CMS',
+  loginUrl: 'https://example.com/login',
+})
+```
+
+## 4. Configure Email Settings
+
+From **Settings → Email**, configure:
+
+- **Enabled** — master toggle for email sending
+- **From Address** — default sender address
+- **Per-template** subject and body overrides
+
+## Related
+
+- [Email](/docs/concepts/email) — email architecture and template engine
+- [Setup Email (Resend)](/docs/guides/setup-email-resend) — Resend transport adapter
+- [Setup Email (Nodemailer)](/docs/guides/setup-email-nodemailer) — SMTP transport adapter
+- [Email API](/docs/reference/core/email-api) — EmailService methods and template schema

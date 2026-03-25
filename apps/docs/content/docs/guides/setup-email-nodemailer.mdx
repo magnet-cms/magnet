@@ -1,0 +1,103 @@
+---
+title: Setup Email (Nodemailer)
+description: Send transactional emails via SMTP using Nodemailer with Magnet CMS
+---
+
+# Setup Email (Nodemailer)
+
+Use Nodemailer to send transactional emails via SMTP. Works with Gmail, AWS SES, Mailgun, or any SMTP server.
+
+## Prerequisites
+
+- SMTP server credentials (host, port, username, password)
+- NestJS app with `@magnet-cms/core` and a database adapter installed
+
+## 1. Install
+
+```bash
+bun add @magnet-cms/email-nodemailer nodemailer
+```
+
+## 2. Set Environment Variables
+
+```bash
+# .env
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=you@gmail.com
+SMTP_PASS=your-app-password
+EMAIL_FROM=Magnet <you@gmail.com>
+```
+
+## 3. Register the Adapter
+
+```typescript
+import { Module } from '@nestjs/common'
+import { MagnetModule } from '@magnet-cms/core'
+import { MongooseDatabaseAdapter } from '@magnet-cms/adapter-db-mongoose'
+import { NodemailerEmailAdapter } from '@magnet-cms/email-nodemailer'
+
+@Module({
+  imports: [
+    MagnetModule.forRoot([
+      MongooseDatabaseAdapter.forRoot(),
+      NodemailerEmailAdapter.forRoot(),
+    ]),
+  ],
+})
+export class AppModule {}
+```
+
+With explicit config:
+
+```typescript
+NodemailerEmailAdapter.forRoot({
+  host: 'smtp.example.com',
+  port: 587,
+  secure: false,
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+  defaults: { from: 'Magnet <noreply@example.com>' },
+})
+```
+
+## Common SMTP Configurations
+
+### Gmail
+
+Use an [App Password](https://support.google.com/accounts/answer/185833) (not your regular password):
+
+```bash
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=you@gmail.com
+SMTP_PASS=xxxx-xxxx-xxxx-xxxx   # App password
+```
+
+### AWS SES
+
+```bash
+SMTP_HOST=email-smtp.us-east-1.amazonaws.com
+SMTP_PORT=587
+SMTP_USER=AKIA...              # SES SMTP username
+SMTP_PASS=...                  # SES SMTP password
+```
+
+## 4. Verify
+
+Trigger a password reset to test delivery:
+
+```bash
+curl -X POST http://localhost:3000/auth/forgot-password \
+  -H "Content-Type: application/json" \
+  -d '{"email": "user@example.com"}'
+```
+
+Check your inbox for the password reset email.
+
+## Related
+
+- [Email](/docs/concepts/email) — email architecture and template system
+- [Setup Email (Resend)](/docs/guides/setup-email-resend) — API-based alternative

@@ -1,0 +1,63 @@
+---
+title: Storage API
+description: StorageService methods and Media type reference
+---
+
+# Storage API
+
+## StorageService
+
+```typescript
+import { StorageService } from '@magnet-cms/core'
+```
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `upload` | `(file: Buffer, filename: string, options?: UploadOptions) => Promise<Media>` | Upload single file |
+| `uploadMany` | `(items: UploadItem[]) => Promise<Media[]>` | Upload multiple files |
+| `delete` | `(mediaId: string) => Promise<boolean>` | Delete by media ID |
+| `deleteMany` | `(mediaIds: string[]) => Promise<void>` | Delete multiple |
+| `createFolder` | `(name: string, path: string, options?) => Promise<MediaFolder>` | Create folder |
+| `listMedia` | `(options?: ListMediaOptions) => Promise<PaginatedResult<Media>>` | List media |
+
+## UploadOptions
+
+```typescript
+interface UploadOptions {
+  folder?: string        // Destination folder path
+  createdBy?: string     // User ID for tracking
+  encrypt?: boolean      // AES-256-GCM encryption (requires Vault)
+  ownerId?: string       // Owner ID for encrypted files
+}
+```
+
+## Media Type
+
+```typescript
+interface Media {
+  id: string
+  url: string
+  filename: string
+  mimeType: string
+  size: number           // bytes
+  folder?: string
+  isEncrypted: boolean
+  ownerId?: string
+  createdAt: string
+}
+```
+
+## REST Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/media` | List media |
+| `POST` | `/media/upload` | Upload file(s) |
+| `DELETE` | `/media/:id` | Delete media |
+| `GET` | `/media/folders` | List folders |
+| `POST` | `/media/folders` | Create folder |
+
+## Related
+
+- [Storage](/docs/concepts/storage) — adapter pattern and encrypted folders
+- [Vault API](/docs/reference/core/vault-api) — required for encrypted uploads

@@ -1,0 +1,61 @@
+---
+title: Playground Plugin Reference
+description: API endpoints, configuration options, and generated code structure for the Playground plugin
+---
+
+# Playground Plugin Reference
+
+Reference for `@magnet-cms/plugin-playground`. For setup instructions, see [Setup Playground](/docs/guides/setup-playground).
+
+## Configuration
+
+```typescript
+PlaygroundPlugin.forRoot({
+  modulesPath: './src/modules',  // Directory for generated modules (default: './src/modules')
+})
+```
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `modulesPath` | `string` | `./src/modules` | Directory where generated NestJS modules are written |
+
+## REST Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/playground/schemas` | List all schemas |
+| `GET` | `/playground/schemas/:name` | Get schema details |
+| `POST` | `/playground/schemas` | Create new module |
+| `PUT` | `/playground/schemas/:name` | Update schema |
+| `DELETE` | `/playground/schemas/:name` | Delete schema |
+| `POST` | `/playground/preview` | Preview generated code without saving |
+
+## Field Types
+
+| Type | Description | UI Options |
+|------|-------------|------------|
+| Text | String values | text, textarea, email, phone, richText |
+| Number | Numeric values | number, quantity |
+| Date | Date/time values | date |
+| Boolean | True/false values | switch, checkbox |
+| Select | Predefined options | select, multiSelect, combobox, radio |
+| Relation | Reference to another schema | relationship |
+
+## Generated Module Structure
+
+For a schema named `Article`, the plugin generates:
+
+```
+src/modules/article/
+├── article.schema.ts      # @Schema with @Field.* decorators
+├── article.module.ts      # NestJS module
+├── article.controller.ts  # REST controller with @RestrictedRoute()
+├── article.service.ts     # Service with Model<Article> injection
+└── dto/
+    └── create-article.dto.ts
+```
+
+## Related
+
+- [Setup Playground](/docs/guides/setup-playground) — installation and usage guide
+- [Plugins Reference](/docs/reference/plugins) — plugin API types

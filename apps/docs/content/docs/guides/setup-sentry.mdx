@@ -1,0 +1,68 @@
+---
+title: Setup Sentry
+description: Add error tracking and performance monitoring to Magnet CMS with the Sentry plugin
+---
+
+# Setup Sentry
+
+Add Sentry error tracking, performance monitoring, and cron monitoring to Magnet CMS.
+
+## Prerequisites
+
+- A Sentry project with a DSN
+
+## 1. Install
+
+```bash
+bun add @magnet-cms/plugin-sentry @sentry/nestjs
+```
+
+## 2. Set Environment Variables
+
+```bash
+# .env
+SENTRY_DSN=https://your-dsn@o0.ingest.sentry.io/12345
+```
+
+## 3. Register
+
+```typescript
+import { Module } from '@nestjs/common'
+import { MagnetModule } from '@magnet-cms/core'
+import { MongooseDatabaseAdapter } from '@magnet-cms/adapter-db-mongoose'
+import { SentryPlugin } from '@magnet-cms/plugin-sentry'
+
+@Module({
+  imports: [
+    MagnetModule.forRoot([
+      MongooseDatabaseAdapter.forRoot(),
+      SentryPlugin.forRoot({
+        dsn: process.env.SENTRY_DSN,
+        tracesSampleRate: 0.1,
+        environment: process.env.NODE_ENV,
+      }),
+    ]),
+  ],
+})
+export class AppModule {}
+```
+
+The DSN is also auto-resolved from `SENTRY_DSN` when not passed to `forRoot()`.
+
+## 4. Verify
+
+Trigger an error in your application and check the Sentry dashboard for the event.
+
+## Configuration Options
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `dsn` | `SENTRY_DSN` env | Sentry DSN |
+| `tracesSampleRate` | `0.1` | Performance monitoring sample rate (0–1) |
+| `environment` | `NODE_ENV` | Deployment environment tag |
+| `release` | — | Release version tag |
+
+## Related
+
+- [Plugin System](/docs/concepts/plugin-system) — plugin architecture
+- [Setup Plugins](/docs/guides/setup-plugins) — overview of available plugins

@@ -1,0 +1,20 @@
+{
+  "title": "Concepts",
+  "root": true,
+  "pages": [
+    "index",
+    "architecture",
+    "content-model",
+    "database-adapters",
+    "authentication",
+    "rbac",
+    "vault",
+    "email",
+    "notifications",
+    "webhooks",
+    "storage",
+    "settings",
+    "plugin-system",
+    "admin-ui"
+  ]
+}

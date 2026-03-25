@@ -1,0 +1,147 @@
+---
+title: Drizzle Migrations
+description: Configure, generate, and run database migrations with the Drizzle adapter
+---
+
+# Drizzle Migrations
+
+Magnet's migration system tracks and applies database schema changes as versioned files. This guide covers configuration, the development workflow, and production deployment.
+
+## Prerequisites
+
+- Drizzle adapter configured (see [Setup Drizzle](/docs/guides/setup-drizzle))
+- A `migrations/` directory in your project root
+
+## 1. Enable Migrations
+
+Add the `migrations` option to `DrizzleDatabaseAdapter.forRoot()`:
+
+```typescript
+DrizzleDatabaseAdapter.forRoot({
+  dialect: 'postgresql',
+  driver: 'neon',
+  migrations: {
+    mode: process.env.NODE_ENV === 'production' ? 'manual' : 'auto',
+    directory: './migrations',
+  },
+})
+```
+
+| Mode | Behavior |
+|------|---------|
+| `'auto'` | Detect schema changes → generate migration file → apply immediately |
+| `'manual'` | Detect schema changes → log warning → do nothing |
+
+Use `'auto'` for local development. Use `'manual'` for staging and production.
+
+## 2. Development Workflow
+
+With `mode: 'auto'`, Magnet handles migrations automatically during development:
+
+1. **Modify your schema** — add a field, change a type, etc.
+2. **Start the dev server** — `bun run start:dev`
+3. Magnet detects the schema diff, generates `migrations/0001_auto.ts`, and applies it
+4. **Review the generated file** — check what SQL was generated
+5. **Rename for clarity:**
+   ```bash
+   mv migrations/0001_auto.ts migrations/0001_add_product_sku.ts
+   # Update the `id` field inside the file to match the new filename
+   ```
+6. **Commit both files** — the schema change and the migration file
+
+## 3. Manual Migration Commands
+
+For explicit control, use the CLI commands:
+
+```bash
+# Check status — which migrations are pending
+bun run migrate:status
+
+# Apply all pending migrations
+bun run migrate:up
+
+# Roll back the latest migration
+bun run migrate:down
+
+# Generate a migration from current schema diff (without applying)
+bun run migrate:generate
+
+# Create an empty migration file for custom SQL
+bun run migrate:create add_product_index
+```
+
+## 4. Production Deployment
+
+Never use `'auto'` mode in production. Use the deployment pipeline to apply migrations before releasing new code:
+
+```yaml
+# GitHub Actions example
+- name: Apply migrations
+  run: bun run migrate:up
+
+- name: Deploy application
+  run: # your deployment command
+```
+
+**Always apply migrations before deploying new application code.** New code may depend on columns that don't exist yet.
+
+## 5. Best Practices
+
+### Commit migration files
+
+Generated migration files are part of your codebase. Commit them alongside schema changes so teammates and deployment pipelines can apply the same changes.
+
+### Never modify applied migrations
+
+Once a migration has been applied anywhere, treat it as immutable. The system validates checksums — modified files will be rejected. If you made a mistake, create a new migration that corrects it.
+
+### Dangerous operations
+
+When dropping columns or changing types, use a two-phase approach:
+
+**Phase 1:** Deploy application code that no longer reads the column
+**Phase 2:** Apply the DROP COLUMN migration
+
+```typescript
+// Phase 2 migration — safe after code is deployed
+async up(db: MigrationDb) {
+  await db.execute(`ALTER TABLE "users" DROP COLUMN "legacy_field"`)
+}
+```
+
+### Backup before applying in production
+
+```bash
+pg_dump $DATABASE_URL > backup_$(date +%Y%m%d_%H%M%S).sql
+bun run migrate:up
+```
+
+## 6. Migration File Format
+
+Generated migration files look like:
+
+```typescript
+import type { MigrationDb } from '@magnet-cms/adapter-db-drizzle'
+
+export const id = '0001_add_product_sku'
+export const checksum = 'sha256:...'
+
+export async function up(db: MigrationDb) {
+  await db.execute(`
+    ALTER TABLE "products" ADD COLUMN "sku" text NOT NULL
+  `)
+}
+
+export async function down(db: MigrationDb) {
+  await db.execute(`
+    ALTER TABLE "products" DROP COLUMN "sku"
+  `)
+}
+```
+
+Keep `down()` accurate — it enables rollback if deployment goes wrong.
+
+## Related
+
+- [Setup Drizzle](/docs/guides/setup-drizzle) — initial Drizzle adapter setup
+- [Migrations CLI Reference](/docs/reference/migrations) — all migration commands

@@ -1,0 +1,67 @@
+---
+title: Email API
+description: EmailService methods and template schema reference
+---
+
+# Email API
+
+## EmailService
+
+```typescript
+import { EmailService } from '@magnet-cms/core'
+```
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `send` | `(options: SendEmailOptions) => Promise<void>` | Send a raw email |
+| `sendTemplate` | `(to: string, templateName: string, context: Record<string, unknown>) => Promise<void>` | Send a templated email |
+
+## SendEmailOptions
+
+```typescript
+interface SendEmailOptions {
+  to: string | string[]
+  subject: string
+  html?: string
+  text?: string
+  from?: string          // Overrides default from address
+  replyTo?: string
+}
+```
+
+## Built-in Template Names
+
+| Name | Trigger |
+|------|---------|
+| `welcome` | User registration |
+| `password-reset` | Forgot password |
+| `email-verification` | Account verification |
+| `notification-digest` | Periodic digest |
+| `alert` | Generic alert |
+
+## Template Variables
+
+Templates use Handlebars syntax: `{{variableName}}`
+
+## REST Endpoints (Admin)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/email/templates` | List email templates |
+| `GET` | `/email/templates/:id` | Get template |
+| `PUT` | `/email/templates/:id` | Update template |
+| `POST` | `/email/templates/:id/preview` | Preview rendered template |
+
+## EmailAdapter Interface
+
+```typescript
+interface EmailAdapter {
+  send(options: SendEmailOptions): Promise<void>
+}
+```
+
+## Related
+
+- [Email](/docs/concepts/email) — template engine and adapter pattern
+- [Setup Email (Resend)](/docs/guides/setup-email-resend) — Resend adapter setup
+- [Setup Email (Nodemailer)](/docs/guides/setup-email-nodemailer) — SMTP setup

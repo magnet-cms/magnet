@@ -1,35 +1,24 @@
 ---
 title: Introduction
-description: Welcome to the Magnet documentation
+description: Welcome to Magnet CMS — a schema-driven headless CMS framework built on NestJS
 ---
 
 # Welcome to Magnet
 
 Magnet is a headless CMS framework built on NestJS: schema-driven content, a React admin UI, and a **provider-based** bootstrap so you can mix databases, auth, storage, email, cache, vault, GraphQL, and plugins in one `MagnetModule.forRoot([...])` call.
 
-## Features
+## Explore the docs
 
-- **NestJS-native** — Modules, DI, and validation patterns you already use
-- **Headless API** — REST (and optional GraphQL) for any frontend
-- **Composable providers** — One array for DB + Supabase/Clerk auth + S3/R2 storage + Resend email + Redis cache + Vault + plugins; required env vars validated at startup
-- **Admin UI** — Served from the core app or embedded (e.g. Next.js) via `@magnet-cms/admin`
-- **Drizzle migrations** — First-class migration workflow for SQL databases
-- **RBAC, webhooks, notifications, settings** — Built-in modules documented under [Core](/docs/core)
+| Section | What you'll find |
+|---------|-----------------|
+| [Getting Started](/docs/getting-started) | Installation, quick-start, and configuration |
+| [Concepts](/docs/concepts) | Architecture, design decisions, and how things work |
+| [Guides](/docs/guides) | Step-by-step setup for every adapter, module, and feature |
+| [Reference](/docs/reference) | API endpoints, service methods, types, and configuration options |
 
-## Getting Started
+## Quick links
 
-- [Installation](/docs/getting-started/installation) — **`create-magnet` CLI** (new project) or manual packages
-- [Quick Start](/docs/getting-started/quick-start) — Minimal manual Mongoose `AppModule`
-- [Configuration](/docs/getting-started/configuration) — Providers and global options
-
-## Packages (overview)
-
-| Package | Description |
-|---------|-------------|
-| `@magnet-cms/core` | `MagnetModule`, HTTP modules, admin serving |
-| `@magnet-cms/common` | Decorators, types, `MagnetProvider` contracts |
-| `@magnet-cms/admin` | Admin UI bundle |
-| `@magnet-cms/adapter-db-mongoose` | MongoDB |
-| `@magnet-cms/adapter-db-drizzle` | PostgreSQL / MySQL / SQLite |
-
-See [Adapters](/docs/adapters) for auth, storage, email, cache, vault, and GraphQL packages.
+- [Installation](/docs/getting-started/installation) — new project with `create-magnet` CLI or manual setup
+- [Quick Start](/docs/getting-started/quick-start) — minimal Mongoose `AppModule` in minutes
+- [Architecture](/docs/concepts/architecture) — understand the provider pattern and module system
+- [Setup Mongoose](/docs/guides/setup-mongoose) or [Setup Drizzle](/docs/guides/setup-drizzle) — pick your database

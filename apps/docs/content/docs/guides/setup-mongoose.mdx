@@ -1,0 +1,148 @@
+---
+title: Setup Mongoose
+description: Connect Magnet CMS to MongoDB using the Mongoose database adapter
+---
+
+# Setup Mongoose
+
+Connect Magnet CMS to MongoDB using the `@magnet-cms/adapter-db-mongoose` package.
+
+## Prerequisites
+
+- A running MongoDB instance (local Docker or MongoDB Atlas)
+- NestJS app with `@magnet-cms/core` installed
+
+## 1. Install
+
+```bash
+bun add @magnet-cms/adapter-db-mongoose mongoose
+```
+
+## 2. Configure AppModule
+
+Register the adapter in `MagnetModule.forRoot()`:
+
+```typescript
+import { Module } from '@nestjs/common'
+import { MagnetModule } from '@magnet-cms/core'
+import { MongooseDatabaseAdapter } from '@magnet-cms/adapter-db-mongoose'
+
+@Module({
+  imports: [
+    MagnetModule.forRoot([
+      MongooseDatabaseAdapter.forRoot(),
+    ]),
+  ],
+})
+export class AppModule {}
+```
+
+The adapter reads `MONGODB_URI` from `process.env` automatically. Pass an explicit URI to override:
+
+```typescript
+MongooseDatabaseAdapter.forRoot({ uri: 'mongodb://localhost:27017/my-cms' })
+```
+
+## 3. Set Environment Variables
+
+```bash
+# .env
+MONGODB_URI=mongodb://localhost:27017/my-cms
+JWT_SECRET=your-jwt-secret-minimum-32-characters
+```
+
+For MongoDB Atlas:
+
+```bash
+MONGODB_URI=mongodb+srv://user:password@cluster.mongodb.net/my-cms?retryWrites=true&w=majority
+```
+
+## 4. Define a Schema
+
+Use the `@Schema` and `@Field.*` decorators from `@magnet-cms/common`:
+
+```typescript
+import { Field, Schema } from '@magnet-cms/common'
+import { IsNumber, IsOptional, IsString } from 'class-validator'
+
+@Schema()
+export class Product {
+  @Field.Text({ required: true, tab: 'General' })
+  @Field.Validators(IsString())
+  name: string
+
+  @Field.Number({ required: true, tab: 'General' })
+  @Field.Validators(IsNumber())
+  price: number
+
+  @Field.Text({ required: false, tab: 'General' })
+  @Field.Validators(IsOptional(), IsString())
+  description?: string
+}
+```
+
+## 5. Register the Schema
+
+Register the schema in your feature module:
+
+```typescript
+import { Module } from '@nestjs/common'
+import { MagnetModule } from '@magnet-cms/core'
+import { Product } from './product.schema'
+import { ProductsService } from './products.service'
+import { ProductsController } from './products.controller'
+
+@Module({
+  imports: [MagnetModule.forFeature([Product])],
+  providers: [ProductsService],
+  controllers: [ProductsController],
+})
+export class ProductsModule {}
+```
+
+## 6. Verify
+
+Start the application and check the logs:
+
+```bash
+bun run start:dev
+# Look for: "Mongoose connected to mongodb://..."
+# Look for: "Product schema registered"
+```
+
+The admin UI at `/admin` should show "Products" in the content sidebar.
+
+## Optional: Enable i18n
+
+To store fields in multiple locales, enable i18n on the schema and individual fields:
+
+```typescript
+@Schema({ i18n: true })
+export class Article {
+  @Field.Text({ required: true, intl: true, tab: 'General' })
+  title: string  // Stored per locale
+
+  @Field.Text({ required: true, tab: 'General' })
+  slug: string   // Shared across locales
+}
+```
+
+Then configure available locales in `forRoot()`:
+
+```typescript
+MagnetModule.forRoot(
+  [MongooseDatabaseAdapter.forRoot()],
+  {
+    internationalization: {
+      locales: ['en', 'es', 'pt'],
+      defaultLocale: 'en',
+    },
+  },
+)
+```
+
+## Related
+
+- [Database Adapters](/docs/concepts/database-adapters) — understand the adapter pattern
+- [Content Model](/docs/concepts/content-model) — schema, fields, and lifecycle
+- [Mongoose Adapter API](/docs/reference/adapters/mongoose) — query builder and model reference

@@ -1,4 +1,0 @@
-{
-  "title": "Adapters",
-  "pages": ["index", "mongoose", "drizzle", "supabase", "graphql", "cache-redis", "email-resend", "email-nodemailer", "hashicorp-vault", "auth-clerk", "storage-s3", "storage-r2"]
-}

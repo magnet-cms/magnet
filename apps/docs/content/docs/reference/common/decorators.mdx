@@ -1,0 +1,276 @@
+---
+title: Decorators Reference
+description: Complete reference for all decorators in @magnet-cms/common
+---
+
+This page provides detailed documentation for all decorators available in the `@magnet-cms/common` package.
+
+## Schema Decorators
+
+### @Schema()
+
+Marks a class as a Magnet CMS schema entity with versioning and i18n support.
+
+```typescript
+import { Schema } from '@magnet-cms/common'
+
+@Schema({ versioning: true, i18n: true })
+export class Article {
+  // properties
+}
+```
+
+**Parameters:**
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `versioning` | `boolean` | `true` | Enable version history tracking |
+| `i18n` | `boolean` | `true` | Enable multi-locale content support |
+| `autoSave` | `boolean` | `true` | Auto-save drafts as the user types. Set to `false` to require an explicit Save action — no DB record is created until the user clicks Save |
+| `readOnly` | `boolean` | `false` | Hide all create, edit, and delete actions in the admin panel. Entries are visible but can only be created or modified via the API |
+| `visible` | `boolean` | `true` | Show this schema in the admin sidebar and content manager. Set to `false` to hide it entirely from the admin UI |
+
+### @Prop()
+
+Defines a schema property with database mapping and validation options.
+
+```typescript
+import { Prop } from '@magnet-cms/common'
+
+// Basic required field
+@Prop({ required: true })
+name: string
+
+// Unique field
+@Prop({ required: true, unique: true })
+email: string
+
+// Translatable field (i18n)
+@Prop({ required: true, intl: true })
+title: string
+
+// Array field with default
+@Prop({ type: [String], default: [] })
+tags: string[]
+
+// Reference to another schema
+@Prop({ type: String, ref: 'User' })
+authorId: string
+
+// Hidden field (excluded from API)
+@Prop({ hidden: true })
+internalId: string
+
+// Read-only field
+@Prop({ readonly: true })
+createdAt: Date
+```
+
+**Parameters:**
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `type` | `Type \| [Type]` | Property type (auto-detected if not specified) |
+| `required` | `boolean` | Whether the field is required |
+| `unique` | `boolean` | Enforce uniqueness constraint |
+| `default` | `any` | Default value for the field |
+| `nullable` | `boolean` | Allow null values |
+| `intl` | `boolean` | Mark as translatable for i18n |
+| `hidden` | `boolean` | Hide from API responses |
+| `readonly` | `boolean` | Prevent updates after creation |
+| `ref` | `string` | Reference to another schema name |
+| `description` | `string` | Field description for documentation |
+
+### @UI()
+
+Configures how a property is rendered in the admin UI.
+
+```typescript
+import { UI } from '@magnet-cms/common'
+
+// Basic text field with tab grouping
+@UI({ tab: 'General', type: 'text', row: true })
+name: string
+
+// Rich text editor
+@UI({ tab: 'Content', type: 'richText' })
+body: string
+
+// Select dropdown with options
+@UI({
+  tab: 'Settings',
+  type: 'select',
+  options: [
+    { key: 'draft', value: 'Draft' },
+    { key: 'published', value: 'Published' },
+    { key: 'archived', value: 'Archived' }
+  ]
+})
+status: string
+```
+
+**UI Types:**
+
+| Type | Description |
+|------|-------------|
+| `text` | Single-line text input |
+| `textarea` | Multi-line text input |
+| `email` | Email input with validation |
+| `phone` | Phone number input |
+| `richText` | Rich text editor (WYSIWYG) |
+| `number` | Numeric input |
+| `quantity` | Numeric input with stepper |
+| `date` | Date picker |
+| `switch` | Toggle switch (boolean) |
+| `checkbox` | Checkbox (boolean) |
+| `select` | Single-select dropdown |
+| `multiSelect` | Multi-select dropdown |
+| `combobox` | Searchable select |
+| `radio` | Radio button group |
+| `upload` | File upload |
+| `relationship` | Reference to another entity |
+| `json` | JSON editor |
+| `code` | Code editor |
+| `table` | Table/array editor |
+| `group` | Field grouping |
+| `blocks` | Block editor |
+
+**Parameters:**
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `tab` | `string` | Tab name for field grouping |
+| `side` | `boolean` | Place in sidebar panel |
+| `type` | `UITypes` | UI component type |
+| `label` | `string` | Custom field label |
+| `description` | `string` | Help text below field |
+| `row` | `boolean` | Display in row layout |
+| `collapsible` | `boolean` | Show as collapsible section |
+| `options` | `UISelectItem[]` | Options for select fields |
+
+### @Validators()
+
+Applies validation decorators from `class-validator`.
+
+```typescript
+import { Validators } from '@magnet-cms/common'
+import {
+  IsString, IsEmail, IsNotEmpty, Length,
+  IsNumber, Min, Max, IsOptional, IsBoolean
+} from 'class-validator'
+
+@Validators(IsString(), Length(2, 100), IsNotEmpty())
+name: string
+
+@Validators(IsEmail(), IsNotEmpty())
+email: string
+
+@Validators(IsNumber(), Min(0), Max(100))
+age: number
+```
+
+### @Setting()
+
+Marks a class as a system settings entity (distinct from content schemas).
+
+```typescript
+import { Setting, Prop, UI, Validators } from '@magnet-cms/common'
+
+@Setting()
+export class SiteSettings {
+  @Prop({ required: true })
+  @Validators(IsString(), IsNotEmpty())
+  @UI({ tab: 'General' })
+  siteName: string
+}
+```
+
+### @Version()
+
+Configures versioning behavior for a schema.
+
+```typescript
+import { Version, Schema } from '@magnet-cms/common'
+
+@Schema()
+@Version({ max: 50, drafts: true })
+export class Article {}
+
+@Schema()
+@Version({
+  max: 30,
+  drafts: {
+    autoPublish: false,
+    requireApproval: true
+  }
+})
+export class LegalDocument {}
+```
+
+**Parameters:**
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `max` | `number` | Maximum versions to keep per document |
+| `drafts` | `boolean \| DraftConfig` | Enable draft mode |
+| `drafts.autoPublish` | `boolean` | Auto-publish drafts |
+| `drafts.requireApproval` | `boolean` | Require approval before publishing |
+
+## Injection Decorators
+
+### @InjectModel()
+
+Injects a Model instance for a schema into NestJS services.
+
+```typescript
+import { Injectable } from '@nestjs/common'
+import { InjectModel, Model } from '@magnet-cms/common'
+import { Cat } from './cat.schema'
+
+@Injectable()
+export class CatsService {
+  constructor(
+    @InjectModel(Cat)
+    private model: Model<Cat>,
+  ) {}
+}
+```
+
+## Resolver Decorators
+
+### @Resolver()
+
+Marks a class as a resolver for a specific schema (used for GraphQL integration).
+
+```typescript
+import { Resolver } from '@magnet-cms/common'
+import { Cat } from './cat.schema'
+
+@Resolver(() => Cat)
+export class CatResolver {
+  // resolver methods
+}
+```
+
+### @Resolve()
+
+Decorates resolver methods to define their return type.
+
+```typescript
+import { Resolver, Resolve } from '@magnet-cms/common'
+import { Cat } from './cat.schema'
+
+@Resolver(() => Cat)
+export class CatResolver {
+  @Resolve(() => Cat)
+  getCat(id: string): Promise<Cat> { ... }
+
+  @Resolve(() => [Cat])
+  getAllCats(): Promise<Cat[]> { ... }
+}
+```
+
+## Related
+
+- [Field Decorators](/docs/reference/common/field-decorators) — unified `Field.*` API
+- [Common Package](/docs/reference/common) — exports overview

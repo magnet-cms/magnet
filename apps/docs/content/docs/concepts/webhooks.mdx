@@ -1,0 +1,79 @@
+---
+title: Webhooks
+description: Outgoing HTTP webhooks, HMAC signing, exponential backoff retry, and the event system
+---
+
+# Webhooks
+
+The Webhooks module dispatches outgoing HTTP POST requests to external URLs when system events occur. Webhooks are managed via the admin UI or REST API — no code changes are needed to add or modify webhooks at runtime.
+
+## Event-Driven Dispatch
+
+Webhooks fire automatically through Magnet's internal event system. Any of 40+ built-in events — content CRUD, user actions, media uploads, settings changes, role updates, and system lifecycle events — can trigger a webhook. Each webhook subscribes to one or more events.
+
+When an event fires, the webhook module:
+1. Looks up webhooks subscribed to that event
+2. Builds a JSON payload with the event name, timestamp, and document data
+3. Delivers to each subscribed URL via HTTP POST
+4. Logs the delivery attempt with response status and duration
+
+## HMAC Signing
+
+Every outgoing request includes an `X-Magnet-Signature` header with an HMAC-SHA256 signature of the request body. Recipients can verify authenticity before processing the payload:
+
+```typescript
+import { createHmac } from 'node:crypto'
+
+function verifySignature(body: string, signature: string, secret: string): boolean {
+  const expected = `sha256=${createHmac('sha256', secret).update(body).digest('hex')}`
+  return signature === expected
+}
+```
+
+The webhook secret is shown only once at creation time. Use `POST /webhooks/:id/regenerate-secret` to rotate it.
+
+## Retry Behavior
+
+Failed deliveries (non-2xx or network error) are retried with exponential backoff:
+
+| Attempt | Delay |
+|---------|-------|
+| Retry 1 | 1 second |
+| Retry 2 | 5 seconds |
+| Retry 3 | 30 seconds |
+
+Each attempt is logged separately in the delivery history. Retries happen asynchronously and do not block the event that triggered them.
+
+## Delivery Logging
+
+Every delivery attempt — including retries — is logged with:
+- HTTP response status code
+- Response time in milliseconds
+- Error message (if failed)
+- Timestamp
+
+The full delivery history is accessible from the admin UI or via `GET /webhooks/:id/deliveries`.
+
+## Payload Format
+
+```json
+{
+  "event": "content.created",
+  "timestamp": "2026-03-15T10:30:00.000Z",
+  "data": {
+    "schema": "posts",
+    "documentId": "abc123"
+  }
+}
+```
+
+Custom headers can be configured per webhook for authentication with receiving services.
+
+## Configuration
+
+Max retries, request timeout, and delivery log retention are configurable at runtime from the admin panel under **Settings → Webhooks** — no redeploy required.
+
+## Related
+
+- [Setup Webhooks](/docs/guides/setup-webhooks) — create and manage webhooks
+- [Webhooks API](/docs/reference/core/webhooks-api) — WebhookService methods and event reference

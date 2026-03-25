@@ -1,0 +1,77 @@
+---
+title: Setup Notifications
+description: Configure notification channels and retention in Magnet CMS
+---
+
+# Setup Notifications
+
+The Notifications module is enabled by default. Platform notifications (persisted in DB, shown in admin UI) work out of the box. This guide covers configuration options and sending notifications from your own code.
+
+## 1. Send a Notification
+
+Inject `NotificationService` into any service and call `notify()`:
+
+```typescript
+import { Injectable } from '@nestjs/common'
+import { NotificationService } from '@magnet-cms/core'
+
+@Injectable()
+export class OrderService {
+  constructor(private readonly notifications: NotificationService) {}
+
+  async onOrderShipped(userId: string, orderId: string) {
+    await this.notifications.notify(userId, {
+      title: 'Your order has shipped',
+      body: `Order #${orderId} is on its way.`,
+      type: 'order.shipped',
+    })
+  }
+}
+```
+
+## 2. Bulk Notifications
+
+Send to multiple users in a single call:
+
+```typescript
+await this.notifications.notify(['user1', 'user2', 'user3'], {
+  title: 'System maintenance',
+  body: 'Scheduled maintenance at 2 AM UTC.',
+  type: 'system.maintenance',
+})
+```
+
+## 3. Configure Retention
+
+Set how long notifications are kept before automatic cleanup. Configure in the admin panel under **Settings → Notifications**:
+
+- **Retention Days** — number of days to keep read notifications (default: 30)
+
+Or via the settings API:
+
+```bash
+PUT /settings/notifications
+Authorization: Bearer <admin-token>
+Content-Type: application/json
+
+{ "retentionDays": 14 }
+```
+
+## 4. Enable/Disable Channels
+
+Each channel can be toggled from **Settings → Notifications** without code changes. By default only the platform channel (DB + admin drawer) is active.
+
+## 5. Verify
+
+After calling `notify()`, check the admin UI notification bell — the notification should appear in the drawer.
+
+```bash
+# Check unread count via API
+curl http://localhost:3000/notifications/unread-count \
+  -H "Authorization: Bearer <user-token>"
+```
+
+## Related
+
+- [Notifications](/docs/concepts/notifications) — channel architecture and fan-out pattern
+- [Notifications API](/docs/reference/core/notifications-api) — NotificationService methods

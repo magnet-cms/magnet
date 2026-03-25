@@ -1,0 +1,91 @@
+---
+title: Common Package
+description: Shared decorators, types, and utilities in @magnet-cms/common
+---
+
+# Common Package
+
+The `@magnet-cms/common` package provides the foundation for building Magnet CMS applications — schema decorators, types for database operations, and utilities shared across all Magnet packages.
+
+## Exports
+
+| Export | Description |
+|--------|-------------|
+| `@Schema()` | Mark a class as a content schema |
+| `@Prop()` | Define a schema property |
+| `@UI()` | Configure admin UI rendering |
+| `@Validators()` | Apply class-validator decorators |
+| `@Setting()` | Mark a class as a settings entity |
+| `@Version()` | Configure versioning behavior |
+| `@InjectModel()` | Inject a Model instance |
+| `@Resolver()` / `@Resolve()` | GraphQL resolver decorators |
+| `Field.*` | Unified field decorators |
+| `Model<T>` | Type-safe model interface |
+| Injection tokens | `getModelToken`, `getSchemaToken`, `getAdapterToken` |
+
+## Model Operations
+
+The `Model<T>` interface provides type-safe database operations:
+
+```typescript
+// CRUD
+await model.create(data)
+await model.find()
+await model.findById(id)
+await model.findOne({ email: 'test@example.com' })
+await model.update({ id }, updateData)
+await model.delete({ id })
+
+// Query builder
+await model.query()
+  .where({ status: 'published' })
+  .sort({ createdAt: -1 })
+  .limit(10)
+  .exec()
+
+// i18n
+await model.locale('pt-BR').find()
+
+// Versioning
+await model.findVersions(documentId)
+await model.restoreVersion(versionId)
+```
+
+## Query Operators
+
+```typescript
+// Comparison
+{ field: { $eq: value } }
+{ field: { $ne: value } }
+{ field: { $gt: value } }
+{ field: { $gte: value } }
+{ field: { $lt: value } }
+{ field: { $lte: value } }
+
+// Array
+{ field: { $in: [v1, v2] } }
+{ field: { $nin: [v1, v2] } }
+
+// Logical
+{ $and: [condition1, condition2] }
+{ $or: [condition1, condition2] }
+
+// Text
+{ field: { $regex: 'pattern', $options: 'i' } }
+```
+
+## Injection Tokens
+
+```typescript
+import { getModelToken, getSchemaToken, getAdapterToken } from '@magnet-cms/common'
+
+const modelToken = getModelToken('User')
+const schemaToken = getSchemaToken('User')
+const adapterToken = getAdapterToken()
+```
+
+## Related
+
+- [Decorators Reference](/docs/reference/common/decorators) — schema decorators
+- [Field Decorators](/docs/reference/common/field-decorators) — unified field API
+- [Database API](/docs/reference/core/database-api) — adapter and model interfaces

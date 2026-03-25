@@ -1,0 +1,81 @@
+---
+title: Setup Webhooks
+description: Create and manage outgoing webhooks for Magnet CMS system events
+---
+
+# Setup Webhooks
+
+The Webhooks module is enabled by default. This guide covers creating webhooks, verifying signatures, and configuring retry behavior.
+
+## 1. Create a Webhook
+
+From the admin UI (**Webhooks → New Webhook**) or via the API:
+
+```bash
+curl -X POST http://localhost:3000/webhooks \
+  -H "Authorization: Bearer <admin-token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Deploy Hook",
+    "url": "https://api.vercel.com/v1/integrations/deploy/xxx",
+    "events": ["content.published", "content.updated"]
+  }'
+```
+
+**Save the `secret` from the response — it is shown only once.**
+
+## 2. Verify Signatures
+
+Validate incoming webhook authenticity by checking the `X-Magnet-Signature` header:
+
+```typescript
+import { createHmac } from 'node:crypto'
+
+function verifySignature(body: string, signature: string, secret: string): boolean {
+  const expected = `sha256=${createHmac('sha256', secret).update(body).digest('hex')}`
+  return signature === expected
+}
+
+// In your webhook handler
+app.post('/webhook', (req, res) => {
+  const rawBody = JSON.stringify(req.body)
+  const isValid = verifySignature(rawBody, req.headers['x-magnet-signature'], WEBHOOK_SECRET)
+  if (!isValid) return res.status(401).json({ error: 'Invalid signature' })
+
+  console.log('Event:', req.body.event)
+  res.status(200).json({ received: true })
+})
+```
+
+## 3. Test a Webhook
+
+Use the test button in the admin UI, or via the API:
+
+```bash
+curl -X POST http://localhost:3000/webhooks/{id}/test \
+  -H "Authorization: Bearer <admin-token>"
+```
+
+## 4. Configure Retry Behavior
+
+From the admin UI under **Settings → Webhooks**, configure:
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| Max Retries | 3 | Retry attempts on failure |
+| Request Timeout | 10000 ms | Per-request timeout |
+| Retention Days | 30 | Delivery log retention |
+
+## 5. View Delivery History
+
+Check delivery logs for a webhook in the admin UI, or via the API:
+
+```bash
+curl http://localhost:3000/webhooks/{id}/deliveries \
+  -H "Authorization: Bearer <admin-token>"
+```
+
+## Related
+
+- [Webhooks](/docs/concepts/webhooks) — HMAC signing, retry, and event architecture
+- [Webhooks API](/docs/reference/core/webhooks-api) — WebhookService methods and event reference

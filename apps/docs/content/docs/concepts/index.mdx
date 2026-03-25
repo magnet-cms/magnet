@@ -1,0 +1,33 @@
+---
+title: Concepts
+description: Understand the architecture, design decisions, and core principles behind Magnet CMS
+---
+
+# Concepts
+
+Magnet CMS is built around a small set of architectural ideas that appear throughout the codebase. Understanding these concepts will help you make better decisions when building with Magnet.
+
+## Architecture
+
+- [Architecture](/docs/concepts/architecture) — How Magnet modules, providers, and adapters fit together
+- [Content Model](/docs/concepts/content-model) — Schema-driven content, draft/publish lifecycle, and versioning
+- [Database Adapters](/docs/concepts/database-adapters) — The provider contract and how Mongoose vs Drizzle adapters compare
+
+## Security & Access
+
+- [Authentication](/docs/concepts/authentication) — Auth strategies, guards, and JWT vs external providers
+- [RBAC](/docs/concepts/rbac) — Permission model, auto-discovery, wildcard matching, and the caching layer
+- [Vault](/docs/concepts/vault) — Encrypted secrets and the vault adapter pattern
+
+## Communication & Storage
+
+- [Email](/docs/concepts/email) — Email service architecture, template engine, and the adapter pattern
+- [Notifications](/docs/concepts/notifications) — Multi-channel notification architecture and channel registry
+- [Webhooks](/docs/concepts/webhooks) — Event-driven webhooks, HMAC signing, and retry strategy
+- [Storage](/docs/concepts/storage) — File storage adapters and PII-encrypted folders
+
+## Configuration & Extensibility
+
+- [Settings](/docs/concepts/settings) — Typed settings groups and the `@Settings`/`@SettingField` decorator architecture
+- [Plugin System](/docs/concepts/plugin-system) — Plugin lifecycle, backend/frontend integration, and how plugins extend Magnet
+- [Admin UI](/docs/concepts/admin-ui) — Admin architecture, the discovery system, and serving vs embedding

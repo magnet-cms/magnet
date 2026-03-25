@@ -1,0 +1,177 @@
+---
+title: Setup Drizzle
+description: Connect Magnet CMS to PostgreSQL using the Drizzle database adapter
+---
+
+# Setup Drizzle
+
+Connect Magnet CMS to PostgreSQL using the `@magnet-cms/adapter-db-drizzle` package. Supports Neon serverless and standard PostgreSQL (including Supabase).
+
+## Prerequisites
+
+- A PostgreSQL database (Neon, Supabase, local Docker, or any managed PostgreSQL)
+- NestJS app with `@magnet-cms/core` installed
+
+## 1. Install
+
+For Neon serverless (recommended for Neon databases):
+
+```bash
+bun add @magnet-cms/adapter-db-drizzle @neondatabase/serverless
+```
+
+For standard PostgreSQL (including Supabase):
+
+```bash
+bun add @magnet-cms/adapter-db-drizzle pg
+```
+
+## 2. Configure AppModule
+
+### Neon (serverless PostgreSQL)
+
+```typescript
+import { Module } from '@nestjs/common'
+import { MagnetModule } from '@magnet-cms/core'
+import { DrizzleDatabaseAdapter } from '@magnet-cms/adapter-db-drizzle'
+
+@Module({
+  imports: [
+    MagnetModule.forRoot([
+      DrizzleDatabaseAdapter.forRoot({
+        dialect: 'postgresql',
+        driver: 'neon',
+      }),
+    ]),
+  ],
+})
+export class AppModule {}
+```
+
+### Standard PostgreSQL
+
+```typescript
+MagnetModule.forRoot([
+  DrizzleDatabaseAdapter.forRoot({
+    dialect: 'postgresql',
+    driver: 'pg',
+  }),
+])
+```
+
+The adapter reads `DATABASE_URL` from `process.env` automatically.
+
+## 3. Set Environment Variables
+
+```bash
+# .env
+DATABASE_URL=postgresql://user:password@host/database?sslmode=require
+JWT_SECRET=your-jwt-secret-minimum-32-characters
+```
+
+For Neon:
+
+```bash
+DATABASE_URL=postgresql://user:password@ep-xxx.us-east-1.aws.neon.tech/neondb?sslmode=require
+```
+
+For Supabase:
+
+```bash
+DATABASE_URL=postgresql://postgres:password@db.xxx.supabase.co:5432/postgres
+```
+
+## 4. Define a Schema
+
+Use the `@Schema` and `@Field.*` decorators — same API as Mongoose:
+
+```typescript
+import { Field, Schema } from '@magnet-cms/common'
+import { IsNumber, IsString, IsNotEmpty } from 'class-validator'
+
+@Schema()
+export class Product {
+  @Field.Text({ required: true, unique: true, tab: 'General' })
+  @Field.Validators(IsString(), IsNotEmpty())
+  sku: string
+
+  @Field.Text({ required: true, tab: 'General' })
+  @Field.Validators(IsString())
+  name: string
+
+  @Field.Number({ required: true, tab: 'General' })
+  @Field.Validators(IsNumber())
+  price: number
+}
+```
+
+## 5. Register the Schema
+
+```typescript
+import { Module } from '@nestjs/common'
+import { MagnetModule } from '@magnet-cms/core'
+import { Product } from './product.schema'
+
+@Module({
+  imports: [MagnetModule.forFeature([Product])],
+  providers: [ProductsService],
+  controllers: [ProductsController],
+})
+export class ProductsModule {}
+```
+
+## 6. Verify
+
+Start the application:
+
+```bash
+bun run start:dev
+# Look for: "Drizzle connected to postgresql://..."
+# Look for: "Product schema registered"
+```
+
+The admin UI at `/admin` should show "Products" in the content sidebar.
+
+## Optional: Enable Migrations
+
+For production-grade schema evolution, configure migrations:
+
+```typescript
+DrizzleDatabaseAdapter.forRoot({
+  dialect: 'postgresql',
+  driver: 'neon',
+  migrations: {
+    mode: process.env.NODE_ENV === 'production' ? 'manual' : 'auto',
+    directory: './migrations',
+  },
+})
+```
+
+See [Drizzle Migrations](/docs/guides/drizzle-migrations) for the full migration workflow.
+
+## Local Development with Docker
+
+```yaml
+# docker-compose.yml
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: magnet
+      POSTGRES_PASSWORD: magnet
+      POSTGRES_DB: magnet_db
+    ports:
+      - "5432:5432"
+```
+
+```bash
+# .env (local)
+DATABASE_URL=postgresql://magnet:magnet@localhost:5432/magnet_db
+```
+
+## Related
+
+- [Database Adapters](/docs/concepts/database-adapters) — understand the adapter pattern
+- [Drizzle Migrations](/docs/guides/drizzle-migrations) — schema migration workflow
+- [Setup Supabase](/docs/guides/setup-supabase) — Supabase auth + storage + Drizzle
+- [Drizzle Adapter API](/docs/reference/adapters/drizzle) — query builder reference

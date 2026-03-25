@@ -1,0 +1,59 @@
+---
+title: Admin UI Reference
+description: Keyboard shortcuts, environment variables, and embedding reference
+---
+
+# Admin UI Reference
+
+Reference for `@magnet-cms/admin`. For usage instructions, see [Admin i18n Guide](/docs/guides/admin-i18n).
+
+## Keyboard Shortcuts
+
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl/Cmd + S` | Save document |
+| `Ctrl/Cmd + Shift + P` | Publish document |
+| `Escape` | Close modal/dialog |
+
+## Environment Variables
+
+| Variable | Description |
+|----------|-------------|
+| `MAGNET_ADMIN_PATH` | Override path to admin build directory |
+
+## Embedding
+
+The `AdminPanel` React component can be embedded in any React application:
+
+```typescript
+import { AdminPanel } from '@magnet-cms/admin'
+
+function App() {
+  return (
+    <AdminPanel
+      apiUrl="http://localhost:3000"
+      basePath="/admin"
+    />
+  )
+}
+```
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `apiUrl` | `string` | Base URL of your Magnet CMS server |
+| `basePath` | `string` | Path prefix where the admin is mounted |
+
+## Build
+
+```bash
+# Standard build
+bun run build
+
+# Standalone build with custom base path
+VITE_BASE_PATH=/custom-path bun run build:standalone
+```
+
+## Related
+
+- [Admin UI Concept](/docs/concepts/admin-ui) — architecture overview
+- [Admin API](/docs/reference/core/admin-api) — REST endpoints

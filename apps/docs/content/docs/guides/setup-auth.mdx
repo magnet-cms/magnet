@@ -1,0 +1,96 @@
+---
+title: Setup Auth
+description: Configure JWT authentication in Magnet CMS
+---
+
+# Setup Auth
+
+Magnet CMS includes built-in JWT authentication. No extra packages required — configure it in `MagnetModule.forRoot()`.
+
+## Prerequisites
+
+- NestJS app with `@magnet-cms/core` and a database adapter installed
+
+## 1. Configure JWT Options
+
+JWT auth is the default. Set `JWT_SECRET` in the environment:
+
+```bash
+# .env
+JWT_SECRET=your-secret-key-at-least-32-characters-long
+```
+
+No additional code is required. By default tokens expire in 7 days. To customize:
+
+```typescript
+MagnetModule.forRoot(
+  [MongooseDatabaseAdapter.forRoot()],
+  {
+    jwt: { expiresIn: '30d' },
+  },
+)
+```
+
+## 2. Verify
+
+Start the application and test authentication:
+
+```bash
+# Register a user
+curl -X POST http://localhost:3000/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"email": "admin@example.com", "password": "password123", "name": "Admin"}'
+
+# Login
+curl -X POST http://localhost:3000/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email": "admin@example.com", "password": "password123"}'
+# Returns: { "accessToken": "eyJ...", "refreshToken": "..." }
+
+# Access a protected endpoint
+curl http://localhost:3000/auth/me \
+  -H "Authorization: Bearer eyJ..."
+```
+
+## Optional: Enable Sessions
+
+Sessions track login history and enable single-session enforcement. Enable in `forRoot()`:
+
+```typescript
+MagnetModule.forRoot(
+  [MongooseDatabaseAdapter.forRoot()],
+  {
+    jwt: { expiresIn: '7d' },
+    sessions: { enabled: true },
+  },
+)
+```
+
+## Optional: Protect Custom Routes
+
+Use the built-in guards on your own controllers:
+
+```typescript
+import { Controller, Get, UseGuards } from '@nestjs/common'
+import { AuthGuard, PermissionGuard } from '@magnet-cms/core'
+import { RequirePermission } from '@magnet-cms/common'
+
+@Controller('products')
+export class ProductsController {
+  @Get()
+  @UseGuards(AuthGuard)
+  findAll() { /* ... */ }
+
+  @Get('admin')
+  @UseGuards(PermissionGuard)
+  @RequirePermission('products.admin')
+  adminOnly() { /* ... */ }
+}
+```
+
+## Related
+
+- [Authentication](/docs/concepts/authentication) — auth strategy architecture
+- [Setup Supabase](/docs/guides/setup-supabase) — use Supabase as auth provider
+- [Setup Clerk](/docs/guides/setup-auth-clerk) — use Clerk as auth provider
+- [Auth API](/docs/reference/core/auth-api) — endpoint and type reference

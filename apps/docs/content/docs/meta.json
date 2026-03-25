@@ -1,15 +1,4 @@
 {
   "title": "Documentation",
-  "pages": [
-    "index",
-    "getting-started",
-    "guides",
-    "core",
-    "common",
-    "adapters",
-    "migrations",
-    "plugins",
-    "client",
-    "admin"
-  ]
+  "pages": ["index", "getting-started", "concepts", "guides", "reference"]
 }

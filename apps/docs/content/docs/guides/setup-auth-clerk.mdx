@@ -1,0 +1,89 @@
+---
+title: Setup Clerk
+description: Use Clerk as the authentication provider for Magnet CMS
+---
+
+# Setup Clerk
+
+Use Clerk for user management, sign-in, and sign-up. Magnet validates Clerk-issued JWTs on every request.
+
+## Prerequisites
+
+- A Clerk account and application at [clerk.com](https://clerk.com)
+- NestJS app with `@magnet-cms/core` and a database adapter installed
+
+## 1. Install
+
+```bash
+bun add @magnet-cms/adapter-auth-clerk @clerk/backend
+```
+
+## 2. Set Environment Variables
+
+From your Clerk Dashboard → API Keys:
+
+```bash
+# .env
+CLERK_SECRET_KEY=sk_test_...
+CLERK_JWT_KEY=...   # Optional: PEM public key for networkless verification
+```
+
+## 3. Register the Adapter
+
+```typescript
+import { Module } from '@nestjs/common'
+import { MagnetModule } from '@magnet-cms/core'
+import { MongooseDatabaseAdapter } from '@magnet-cms/adapter-db-mongoose'
+import { ClerkAuthStrategy } from '@magnet-cms/adapter-auth-clerk'
+
+@Module({
+  imports: [
+    MagnetModule.forRoot([
+      MongooseDatabaseAdapter.forRoot(),
+      ClerkAuthStrategy.forRoot(),
+    ]),
+  ],
+})
+export class AppModule {}
+```
+
+With explicit config (useful when env vars aren't available at boot):
+
+```typescript
+ClerkAuthStrategy.forRoot({
+  secretKey: process.env.CLERK_SECRET_KEY,
+  authorizedParties: ['https://your-app.example.com'],
+  defaultRole: 'authenticated',
+})
+```
+
+## 4. Configure Your Frontend
+
+With Clerk, users sign in via Clerk's prebuilt components. The `/auth/register` and `/auth/login` endpoints are disabled.
+
+Send the Clerk session token as a Bearer token:
+
+```typescript
+import { useAuth } from '@clerk/nextjs'
+
+const { getToken } = useAuth()
+const token = await getToken()
+
+const response = await fetch('/api/content/posts', {
+  headers: { Authorization: `Bearer ${token}` },
+})
+```
+
+## 5. Verify
+
+```bash
+# With a valid Clerk token, this should return the user profile
+curl http://localhost:3000/auth/me \
+  -H "Authorization: Bearer <clerk-session-token>"
+```
+
+## Related
+
+- [Authentication](/docs/concepts/authentication) — auth strategy architecture
+- [Setup Auth](/docs/guides/setup-auth) — default JWT auth setup
+- [Auth API](/docs/reference/core/auth-api) — endpoint reference

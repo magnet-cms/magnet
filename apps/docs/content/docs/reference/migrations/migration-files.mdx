@@ -1,0 +1,139 @@
+---
+title: Migration Files
+description: Migration file format, up/down functions, and working with all SQL dialects
+---
+
+# Migration Files
+
+Migration files are TypeScript modules stored in your `migrations/` directory. Each file exports a `Migration` object with `up` and `down` functions.
+
+## File Format
+
+```typescript
+// migrations/0001_initial_schema.ts
+import type { Migration, MigrationDb } from '@magnet-cms/adapter-db-drizzle'
+
+export const migration: Migration = {
+  id: '0001_initial_schema',
+  timestamp: 1710000000000,
+
+  async up(db: MigrationDb) {
+    await db.execute(`
+      CREATE TABLE "posts" (
+        "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        "title" TEXT NOT NULL,
+        "body" TEXT,
+        "created_at" TIMESTAMP NOT NULL DEFAULT now()
+      )
+    `)
+  },
+
+  async down(db: MigrationDb) {
+    await db.execute(`DROP TABLE "posts"`)
+  },
+}
+```
+
+## The `Migration` Interface
+
+```typescript
+interface Migration {
+  id: string           // Unique identifier, matches filename prefix
+  timestamp: number    // Unix timestamp (milliseconds) when migration was created
+  description?: string // Optional human-readable description
+  dangerous?: boolean  // True if migration contains destructive operations
+  warnings?: string[]  // List of warning messages for dangerous operations
+
+  up(db: MigrationDb): Promise<void>   // Apply the migration
+  down(db: MigrationDb): Promise<void> // Revert the migration
+}
+```
+
+## The `MigrationDb` Interface
+
+```typescript
+interface MigrationDb {
+  execute(sql: string, params?: unknown[]): Promise<unknown>
+}
+```
+
+## File Naming
+
+Migration files use a sequential numbering prefix: `NNNN_description.ts`
+
+- `0001_initial_schema.ts`
+- `0002_add_user_profiles.ts`
+- `0003_add_email_indexes.ts`
+
+The `id` field must match the filename prefix (everything before `.ts`).
+
+## SQL Generators
+
+### PostgreSQL
+
+```typescript
+import { sqlGenerators } from '@magnet-cms/adapter-db-drizzle'
+const pg = sqlGenerators.postgresql
+
+async up(db: MigrationDb) {
+  await db.execute(pg.createTable('products', [
+    { name: 'id', type: 'UUID', primaryKey: true },
+    { name: 'name', type: 'TEXT', nullable: false },
+  ]))
+
+  await db.execute(pg.addColumn('products', { name: 'sku', type: 'TEXT' }))
+
+  await db.execute(pg.createIndex({
+    name: 'products_sku_idx',
+    table: 'products',
+    columns: ['sku'],
+    unique: true,
+  }))
+}
+```
+
+### MySQL
+
+```typescript
+const mysql = sqlGenerators.mysql
+
+await db.execute(mysql.createTable('products', [
+  { name: 'id', type: 'VARCHAR(36)', primaryKey: true },
+  { name: 'name', type: 'VARCHAR(255)', nullable: false },
+]))
+```
+
+### SQLite
+
+```typescript
+const sqlite = sqlGenerators.sqlite
+
+await db.execute(sqlite.createTable('products', [
+  { name: 'id', type: 'TEXT', primaryKey: true },
+  { name: 'name', type: 'TEXT', nullable: false },
+]))
+```
+
+## Dangerous Operations
+
+| Operation | Reason |
+|-----------|--------|
+| `DROP TABLE` | Deletes all data in the table |
+| `DROP COLUMN` | Deletes all data in the column |
+| `ALTER COLUMN TYPE` | May truncate or fail with existing data |
+| `MODIFY COLUMN` (MySQL) | Same as ALTER COLUMN TYPE |
+
+When `migrate:generate` detects these, it sets `dangerous: true` and populates `warnings[]`.
+
+## Checksum Validation
+
+The migration runner computes a SHA-256 checksum of each migration's `up` and `down` source when first applied. Modified applied migrations throw `MigrationChecksumError`. **Never modify applied migration files.**
+
+## Transactions
+
+By default, each migration's `up` or `down` function runs in a transaction. If it throws, the database is rolled back to its pre-migration state.
+
+## Related
+
+- [CLI Commands](/docs/reference/migrations/cli-commands) — `magnet migrate:*` reference
+- [Drizzle Migrations Guide](/docs/guides/drizzle-migrations) — migration workflow

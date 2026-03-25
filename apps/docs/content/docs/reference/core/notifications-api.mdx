@@ -1,0 +1,53 @@
+---
+title: Notifications API
+description: NotificationService methods, NotifyDto, and REST endpoints
+---
+
+# Notifications API
+
+## NotificationService
+
+```typescript
+import { NotificationService } from '@magnet-cms/core'
+```
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `notify` | `(dto: NotifyDto) => Promise<void>` | Send notification to one or more users |
+| `markAsRead` | `(notificationId: string) => Promise<void>` | Mark one notification read |
+| `markAllAsRead` | `(userId: string) => Promise<void>` | Mark all user notifications read |
+| `getUnreadCount` | `(userId: string) => Promise<number>` | Get unread count |
+
+## NotifyDto
+
+```typescript
+interface NotifyDto {
+  userId: string | string[]   // One or many recipients
+  type: string                // Event type (e.g. 'content.published')
+  title: string               // Notification title
+  message: string             // Notification body
+  href?: string               // Optional link
+  channels?: string[]         // Default: ['platform']
+}
+```
+
+## Channels
+
+| Channel | Always Active | Package |
+|---------|--------------|---------|
+| `platform` | Yes | Built-in |
+| `email` | No | Requires email adapter |
+
+## REST Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/notifications` | List notifications for current user |
+| `GET` | `/notifications/unread-count` | Get unread count |
+| `PUT` | `/notifications/:id/read` | Mark one as read |
+| `PUT` | `/notifications/read-all` | Mark all as read |
+
+## Related
+
+- [Notifications](/docs/concepts/notifications) — channel architecture
+- [Setup Notifications](/docs/guides/setup-notifications) — configuration guide

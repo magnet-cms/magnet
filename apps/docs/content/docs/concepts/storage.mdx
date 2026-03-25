@@ -1,0 +1,54 @@
+---
+title: Storage
+description: File uploads, object storage adapters, and AES-256-GCM encrypted folders via the Vault
+---
+
+# Storage
+
+The Storage module handles file uploads and media management. It is registered automatically by `MagnetModule.forRoot()`. Without a storage adapter, file persistence is limited — add an adapter to route uploads to an object storage backend.
+
+## Adapter Pattern
+
+Three official storage adapters are available:
+
+| Adapter | Package | When to use |
+|---------|---------|-------------|
+| **Supabase Storage** | `@magnet-cms/adapter-storage-supabase` | Already using Supabase infrastructure |
+| **Amazon S3** | `@magnet-cms/adapter-storage-s3` | AWS or S3-compatible APIs (MinIO, Backblaze) |
+| **Cloudflare R2** | `@magnet-cms/adapter-storage-r2` | R2 with public CDN URL |
+
+All three implement the same `StorageAdapter` interface. `StorageService` depends only on this interface — the upload, delete, and listing operations work identically across backends.
+
+## Media Records
+
+Every uploaded file is tracked as a `Media` record in the database. Records store the file URL, MIME type, file size, folder path, and optional encryption metadata. This means moving or replacing the underlying storage adapter does not lose file metadata.
+
+## Folder Organization
+
+Media is organized into folders. The admin UI media library supports creating, renaming, and navigating folders. Folders are stored as path prefixes — they exist as organizational records in the database, not as actual storage directories.
+
+## Encrypted Uploads
+
+For sensitive files (PII, health records, documents), Storage supports AES-256-GCM encryption at rest. Encryption is per-user: each user gets a unique 256-bit encryption key managed by the [Vault module](/docs/concepts/vault).
+
+**How it works:**
+1. On first encrypted upload for a user, `MediaEncryptionService` generates a 256-bit key and stores it in the Vault at `media-key/{userId}`
+2. The file buffer is encrypted with AES-256-GCM before being sent to the storage backend
+3. The IV and auth tag are stored in the Media record in the database
+4. On download, Magnet retrieves the key from the Vault, decrypts the buffer in memory, and streams plaintext to the authorized client
+
+Only the file owner or an admin can access encrypted files. Unauthorized requests receive `403 Forbidden`.
+
+Encrypted file storage requires a Vault adapter to be configured. The feature is disabled by default and enabled from **Settings → Media → Security**.
+
+## Settings
+
+File size limits, allowed MIME types, and encryption behavior are all configurable at runtime from the admin panel — no code changes or redeployment required.
+
+## Related
+
+- [Setup S3 Storage](/docs/guides/setup-storage-s3) — configure S3 adapter
+- [Setup R2 Storage](/docs/guides/setup-storage-r2) — configure Cloudflare R2
+- [Setup Supabase](/docs/guides/setup-supabase) — Supabase storage setup
+- [Vault](/docs/concepts/vault) — required for encrypted uploads
+- [Storage API](/docs/reference/core/storage-api) — StorageService methods and Media schema

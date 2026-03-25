@@ -1,0 +1,39 @@
+---
+title: Admin API
+description: Admin serve configuration and plugin manifest endpoints
+---
+
+# Admin API
+
+## REST Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/plugins` | List registered plugins |
+| `GET` | `/plugins/manifests` | Frontend manifests with bundle URLs |
+
+## Environment Variables
+
+| Variable | Description |
+|----------|-------------|
+| `MAGNET_ADMIN_PATH` | Override path to admin build directory |
+
+## Embedding
+
+```typescript
+import { AdminPanel } from '@magnet-cms/admin'
+
+function App() {
+  return (
+    <AdminPanel
+      apiUrl="http://localhost:3000"
+      basePath="/admin"
+    />
+  )
+}
+```
+
+## Related
+
+- [Admin UI](/docs/concepts/admin-ui) — admin architecture
+- [Plugin System](/docs/concepts/plugin-system) — plugin frontend manifests

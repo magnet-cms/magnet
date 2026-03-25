@@ -1,0 +1,74 @@
+---
+title: Auth API
+description: Authentication endpoints, service methods, and types
+---
+
+# Auth API
+
+## REST Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/auth/register` | Register user (JWT mode only) |
+| `POST` | `/auth/login` | Login, returns tokens |
+| `POST` | `/auth/refresh` | Refresh access token |
+| `POST` | `/auth/logout` | Invalidate session |
+| `GET` | `/auth/me` | Current user profile |
+| `POST` | `/auth/forgot-password` | Send password reset email |
+| `POST` | `/auth/reset-password` | Reset password with token |
+| `PUT` | `/auth/me` | Update profile |
+| `PUT` | `/auth/me/password` | Change password |
+
+### Login Response
+
+```typescript
+interface LoginResponse {
+  accessToken: string
+  refreshToken: string
+  user: {
+    id: string
+    email: string
+    name: string
+    roles: string[]
+  }
+}
+```
+
+### Authentication Header
+
+```
+Authorization: Bearer <accessToken>
+```
+
+## Guards
+
+| Guard | Import | Purpose |
+|-------|--------|---------|
+| `AuthGuard` | `@magnet-cms/core` | Require valid JWT |
+| `PermissionGuard` | `@magnet-cms/core` | Require RBAC permission |
+
+## Decorators
+
+| Decorator | Import | Purpose |
+|-----------|--------|---------|
+| `@RequirePermission(perm)` | `@magnet-cms/common` | Declare required permission |
+| `@CurrentUser()` | `@magnet-cms/common` | Inject authenticated user |
+| `@PublicRoute()` | `@magnet-cms/common` | Bypass auth on a route |
+
+## Configuration
+
+```typescript
+MagnetModule.forRoot(adapters, {
+  jwt: {
+    expiresIn: '7d',    // Access token TTL
+  },
+  sessions: {
+    enabled: boolean,   // Enable session tracking
+  },
+})
+```
+
+## Related
+
+- [Authentication](/docs/concepts/authentication) — strategy pattern and provider overview
+- [Setup Auth](/docs/guides/setup-auth) — configuration guide

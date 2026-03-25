@@ -1,0 +1,56 @@
+---
+title: Notifications
+description: Multi-channel notification architecture, the platform channel, and external channel adapters
+---
+
+# Notifications
+
+The Notifications module delivers messages to users across multiple channels simultaneously. The platform channel is always on — notifications are persisted to the database and displayed in the admin UI notification drawer. External channels (email, SMS, webhooks) are added via adapters.
+
+## Channel Architecture
+
+Each notification delivery follows a fan-out pattern: `NotificationService.notify()` sends the notification to every registered channel independently. A failure in one channel does not block or fail the others.
+
+```
+notify(userId, message)
+   ├── Platform channel (always active) → DB + admin drawer
+   ├── Email channel (if adapter registered) → EmailService
+   └── Custom channel (if registered) → your adapter
+```
+
+## Platform Channel
+
+The platform channel is the only built-in persistent channel. Every notification is stored in the database with an `isRead` flag, and shown in the admin UI notification bell. Users can mark individual notifications as read, or clear all at once.
+
+The platform channel cannot be disabled — it is the baseline that all other channels build on top of.
+
+## External Channels
+
+External channels are registered as adapters. Any NestJS service that implements the `NotificationChannelAdapter` interface can be added:
+
+| Channel | When to use |
+|---------|-------------|
+| Email | Notify users via email for async, important events |
+| SMS | High-priority alerts requiring immediate attention |
+| Webhook | Push notification events to external systems |
+
+Channels can be enabled or disabled from the admin panel under **Settings → Notifications** without code changes.
+
+## Bulk Delivery
+
+`NotificationService.notify()` accepts a single user ID or an array of user IDs. For broadcast notifications to multiple users, pass an array — delivery fans out to all channels for each recipient in a single call.
+
+## Read Tracking
+
+- `markAsRead(notificationId)` — mark one notification read
+- `markAllAsRead(userId)` — mark all notifications for a user read
+- Unread count is available via the REST API for badge display
+
+## Retention
+
+Notifications are automatically cleaned up based on a configurable retention period (default: 30 days). Cleanup runs on a schedule and removes only read notifications past the retention threshold.
+
+## Related
+
+- [Setup Notifications](/docs/guides/setup-notifications) — configure channels and retention
+- [Notifications API](/docs/reference/core/notifications-api) — NotificationService methods and channel adapter interface

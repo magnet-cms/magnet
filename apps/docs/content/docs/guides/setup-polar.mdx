@@ -1,0 +1,59 @@
+---
+title: Setup Polar
+description: Add Polar.sh billing and benefits to Magnet CMS with the Polar plugin
+---
+
+# Setup Polar
+
+Add Polar.sh billing to Magnet CMS: products, subscriptions, orders, benefits, Checkout, and Customer Portal.
+
+## Prerequisites
+
+- A Polar.sh account with an organization and API access token
+
+## 1. Install
+
+```bash
+bun add @magnet-cms/plugin-polar
+```
+
+## 2. Set Environment Variables
+
+```bash
+# .env
+POLAR_ACCESS_TOKEN=...
+POLAR_WEBHOOK_SECRET=...
+POLAR_ORGANIZATION_ID=...   # Optional
+```
+
+## 3. Register
+
+```typescript
+import { Module } from '@nestjs/common'
+import { MagnetModule } from '@magnet-cms/core'
+import { MongooseDatabaseAdapter } from '@magnet-cms/adapter-db-mongoose'
+import { PolarPlugin } from '@magnet-cms/plugin-polar'
+
+@Module({
+  imports: [
+    MagnetModule.forRoot([
+      MongooseDatabaseAdapter.forRoot(),
+      PolarPlugin.forRoot({ currency: 'usd' }),
+    ]),
+  ],
+})
+export class AppModule {}
+```
+
+## 4. Configure Polar Webhook
+
+In the Polar Dashboard, create a webhook endpoint pointing to your Magnet server. The plugin verifies incoming webhook signatures automatically.
+
+## 5. Access the Admin UI
+
+Once registered, the admin sidebar includes **Polar Payments** with sections for customers, products, subscriptions, orders, and benefits.
+
+## Related
+
+- [Plugin System](/docs/concepts/plugin-system) — plugin architecture
+- [Setup Stripe](/docs/guides/setup-stripe) — Stripe billing alternative

@@ -1,0 +1,60 @@
+---
+title: API Keys API
+description: API key management endpoints and key format reference
+---
+
+# API Keys API
+
+## Key Format
+
+```
+mgnt_<random>
+```
+
+Example: `mgnt_abc123def456ghi789jkl012mno345pqr678stu901`
+
+Only the first 12 characters (prefix) are stored in plain text for identification. The full key is shown only at creation time.
+
+## REST Endpoints
+
+All endpoints require JWT authentication.
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/api/api-keys` | Create key (returns `plainKey`) |
+| `GET` | `/api/api-keys` | List keys (secrets masked) |
+| `GET` | `/api/api-keys/:id` | Get key by ID |
+| `PUT` | `/api/api-keys/:id` | Update key metadata |
+| `DELETE` | `/api/api-keys/:id` | Revoke key |
+| `GET` | `/api/api-keys/:id/usage` | Usage analytics |
+
+## Using a Key
+
+```
+X-API-Key: mgnt_abc123...
+```
+
+Or as Bearer token:
+
+```
+Authorization: Bearer mgnt_abc123...
+```
+
+## Create Key Request
+
+```typescript
+interface CreateApiKeyDto {
+  name: string
+  description?: string
+  permissions: string[]        // RBAC permission strings
+  allowedSchemas?: string[]    // Restrict to specific schemas
+  allowedIps?: string[]        // IP whitelist
+  rateLimit?: number           // Requests per hour
+  expiresAt?: string           // ISO 8601 datetime
+}
+```
+
+## Related
+
+- [Authentication](/docs/concepts/authentication) — how API key auth integrates with guards
+- [Setup API Keys](/docs/guides/setup-api-keys) — creating and using API keys

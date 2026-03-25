@@ -1,0 +1,102 @@
+---
+title: Setup RBAC
+description: Configure roles, permissions, and protect routes with Magnet CMS RBAC
+---
+
+# Setup RBAC
+
+Magnet CMS includes RBAC out of the box. Roles and permissions are auto-discovered from your schemas and controllers. This guide covers configuration options, default roles, protecting custom routes, and adding custom permissions.
+
+## 1. Default Configuration
+
+RBAC is enabled by default with sensible defaults. No configuration is required to use it:
+
+```typescript
+MagnetModule.forRoot([MongooseDatabaseAdapter.forRoot()])
+// RBAC is automatically enabled
+```
+
+To customize options:
+
+```typescript
+MagnetModule.forRoot(
+  [MongooseDatabaseAdapter.forRoot()],
+  {
+    rbac: {
+      defaultRole: 'authenticated',  // Role assigned to new users
+      allowPublicAccess: false,       // Allow unauthenticated requests with 'public' role
+      cacheTTL: 300,                  // Permission cache TTL in seconds
+    },
+  },
+)
+```
+
+## 2. Default Roles
+
+Three system roles are created automatically and cannot be deleted:
+
+| Role | Permissions | Purpose |
+|------|-------------|---------|
+| `admin` | `*` (all) | Full access — assign to your admin users |
+| `authenticated` | none | Default for logged-in users |
+| `public` | none | Unauthenticated requests |
+
+Configure `authenticated` and `public` role permissions from the admin UI under **RBAC → Roles**.
+
+## 3. Assign Roles to Users
+
+From the admin UI (**Users → Edit user → Roles**), or via the API:
+
+```bash
+PUT /rbac/users/{userId}/roles
+Authorization: Bearer <admin-token>
+Content-Type: application/json
+
+["authenticated", "editor"]
+```
+
+## 4. Protect Custom Routes
+
+Use the `PermissionGuard` and `@RequirePermission` decorator on your controllers:
+
+```typescript
+import { Controller, Get, Post, UseGuards } from '@nestjs/common'
+import { PermissionGuard } from '@magnet-cms/core'
+import { RequirePermission } from '@magnet-cms/common'
+
+@Controller('products')
+export class ProductsController {
+  @Get()
+  @UseGuards(PermissionGuard)
+  @RequirePermission('content.products.find')
+  findAll() { /* ... */ }
+
+  @Post()
+  @UseGuards(PermissionGuard)
+  @RequirePermission('content.products.create')
+  create() { /* ... */ }
+}
+```
+
+## 5. Custom Permissions
+
+Permissions not auto-discovered from schemas can be added with the `@RequirePermission` decorator. The permission string is registered automatically when the controller loads:
+
+```typescript
+@Get('export')
+@UseGuards(PermissionGuard)
+@RequirePermission('products.export')
+export() { /* ... */ }
+```
+
+This permission will appear in the admin RBAC panel and can be assigned to roles.
+
+## 6. Verify
+
+From the admin UI, create a new role, assign a set of permissions, and assign that role to a user. Verify that the user can only access permitted endpoints.
+
+## Related
+
+- [RBAC](/docs/concepts/rbac) — permission model, auto-discovery, caching
+- [Authentication](/docs/concepts/authentication) — auth guards that RBAC builds upon
+- [RBAC API](/docs/reference/core/rbac-api) — RoleService methods and permission format

@@ -1,0 +1,65 @@
+---
+title: Database API
+description: DatabaseAdapter contract and injection token reference
+---
+
+# Database API
+
+## Injection Tokens
+
+```typescript
+import { getModelToken, getSchemaToken, getAdapterToken } from '@magnet-cms/common'
+
+// Inject a model for a schema class
+@InjectModel(Cat) private model: Model<Cat>
+
+// Inject the database adapter
+@Inject(getAdapterToken()) private adapter: DatabaseAdapter
+```
+
+## DatabaseAdapter Abstract Class
+
+```typescript
+import { DatabaseAdapter } from '@magnet-cms/common'
+
+abstract class DatabaseAdapter {
+  abstract connect(): Promise<void>
+  abstract forFeature(schemas: Type[]): DynamicModule
+  abstract model<T>(schema: Type<T>): Model<T>
+  abstract supports(feature: string): boolean
+  abstract getCapabilities(): AdapterCapabilities
+}
+```
+
+## Model Interface
+
+```typescript
+interface Model<T> {
+  create(data: Partial<T>): Promise<T>
+  find(filter?: Partial<T>): Promise<T[]>
+  findById(id: string): Promise<T | null>
+  findOne(filter: Partial<T>): Promise<T | null>
+  update(filter: Partial<T>, data: Partial<T>): Promise<T | null>
+  delete(filter: Partial<T>): Promise<boolean>
+  query(): QueryBuilder<T>
+  native(): unknown    // Access underlying driver (Mongoose model or Drizzle)
+}
+```
+
+## AdapterCapabilities
+
+```typescript
+interface AdapterCapabilities {
+  transactions: boolean
+  fullTextSearch: boolean
+  geospatial: boolean
+  migrations: boolean
+}
+```
+
+## Related
+
+- [Database Adapters](/docs/concepts/database-adapters) — adapter architecture
+- [Setup Mongoose](/docs/guides/setup-mongoose) — MongoDB setup
+- [Setup Drizzle](/docs/guides/setup-drizzle) — PostgreSQL setup
+- [Mongoose Adapter API](/docs/reference/adapters/mongoose) — query builder reference

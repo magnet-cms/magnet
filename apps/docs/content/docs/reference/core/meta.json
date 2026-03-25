@@ -1,0 +1,20 @@
+{
+  "title": "Core",
+  "pages": [
+    "index",
+    "content-api",
+    "auth-api",
+    "rbac-api",
+    "api-keys-api",
+    "notifications-api",
+    "webhooks-api",
+    "email-api",
+    "settings-api",
+    "storage-api",
+    "vault-api",
+    "cache-api",
+    "openapi-api",
+    "database-api",
+    "admin-api"
+  ]
+}

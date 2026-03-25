@@ -1,0 +1,87 @@
+---
+title: Plugin System
+description: Plugin architecture, the @Plugin decorator, backend modules, frontend manifests, and lifecycle hooks
+---
+
+# Plugin System
+
+Magnet's plugin system allows extending the CMS with modular, self-contained packages. Plugins can add backend NestJS modules and services, API endpoints, admin UI routes and sidebar items, and lifecycle hooks — all from a single `@Plugin` decorated class.
+
+## Registration
+
+Plugins are registered in `MagnetModule.forRoot()` alongside database and auth adapters:
+
+```typescript
+MagnetModule.forRoot([
+  MongooseDatabaseAdapter.forRoot(),
+  PlaygroundPlugin.forRoot(),
+])
+```
+
+The `forRoot()` static method follows the same provider pattern as adapters. Plugins can accept configuration options through `forRoot({ ... })`.
+
+## The @Plugin Decorator
+
+The `@Plugin` decorator from `@magnet-cms/common` marks a class as a Magnet plugin and declares its metadata:
+
+```typescript
+@Plugin({
+  name: 'my-plugin',
+  description: 'My custom plugin',
+  version: '1.0.0',
+  module: MyPluginModule,      // Optional: NestJS module
+  frontend: {                  // Optional: UI manifest
+    routes: [...],
+    sidebar: [...],
+  },
+})
+export class MyPlugin {}
+```
+
+All metadata fields except `name` are optional. A plugin that only adds backend logic omits `frontend`. A plugin that only adds UI widgets omits `module`.
+
+## Backend Modules
+
+When a plugin declares a `module`, Magnet imports that NestJS module into the application context during startup. The plugin module can define controllers, services, providers, and guards — all of which participate in the standard NestJS dependency injection tree.
+
+## Frontend Manifests
+
+Plugins declare UI extensions via a frontend manifest:
+
+- **`routes`** — admin UI page routes with optional auth and permission requirements
+- **`sidebar`** — sidebar navigation items with icon, title, URL, and sort order
+- **`settings`** — custom settings pages rendered inside the admin settings panel
+
+The admin UI loads plugin manifests at runtime via `GET /plugins/manifests`. Plugins deliver their frontend bundle as a separate build artifact, loaded dynamically by the admin shell.
+
+## Lifecycle Hooks
+
+Plugins can implement `PluginLifecycle` to run logic during the application lifecycle:
+
+```typescript
+export class MyPlugin implements PluginLifecycle {
+  async onPluginInit() {
+    // Called after all plugins are registered
+  }
+
+  async onPluginDestroy() {
+    // Called before application shutdown
+  }
+}
+```
+
+## Official Plugins
+
+| Plugin | Package | Purpose |
+|--------|---------|---------|
+| Playground | `@magnet-cms/plugin-playground` | Visual schema builder |
+| Sentry | `@magnet-cms/plugin-sentry` | Error and performance monitoring |
+| Stripe | `@magnet-cms/plugin-stripe` | Payments, subscriptions, and billing |
+| Polar | `@magnet-cms/plugin-polar` | Polar.sh billing and benefits |
+| SEO | `@magnet-cms/plugin-seo` | SEO metadata (in development) |
+
+## Related
+
+- [Setup Plugins](/docs/guides/setup-plugins) — install and configure official plugins
+- [Build a Plugin](/docs/guides/build-plugin) — create a custom plugin from scratch
+- [Plugin API](/docs/reference/plugins) — @Plugin decorator and manifest type reference

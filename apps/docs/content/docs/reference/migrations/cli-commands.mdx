@@ -1,0 +1,169 @@
+---
+title: CLI Commands
+description: Complete reference for the magnet migrate CLI commands
+---
+
+# CLI Commands
+
+The `@magnet-cms/cli` package provides the `magnet` CLI with all migration management commands.
+
+## Installation
+
+```bash
+bun add -D @magnet-cms/cli
+```
+
+## Commands
+
+### `migrate:up`
+
+Apply all pending migrations (or up to a specific migration).
+
+```bash
+magnet migrate:up
+magnet migrate:up --to 0003_add_tags
+```
+
+**Options:**
+
+| Flag | Description |
+|------|-------------|
+| `--to <id>` | Apply migrations up to and including this migration ID |
+| `--config <path>` | Path to custom config file (default: `magnet.config.ts`) |
+
+---
+
+### `migrate:down`
+
+Roll back the most recently applied migration (or down to a specific migration).
+
+```bash
+magnet migrate:down
+magnet migrate:down --to 0001_initial
+```
+
+**Options:**
+
+| Flag | Description |
+|------|-------------|
+| `--to <id>` | Roll back migrations down to (but not including) this migration ID |
+| `--config <path>` | Path to custom config file |
+
+> **Warning:** Rolling back migrations in production can cause data loss. Always back up your database first.
+
+---
+
+### `migrate:status`
+
+Show the current migration status — which migrations are applied and which are pending.
+
+```bash
+magnet migrate:status
+```
+
+**Output:**
+
+```
+Applied migrations:
+  ✓ 0001_initial (applied 2026-03-01 10:00:00)
+  ✓ 0002_add_email_index (applied 2026-03-02 14:30:00)
+
+Pending migrations:
+  ○ 0003_add_tags
+  ○ 0004_add_media_table
+```
+
+---
+
+### `migrate:generate`
+
+Detect schema changes from your decorators and generate a migration file.
+
+```bash
+magnet migrate:generate
+magnet migrate:generate my_feature_name
+magnet migrate:generate --dry-run
+```
+
+**Arguments:**
+
+| Argument | Description |
+|----------|-------------|
+| `[name]` | Optional name for the migration (default: `auto`) |
+
+**Options:**
+
+| Flag | Description |
+|------|-------------|
+| `--dry-run` | Show the generated SQL without writing any files |
+| `--config <path>` | Path to custom config file |
+
+---
+
+### `migrate:create`
+
+Create a blank migration file for writing custom SQL.
+
+```bash
+magnet migrate:create add_custom_indexes
+# Creates: migrations/0005_add_custom_indexes.ts
+```
+
+**Arguments:**
+
+| Argument | Description |
+|----------|-------------|
+| `<name>` | Name for the migration (required) |
+
+---
+
+### `migrate:reset`
+
+Roll back all applied migrations, then re-apply them from the beginning.
+
+```bash
+magnet migrate:reset
+magnet migrate:reset --force  # Skip confirmation prompt
+```
+
+> **Danger:** Do not use in production without a database backup.
+
+---
+
+### `migrate:fresh`
+
+Drop all tables in the database and re-apply all migrations from scratch.
+
+```bash
+magnet migrate:fresh
+magnet migrate:fresh --force
+```
+
+> **Danger:** This destroys all data. Development use only.
+
+---
+
+## Configuration File
+
+Commands read from `magnet.config.ts` in your project root, or fall back to the `DATABASE_URL` environment variable:
+
+```typescript
+// magnet.config.ts
+export default {
+  db: {
+    connectionString: process.env.DATABASE_URL || '',
+    dialect: 'postgresql',
+    driver: 'neon',
+    migrations: {
+      directory: './migrations',
+    },
+  },
+}
+```
+
+Use `--config <path>` to specify a custom config file.
+
+## Related
+
+- [Drizzle Migrations Guide](/docs/guides/drizzle-migrations) — migration workflow
+- [Migration Files](/docs/reference/migrations/migration-files) — file format and interfaces

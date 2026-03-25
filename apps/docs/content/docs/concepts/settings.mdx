@@ -1,0 +1,72 @@
+---
+title: Settings
+description: Typed settings groups, decorator-driven definition, runtime get/update API, and admin panel integration
+---
+
+# Settings
+
+The Settings module stores typed configuration in the database, validates updates against class definitions, and provides a runtime API for reading and writing settings from any service. Settings appear automatically in the admin UI — no UI code required.
+
+## Decorator-Driven Definition
+
+Settings groups are defined with two decorators from `@magnet-cms/common`:
+
+- **`@Settings`** — marks a class as a settings group and configures its admin UI panel
+- **`@SettingField.*`** — marks individual properties as settings fields with type, label, default, and validation
+
+```typescript
+@Settings({ group: 'shipping', label: 'Shipping', icon: 'truck' })
+export class ShippingSettings {
+  @SettingField.Text({ label: 'Default Carrier', default: 'UPS' })
+  defaultCarrier = 'UPS'
+
+  @SettingField.Number({ label: 'Max Weight (kg)', default: 30 })
+  maxWeightKg = 30
+
+  @SettingField.Boolean({ label: 'Enable Free Shipping', default: false })
+  freeShippingEnabled = false
+}
+```
+
+On application bootstrap, Magnet reads all registered settings classes, creates missing records with default values, and builds the admin UI panels automatically.
+
+## Available Field Types
+
+| Type | UI Control | Storage |
+|------|-----------|---------|
+| `Text` | Text input | string |
+| `Textarea` | Multi-line input | string |
+| `Number` | Number input | number |
+| `Boolean` | Toggle switch | boolean |
+| `Select` | Dropdown | string |
+| `Secret` | Masked input | string |
+| `Image` | Image picker | string (URL) |
+| `JSON` | JSON editor | object |
+
+## Runtime API
+
+`SettingsService.get(SettingsClass)` returns a fully typed instance of the settings class with the current database values merged over defaults:
+
+```typescript
+const config = await this.settings.get(ShippingSettings)
+config.defaultCarrier  // string
+config.maxWeightKg     // number
+```
+
+Results are cached for 60 seconds. `update()` invalidates the cache for the affected group immediately, so programmatic updates take effect on the next read.
+
+## Admin Panel Integration
+
+Each settings group registered via `SettingsModule.forFeature()` appears as a panel in the admin UI **Settings** section. Fields are rendered with the appropriate input control based on their type. Groups can be organized into sections for logical grouping of related fields.
+
+The admin panel uses the same `PUT /settings/:group` API endpoint that programmatic updates use — settings are always validated against the class definition before persisting.
+
+## Built-in Settings
+
+Magnet's core modules expose their own settings classes (`EmailSettings`, `GeneralSettings`, `AuthSettings`) that can be read with `SettingsService.get()` from any service.
+
+## Related
+
+- [Setup Settings](/docs/guides/setup-settings) — define and register a settings group
+- [Settings API](/docs/reference/core/settings-api) — SettingsService methods and decorator reference
+- [magnet-new-settings skill](/docs/guides/setup-settings) — step-by-step guide for adding settings to a module

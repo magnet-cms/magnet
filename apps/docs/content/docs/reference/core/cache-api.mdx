@@ -1,0 +1,41 @@
+---
+title: Cache API
+description: CacheService methods and cache adapter interface
+---
+
+# Cache API
+
+## CacheService
+
+```typescript
+import { CacheService } from '@magnet-cms/core'
+```
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `get` | `<T>(key: string) => Promise<T \| null>` | Get cached value |
+| `set` | `<T>(key: string, value: T, ttl?: number) => Promise<void>` | Set value with optional TTL (seconds) |
+| `delete` | `(key: string) => Promise<void>` | Delete key |
+| `clear` | `(prefix?: string) => Promise<void>` | Clear keys by prefix |
+| `has` | `(key: string) => Promise<boolean>` | Check key existence |
+
+## Default Behavior
+
+Without a cache adapter, Magnet uses in-process TTL-based memory maps. Cache is local to each process instance and is lost on restart.
+
+With the Redis adapter, cache is shared across instances and survives restarts.
+
+## CacheAdapter Interface
+
+```typescript
+interface CacheAdapter {
+  get<T>(key: string): Promise<T | null>
+  set<T>(key: string, value: T, ttl?: number): Promise<void>
+  delete(key: string): Promise<void>
+  clear(prefix?: string): Promise<void>
+}
+```
+
+## Related
+
+- [Setup Cache (Redis)](/docs/guides/setup-cache-redis) — Redis adapter setup

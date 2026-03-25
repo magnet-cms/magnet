@@ -1,0 +1,68 @@
+---
+title: GraphQL Adapter API
+description: Auto-generated GraphQL schema, types, queries, mutations, and field type mapping
+---
+
+# GraphQL Adapter API
+
+Reference for `@magnet-cms/adapter-graphql` auto-generated schema and field type mapping. For installation and setup, see [Setup GraphQL](/docs/guides/setup-graphql).
+
+## Auto-Generated Types
+
+For every `@Schema()` class, the adapter generates:
+
+| Type | Description |
+|------|-------------|
+| `{Name}Type` | GraphQL object type with document metadata + schema fields |
+| `{Name}Input` | Input type for create mutations |
+| `{Name}UpdateInput` | Input type for update mutations (all fields optional) |
+
+All `{Name}Type` objects include document metadata fields: `_id`, `documentId`, `locale`, `status`, `createdAt`, `updatedAt`, `version`.
+
+## Auto-Generated Queries
+
+| Query | Description |
+|-------|-------------|
+| `list{Name}(locale, status)` | List all documents |
+| `find{Name}(documentId!, locale, status)` | Find a document by ID |
+| `{name}Versions(documentId!, locale)` | Get all versions of a document |
+
+## Auto-Generated Mutations
+
+| Mutation | Description |
+|----------|-------------|
+| `create{Name}(input!, locale, createdBy)` | Create a new document |
+| `update{Name}(documentId!, input!, locale, status, updatedBy)` | Update a document |
+| `delete{Name}(documentId!)` | Delete a document |
+| `publish{Name}(documentId!, locale, publishedBy)` | Publish a document |
+| `unpublish{Name}(documentId!, locale)` | Unpublish a document |
+| `add{Name}Locale(documentId!, locale!, input!, createdBy)` | Add a locale variant |
+| `delete{Name}Locale(documentId!, locale!)` | Remove a locale variant |
+
+## Field Type Mapping
+
+| Schema field type | GraphQL type |
+|-------------------|--------------|
+| `String` | `String` |
+| `Number` | `Float` |
+| `Boolean` | `Boolean` |
+| `Date` | `String` (ISO 8601) |
+| `Object` | `JSON` (via `graphql-scalars`) |
+| `Array` | `[JSON]` |
+| Reference fields | `String` (document ID) |
+
+## Configuration Options
+
+```typescript
+GraphQLAdapter.forRoot({
+  path: '/graphql',        // endpoint path (default: '/graphql')
+  playground: true,        // enable Apollo Sandbox (default: true)
+  introspection: true,     // enable schema introspection (default: true)
+  debug: false,            // enable debug mode (default: false)
+})
+```
+
+## Related
+
+- [Setup GraphQL](/docs/guides/setup-graphql) — installation and configuration
+- [Adapters Reference](/docs/reference/adapters) — adapter contract

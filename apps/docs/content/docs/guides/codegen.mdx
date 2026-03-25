@@ -1,0 +1,89 @@
+---
+title: Type Generation
+description: Generate TypeScript types from your Magnet CMS OpenAPI spec for the client SDK
+---
+
+# Type Generation
+
+The `@magnet-cms/client` package ships a `magnet-client` CLI that downloads your server's OpenAPI spec and generates TypeScript types. These types give you full autocomplete and type checking in the client SDK.
+
+## How It Works
+
+1. Your Magnet server exposes an OpenAPI 3.0 spec at `/oas.json`
+2. `magnet-client generate` downloads the spec and runs `openapi-typescript` on it
+3. A `.d.ts` file is written with all API paths, request bodies, and response schemas typed
+4. You pass the generated `paths` type to `createMagnetClient<paths>()` for end-to-end type safety
+
+## Prerequisites
+
+- `@magnet-cms/client` installed
+- Magnet server running (for `--url` mode)
+
+## Generate Types
+
+### From a running server
+
+```bash
+npx magnet-client generate --url http://localhost:3000/oas.json -o ./src/magnet.d.ts
+```
+
+### From a local spec file
+
+```bash
+npx magnet-client generate --input ./openapi.json -o ./src/magnet.d.ts
+```
+
+### CLI Options
+
+| Flag | Description |
+|------|-------------|
+| `--url <url>` | URL of the OpenAPI spec |
+| `--input <path>` | Path to a local OpenAPI JSON/YAML file |
+| `--output <path>` / `-o` | Output path for generated types (default: `./magnet.d.ts`) |
+
+## Add a Script to package.json
+
+```json
+{
+  "scripts": {
+    "generate:types": "magnet-client generate --url http://localhost:3000/oas.json -o ./src/magnet.d.ts"
+  }
+}
+```
+
+Run after adding or modifying content schemas:
+
+```bash
+bun run generate:types
+```
+
+## Use the Generated Types
+
+```typescript
+import { createMagnetClient } from '@magnet-cms/client'
+import type { paths } from './magnet.d.ts'
+
+const client = createMagnetClient<paths>({
+  baseUrl: 'http://localhost:3000',
+  token: process.env.MAGNET_TOKEN,
+})
+
+// Full autocomplete on paths and response shapes
+const { data } = await client.content.list('post', { status: 'published' })
+```
+
+## CI/CD Integration
+
+Regenerate types in CI when deploying a new CMS version:
+
+```yaml
+- name: Regenerate Magnet types
+  run: bun run generate:types
+```
+
+Or check in the generated file and regenerate it locally when schemas change.
+
+## Related
+
+- [Client SDK](/docs/guides/client-sdk) — use the generated types with `createMagnetClient`
+- [Setup OpenAPI](/docs/guides/setup-openapi) — configure the spec endpoint on the server

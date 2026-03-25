@@ -1,0 +1,156 @@
+---
+title: Mongoose Adapter API
+description: Query builder, model operations, versioning, and localization for the Mongoose adapter
+---
+
+# Mongoose Adapter API
+
+Reference for `@magnet-cms/adapter-db-mongoose` query builder and model operations. For installation and configuration, see [Setup Mongoose](/docs/guides/setup-mongoose).
+
+## Model Operations
+
+### Basic CRUD
+
+```typescript
+// Create
+await model.create(data)
+
+// Read
+await model.find()
+await model.findById(id)
+await model.findOne({ email: 'test@example.com' })
+
+// Update
+await model.update({ id }, data)
+
+// Delete
+await model.delete({ id })
+```
+
+### Localized Operations
+
+```typescript
+// Find all in Spanish
+await model.locale('es').find()
+
+// Find by ID in Portuguese
+await model.locale('pt').findById(id)
+
+// Create with locale
+await model.locale(locale).create(data)
+```
+
+## Query Builder
+
+### Basic Queries
+
+```typescript
+// Simple filter
+const active = await model.query().where({ status: 'active' }).exec()
+
+// Multiple conditions
+const results = await model.query()
+  .where({ status: 'active' })
+  .and({ category: 'electronics' })
+  .exec()
+
+// OR conditions
+const featured = await model.query()
+  .or([{ featured: true }, { price: { $gt: 100 } }])
+  .exec()
+```
+
+### Sorting and Pagination
+
+```typescript
+// Sort by multiple fields
+await model.query().sort({ createdAt: -1, name: 1 }).exec()
+
+// Pagination
+await model.query()
+  .skip((page - 1) * limit)
+  .limit(limit)
+  .exec()
+
+// Built-in pagination helper
+const result = await model.query()
+  .where({ status: 'published' })
+  .paginate()
+// Returns: { data: [...], total: 100, page: 1, limit: 10 }
+```
+
+### MongoDB Operators
+
+```typescript
+// Comparison
+await model.query().where({ price: { $gt: 100 } }).exec()
+await model.query().where({ price: { $gte: 100, $lte: 500 } }).exec()
+await model.query().where({ status: { $ne: 'deleted' } }).exec()
+
+// Array operators
+await model.query().where({ tags: { $in: ['featured', 'sale'] } }).exec()
+await model.query().where({ tags: { $nin: ['archived'] } }).exec()
+
+// Text search with regex
+await model.query().where({ name: { $regex: 'cat', $options: 'i' } }).exec()
+
+// Existence check
+await model.query().where({ deletedAt: { $exists: false } }).exec()
+```
+
+### Query Execution Methods
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `.exec()` | `Promise<T[]>` | Get all matching results |
+| `.execOne()` | `Promise<T \| null>` | Get single result |
+| `.count()` | `Promise<number>` | Count matching results |
+| `.exists()` | `Promise<boolean>` | Check if any results exist |
+| `.paginate()` | `Promise<PaginatedResult<T>>` | Get paginated results with totals |
+
+## Versioning
+
+```typescript
+// Check if versioning is enabled
+model.isVersioningEnabled()
+
+// Get all versions of a document
+await model.findVersions(documentId)
+
+// Get specific version
+await model.findVersionById(versionId)
+
+// Restore a previous version
+await model.restoreVersion(versionId)
+```
+
+## Native Mongoose Access
+
+```typescript
+const nativeModel = model.native()
+
+// Mongoose aggregate
+return nativeModel.aggregate([
+  { $match: { status: 'active' } },
+  { $group: { _id: '$category', count: { $sum: 1 } } }
+])
+```
+
+## Unique Indexes with i18n
+
+When `unique: true` is combined with `i18n`, Magnet creates partial unique indexes:
+
+```typescript
+@Schema({ i18n: true })
+export class Product {
+  @Prop({ unique: true })
+  sku: string  // Partial unique index on (locale, status)
+}
+```
+
+This allows different locales to share the same value while enforcing uniqueness within each locale+status combination.
+
+## Related
+
+- [Setup Mongoose](/docs/guides/setup-mongoose) — installation and configuration
+- [Adapters Reference](/docs/reference/adapters) — adapter contract

@@ -1,0 +1,48 @@
+---
+title: RBAC
+description: Permission model, auto-discovery, wildcard matching, and the caching layer
+---
+
+# RBAC
+
+Magnet's role-based access control system assigns permissions to roles, and roles to users. Permissions are discovered automatically from registered schemas and controllers.
+
+## Permission Format
+
+Permissions follow a dot-separated format: `resource.action` or `resource.subresource.action`:
+
+```
+content.posts.create
+content.posts.find
+rbac.roles.update
+settings.read
+*
+```
+
+The wildcard `*` grants all permissions. `content.*` grants all content permissions. Exact match is checked before prefix match.
+
+## Auto-Discovery
+
+When `RoleService.onModuleInit()` runs, it scans all registered schemas and controllers to build the permission registry. You never manually define permission IDs — they are derived from schema names and controller endpoints.
+
+Custom permissions can be added by decorating controller methods with `@RequirePermission('my-plugin.action')`.
+
+## Default Roles
+
+Three system roles are created automatically and cannot be deleted:
+
+| Role | Permissions | Purpose |
+|------|------------|---------|
+| `admin` | `*` | Full access |
+| `authenticated` | none | Logged-in users (configure as needed) |
+| `public` | none | Unauthenticated requests |
+
+## Permission Cache
+
+Permission lookups are cached in memory per role with a configurable TTL (default 300s). The cache is invalidated when a role's permissions change. This means a freshly updated role takes effect within one TTL window for already-authenticated users.
+
+## Related
+
+- [Setup RBAC](/docs/guides/setup-rbac) — configure roles and protect routes
+- [RBAC API](/docs/reference/core/rbac-api) — RoleService methods and permission format reference
+- [Authentication](/docs/concepts/authentication) — auth strategy that RBAC builds upon

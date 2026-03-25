@@ -1,0 +1,75 @@
+---
+title: Database Adapters
+description: The provider contract, how Mongoose and Drizzle adapters compare, and how to build custom adapters
+---
+
+# Database Adapters
+
+Magnet supports multiple databases through an adapter pattern. The database adapter is the only required provider — every other adapter is optional.
+
+## The DatabaseAdapter Contract
+
+All database adapters implement the `DatabaseAdapter` abstract class from `@magnet-cms/common`. This interface is the only surface area that core modules depend on:
+
+```typescript
+abstract class DatabaseAdapter {
+  abstract connect(config: DBConfig): DynamicModule
+  abstract forFeature(schemas: Type | Type[]): DynamicModule
+  abstract model<T>(modelInstance: any): any
+  abstract token(schema: string): string
+  abstract supports(capability: string): boolean
+  abstract getCapabilities(): string[]
+}
+```
+
+Core services like `ContentService` receive a `Model<T>` instance through NestJS injection and call `find`, `findOne`, `create`, `update`, `delete`, `findMany`, `findById` — adapter-specific implementation details are invisible to them.
+
+## Adapter Comparison
+
+| Feature | Mongoose | Drizzle |
+|---------|---------|---------|
+| Databases | MongoDB | PostgreSQL, MySQL, SQLite |
+| Schema definition | Decorator-driven | Decorator-driven |
+| Migrations | Not applicable | First-class CLI support |
+| Query builder | Mongoose queries | Drizzle ORM |
+| Full-text search | MongoDB text indexes | Database-native |
+| Transactions | Supported | Supported |
+
+## Auto-Detection
+
+Importing an adapter package registers the adapter type as a side effect:
+
+```typescript
+import { MongooseDatabaseAdapter } from '@magnet-cms/adapter-db-mongoose'
+// ← setDatabaseAdapter('mongoose') is called automatically
+```
+
+This means `@Schema()` decorators know which database format to use without any manual wiring. You never configure the adapter type in multiple places.
+
+## Injection Tokens
+
+The database module exposes typed injection tokens so you can inject model instances in your own services:
+
+```typescript
+import { getModelToken } from '@magnet-cms/common'
+import { Inject } from '@nestjs/common'
+
+@Injectable()
+class CatsService {
+  constructor(
+    @Inject(getModelToken('Cat')) private catModel: Model<Cat>,
+  ) {}
+}
+```
+
+## Custom Adapters
+
+To support a new database, subclass `DatabaseAdapter` from `@magnet-cms/common`, implement all abstract methods, and return a `DatabaseMagnetProvider` from a static `forRoot()` factory. The existing Mongoose and Drizzle adapter sources are the reference implementation.
+
+## Related
+
+- [Setup Mongoose](/docs/guides/setup-mongoose) — step-by-step Mongoose setup
+- [Setup Drizzle](/docs/guides/setup-drizzle) — step-by-step Drizzle setup
+- [Database API](/docs/reference/core/database-api) — DatabaseAdapter interface reference
+- [Mongoose Reference](/docs/reference/adapters/mongoose) — query builder and model operations
+- [Drizzle Reference](/docs/reference/adapters/drizzle) — query builder and config options

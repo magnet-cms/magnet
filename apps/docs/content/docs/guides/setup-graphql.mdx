@@ -1,0 +1,108 @@
+---
+title: Setup GraphQL
+description: Add auto-generated GraphQL API to Magnet CMS with Apollo Server
+---
+
+# Setup GraphQL
+
+Add a GraphQL API to Magnet CMS using the `@magnet-cms/adapter-graphql` package. For every content schema, the adapter auto-generates GraphQL types, queries, and mutations — no manual resolver code required.
+
+## 1. Install
+
+```bash
+bun add @magnet-cms/adapter-graphql @nestjs/graphql @nestjs/apollo @apollo/server graphql graphql-scalars
+```
+
+## 2. Register the Adapter
+
+```typescript
+import { Module } from '@nestjs/common'
+import { MagnetModule } from '@magnet-cms/core'
+import { MongooseDatabaseAdapter } from '@magnet-cms/adapter-db-mongoose'
+import { GraphQLAdapter } from '@magnet-cms/adapter-graphql'
+
+@Module({
+  imports: [
+    MagnetModule.forRoot([
+      MongooseDatabaseAdapter.forRoot(),
+      GraphQLAdapter.forRoot(),
+    ]),
+  ],
+})
+export class AppModule {}
+```
+
+## 3. Open the Playground
+
+Start the application and visit `http://localhost:3000/graphql` for the Apollo Sandbox.
+
+## 4. Query Your Content
+
+For each `@Schema()` class, queries are auto-generated. For a `Post` schema:
+
+```graphql
+# List published posts
+query {
+  listPost(status: "published") {
+    documentId
+    title
+    body
+    createdAt
+  }
+}
+
+# Create a post
+mutation {
+  createPost(input: { title: "Hello World", body: "My first post" }) {
+    documentId
+    status
+  }
+}
+
+# Publish a post
+mutation {
+  publishPost(documentId: "abc123") {
+    documentId
+    status
+  }
+}
+```
+
+## 5. Configure Options
+
+```typescript
+GraphQLAdapter.forRoot({
+  path: '/graphql',       // default: '/graphql'
+  playground: true,       // default: true
+  introspection: true,    // default: true
+  debug: false,           // default: false
+})
+```
+
+Disable the playground in production:
+
+```typescript
+GraphQLAdapter.forRoot({
+  playground: process.env.NODE_ENV !== 'production',
+  introspection: process.env.NODE_ENV !== 'production',
+})
+```
+
+## Auto-Generated Operations
+
+For each schema named `{Name}`, the following are generated:
+
+| Operation | Type |
+|-----------|------|
+| `list{Name}(locale, status)` | Query |
+| `find{Name}(documentId!)` | Query |
+| `create{Name}(input!)` | Mutation |
+| `update{Name}(documentId!, input!)` | Mutation |
+| `delete{Name}(documentId!)` | Mutation |
+| `publish{Name}(documentId!)` | Mutation |
+| `unpublish{Name}(documentId!)` | Mutation |
+
+## Related
+
+- [Content Model](/docs/concepts/content-model) — schemas that power the GraphQL types
+- [GraphQL API](/docs/reference/adapters/graphql) — full type and operation reference

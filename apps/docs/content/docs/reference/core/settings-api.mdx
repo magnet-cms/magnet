@@ -1,0 +1,70 @@
+---
+title: Settings API
+description: SettingsService methods and @Settings/@SettingField decorator reference
+---
+
+# Settings API
+
+## SettingsService
+
+```typescript
+import { SettingsService } from '@magnet-cms/core'
+```
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `get` | `<T>(cls: Type<T>) => Promise<T>` | Get typed settings (60s cache) |
+| `update` | `<T>(cls: Type<T>, data: Partial<T>) => Promise<T>` | Update and invalidate cache |
+| `invalidate` | `<T>(cls: Type<T>) => void` | Invalidate cache for group |
+| `invalidateAll` | `() => void` | Invalidate all groups |
+
+## @Settings Decorator
+
+```typescript
+import { Settings } from '@magnet-cms/common'
+
+@Settings({
+  group: string,          // Unique group key (required)
+  label: string,          // Display name in admin UI (required)
+  icon?: string,          // Lucide icon name
+  order?: number,         // Sort order in admin UI
+  description?: string,   // Subtitle in admin UI
+  sections?: Section[],   // Sub-groups for field organization
+})
+```
+
+## @SettingField Types
+
+| Decorator | Storage | UI Control |
+|-----------|---------|-----------|
+| `@SettingField.Text({...})` | string | Text input |
+| `@SettingField.Textarea({...})` | string | Multi-line textarea |
+| `@SettingField.Number({...})` | number | Number input |
+| `@SettingField.Boolean({...})` | boolean | Toggle |
+| `@SettingField.Select({...})` | string | Dropdown |
+| `@SettingField.Secret({...})` | string | Masked input |
+| `@SettingField.Image({...})` | string (URL) | Image picker |
+| `@SettingField.JSON({...})` | object | JSON editor |
+
+### Common SettingField Options
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `label` | string | Field label in admin UI |
+| `description` | string | Help text |
+| `default` | any | Default value |
+| `order` | number | Sort order within section |
+| `section` | string | Section name |
+
+## HTTP API
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/settings` | All settings grouped by group |
+| `GET` | `/settings/:group` | Settings for a group |
+| `PUT` | `/settings/:group` | Bulk update for a group |
+
+## Related
+
+- [Settings](/docs/concepts/settings) — typed settings architecture
+- [Setup Settings](/docs/guides/setup-settings) — adding settings to your module

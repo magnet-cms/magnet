@@ -1,0 +1,85 @@
+---
+title: Adapters Reference
+description: Database adapter contract, injection tokens, and adapter capabilities
+---
+
+# Adapters Reference
+
+All adapters are passed to `MagnetModule.forRoot([...])`. The database adapter is required; all others are optional.
+
+## Database Adapters
+
+| Adapter | Package | Database |
+|---------|---------|----------|
+| Mongoose | `@magnet-cms/adapter-db-mongoose` | MongoDB |
+| Drizzle | `@magnet-cms/adapter-db-drizzle` | PostgreSQL, MySQL, SQLite |
+
+## DatabaseAdapter Contract
+
+All database adapters implement the `DatabaseAdapter` abstract class from `@magnet-cms/common`:
+
+```typescript
+abstract class DatabaseAdapter {
+  abstract connect(): Promise<void>
+  abstract forFeature(schemas: Type[]): DynamicModule
+  abstract model<T>(schema: Type<T>): Model<T>
+  abstract supports(feature: string): boolean
+  abstract getCapabilities(): AdapterCapabilities
+}
+```
+
+## AdapterCapabilities
+
+```typescript
+interface AdapterCapabilities {
+  transactions: boolean
+  fullTextSearch: boolean
+  geospatial: boolean
+  migrations: boolean
+}
+```
+
+## Injection Tokens
+
+```typescript
+import { getModelToken, getSchemaToken, getAdapterToken } from '@magnet-cms/common'
+
+// Inject a model for a schema class
+@InjectModel(Cat) private model: Model<Cat>
+
+// Inject the database adapter
+@Inject(getAdapterToken()) private adapter: DatabaseAdapter
+```
+
+## Model Interface
+
+```typescript
+interface Model<T> {
+  create(data: Partial<T>): Promise<T>
+  find(filter?: Partial<T>): Promise<T[]>
+  findById(id: string): Promise<T | null>
+  findOne(filter: Partial<T>): Promise<T | null>
+  update(filter: Partial<T>, data: Partial<T>): Promise<T | null>
+  delete(filter: Partial<T>): Promise<boolean>
+  query(): QueryBuilder<T>
+  native(): unknown    // Access underlying driver
+}
+```
+
+## Other Adapters
+
+| Kind | Packages |
+|------|---------|
+| Auth | `adapter-auth-supabase`, `adapter-auth-clerk` |
+| Storage | `adapter-storage-s3`, `adapter-storage-r2`, `adapter-storage-supabase` |
+| Email | `email-resend`, `email-nodemailer` |
+| Cache | `adapter-cache-redis` |
+| Vault | `adapter-vault-hashicorp`, `adapter-vault-supabase` |
+| GraphQL | `adapter-graphql` |
+
+## Related
+
+- [Mongoose Adapter](/docs/reference/adapters/mongoose) — query builder reference
+- [Drizzle Adapter](/docs/reference/adapters/drizzle) — config options
+- [GraphQL Adapter](/docs/reference/adapters/graphql) — auto-generated schema
+- [Database API](/docs/reference/core/database-api) — core injection tokens

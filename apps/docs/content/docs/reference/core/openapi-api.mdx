@@ -1,0 +1,39 @@
+---
+title: OpenAPI Reference
+description: OpenAPI spec endpoints and configuration options
+---
+
+# OpenAPI Reference
+
+## Endpoints
+
+| Path | Description |
+|------|-------------|
+| `GET /api-docs` | Swagger UI (interactive API explorer) |
+| `GET /oas.json` | OpenAPI 3.0 JSON spec |
+
+Both paths are configurable via the `openapi` option in `MagnetModule.forRoot()`.
+
+## Configuration
+
+```typescript
+MagnetModule.forRoot(adapters, {
+  openapi: {
+    enabled: boolean,     // Default: true
+    title: string,        // Default: 'Magnet CMS API'
+    version: string,      // Default: '1.0.0'
+    path: string,         // Swagger UI path, default: '/api-docs'
+  },
+})
+```
+
+## Disable in Production
+
+```typescript
+openapi: { enabled: process.env.NODE_ENV !== 'production' }
+```
+
+## Related
+
+- [Setup OpenAPI](/docs/guides/setup-openapi) — configuration guide
+- [Type Generation](/docs/guides/codegen) — generate TypeScript types from the spec

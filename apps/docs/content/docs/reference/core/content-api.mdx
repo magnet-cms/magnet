@@ -1,0 +1,55 @@
+---
+title: Content API
+description: REST endpoints and service methods for content management
+---
+
+# Content API
+
+## REST Endpoints
+
+All endpoints require authentication. Base path: `/content/:schema`
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/content/:schema` | List documents |
+| `GET` | `/content/:schema/:documentId` | Get document by ID |
+| `POST` | `/content/:schema` | Create document (draft) |
+| `PUT` | `/content/:schema/:documentId` | Update draft |
+| `DELETE` | `/content/:schema/:documentId` | Delete all versions |
+| `POST` | `/content/:schema/:documentId/publish` | Publish document |
+| `POST` | `/content/:schema/:documentId/unpublish` | Unpublish document |
+| `GET` | `/content/:schema/:documentId/versions` | List versions |
+| `POST` | `/content/:schema/:documentId/versions/:versionId/restore` | Restore version |
+| `POST` | `/content/:schema/:documentId/locales` | Add locale |
+| `DELETE` | `/content/:schema/:documentId/locales/:locale` | Remove locale |
+
+### Query Parameters
+
+**GET /content/:schema**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `locale` | string | Filter by locale (e.g. `en`, `pt-BR`) |
+| `status` | `draft` \| `published` | Filter by status |
+| `page` | number | Page number (default: 1) |
+| `limit` | number | Items per page (default: 10) |
+
+### Document Object
+
+```typescript
+interface ContentDocument {
+  _id: string
+  documentId: string
+  locale: string
+  status: 'draft' | 'published'
+  createdAt: string
+  updatedAt: string
+  publishedAt?: string
+  version: number
+  // ... schema fields
+}
+```
+
+## Related
+
+- [Content Model](/docs/concepts/content-model) — schema, fields, and lifecycle

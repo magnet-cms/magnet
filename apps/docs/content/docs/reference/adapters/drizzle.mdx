@@ -1,0 +1,69 @@
+---
+title: Drizzle Adapter API
+description: Configuration options and query builder for the Drizzle adapter
+---
+
+# Drizzle Adapter API
+
+Reference for `@magnet-cms/adapter-db-drizzle` configuration options and query builder. For installation and setup, see [Setup Drizzle](/docs/guides/setup-drizzle).
+
+## Configuration Options
+
+`DrizzleDatabaseAdapter.forRoot(options)` accepts:
+
+| Option | Type | Required | Description |
+|--------|------|----------|-------------|
+| `connectionString` | `string` | Yes | PostgreSQL connection string |
+| `dialect` | `'postgresql'` | Yes | Database dialect (currently `postgresql` only) |
+| `driver` | `'neon' \| 'pg'` | No | `'neon'` for Neon serverless; `'pg'` for standard PostgreSQL |
+| `debug` | `boolean` | No | Enable SQL query logging |
+| `migrations` | `object` | No | `{ mode: 'auto' \| 'manual', directory: string }` |
+
+```typescript
+DrizzleDatabaseAdapter.forRoot({
+  dialect: 'postgresql',
+  driver: 'neon',
+  debug: process.env.NODE_ENV === 'development',
+  migrations: {
+    mode: 'auto',
+    directory: './migrations',
+  },
+})
+```
+
+`DATABASE_URL` and `JWT_SECRET` are auto-resolved from `process.env` when not explicitly provided.
+
+## Query Builder
+
+```typescript
+// Filter with conditions
+const cats = await model.query().where({ castrated: true }).exec()
+
+// Sort and paginate
+const page = await model.query()
+  .sort({ name: 1 })
+  .skip(0)
+  .limit(10)
+  .exec()
+
+// Get paginated result with totals
+const result = await model.query()
+  .where({ castrated: false })
+  .paginate()
+// Returns: { data: [...], total: 42, page: 1, limit: 10 }
+```
+
+## Migrations Config
+
+| Option | Values | Description |
+|--------|--------|-------------|
+| `mode` | `'auto'` | Automatically apply pending migrations on startup |
+| `mode` | `'manual'` | Use CLI (`magnet migrate:up`) to control migrations |
+| `directory` | `string` | Path to migrations directory (default: `./migrations`) |
+
+## Related
+
+- [Setup Drizzle](/docs/guides/setup-drizzle) — installation and configuration
+- [Drizzle Migrations](/docs/guides/drizzle-migrations) — migration workflow
+- [CLI Commands](/docs/reference/migrations/cli-commands) — `magnet migrate:*` reference
+- [Adapters Reference](/docs/reference/adapters) — adapter contract

@@ -1,0 +1,80 @@
+---
+title: Setup OpenAPI
+description: Enable Swagger UI and OpenAPI 3.0 spec generation for Magnet CMS
+---
+
+# Setup OpenAPI
+
+Magnet CMS automatically generates an OpenAPI 3.0 spec from all API routes and content schemas. The Swagger UI is available at `/api-docs` by default — no additional configuration required.
+
+## 1. OpenAPI Is Enabled by Default
+
+Start your application and visit `http://localhost:3000/api-docs` to see the Swagger UI.
+
+The machine-readable spec is available at:
+
+```
+GET /oas.json
+```
+
+## 2. Customize the Spec
+
+Override the title, version, or UI path in `MagnetModule.forRoot()`:
+
+```typescript
+MagnetModule.forRoot(
+  [MongooseDatabaseAdapter.forRoot()],
+  {
+    openapi: {
+      title: 'My CMS API',
+      version: '2.0.0',
+      path: '/swagger',   // Swagger UI served at /swagger
+    },
+  },
+)
+```
+
+## 3. Disable OpenAPI
+
+To disable the module in production:
+
+```typescript
+MagnetModule.forRoot(
+  [MongooseDatabaseAdapter.forRoot()],
+  {
+    openapi: { enabled: false },
+  },
+)
+```
+
+Or conditionally:
+
+```typescript
+MagnetModule.forRoot(
+  [MongooseDatabaseAdapter.forRoot()],
+  {
+    openapi: { enabled: process.env.NODE_ENV !== 'production' },
+  },
+)
+```
+
+## 4. What's in the Spec
+
+- All Magnet REST endpoints (auth, content, users, webhooks, RBAC, settings, etc.)
+- Auto-generated request/response schemas for your `@Schema()` content types
+- Bearer token and API key authentication schemes documented automatically
+
+## 5. Use With Client SDK Codegen
+
+The spec at `/oas.json` can be used with `openapi-typescript` to generate a typed client:
+
+```bash
+npx openapi-typescript http://localhost:3000/oas.json -o src/types/api.ts
+```
+
+See the [Client SDK guide](/docs/guides/setup-client-sdk) for the full codegen workflow.
+
+## Related
+
+- [Content Model](/docs/concepts/content-model) — schemas that get added to the spec
+- [Auth API](/docs/reference/core/auth-api) — documented auth endpoints

@@ -1,0 +1,117 @@
+---
+title: Setup Settings
+description: Add typed settings groups to your Magnet CMS modules
+---
+
+# Setup Settings
+
+Add configurable settings to your module that appear in the admin UI Settings panel. Settings persist in the database and are cached at runtime.
+
+## 1. Define a Settings Class
+
+Use `@Settings` and `@SettingField.*` decorators from `@magnet-cms/common`:
+
+```typescript
+import { Settings, SettingField } from '@magnet-cms/common'
+
+@Settings({
+  group: 'shipping',
+  label: 'Shipping',
+  icon: 'truck',
+  order: 10,
+})
+export class ShippingSettings {
+  @SettingField.Text({
+    label: 'Default Carrier',
+    default: 'UPS',
+    order: 1,
+  })
+  defaultCarrier = 'UPS'
+
+  @SettingField.Number({
+    label: 'Max Weight (kg)',
+    default: 30,
+    order: 2,
+  })
+  maxWeightKg = 30
+
+  @SettingField.Boolean({
+    label: 'Enable Free Shipping',
+    default: false,
+    order: 3,
+  })
+  freeShippingEnabled = false
+}
+```
+
+## 2. Register in Your Module
+
+Call `SettingsModule.forFeature()` in your feature module:
+
+```typescript
+import { Module } from '@nestjs/common'
+import { SettingsModule } from '@magnet-cms/core'
+import { ShippingSettings } from './shipping.settings'
+import { ShippingService } from './shipping.service'
+
+@Module({
+  imports: [SettingsModule.forFeature(ShippingSettings)],
+  providers: [ShippingService],
+})
+export class ShippingModule {}
+```
+
+On startup, Magnet initializes the settings with defaults and adds the group to the admin Settings panel.
+
+## 3. Read Settings at Runtime
+
+Inject `SettingsService` and call `get()`:
+
+```typescript
+import { Injectable } from '@nestjs/common'
+import { SettingsService } from '@magnet-cms/core'
+import { ShippingSettings } from './shipping.settings'
+
+@Injectable()
+export class ShippingService {
+  constructor(private readonly settings: SettingsService) {}
+
+  async getCarrier(): Promise<string> {
+    const config = await this.settings.get(ShippingSettings)
+    return config.defaultCarrier  // fully typed
+  }
+}
+```
+
+Results are cached for 60 seconds.
+
+## 4. Update Settings Programmatically
+
+```typescript
+await this.settings.update(ShippingSettings, {
+  defaultCarrier: 'FedEx',
+  maxWeightKg: 50,
+})
+```
+
+## 5. Verify
+
+Start the application and navigate to the admin UI **Settings** section. Your `Shipping` group should appear with the configured fields.
+
+## Available Field Types
+
+| Type | Use for |
+|------|---------|
+| `Text` | Short strings |
+| `Textarea` | Multi-line text |
+| `Number` | Numeric values |
+| `Boolean` | Feature flags, toggles |
+| `Select` | Enumerated options |
+| `Secret` | API keys, passwords (masked in UI) |
+| `Image` | Image URL picker |
+| `JSON` | Structured data |
+
+## Related
+
+- [Settings](/docs/concepts/settings) — typed settings architecture
+- [Settings API](/docs/reference/core/settings-api) — SettingsService and decorator reference

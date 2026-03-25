@@ -1,0 +1,81 @@
+---
+title: Setup API Keys
+description: Enable programmatic API access with scoped, rate-limited API keys
+---
+
+# Setup API Keys
+
+API keys allow programmatic access to Magnet CMS without user sessions. Each key has its own permissions, rate limit, IP restrictions, and optional expiration.
+
+## 1. API Keys Are Enabled by Default
+
+No extra configuration is required. API key management endpoints are available at `/api/api-keys`.
+
+## 2. Create an API Key
+
+Use the admin UI (**API Keys → New Key**) or the API:
+
+```bash
+curl -X POST http://localhost:3000/api/api-keys \
+  -H "Authorization: Bearer <admin-jwt>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "My Integration",
+    "permissions": ["content.posts.find", "content.posts.create"],
+    "rateLimit": 1000
+  }'
+```
+
+**Save the `plainKey` from the response — it is shown only once.**
+
+## 3. Use an API Key
+
+Send the key in the `X-API-Key` header (or as a Bearer token):
+
+```bash
+curl http://localhost:3000/content/posts \
+  -H "X-API-Key: mgnt_abc123..."
+```
+
+## 4. Scope Permissions
+
+API keys support the same permission format as RBAC roles. Narrow down what a key can do:
+
+```json
+{
+  "name": "Read-only CMS client",
+  "permissions": ["content.*.find"],
+  "allowedSchemas": ["posts", "categories"]
+}
+```
+
+## 5. Optional: Rate Limiting & Expiration
+
+```json
+{
+  "name": "Partner API",
+  "permissions": ["content.*.find"],
+  "rateLimit": 500,
+  "expiresAt": "2026-12-31T23:59:59Z",
+  "allowedIps": ["203.0.113.1"]
+}
+```
+
+## 6. Rotate a Key
+
+To rotate a key without downtime:
+
+1. Create a new key with the same permissions
+2. Update your integration to use the new key
+3. Revoke the old key
+
+```bash
+# Revoke a key
+DELETE /api/api-keys/{id}
+Authorization: Bearer <admin-jwt>
+```
+
+## Related
+
+- [Authentication](/docs/concepts/authentication) — auth strategy overview
+- [RBAC](/docs/concepts/rbac) — permission format reference

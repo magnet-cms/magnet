@@ -1,0 +1,95 @@
+---
+title: Setup Storage
+description: Configure media upload settings, folder organization, and encrypted storage
+---
+
+# Setup Storage
+
+The storage module is enabled by default. Configure it from the admin panel or enable encrypted uploads with the Vault integration. This guide covers settings configuration and encrypted file uploads.
+
+## Prerequisites
+
+- A storage adapter installed (see [Setup S3 Storage](/docs/guides/setup-storage-s3), [Setup R2](/docs/guides/setup-storage-r2), or [Setup Supabase](/docs/guides/setup-supabase))
+
+## 1. Configure Storage Settings
+
+From the admin panel under **Settings → Media**:
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| Max File Size | 10 MB | Maximum upload size |
+| Allowed MIME Types | all | Comma-separated whitelist |
+
+Or via the settings API:
+
+```bash
+PUT /settings/media
+Authorization: Bearer <admin-token>
+Content-Type: application/json
+
+{
+  "maxFileSizeMb": 50,
+  "allowedMimeTypes": "image/*, application/pdf"
+}
+```
+
+## 2. Upload Files Programmatically
+
+Inject `StorageService` into any service:
+
+```typescript
+import { Injectable } from '@nestjs/common'
+import { StorageService } from '@magnet-cms/core'
+
+@Injectable()
+export class DocumentService {
+  constructor(private readonly storage: StorageService) {}
+
+  async upload(file: Buffer, filename: string, userId: string) {
+    const media = await this.storage.upload(file, filename, {
+      folder: 'documents',
+      createdBy: userId,
+    })
+    return media.url
+  }
+}
+```
+
+## 3. Enable Encrypted Storage (Optional)
+
+Encrypt sensitive files at rest using AES-256-GCM. Requires a vault adapter.
+
+**Prerequisites:** Configure a vault adapter (DB vault is built-in via `VAULT_MASTER_KEY`).
+
+Enable encryption from **Settings → Media → Security**:
+
+- Toggle **Enable File Encryption** on
+- **Auto-create Private Folders** creates `private/{userId}` automatically
+
+Then upload with `encrypt: true`:
+
+```typescript
+const media = await this.storage.upload(fileBuffer, filename, {
+  encrypt: true,
+  ownerId: userId,
+  // folder auto-set to private/{userId}
+})
+```
+
+Decryption is transparent on download — only the owner or an admin can access encrypted files.
+
+## 4. Organize Media with Folders
+
+Create folders from the admin UI media library or programmatically:
+
+```typescript
+await this.storage.createFolder('reports', 'documents/reports', {
+  createdBy: userId,
+})
+```
+
+## Related
+
+- [Storage](/docs/concepts/storage) — storage adapter pattern and encrypted folders
+- [Vault](/docs/concepts/vault) — required for encrypted file storage
+- [Storage API](/docs/reference/core/storage-api) — StorageService methods

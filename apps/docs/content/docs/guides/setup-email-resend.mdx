@@ -1,0 +1,78 @@
+---
+title: Setup Email (Resend)
+description: Send transactional emails via Resend with Magnet CMS
+---
+
+# Setup Email (Resend)
+
+Use Resend to send transactional emails from Magnet CMS.
+
+## Prerequisites
+
+- A Resend account with a verified domain or API key
+- NestJS app with `@magnet-cms/core` and a database adapter installed
+
+## 1. Install
+
+```bash
+bun add @magnet-cms/email-resend resend
+```
+
+## 2. Set Environment Variables
+
+From your Resend Dashboard → API Keys:
+
+```bash
+# .env
+RESEND_API_KEY=re_...
+EMAIL_FROM=Magnet <noreply@yourdomain.com>
+```
+
+## 3. Register the Adapter
+
+```typescript
+import { Module } from '@nestjs/common'
+import { MagnetModule } from '@magnet-cms/core'
+import { MongooseDatabaseAdapter } from '@magnet-cms/adapter-db-mongoose'
+import { ResendEmailAdapter } from '@magnet-cms/email-resend'
+
+@Module({
+  imports: [
+    MagnetModule.forRoot([
+      MongooseDatabaseAdapter.forRoot(),
+      ResendEmailAdapter.forRoot({
+        defaults: { from: 'Magnet <noreply@yourdomain.com>' },
+      }),
+    ]),
+  ],
+})
+export class AppModule {}
+```
+
+Or rely on env vars entirely:
+
+```typescript
+ResendEmailAdapter.forRoot()
+```
+
+## 4. Verify
+
+Check the application logs after startup — Magnet seeds 5 email templates on first boot. Trigger a password reset to test delivery:
+
+```bash
+curl -X POST http://localhost:3000/auth/forgot-password \
+  -H "Content-Type: application/json" \
+  -d '{"email": "user@example.com"}'
+```
+
+Check your Resend Dashboard → Logs to confirm the email was sent.
+
+## Troubleshooting
+
+- **Domain not verified**: Resend requires a verified sending domain for production. Use `onboarding@resend.dev` for testing with the Resend sandbox.
+- **Rate limits**: Resend free tier allows 100 emails/day. Upgrade for higher limits.
+
+## Related
+
+- [Email](/docs/concepts/email) — email architecture and template system
+- [Setup Email (Nodemailer)](/docs/guides/setup-email-nodemailer) — SMTP alternative

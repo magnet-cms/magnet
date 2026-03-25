@@ -1,0 +1,113 @@
+---
+title: Setup Supabase
+description: Use Supabase for auth, storage, vault, and PostgreSQL with Magnet CMS
+---
+
+# Setup Supabase
+
+Supabase provides three adapters for Magnet: auth, storage, and vault. Combined with the Drizzle adapter connecting to Supabase PostgreSQL, this is the recommended full-Supabase setup.
+
+## Prerequisites
+
+- A Supabase project at [supabase.com](https://supabase.com) or running self-hosted
+- NestJS app with `@magnet-cms/core` and `@magnet-cms/adapter-db-drizzle` installed
+
+## 1. Install
+
+```bash
+# Core: Drizzle adapter for the Supabase PostgreSQL database
+bun add @magnet-cms/adapter-db-drizzle pg
+
+# Auth adapter
+bun add @magnet-cms/adapter-auth-supabase @supabase/supabase-js
+
+# Storage adapter (optional)
+bun add @magnet-cms/adapter-storage-supabase @supabase/supabase-js
+
+# Vault adapter (optional — for encrypted secrets)
+bun add @magnet-cms/adapter-vault-supabase @supabase/supabase-js
+```
+
+## 2. Set Environment Variables
+
+From your Supabase Dashboard → Settings → API:
+
+```bash
+# .env
+DATABASE_URL=postgresql://postgres:password@db.your-project.supabase.co:5432/postgres
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_PUBLISHABLE_KEY=eyJ...   # anon / publishable key
+SUPABASE_SECRET_KEY=eyJ...        # service_role / secret key
+JWT_SECRET=your-jwt-secret        # Still required for Magnet internal tokens
+```
+
+## 3. Create a Storage Bucket
+
+Before using the storage adapter, create a bucket named `media` in Supabase Dashboard → Storage → New bucket. Set it to **Public** for publicly accessible URLs.
+
+## 4. Register the Adapters
+
+```typescript
+import { Module } from '@nestjs/common'
+import { MagnetModule } from '@magnet-cms/core'
+import { DrizzleDatabaseAdapter } from '@magnet-cms/adapter-db-drizzle'
+import { SupabaseAuthStrategy } from '@magnet-cms/adapter-auth-supabase'
+import { SupabaseStorageAdapter } from '@magnet-cms/adapter-storage-supabase'
+import { SupabaseVaultAdapter } from '@magnet-cms/adapter-vault-supabase'
+
+@Module({
+  imports: [
+    MagnetModule.forRoot([
+      DrizzleDatabaseAdapter.forRoot({
+        dialect: 'postgresql',
+        driver: 'pg',
+        migrations: {
+          mode: process.env.NODE_ENV === 'production' ? 'manual' : 'auto',
+          directory: './migrations',
+        },
+      }),
+      SupabaseAuthStrategy.forRoot(),
+      SupabaseStorageAdapter.forRoot(),
+      SupabaseVaultAdapter.forRoot(),
+    ]),
+  ],
+})
+export class AppModule {}
+```
+
+Omit adapters you don't need. Only `DrizzleDatabaseAdapter` is required.
+
+## 5. Verify
+
+```bash
+bun run start:dev
+# Look for: "Drizzle connected"
+# Look for: "Supabase auth strategy initialized"
+```
+
+Test authentication:
+
+```bash
+curl -X POST http://localhost:3000/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email": "user@example.com", "password": "password123"}'
+```
+
+## Local Development
+
+A self-hosted Supabase stack for local development is in `apps/examples/drizzle-supabase/docker`:
+
+```bash
+cd apps/examples/drizzle-supabase
+cp .env.example .env
+docker compose -f docker/docker-compose.yml up -d
+```
+
+Supabase Studio is available at `http://localhost:3010`.
+
+## Related
+
+- [Authentication](/docs/concepts/authentication) — auth strategy architecture
+- [Storage](/docs/concepts/storage) — storage adapter pattern
+- [Vault](/docs/concepts/vault) — encrypted secrets
+- [Setup Drizzle](/docs/guides/setup-drizzle) — database adapter configuration
