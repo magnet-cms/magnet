@@ -82,7 +82,10 @@ export function sanitizeRichTextFields<T extends Record<string, unknown>>(
 	}
 
 	const richTextFieldNames = schema.properties
-		.filter((prop) => prop.type === 'richtext')
+		.filter((prop) => {
+			const uiType = prop.ui?.type
+			return prop.type === 'richtext' || uiType === 'richText'
+		})
 		.map((prop) => prop.name)
 
 	if (richTextFieldNames.length === 0) {

@@ -11,6 +11,22 @@ function makeDiscovery(
 	} as unknown as DiscoveryService
 }
 
+/** Matches discovery metadata for @Field.RichText (GraphQL/API type String, UI richText). */
+const STRING_UI_RICHTEXT_SCHEMA = {
+	name: 'cat',
+	properties: [
+		{
+			name: 'notes',
+			type: 'String',
+			isArray: false,
+			unique: false,
+			required: false,
+			validations: [],
+			ui: { type: 'richText' },
+		},
+	],
+}
+
 const RICHTEXT_SCHEMA = {
 	name: 'article',
 	properties: [
@@ -57,6 +73,16 @@ describe('sanitizeRichTextFields', () => {
 		expect(result.body).not.toContain('<script>')
 		expect(result.body).not.toContain('alert')
 		expect(result.body).toContain('<p>Hello</p>')
+	})
+
+	it('sanitizes String fields when ui.type is richText (discovered schema shape)', () => {
+		const disc = makeDiscovery(STRING_UI_RICHTEXT_SCHEMA)
+		const data = {
+			notes: '<p>Hello</p><script>alert("xss")</script>',
+		}
+		const result = sanitizeRichTextFields('cat', data, disc)
+		expect(result.notes).not.toContain('<script>')
+		expect(result.notes).toContain('<p>Hello</p>')
 	})
 
 	it('preserves safe HTML in richtext fields', () => {
