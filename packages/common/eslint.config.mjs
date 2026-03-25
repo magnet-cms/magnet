@@ -12,4 +12,12 @@ export default [
       '@typescript-eslint/no-unsafe-function-type': 'off',
     },
   },
+  {
+    // vitest vi.mock() calls are hoisted before imports at compile time, which
+    // breaks ESLint's import block detection and makes import/order unfixable
+    files: ['**/*.spec.ts', '**/*.test.ts'],
+    rules: {
+      'import/order': 'off',
+    },
+  },
 ]

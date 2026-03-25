@@ -16,8 +16,8 @@ import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 
-import type { ViewConfigColumn } from '../hooks/useViewConfig'
 import { useViewConfig } from '../hooks/useViewConfig'
+import type { ViewConfigColumn } from '../hooks/useViewConfig'
 
 import { ConfigureViewDrawer } from './ConfigureViewDrawer'
 
