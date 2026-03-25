@@ -1,9 +1,11 @@
 import type { AuthConfig } from '@magnet-cms/common'
 import { MagnetModuleOptions } from '@magnet-cms/common'
+import type { ExecutionContext } from '@nestjs/common'
 import { DynamicModule, Module } from '@nestjs/common'
 import { JwtModule, type JwtModuleOptions } from '@nestjs/jwt'
 import { PassportModule } from '@nestjs/passport'
 import { ThrottlerModule } from '@nestjs/throttler'
+import type { Request } from 'express'
 import type { StringValue } from 'ms'
 import { DatabaseModule } from '~/modules/database'
 import { EventsModule } from '~/modules/events'
@@ -27,6 +29,26 @@ import { RefreshToken } from './schemas/refresh-token.schema'
 import { Session } from './schemas/session.schema'
 import { PasswordResetService } from './services/password-reset.service'
 import { JwtAuthStrategy } from './strategies/jwt-auth.strategy'
+
+/**
+ * When Playwright sends X-Magnet-E2E-Worker (unique per test), rate limits apply
+ * per test bucket instead of per client IP. Parallel e2e runs no longer exhaust
+ * a shared IP limit; production traffic is unchanged (header absent → IP only).
+ */
+function magnetAuthThrottlerTracker(
+	req: Record<string, unknown>,
+	_context: ExecutionContext,
+): string {
+	const r = req as unknown as Request
+	const ip = r.ip ?? r.socket?.remoteAddress ?? 'unknown'
+	const raw = r.headers['x-magnet-e2e-worker']
+	const token =
+		typeof raw === 'string' ? raw : Array.isArray(raw) ? raw[0] : undefined
+	if (token && token.length > 0 && token.length <= 256) {
+		return `${ip}:e2e:${token}`
+	}
+	return ip
+}
 
 @Module({})
 export class AuthModule {
@@ -60,7 +82,11 @@ export class AuthModule {
 			module: AuthModule,
 			global: true,
 			imports: [
-				ThrottlerModule.forRoot([{ ttl: 60000, limit: 10 }]),
+				ThrottlerModule.forRoot({
+					throttlers: [{ ttl: 60000, limit: 10, name: 'default' }],
+					getTracker: magnetAuthThrottlerTracker,
+					skipIf: () => process.env.MAGNET_E2E_DISABLE_AUTH_THROTTLE === '1',
+				}),
 				DatabaseModule,
 				// Register auth schemas
 				DatabaseModule.forFeature(RefreshToken),
